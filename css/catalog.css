@@ -1,0 +1,42 @@
+.view>table td {
+	width: 50%;
+	vertical-align: top;
+}
+
+.items input {
+	width: 100%;
+	box-sizing: border-box;
+	font: normal 12pt Segoe UI;
+	border: 1px solid #fff;
+}
+
+.catalog-compares tr td:first-child {
+	width: inherit;
+}
+
+.cart-links div {
+	word-break: break-word;
+	max-width: 600px;
+}
+
+.icon {
+	display: inline-block;
+	background: url('/devin/img/catalog_sprite.png') no-repeat;
+	overflow: hidden;
+	text-indent: -9999px;
+	text-align: left;
+	width: 24px;
+	height: 24px;
+}
+
+.icon:hover {
+	background: url('/devin/img/catalog_sprite_hover.png') no-repeat;
+}
+
+.ic-add {
+	background-position: -0px -0px!important;
+}
+
+.ic-clear {
+	background-position: -0px -24px!important;
+}

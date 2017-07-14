@@ -1,0 +1,86 @@
+body {
+	background-image: url(../img/navy_blue.png);
+}
+
+.main-menu {
+	background: #333;
+}
+
+.main-menu li {
+	border-left: 1px solid #222;
+}
+
+.main-menu li a {
+	color: #ccc;
+}
+
+.main {
+	background: #444;
+}
+
+.panel {
+	background: #333;
+	color: #fff;
+}
+
+.unit {
+	background: #333;
+	color: #ccc;
+	border: 1px solid #333;
+	box-shadow: 1px 1px 12px #222;
+}
+
+.unit:hover .caption,
+.items tbody tr:hover,
+.items th:hover,
+.title:hover {
+	color: #2AA4FE;
+}
+
+.open {
+	color: #fff;
+}
+
+.open:hover .caption {
+	color: #fff;
+}
+
+.items {
+	background: #222;
+	color: #fff;
+}
+
+.items td {
+	border: 1px solid #282828;
+}
+
+.selected {
+	color: #12d473
+}
+
+.cart-new {
+	background: #333;
+	border: 1px solid #151515;
+	box-shadow: 4px 4px 17px 6px #222;
+	color: #fff;
+	max-height: 800px;
+}
+
+.cart-table input,
+.cart-table textarea {
+	padding: 1px;
+	border: 1px inset #c5c5c5;
+}
+
+.cart-table textarea {
+	margin-bottom: -4px;
+}
+
+.cart-table select {
+	max-width: 342px;
+}
+
+.cart-menu {
+	margin: -6px;
+	border-top: 1px solid #555;
+}
