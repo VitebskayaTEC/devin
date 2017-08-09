@@ -5,497 +5,497 @@ div,
 table,
 ul,
 li {
-	padding: 0;
-	margin: 0;
-	border: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
 }
 
 body {
-	background-image: url(../img/white_carbonfiber.png);
-	font: normal 12pt Segoe UI;
+    background-image: url(../img/background.png);
+    font: normal 12pt Segoe UI;
 }
 
 table {
-	border-collapse: collapse;
-	width: 100%;
+    border-collapse: collapse;
+    width: 100%;
 }
 
 
 /* Меню */
 
 .main-menu {
-	position: fixed;
-	background: #eee;
-	font-weight: bold;
-	z-index: 5;
-	border-left: 1px solid #000;
-	border-bottom: 1px solid #000;
-	box-shadow: 1px 1px 6px #000;
-	text-align: center;
-	cursor: pointer;
+    position: fixed;
+    background: #f6f6f6;
+    font-weight: bold;
+    z-index: 5;
+    border-left: 1px solid #000;
+    border-bottom: 1px solid #000;
+    box-shadow: 1px 1px 6px #000;
+    text-align: center;
+    cursor: pointer;
 }
 
 .main-menu li {
-	display: inline-block;
-	border-left: 1px solid #ddd;
-	list-style-type: none;
+    display: inline-block;
+    border-left: 1px solid #ddd;
+    list-style-type: none;
 }
 
 .main-menu li:first-child a {
-	min-width: 30px;
+    min-width: 30px;
 }
 
 .main-menu li a {
-	display: block;
-	min-width: 80px;
-	padding: 3px;
-	padding-top: 6px;
-	padding-bottom: 6px;
-	text-decoration: none;
-	color: #000;
-	font: normal 12pt Segoe UI;
+    display: block;
+    min-width: 80px;
+    padding: 3px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    text-decoration: none;
+    color: #000;
+    font: normal 12pt Segoe UI;
 }
 
 a.has-icon {
-	width: 40px!important;
-	min-width: 40px!important;
+    width: 40px!important;
+    min-width: 40px!important;
 }
 
 .main-menu input {
-	width: 100%;
-	font: normal 12pt Segoe UI;
-	box-sizing: border-box;
-	padding: 5px;
-	border: 0;
+    width: 100%;
+    font: normal 12pt Segoe UI;
+    box-sizing: border-box;
+    padding: 5px;
+    border: 0;
 }
 
 .main-menu li:hover a {
-	color: #3E97F9;
+    color: #3E97F9;
 }
 
 .main-menu li a.point-now {
-	background: #333;
-	color: #E6B451;
+    background: #333;
+    color: #E6B451;
 }
 
 
 /* Шапка главной таблицы */
 
 .main {
-	background: #ddd;
-	color: #222;
-	cursor: pointer;
-	margin-bottom: 6px;
-	padding: 3px;
+    background: #fff;
+    color: #222;
+    cursor: pointer;
+    margin-bottom: 6px;
+    padding: 3px;
 }
 
 .view {
-	padding: 10px;
-	padding-top: 55px;
-	max-width: 1400px;
-	margin-bottom: 50px;
+    padding: 10px;
+    padding-top: 55px;
+    max-width: 1400px;
+    margin-bottom: 50px;
 }
 
 .panel {
-	display: none;
-	position: fixed;
-	top: 34px;
-	background: #eee;
-	color: #000;
-	border: 1px solid #000;
-	box-shadow: 1px 1px 6px #1b1b1b;
-	padding: 6px;
-	text-align: center;
+    display: none;
+    position: fixed;
+    top: 34px;
+    background: #eee;
+    color: #000;
+    border: 1px solid #000;
+    box-shadow: 1px 1px 6px #1b1b1b;
+    padding: 6px;
+    text-align: center;
 }
 
 .panel a {
-	cursor: default;
+    cursor: default;
 }
 
 .panel a:hover {
-	color: #2AA4FE;
-	text-decoration: underline;
+    color: #2AA4FE;
+    text-decoration: underline;
 }
 
 #excelExports {
-	left: 1000px;
-	top: 0;
+    left: 1000px;
+    top: 0;
 }
 
 
 /* Элементы */
 
 .unit {
-	/*margin: 5px;*/
-	margin-top: 1px;
-	margin-bottom: 1px;
-	background: #eee;
-	color: #000;
-	border: 1px solid #fff;
-	cursor: default;
+    /*margin: 5px;*/
+    margin-top: 1px;
+    margin-bottom: 1px;
+    background: #fff;
+    color: #000;
+    border: 1px solid #fff;
+    cursor: default;
 }
 
 .unit>table:first-child {
-	border-top: 0;
+    border-top: 0;
 }
 
 .unit:hover .caption,
 .items tbody tr:hover,
 .items th:hover,
 .title:hover {
-	color: #007bd6;
+    color: #007bd6;
 }
 
 .open {
-	border-color: #2AA4FE;
-	margin-top: 10px;
-	margin-bottom: 10px;
+    border-color: #2AA4FE;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .open:hover .caption {
-	color: #000;
+    color: #000;
 }
 
 #solo {
-	margin-top: 5px;
-	margin-bottom: 5px;
-	border: 1px solid #fff;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    border: 1px solid #fff;
 }
 
 .group .items-block {
-	background: #e0e0e0;
-	padding: 5px;
+    background: #e0e0e0;
+    padding: 5px;
 }
 
 .group .unit {
-	margin: 5px;
+    margin: 5px;
 }
 
 .hide_first {
-	display: none;
+    display: none;
 }
 
 
 /* Табличные данные */
 
 .items {
-	font: normal 11pt Calibri, serif;
-	border: 1px solid transparent;
-	border-top: 1px solid #c7c7c7;
-	background: #e0e0e0;
-	color: #000;
+    font: normal 11pt Calibri, serif;
+    border: 1px solid transparent;
+    border-top: 1px solid #c7c7c7;
+    background: #eee;
+    color: #000;
 }
 
 #solo .items {
-	background: #eee;
-	border-top: 0;
+    background: #eee;
+    border-top: 0;
 }
 
 .items th {
-	font: normal 10pt Calibri, serif;
+    font: normal 10pt Calibri, serif;
 }
 
 .items td {
-	padding: 3px;
+    padding: 3px;
 }
 
 .title {
-	padding-left: 30px;
-	padding-bottom: 6px;
+    padding-left: 30px;
+    padding-bottom: 6px;
 }
 
 .caption {
-	cursor: pointer;
+    cursor: pointer;
 }
 
 .caption td {
-	padding: 2px;
-	font: normal 10pt Consolas, sans-serif;
-	text-align: left;
+    padding: 2px;
+    font: normal 10pt Consolas, sans-serif;
+    text-align: left;
 }
 
 .caption th {
-	text-align: left;
-	padding: 4px;
-	font: bold 13pt Century Gothic, sans-serif;
+    text-align: left;
+    padding: 4px;
+    font: bold 13pt Century Gothic, sans-serif;
 }
 
 .selected {
-	background: #333;
-	color: #E6B451!important;
+    background: #333;
+    color: #E6B451!important;
 }
 
 
 /* Карточка элемента  */
 
 .cart-new {
-	display: none;
-	position: fixed;
-	top: 44px;
-	right: 15px;
-	background: #eee;
-	border: 1px solid #666;
-	border-radius: 5px;
-	box-shadow: 2px 2px 13px 2px #666;
-	color: #000;
-	font: normal 12pt Segoe UI;
-	padding: 6px;
-	cursor: default;
-	min-width: 600px;
-	max-width: 1400px;
-	min-height: 500px;
+    display: none;
+    position: fixed;
+    top: 44px;
+    right: 15px;
+    background: #eee;
+    border: 1px solid #666;
+    border-radius: 5px;
+    box-shadow: 2px 2px 13px 2px #666;
+    color: #000;
+    font: normal 12pt Segoe UI;
+    padding: 6px;
+    cursor: default;
+    min-width: 600px;
+    max-width: 1400px;
+    min-height: 500px;
 }
 
 #cart {
-	max-width: 600px;
+    max-width: 600px;
 }
 
 .cart {
-	position: fixed;
-	top: 44px;
-	right: 15px;
-	width: 700px;
-	height: 800px;
-	text-align: center;
+    position: fixed;
+    top: 44px;
+    right: 15px;
+    width: 700px;
+    height: 800px;
+    text-align: center;
 }
 
 .cart>iframe {
-	border: 1px solid #2AA4FE;
-	width: 100%;
-	height: 100%;
+    border: 1px solid #2AA4FE;
+    width: 100%;
+    height: 100%;
 }
 
 .cart-header {
-	text-align: center;
-	margin: -6px;
-	margin-bottom: 6px;
-	border-bottom: 1px solid #555;
-	padding: 3px;
-	background: #333;
-	color: #E6B451;
-	font: normal 15pt Century Gothic;
+    text-align: center;
+    margin: -6px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid #555;
+    padding: 3px;
+    background: #333;
+    color: #E6B451;
+    font: normal 15pt Century Gothic;
 }
 
 .cart-table {
-	max-width: 650px;
+    max-width: 650px;
 }
 
 .cart-table tr td:first-child {
-	width: 200px;
+    width: 200px;
 }
 
 .cart-table input,
 .cart-table textarea,
 .cart-table select {
-	font: normal 11pt Segoe UI;
-	box-sizing: border-box;
+    font: normal 11pt Segoe UI;
+    box-sizing: border-box;
 }
 
 .cart-table input,
 .cart-table textarea {
-	width: 99%;
+    width: 99%;
 }
 
 .cart-table textarea {
-	resize: none;
-	height: 66px;
+    resize: none;
+    height: 66px;
 }
 
 .cart-links a {
-	margin-right: 8px;
+    margin-right: 8px;
 }
 
 .cart-menu {
-	margin-top: 6px;
-	border-top: 1px solid #ddd;
-	font: normal 11pt Segoe UI;
-	padding: 3px;
+    margin-top: 6px;
+    border-top: 1px solid #ddd;
+    font: normal 11pt Segoe UI;
+    padding: 3px;
 }
 
 .cart-menu td {
-	text-align: center;
+    text-align: center;
 }
 
 .cart-menu td:hover {
-	color: #2AA4FE;
-	text-decoration: underline;
+    color: #2AA4FE;
+    text-decoration: underline;
 }
 
 #cart a {
-	color: #3E97F9;
+    color: #3E97F9;
 }
 
 #cart a:hover {
-	text-decoration: underline;
+    text-decoration: underline;
 }
 
 #console {
-	padding: 6px;
-	font: normal 11pt Consolas;
-	max-height: 35px;
-	overflow-y: auto;
-	max-width: 600px;
+    padding: 6px;
+    font: normal 11pt Consolas;
+    max-height: 35px;
+    overflow-y: auto;
+    max-width: 600px;
 }
 
 .cart-overflow {
-	min-height: 500px;
-	max-height: 650px;
-	overflow-y: auto;
+    min-height: 500px;
+    max-height: 650px;
+    overflow-y: auto;
 }
 
 .cart-history td {
-	vertical-align: top;
+    vertical-align: top;
 }
 
 .cart-history-box {
-	max-width: 750px;
-	font: normal 10pt Segoe UI;
+    max-width: 750px;
+    font: normal 10pt Segoe UI;
 }
 
 .cart-history td input {
-	width: 100%;
-	box-sizing: border-box;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 label:hover {
-	color: #2AA4FE;
-	text-decoration: underline;
+    color: #2AA4FE;
+    text-decoration: underline;
 }
 
 
 /* Контекстные меню */
 
 .context-menu {
-	display: none;
-	z-index: 10;
-	position: absolute;
-	background: #333;
-	color: #ddd;
-	cursor: default;
-	box-shadow: 1px 1px 8px #000;
+    display: none;
+    z-index: 10;
+    position: absolute;
+    background: #333;
+    color: #ddd;
+    cursor: default;
+    box-shadow: 1px 1px 8px #000;
 }
 
 .context-menu li {
-	padding: 3px;
-	padding-left: 12px;
-	padding-right: 10px;
-	list-style-type: none;
+    padding: 3px;
+    padding-left: 12px;
+    padding-right: 10px;
+    list-style-type: none;
 }
 
 .context-menu li:hover {
-	color: #E6B451
+    color: #E6B451
 }
 
 .modal {
-	display: none;
-	z-index: 9;
-	position: absolute;
-	background: #333;
-	color: #ddd;
-	cursor: default;
-	box-shadow: 1px 1px 8px #000;
+    display: none;
+    z-index: 9;
+    position: absolute;
+    background: #333;
+    color: #ddd;
+    cursor: default;
+    box-shadow: 1px 1px 8px #000;
 }
 
 
 /* Вспомогательные стили */
 
 .hide {
-	display: none;
+    display: none;
 }
 
 .show {
-	display: block;
+    display: block;
 }
 
 .done {
-	color: #03a755;
+    color: #03a755;
 }
 
 .error {
-	color: #ff0000;
+    color: #ff0000;
 }
 
 .small-text {
-	font: normal 10pt Segoe UI;
+    font: normal 10pt Segoe UI;
 }
 
 .sort_up:after {
-	content: "↑"
+    content: "↑"
 }
 
 .sort_down:after {
-	content: "↓"
+    content: "↓"
 }
 
 .unfocused {
-	color: #999;
+    color: #999;
 }
 
 .debug {
-	border: 1px outset #333;
-	border-radius: 3;
-	background: #eee;
-	margin: 10px;
-	padding: 6px;
+    border: 1px outset #333;
+    border-radius: 3;
+    background: #eee;
+    margin: 10px;
+    padding: 6px;
 }
 
 .led {
-	width: 8px;
-	height: 8px;
-	border-radius: 100%;
-	background: #43A85B;
+    width: 8px;
+    height: 8px;
+    border-radius: 100%;
+    background: #43A85B;
 }
 
 .off {
-	background: #777
+    background: #777
 }
 
 .warning {
-	background: #fe4848;
-	animation: blink-warning .5s infinite alternate;
-	-webkit-animation: blink-warning .5s infinite alternate;
+    background: #fe4848;
+    animation: blink-warning .5s infinite alternate;
+    -webkit-animation: blink-warning .5s infinite alternate;
 }
 
 .onwork {
-	background: #E6B451;
-	animation: blink-attention .8s infinite alternate;
-	-webkit-animation: blink-attention .8s infinite alternate;
+    background: #E6B451;
+    animation: blink-attention .8s infinite alternate;
+    -webkit-animation: blink-attention .8s infinite alternate;
 }
 
 @keyframes blink-warning {
-	from {
-		background: transparent
-	}
-	to {
-		background: #fe4848
-	}
+    from {
+        background: transparent
+    }
+    to {
+        background: #fe4848
+    }
 }
 
 @-webkit-keyframes blink-warning {
-	from {
-		background: transparent
-	}
-	to {
-		background: #fe4848
-	}
+    from {
+        background: transparent
+    }
+    to {
+        background: #fe4848
+    }
 }
 
 @keyframes blink-attention {
-	from {
-		background: transparent
-	}
-	to {
-		background: #E6B451
-	}
+    from {
+        background: transparent
+    }
+    to {
+        background: #E6B451
+    }
 }
 
 @-webkit-keyframes blink-attention {
-	from {
-		background: transparent
-	}
-	to {
-		background: #E6B451
-	}
+    from {
+        background: transparent
+    }
+    to {
+        background: #E6B451
+    }
 }
 
 
@@ -503,255 +503,255 @@ label:hover {
 
 .unit,
 .open {
-	transition-property: border-color, color;
-	transition-duration: .15s;
+    transition-property: border-color, color;
+    transition-duration: .15s;
 }
 
 
 /* Иконки */
 
 .icon {
-	display: inline-block;
-	overflow: hidden;
-	text-align: left;
-	padding-left: 24px;
-	width: auto;
-	height: 24px;
-	margin-bottom: -7px;
-	margin-top: -2px;
+    display: inline-block;
+    overflow: hidden;
+    text-align: left;
+    padding-left: 24px;
+    width: auto;
+    height: 24px;
+    margin-bottom: -7px;
+    margin-top: -2px;
 }
 
 .icon {
-	background: url('/devin/img/devin_icons_black.png') no-repeat
+    background: url('/devin/img/devin_icons_black.png') no-repeat
 }
 
 .icon:hover {
-	background: url('/devin/img/devin_icons_blue.png') no-repeat
+    background: url('/devin/img/devin_icons_blue.png') no-repeat
 }
 
 
 /*.u_selected > .g_head .g_info .icon, .u_selected > .g_icon .icon, .enabled.icon { background: url('../img/devin_icons_yellow.png') no-repeat }*/
 
 .ic-add {
-	background-position: 0 0 !important
+    background-position: 0 0 !important
 }
 
 .ic-add-circle-outline {
-	background-position: -24px 0 !important
+    background-position: -24px 0 !important
 }
 
 .ic-album {
-	background-position: -48px 0 !important
+    background-position: -48px 0 !important
 }
 
 .ic-arrow-drop-down {
-	background-position: -72px 0 !important
+    background-position: -72px 0 !important
 }
 
 .ic-arrow-drop-up {
-	background-position: -96px 0 !important
+    background-position: -96px 0 !important
 }
 
 .ic-assignment-ind {
-	background-position: -120px 0 !important
+    background-position: -120px 0 !important
 }
 
 .ic-attach-file {
-	background-position: -144px 0 !important
+    background-position: -144px 0 !important
 }
 
 .ic-battery-charging-full {
-	background-position: 0 -24px !important
+    background-position: 0 -24px !important
 }
 
 .ic-battery-std {
-	background-position: -24px -24px !important
+    background-position: -24px -24px !important
 }
 
 .ic-build {
-	background-position: -48px -24px !important
+    background-position: -48px -24px !important
 }
 
 .ic-cached {
-	background-position: -72px -24px !important
+    background-position: -72px -24px !important
 }
 
 .ic-check {
-	background-position: -96px -24px !important
+    background-position: -96px -24px !important
 }
 
 .ic-check-box {
-	background-position: -120px -24px !important
+    background-position: -120px -24px !important
 }
 
 .ic-check-box-outline {
-	background-position: -144px -24px !important
+    background-position: -144px -24px !important
 }
 
 .ic-clear {
-	background-position: 0 -48px !important
+    background-position: 0 -48px !important
 }
 
 .ic-code {
-	background-position: -24px -48px !important
+    background-position: -24px -48px !important
 }
 
 .ic-computer {
-	background-position: -48px -48px !important
+    background-position: -48px -48px !important
 }
 
 .ic-content-copy {
-	background-position: -72px -48px !important
+    background-position: -72px -48px !important
 }
 
 .ic-content-paste {
-	background-position: -96px -48px !important
+    background-position: -96px -48px !important
 }
 
 .ic-delete {
-	background-position: -120px -48px !important
+    background-position: -120px -48px !important
 }
 
 .ic-desktop-windows {
-	background-position: -144px -48px !important
+    background-position: -144px -48px !important
 }
 
 .ic-exit-to-app {
-	background-position: 0 -72px !important
+    background-position: 0 -72px !important
 }
 
 .ic-expand-less {
-	background-position: -24px -72px !important
+    background-position: -24px -72px !important
 }
 
 .ic-expand-more {
-	background-position: -48px -72px !important
+    background-position: -48px -72px !important
 }
 
 .ic-folder {
-	background-position: -72px -72px !important
+    background-position: -72px -72px !important
 }
 
 .ic-folder-open {
-	background-position: -96px -72px !important
+    background-position: -96px -72px !important
 }
 
 .ic-gavel-black {
-	background-position: -120px -72px !important
+    background-position: -120px -72px !important
 }
 
 .ic-get-app {
-	background-position: -144px -72px !important
+    background-position: -144px -72px !important
 }
 
 .ic-help-outline {
-	background-position: 0 -96px !important
+    background-position: 0 -96px !important
 }
 
 .ic-history {
-	background-position: -24px -96px !important
+    background-position: -24px -96px !important
 }
 
 .ic-info-outline {
-	background-position: -48px -96px !important
+    background-position: -48px -96px !important
 }
 
 .ic-memory {
-	background-position: -72px -96px !important
+    background-position: -72px -96px !important
 }
 
 .ic-menu {
-	background-position: -96px -96px !important
+    background-position: -96px -96px !important
 }
 
 .ic-more-vert {
-	background-position: -120px -96px !important
+    background-position: -120px -96px !important
 }
 
 .ic-open-with {
-	background-position: -144px -96px !important
+    background-position: -144px -96px !important
 }
 
 .ic-person {
-	background-position: 0 -120px !important
+    background-position: 0 -120px !important
 }
 
 .ic-plus-one {
-	background-position: -24px -120px !important
+    background-position: -24px -120px !important
 }
 
 .ic-power-settings-new {
-	background-position: -48px -120px !important
+    background-position: -48px -120px !important
 }
 
 .ic-print {
-	background-position: -72px -120px !important
+    background-position: -72px -120px !important
 }
 
 .ic-redo {
-	background-position: -96px -120px !important
+    background-position: -96px -120px !important
 }
 
 .ic-router {
-	background-position: -120px -120px !important
+    background-position: -120px -120px !important
 }
 
 .ic-rss-feed {
-	background-position: -144px -120px !important
+    background-position: -144px -120px !important
 }
 
 .ic-save {
-	background-position: 0 -144px !important
+    background-position: 0 -144px !important
 }
 
 .ic-scanner {
-	background-position: -24px -144px !important
+    background-position: -24px -144px !important
 }
 
 .ic-search {
-	background-position: -48px -144px !important
+    background-position: -48px -144px !important
 }
 
 .ic-settings {
-	background-position: -72px -144px !important
+    background-position: -72px -144px !important
 }
 
 .ic-settings-input-component {
-	background-position: -96px -144px !important
+    background-position: -96px -144px !important
 }
 
 .ic-speaker {
-	background-position: -120px -144px !important
+    background-position: -120px -144px !important
 }
 
 .ic-tab {
-	background-position: -144px -144px !important
+    background-position: -144px -144px !important
 }
 
 .ic-tab-unselected {
-	background-position: 0 -168px !important
+    background-position: 0 -168px !important
 }
 
 .ic-tune {
-	background-position: -24px -168px !important
+    background-position: -24px -168px !important
 }
 
 .ic-undo {
-	background-position: -48px -168px !important
+    background-position: -48px -168px !important
 }
 
 .ic-update {
-	background-position: -72px -168px !important
+    background-position: -72px -168px !important
 }
 
 .ic-usb {
-	background-position: -96px -168px !important
+    background-position: -96px -168px !important
 }
 
 .ic-wifi {
-	background-position: -120px -168px !important
+    background-position: -120px -168px !important
 }
 
 .ic-wifi-tethering {
-	background-position: -144px -168px !important
+    background-position: -144px -168px !important
 }
