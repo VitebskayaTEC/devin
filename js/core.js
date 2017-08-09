@@ -3,7 +3,10 @@
 Поясняющий текст указывается через атрибут def для каждого из текстовых полей
 */
 $("input.def")
-	.each(function() { this.setAttribute("placeholder", this.getAttribute("def")); _blur(this) })
+	.each(function() {
+		this.setAttribute("placeholder", this.getAttribute("def"));
+		_blur(this)
+	})
 	.on("focus", function() { _focus(this) })
 	.on("blur", function() { _blur(this) });
 
@@ -81,14 +84,14 @@ function _menu(obj) {
 	clearTimeout(when);
 
 	var menu = document.getElementById(obj.getAttribute("menu"));
-	menu.onmouseleave = function () { when = setTimeout(function () { $(menu).fadeOut(100); }, 1000); }
-	menu.onmouseenter = function () { clearTimeout(when); }
-	menu.onclick = function () { $(menu).fadeOut(100); }
+	menu.onmouseleave = function() { when = setTimeout(function() { $(menu).fadeOut(100); }, 1000); }
+	menu.onmouseenter = function() { clearTimeout(when); }
+	menu.onclick = function() { $(menu).fadeOut(100); }
 	menu.style.top = ($(obj).offset().top + 6) + "px";
 	menu.style.left = ($(obj).offset().left + 2) + "px";
 	$(menu).fadeIn(100);
 
-	menuId = $(obj).closest(".unit").attr("id") ? $(obj).closest(".unit").attr("id") : $(obj).closest(".unit").find(".title-wrapper:first-child").attr("id") ;
+	menuId = $(obj).closest(".unit").attr("id") ? $(obj).closest(".unit").attr("id") : $(obj).closest(".unit").find(".title-wrapper:first-child").attr("id");
 }
 
 
@@ -132,7 +135,7 @@ function _group() {
 	$(".hide_first").removeClass("hide_first");
 }
 
-var path = document.location.pathname.split("/"), 
+var path = document.location.pathname.split("/"),
 	url = path[path.length - 2];
 
 function groupCreate() {
@@ -157,23 +160,24 @@ function groupBeforeMove() {
 	exceptions.push(menuId); // Сама перемещаемая группа
 	exceptions.push($(obj).parent().closest(".group").attr("id")); // Группа, в которой аходится перемещаемая (на 1 уровне вложенности)
 	$(obj).find(".group").each(function() { exceptions.push(this.id) }); // Все группы, вложенные в перемещаемую 
-	
+
 	// Составляем список доступных вариантов для перемещения
 	var select = "<option value='0'>Расположить отдельно";
 	$("div.group").each(function() {
 		var exception = false;
-		for (var i = 0; i < exceptions.length; i++) if (this.id == exceptions[i]) exception = true;
+		for (var i = 0; i < exceptions.length; i++)
+			if (this.id == exceptions[i]) exception = true;
 		if (!exception) {
 			select += "<option value='" + this.id + "'>" + $(this).children(".caption").find("th").html();
 		}
 	});
 
-	_modal(obj, "<select>" + select + "</select>", function() { 
+	_modal(obj, "<select>" + select + "</select>", function() {
 		if (menuId.indexOf("off") > -1)
 			writeoffMove();
 		else if (menuId.indexOf("-") > -1)
 			computerMove();
-		else 
+		else
 			groupMove();
 	});
 }
@@ -214,8 +218,8 @@ Drag-n-drop функционал
 
 $("#cart")
 	.draggable().draggable("disable")
-	.on("mousedown", ".cart-header", function () { $("#cart").draggable("enable"); })
-	.on("mouseup", ".cart-header", function () { $("#cart").draggable("disable"); });
+	.on("mousedown", ".cart-header", function() { $("#cart").draggable("enable"); })
+	.on("mouseup", ".cart-header", function() { $("#cart").draggable("disable"); });
 
 
 /*
@@ -245,31 +249,51 @@ function _sort(th) {
 		}
 	}
 
-	var table = th.parentNode.parentNode.parentNode, tbody = table.getElementsByTagName("tbody")[0], rowsArray = [], type = th.getAttribute("data-type") || "string", way = th.getAttribute("data-way"), colNum = th.cellIndex, compare;
+	var table = th.parentNode.parentNode.parentNode,
+		tbody = table.getElementsByTagName("tbody")[0],
+		rowsArray = [],
+		type = th.getAttribute("data-type") || "string",
+		way = th.getAttribute("data-way"),
+		colNum = th.cellIndex,
+		compare;
 	for (var i = 0; i < tbody.rows.length; i++) rowsArray.push(tbody.rows[i]);
 	switch (type) {
 		case 'number':
-			compare = function (rowA, rowB) {
+			compare = function(rowA, rowB) {
 				if (way == "up") { return rowA.cells[colNum].innerHTML - rowB.cells[colNum].innerHTML; } else { return rowB.cells[colNum].innerHTML - rowA.cells[colNum].innerHTML; };
-			}; break;
+			};
+			break;
 		case 'string':
-			compare = function (rowA, rowB) {
+			compare = function(rowA, rowB) {
 				if (way == "up") { return rowA.cells[colNum].innerHTML > rowB.cells[colNum].innerHTML ? 1 : -1; } else { return rowB.cells[colNum].innerHTML > rowA.cells[colNum].innerHTML ? 1 : -1; }
-			}; break;
+			};
+			break;
 		case 'date':
-			compare = function (rowA, rowB) {
-				var a = +to_date(rowA.cells[colNum].innerHTML), b = +to_date(rowB.cells[colNum].innerHTML);
+			compare = function(rowA, rowB) {
+				var a = +to_date(rowA.cells[colNum].innerHTML),
+					b = +to_date(rowB.cells[colNum].innerHTML);
 				if (way == "up") { return b > a ? 1 : -1; } else { return a > b ? 1 : -1; }
-			}; break;
+			};
+			break;
 		case "type":
-			compare = function (rowA, rowB) {
+			compare = function(rowA, rowB) {
 				if (way == "up") { return rowA.cells[colNum].querySelector("div").className > rowB.cells[colNum].querySelector("div").className ? 1 : -1; } else { return rowB.cells[colNum].querySelector("div").className > rowA.cells[colNum].querySelector("div").className ? 1 : -1; }
-			}; break;
+			};
+			break;
+		case "none":
+			return;
+		case "unique":
+			compare = function(rowA, rowB) { return unique(rowA, rowB, way, colNum) };
 	}
 
 	for (var i = 0, ths = th.parentNode.getElementsByTagName("th"), len = ths.length; i < len; i++) ths[i].className = "";
-	if (way == "up") { th.setAttribute("data-way", "down"); th.className = "sort_down"; }
-	else { th.setAttribute("data-way", "up"); th.className = "sort_up"; }
+	if (way == "up") {
+		th.setAttribute("data-way", "down");
+		th.className = "sort_down";
+	} else {
+		th.setAttribute("data-way", "up");
+		th.className = "sort_up";
+	}
 	rowsArray.sort(compare);
 	table.removeChild(tbody);
 	for (var i = 0; i < rowsArray.length; i++) tbody.appendChild(rowsArray[i]);
@@ -280,16 +304,17 @@ function _sort(th) {
 Реализация истории браузера с учетом ajax вьювов через location.hash
 Функция cartOpenBack отдается на откуп конкретному приложению, для корректной обработки типа открываемого элемента 
 */
-var id = "", hashSet = true;
-		
+var id = "",
+	hashSet = true;
+
 $(window)
-	.on("load", function() {cartOpenByHash()} )
-	.on("hashchange", function() {if (hashSet) cartOpenByHash()} );
+	.on("load", function() { cartOpenByHash() })
+	.on("hashchange", function() { if (hashSet) cartOpenByHash() });
 
 function setHash(hash) {
 	hashSet = false;
-	try {document.location.hash = "##" + hash;} catch(e) {}
-	setTimeout(function() {hashSet = true}, 100);
+	try { document.location.hash = "##" + hash; } catch (e) {}
+	setTimeout(function() { hashSet = true }, 100);
 }
 
 function cartOpen(node) {
@@ -300,10 +325,10 @@ function cartOpen(node) {
 
 function cartOpenByHash() {
 	var hash = this.location.hash;
-	if (hash.indexOf("##") > -1 && hash != "##null") { 
-		id = hash.replace("##", ""); 
-		try {cartOpenBack();} catch(e) {}
-	} else try {cartClose();} catch(e) {}
+	if (hash.indexOf("##") > -1 && hash != "##null") {
+		id = hash.replace("##", "");
+		try { cartOpenBack(); } catch (e) {}
+	} else try { cartClose(); } catch (e) {}
 }
 
 function cartClose() {
@@ -325,7 +350,7 @@ $(".view")
 
 var selected = [];
 
-function setSelection(node) {	
+function setSelection(node) {
 	node.checked ? addSelection(node) : removeSelection(node);
 	selectionPanel();
 }
@@ -335,7 +360,7 @@ function addSelection(node) {
 	$(node).addClass("selection");
 }
 
-function removeSelection(node) { 
+function removeSelection(node) {
 	var selectedId = node.parentNode.parentNode.id;
 	for (var i = 0; i < selected.length; i++) {
 		if (selected[i] == selectedId) {
@@ -398,6 +423,6 @@ function selectionToForm(name, separate) {
 
 
 function closeExportsPanel() {
-    $('#excelExports').slideUp(100);
-    document.getElementById("excelExportsLink").innerHTML = "";
+	$('#excelExports').slideUp(100);
+	document.getElementById("excelExportsLink").innerHTML = "";
 }

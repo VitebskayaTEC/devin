@@ -34,7 +34,7 @@
 								sql = sql & ", "
 								text = text & ", "
 							end if
-							sql = sql & rs(i).name & " = '" & newValue & "'"
+							sql = sql & rs(i).name & " = '" & DateToSql(newValue) & "'"
 							text = text & "дата установки с [" & tempValue & "] на [" & newValue & "]"
 						end if
 					end if				

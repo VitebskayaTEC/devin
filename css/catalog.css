@@ -19,7 +19,8 @@
 	max-width: 600px;
 }
 
-.icon {
+
+/* .icon {
 	display: inline-block;
 	background: url('/devin/img/catalog_sprite.png') no-repeat;
 	overflow: hidden;
@@ -39,4 +40,4 @@
 
 .ic-clear {
 	background-position: -0px -24px!important;
-}
+} */
