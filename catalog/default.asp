@@ -15,9 +15,7 @@
 <body>
 
 <% 
-	menu("<li><a href='/devin/analyze/'>Расход картриджей</a>" _
-		& "<li><a onclick='createPrinter()' actions='createPrinter'>Создать принтер</a>" _
-		& "<li><a onclick='createCartridge()' actions='createCartridge'>Создать картридж</a>")
+	menu("<li><input onkeyup='search(this)' def='Поиск' class='def' value=''/><li><a class='has-icon' onmousedown='_menu(this)' menu='main'><div class='icon ic-menu'></div></a>")
 
 	dim conn : 	set conn = server.createObject("ADODB.Connection")		
 	dim rs : 	set rs = server.createObject("ADODB.Recordset")
@@ -26,7 +24,7 @@
 	response.write "<div class='view'><table><tr><td><div class='unit'><table class='caption'><tr><th>Принтеры</tr></table>"	
 		rs.open "SELECT N, Caption FROM PRINTER ORDER BY Caption", conn
 		if not rs.eof then
-			response.write "<table class='items'><thead><tr><th><input class='def' def='найти...' onkeyup='_search(this)' /></tr></thead><tbody>"
+			response.write "<table class='items'><tbody>"
 			do while not rs.eof
 				response.write "<tr><td actions='openPrinterCart' id='prn" & rs(0) & "'>" & rs(1) & "</tr>"
 				rs.moveNext
@@ -39,7 +37,7 @@
 	response.write "</div><td width='50%'><div class='unit'><table class='caption'><tr><th>Картриджи</tr></table>"
 		rs.open "SELECT N, Caption FROM CARTRIDGE ORDER BY Caption", conn
 		if not rs.eof then
-			response.write "<table class='items'><thead><tr><th><input class='def' def='найти...' onkeyup='_search(this)' /></tr></thead><tbody>"
+			response.write "<table class='items'><tbody>"
 			do while not rs.eof
 				response.write "<tr><td actions='openCartridgeCart' id='cart" & rs(0) & "'>" & rs(1) & "</tr>"
 				rs.moveNext
@@ -55,6 +53,12 @@
 	set conn = nothing
 %>
 	<div id="cart" class='cart-new'></div>
+
+	<ul class='context-menu' id='main'>
+		<li onclick='location="/devin/analyze/"'>Расход картриджей
+		<li onclick='createPrinter()'>Создать принтер
+		<li onclick='createCartridge()'>Создать картридж
+	</ul>
 
 	<script src='/devin/js/jquery-1.12.4.min.js'></script>
 	<script src="/devin/js/jquery-ui.min.js"></script>

@@ -1,0 +1,22 @@
+input[type="number"] {
+	width: 50px;
+}
+
+.items tbody tr:hover {
+	color: #000;
+}
+
+td a {
+	text-decoration: none;
+	color: #000;
+}
+
+td a:hover {
+	color: #007bd6;
+	text-decoration: underline;
+}
+
+#export {
+	top: 0;
+	left: 800px;
+}

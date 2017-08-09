@@ -51,6 +51,7 @@
 		<li onclick='cartCreate()'>Создать карточку устройства
 		<li onclick='groupCreate()'>Создать группу
 		<li onclick='history()'>История всех событий DEVIN
+		<li onclick='location="/devin/analyze/"'>Анализ расхода картриджей
 		<li onclick='loadCompare()'>Сверка с 1С
 	</ul>
 	<ul class='context-menu' id='computer'>
