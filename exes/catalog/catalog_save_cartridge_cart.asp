@@ -5,7 +5,7 @@
 	dim id : id = replace(request.queryString("id"), "cart", "")
 	conn.open everest
 
-	rs.open "SELECT Caption, Price, Type, Color FROM CARTRIDGE WHERE N = " & id, conn
+	rs.open "SELECT Caption, Price, Type, Color, Description FROM CARTRIDGE WHERE N = " & id, conn
 	if rs.eof then
 		response.write "<div class='error'>Не найдены данные по данному ID</div>"
 	else
@@ -51,6 +51,13 @@
 		if rs(3) <> val or isnull(rs(3)) then
 			if sql <> "" then sql = sql & ", "
 			sql = sql & "Color = '" & val & "'"
+		end if
+
+		' Описание
+		val = DecodeUTF8(request.form("Description"))
+		if rs(4) <> val or isnull(rs(4)) then
+			if sql <> "" then sql = sql & ", "
+			sql = sql & "Description = '" & val & "'"
 		end if
 
 		if not ifErr then

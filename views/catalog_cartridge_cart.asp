@@ -17,12 +17,12 @@
 	conn.open everest
 
 	' Получаем данные о картридже
-	dim cartridge(3), i
-	rs.open "SELECT Caption, Price, Type, Color FROM CARTRIDGE WHERE N = " & id, conn
+	dim cartridge(4), i
+	rs.open "SELECT Caption, Price, Type, Color, Description FROM CARTRIDGE WHERE N = " & id, conn
 		if rs.eof then 
 			drop("Нет данных по данному ID")
 		else
-			for i = 0 to 3 
+			for i = 0 to 4
 				cartridge(i) = rs(i)
 			next
 		end if
@@ -55,9 +55,46 @@
 	response.write "<div class='cart-header'>" & cartridge(0) & "</div>" _
 		& "<div class='cart-overflow'><form id='form'><table class='cart-table'>" _
 		& "<tr><td>Наименование<td><input name='Caption' value='" & cartridge(0) & "' /></tr>" _
-		& "<tr><td>Типовая стоимость<td><input name='Price' value='" & cartridge(1) & "' /></tr>"
+		& "<tr><td>Типовая стоимость<td><input name='Price' type='number' style='width:100px' value='" & cartridge(1) & "' />&nbsp;&nbsp;"
 
-	response.write "<tr><td>Тип<td><select name='Type'><option value='0'>?"
+	dim prices(100), uchet, price, fixcost, Nprices
+	dim minBaseValue: minBaseValue = 23
+	rs.open "SELECT uchet, Price FROM SKLAD WHERE (ID_cart = " & id & ")", conn
+	if not rs.eof then
+		response.write ""
+		Nprices = 0
+		do while not rs.eof
+			uchet = rs(0)
+			price = rs(1)
+			
+
+			' Если счет учета - материалы, то стоимость берется с половинным коэффициентом, т.к. часть стоимости возмещена
+			if uchet = "10.5.1" then fixcost = 1.2 else fixcost = 2.4
+			' Если стоимость нулевая, то берется базовая величина
+			if price = 0 then price = 27.6 else price = price * fixcost
+
+			prices(Nprices) = round(price, 2)
+
+			Nprices = Nprices + 1
+			
+			rs.moveNext
+		loop
+
+		price = 0
+		for i = 0 to Nprices
+			price = price + prices(i)
+		next
+
+		price = round(( price / Nprices ), 2)
+		response.write "Вычислено: ~" & price & " б.р."
+	else 
+		response.write "Данных о стоимости нет"
+	end if
+	rs.close
+
+
+
+	response.write "</tr><tr><td>Тип<td><select name='Type'><option value='0'>?"
 	for i = 0 to Ntypes - 1
 		if cartridge(2) = types(i, 0) then 
 			response.write "<option value='" & types(i, 0) & "' selected>" & types(i, 1)
@@ -73,7 +110,9 @@
 			response.write "<option value='" & colors(i, 0) & "'>" & colors(i, 1)
 		end if
 	next
-	response.write "</select></tr></table></form><div class='cart-links'>"
+	response.write "</select></tr>" _
+	& "<tr><td>Описание<td><textarea name='Description'>" & cartridge(4) & "</textarea></tr>" _
+	& "</table></form><div class='cart-links'>"
 
 	' Связи
 	response.write "<table class='cart-table catalog-compares'><tr><td><br /><b>Связи с типовыми принтерами:</b><td></tr>"
@@ -92,7 +131,17 @@
 
 	' Получаем вариант для связей
 	response.write "<tr><td>Добавить связь: <select id='new-compare'><option value='0'>?"
-	rs.open "SELECT PRINTER.N, PRINTER.Caption FROM OFFICE INNER JOIN PRINTER ON OFFICE.Printer = PRINTER.N INNER JOIN CARTRIDGE ON OFFICE.Cartridge = CARTRIDGE.N WHERE (CARTRIDGE.N <> " & id & ") ORDER BY PRINTER.Caption"
+	rs.open "SELECT PRINTER.N, PRINTER.Caption " _
+		& "FROM PRINTER  " _
+		& "WHERE PRINTER.N NOT IN ( " _
+			& "SELECT PRINTER.N  " _
+			& "FROM PRINTER  " _
+			& "INNER JOIN OFFICE ON OFFICE.Printer = PRINTER.N " _
+			& "INNER JOIN CARTRIDGE ON OFFICE.Cartridge = CARTRIDGE.N " _
+			& "WHERE (CARTRIDGE.N = " & id & ") " _
+			& "GROUP BY PRINTER.N " _
+		& ") " _
+		& "ORDER BY PRINTER.Caption"
 	do while not rs.eof
 		response.write "<option value='" & rs(0) & "'>" & rs(1)
 		rs.moveNext

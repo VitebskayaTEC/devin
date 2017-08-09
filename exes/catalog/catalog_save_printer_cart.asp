@@ -5,14 +5,26 @@
 	dim id : id = replace(request.queryString("id"), "prn", "")
 	conn.open everest
 
-	rs.open "SELECT Caption FROM PRINTER WHERE N = " & id, conn
+	rs.open "SELECT Caption, Description FROM PRINTER WHERE N = " & id, conn
 	if rs.eof then
 		response.write "<div class='error'>Не найдены данные по данному ID</div>"
 	else
-		dim caption : caption = rs(0)
-		dim newCaption : newCaption = DecodeUTF8(request.form("Caption"))
-		if newCaption <> caption then
-			conn.execute "UPDATE PRINTER SET Caption = '" & newCaption & "' WHERE N = " & id
+		dim val, sql
+
+		val = DecodeUTF8(request.form("Caption"))
+		if rs(0) <> val or isnull(rs(0)) then
+			if sql <> "" then sql = sql & ", "
+			sql = sql & "Description = '" & val & "'"
+		end if
+		
+		val = DecodeUTF8(request.form("Description"))
+		if rs(1) <> val or isnull(rs(1)) then
+			if sql <> "" then sql = sql & ", "
+			sql = sql & "Description = '" & val & "'"
+		end if
+		
+		if sql <> "" then
+			conn.execute "UPDATE PRINTER SET " & sql & " WHERE N = " & id
 			response.write "<div class='done'>Сохранено</div>"
 		else 
 			response.write "<div class='done'>Нет изменений</div>"

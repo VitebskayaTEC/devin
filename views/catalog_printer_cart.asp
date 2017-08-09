@@ -18,12 +18,13 @@
 	conn.open everest
 
 	' Получаем название принтера
-	rs.open "SELECT Caption FROM PRINTER WHERE N = " & id, conn
+	rs.open "SELECT Caption, Description FROM PRINTER WHERE N = " & id, conn
 	if rs.eof then drop("Нет данных по данному ID")
-	dim caption : caption = rs(0)
+	dim caption: caption = rs(0)
 	response.write "<div class='cart-header'>" & caption & "</div>" _
 		& "<div class='cart-overflow'><form id='form'><table class='cart-table'>" _
 		& "<tr><td>Наименование<td><input name='Caption' value='" & caption & "' /></tr>" _
+		& "<tr><td>Описание<td><textarea name='Description'>" & rs(1) & "</textarea></tr>" _
 		& "</table></form>"
 	rs.close
 
@@ -47,7 +48,17 @@
 
 	' Получаем вариант для связей
 	response.write "<tr><td>Добавить связь: <select id='new-compare'><option value='0'>?"
-	sql = "SELECT CARTRIDGE.N, CARTRIDGE.Caption FROM OFFICE INNER JOIN PRINTER ON OFFICE.Printer = PRINTER.N INNER JOIN CARTRIDGE ON OFFICE.Cartridge = CARTRIDGE.N WHERE (PRINTER.N <> " & id & ") ORDER BY CARTRIDGE.Caption"
+	sql = "SELECT CARTRIDGE.N, CARTRIDGE.Caption " _
+		& "FROM CARTRIDGE  " _
+		& "WHERE CARTRIDGE.N NOT IN ( " _
+			& "SELECT CARTRIDGE.N  " _
+			& "FROM CARTRIDGE  " _
+			& "INNER JOIN OFFICE ON OFFICE.Cartridge = CARTRIDGE.N " _
+			& "INNER JOIN PRINTER ON OFFICE.Printer = PRINTER.N " _
+			& "WHERE (PRINTER.N = " & id & ") " _
+			& "GROUP BY CARTRIDGE.N " _
+		& ") " _
+		& "ORDER BY CARTRIDGE.Caption"
 	'response.write sql
 	rs.open sql, conn
 	do while not rs.eof
