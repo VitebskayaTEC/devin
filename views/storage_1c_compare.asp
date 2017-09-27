@@ -97,7 +97,9 @@
 		if i > 0 then sql = sql & " OR "
 		sql = sql & "(uchet = '" & scores(i) & "')"
 	next
-	sql = "SELECT INum, Name, NCard, Price, Nadd, Nis, Nuse, Nbreak, Date FROM SKLAD WHERE (delit <> 0) AND (" & sql & ")"
+	if sql <> "" then sql = " AND (" & sql & ")" else sql = " AND (1 = 2)"
+	sql = "SELECT INum, Name, NCard, Price, Nadd, Nis, Nuse, Nbreak, Date FROM SKLAD WHERE (delit <> 0)" & sql
+	'response.write sql
 	rs.open sql, conn
 	if not rs.eof then
 		position = 0
