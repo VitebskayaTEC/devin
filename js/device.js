@@ -62,8 +62,12 @@ function cartCreate() {
 
 function cartSave() {
 	$.post("/devin/exes/device/device_save_cart.asp?id=" + id, $("#cart-form").serialize(), function(data) {
-		reload({});
-		document.getElementById("console").innerHTML = "<div class='done'>" + data + "</div>";
+		if (data.indexOf('error: ') == -1) {
+			reload({});
+			document.getElementById("console").innerHTML = "<div class='done'>" + data + "</div>";
+		} else {
+			document.getElementById("console").innerHTML = "<div class='error'>" + data + "</div>";
+		}
 	});
 }
 
@@ -113,15 +117,6 @@ function sort(node) {
 	else
 		reload({ key: node.cellIndex, direction: 0 });
 }
-
-/* function search(input) {
-	if (input.value == "")
-		reload({ text: "" });
-	else {
-		var e = event || window.event;
-		if (e.keyCode == 13) reload({ text: input.value });
-	}
-} */
 
 $("input.def").on("keyup", function(e) {
 	if (e.keyCode == 13) reload({ text: this.value });

@@ -159,35 +159,21 @@
 			if rs.eof then
 				drop("Не найдена карточка основного средства")
 			else
-				dim inventory: inventory = trim(rs(0))
-				dim description: description = trim(rs(1))
+				dim inventory:     inventory     = trim(rs(0))
+				dim description:   description   = trim(rs(1))
 				dim description1c: description1c = trim(rs(2))
+				dim valueText:     valueText     = ""
 				select case inventory
-					case "075755"
-						if description1c = "" or isNull(description1c) then
-							sheet.cells(30, 17).value = "Оборудование ПТК АСУ - " & description
-						else
-							sheet.cells(30, 17).value = "Оборудование ПТК АСУ - " & description1c
-						end if
-					case "075750"
-						if description1c = "" or isNull(description1c) then
-							sheet.cells(30, 17).value = "Оборудование корпоративной сети - " & description
-						else
-							sheet.cells(30, 17).value = "Оборудование корпоративной сети - " & description1c
-						end if
-					case "075155"
-						if description1c = "" or isNull(description1c) then
-							sheet.cells(30, 17).value = "Оборудование АСКУЭ ММПГ - " & description
-						else
-							sheet.cells(30, 17).value = "Оборудование АСКУЭ ММПГ - " & description1c
-						end if
-					case else
-						if description1c = "" or isNull(description1c) then
-							sheet.cells(30, 17).value = description
-						else
-							sheet.cells(30, 17).value = description1c
-						end if
+					case "075755" valueText = "Оборудование ПТК АСУ: "
+					case "075750" valueText = "Оборудование корпоративной сети: "
+					case "075155" valueText = "Оборудование АСКУЭ ММПГ: "
+					case else     valueText = ""
 				end select
+				if description1c = "" or isNull(description1c) then
+					sheet.cells(30, 17).value = valueText & description
+				else
+					sheet.cells(30, 17).value = valueText & description1c
+				end if
 				sheet.cells(32, 17).value = inventory
 				sheet.cells(33, 17).value = trim(rs(3))
 				sheet.cells(34, 17).value = ns
@@ -229,6 +215,16 @@
 				sheet.cells(28, 49).value = wParams(5)
 			end if
 
+			rs.open "SELECT TOP (1) PassportGold, PassportSilver, PassportPlatinum, PassportMPG FROM DEVICE WHERE (number_device = '" & number_device & "')", conn
+			for i = 0 to 3
+				ns = rs(i)
+				if isNumeric(ns) then
+					sheet.cells(64 + i, 60).value = replace(ns, ",", ".")
+				else
+					sheet.cells(64 + i, 60).value = "0.000000"
+				end if
+			next
+			rs.close
 
 	end select
 

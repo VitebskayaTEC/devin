@@ -6,7 +6,7 @@
 	dim conn : set conn = server.createobject("ADODB.Connection")
 	conn.open everest
 
-	dim sql, text, name
+	dim sql, text, name, str
 	dim newID : newID = split(id, "-")
 	dim isNewID : isNewID = false
 
@@ -28,21 +28,21 @@
 					if not isdate(newValue) then
 						response.write "error: Дата введена в некорректном формате. Ожидается дд.мм.гггг"
 						response.end
-					else 
+					else
 						if cdate(tempValue) <> cdate(newValue) then
-							if sql <> "" then 
+							if sql <> "" then
 								sql = sql & ", "
 								text = text & ", "
 							end if
 							sql = sql & rs(i).name & " = '" & DateToSql(newValue) & "'"
 							text = text & "дата установки с [" & tempValue & "] на [" & newValue & "]"
 						end if
-					end if				
+					end if
 				elseif (rs(i).name = "class_device") and (cstr(tempValue) <> cstr(newValue)) then
 					' Подбор нового ID
 					newID(1) = newValue
 					isNewID = true
-					if sql <> "" then 
+					if sql <> "" then
 						sql = sql & ", "
 						text = text & ", "
 					end if
@@ -52,79 +52,99 @@
 					' Подбор нового ID
 					newID(0) = newValue
 					isNewID = true
-					if sql <> "" then 
+					if sql <> "" then
 						sql = sql & ", "
 						text = text & ", "
 					end if
 					sql = sql & rs(i).name & " = '" & newValue & "'"
 					text = text & "инвентарный номер с [" & tempValue & "] на [" & newValue & "]"
+				elseif rs(i).name = "PassportGold" or rs(i).name = "PassportSilver" or rs(i).name = "PassportPlatinum" or rs(i).name = "PassportMPG" then
+					select case rs(i).name
+						case "PassportGold":     str = "золото по паспорту"
+						case "PassportSilver":   str = "серебро по паспорту"
+						case "PassportPlatinum": str = "платина по паспорту"
+						case "PassportMPG":      str = "МПГ по паспорту"
+					end select
+					if isNumeric(newValue) or isNull(newValue) or newValue = "" then
+						if cstr(tempValue) <> cstr(newValue) then
+							if sql <> "" then
+								sql = sql & ", "
+								text = text & ", "
+							end if
+							sql = sql & rs(i).name & " = '" & newValue & "'"
+							text = text & str & " с [" & tempValue & "] на [" & newValue & "]"
+						end if
+					else
+						response.write "error: Величина '" & str & "' введена в некорректном формате. Ожидается число в формате *,******"
+						response.end
+					end if
 				elseif cstr(tempValue) <> cstr(newValue) then
 					' Простое обновление значения
-					if sql <> "" then 
+					if sql <> "" then
 						sql = sql & ", "
 						text = text & ", "
 					end if
 					sql = sql & rs(i).name & " = '" & newValue & "'"
-					select case rs(i).name 
-						case "name" 
+					select case rs(i).name
+						case "name"
 							text = text & "наименование с [" & tempValue & "] на [" & newValue & "]"
 
-						case "number_comp" 
+						case "number_comp"
 							text = text & "компьютер с [" & tempValue & "] на [" & newValue & "]"
-						
+
 						case "description1C"
 							text = text & "подпись в 1С с [" & tempValue & "] на [" & newValue & "]"
-						
+
 						case "description"
 							text = text & "описание с [" & tempValue & "] на [" & newValue & "]"
-						
+
 						case "MOL"
 							text = text & "м.о.л. с [" & tempValue & "] на [" & newValue & "]"
-						
+
 						case "number_serial"
 							text = text & "серийный номер с [" & tempValue & "] на [" & newValue & "]"
-						
+
 						case "number_passport"
 							text = text & "паспортный номер с [" & tempValue & "] на [" & newValue & "]"
-						
+
 						case "attribute"
 							text = text & "расположение с [" & tempValue & "] на [" & newValue & "]"
-						
+
 						case "OS"
 							text = text & "ОС с [" & tempValue & "] на [" & newValue & "]"
-						
+
 						case "OSKEY"
 							text = text & "ключ ОС с [" & tempValue & "] на [" & newValue & "]"
-						
+
 						case "PRKEY"
 							text = text & "ключ софта с [" & tempValue & "] на [" & newValue & "]"
-						
+
 						case "service_tag"
 							text = text & "сервис-тег с [" & tempValue & "] на [" & newValue & "]"
-						
+
 						case "ID_prn"
 							text = text & "типовой принтер (ID) с [" & tempValue & "] на [" & newValue & "]"
-						
+
 						case "check1C"
 							if cstr(newValue) = "1" then
 								text = text & "сверен с 1С с [нет] на [да]"
 							else
 								text = text & "сверен с 1С с [да] на [нет]"
 							end if
-						
+
 						case "checkEverest"
 							if cstr(newValue) = "1" then
 								text = text & "сверен с AIDA с [нет] на [да]"
 							else
 								text = text & "сверен с AIDA с [да] на [нет]"
 							end if
-						
+
 						case "DMI_UUID"
 							text = text & "AIDA UUID с [" & tempValue & "] на [" & newValue & "]"
-						
+
 						case "G_ID"
 							text = text & "папка (ID) с [" & tempValue & "] на [" & newValue & "]"
-						
+
 						case "used"
 							if cstr(newValue) = "1" then
 								text = text & "используется с [нет] на [да]"
@@ -140,7 +160,7 @@
 
 	if isNewID then
 		rs.open "SELECT TOP (1) number_device FROM DEVICE WHERE (inventory LIKE '%" & newID(0) & "%') AND (class_device = '" & newID(1) & "') ORDER BY number_device DESC", conn
-		if sql <> "" then 
+		if sql <> "" then
 			sql = sql & ", "
 			text = text & ", "
 		end if
@@ -151,7 +171,7 @@
 			if cstr(cint(newID(2)) + 1) < 10 then newIDtext = newIDtext & "0"
 			newIDtext = newIDtext & cstr(cint(newID(2)) + 1)
 		else
-			newIDtext = newID(0) & "-" & newID(1) & "-01"			
+			newIDtext = newID(0) & "-" & newID(1) & "-01"
 		end if
 		rs.close
 		sql = sql & "number_device = '" & newIDtext & "'"
@@ -160,18 +180,18 @@
 		text = text & "ID устройства изменен c [" & id & "] на [" & newIDtext & "]"
 	end if
 
-	if sql <> "" then 		
+	if sql <> "" then
 		sql = "UPDATE DEVICE SET " & sql & " WHERE (number_device = '" & id & "')"
 		text = "Обновлена карточка устройства " & name & " [" & id & "], изменены: " & text
 		conn.execute sql
 		sql = log(id, text)
 		response.write text
 		if isNewID then response.write "<br /><a href='/devin/device/?id=" & newIDtext & "'>Обновить страницу, чтобы обновить ID устройства в общем списке</a>"
-	else 
+	else
 		response.write "Изменений не было"
 	end if
 
 	set rs = nothing
-	conn.close	
+	conn.close
 	set conn = nothing
 %>
