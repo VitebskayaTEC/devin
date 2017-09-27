@@ -103,7 +103,7 @@
 				sheet.range("H21:H" & (21 + i)).HorizontalAlignment = -4131 'лево для H
 				sheet.range("F21:G" & (21 + i)).HorizontalAlignment = -4152 'право для цен
 				for j = 0 to i - 1
-					sum = sum + CCur(f(j, 3))
+					sum = sum + CCur(f(j, 2)) * CCur(f(j, 3))
 				next
 				sheet.cells(21 + i, 7).Value = FormatNumber(sum, , -1)
 				sheet.range("G21:G" & (22 + i)).HorizontalAlignment = -4152 'право для цен
