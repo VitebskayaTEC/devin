@@ -114,14 +114,18 @@ function sort(node) {
 		reload({ key: node.cellIndex, direction: 0 });
 }
 
-function search(input) {
+/* function search(input) {
 	if (input.value == "")
 		reload({ text: "" });
 	else {
 		var e = event || window.event;
 		if (e.keyCode == 13) reload({ text: input.value });
 	}
-}
+} */
+
+$("input.def").on("keyup", function(e) {
+	if (e.keyCode == 13) reload({ text: this.value });
+})
 
 function loadCompare() {
 	$("#excl").slideToggle(100);
