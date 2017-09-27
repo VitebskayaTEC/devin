@@ -14,7 +14,7 @@
 		val = DecodeUTF8(request.form("Caption"))
 		if rs(0) <> val or isnull(rs(0)) then
 			if sql <> "" then sql = sql & ", "
-			sql = sql & "Description = '" & val & "'"
+			sql = sql & "Caption = '" & val & "'"
 		end if
 		
 		val = DecodeUTF8(request.form("Description"))
