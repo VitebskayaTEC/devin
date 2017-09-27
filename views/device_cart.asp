@@ -16,8 +16,8 @@ Set rs = Server.CreateObject("ADODB.Recordset")
 
 dim id : id = Request.QueryString("id")
 
-dim size : size = 21
-dim device(21, 2), temp, cls
+dim size : size = 22
+dim device(22, 2), temp, cls
 
 'Получаем данные по устройству
 rs.open "SELECT * FROM DEVICE WHERE (number_device = '" & id & "')", conn
@@ -93,6 +93,7 @@ response.write "<tr><td>М.О.Л.<td><input name='mol' value='" & getValue("mol") &
 response.write "<tr><td>Расположение<td><input name='attribute' value='" & getValue("attribute") & "' /></tr>"
 response.write "<tr><td>Серийный номер<td><input name='number_serial' value='" & getValue("number_serial") & "' /></tr>"
 response.write "<tr><td>Паспортный номер<td><input name='number_passport' value='" & getValue("number_passport") & "' /></tr>"
+response.write "<tr><td>Сервис-тег<td><input name='service_tag' value='" & getValue("service_tag") & "' /></tr>"
 
 response.write "<tr><td>Дата установки<td><input name='install_date' style='width: 100px' value='" & datevalue(getValue("install_date")) & "' /> <a><b>" & datediff("h", datevalue(getValue("install_date")), datevalue(date)) & " часов</b></a></tr>"	
 

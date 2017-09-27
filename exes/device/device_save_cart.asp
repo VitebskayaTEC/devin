@@ -99,6 +99,9 @@
 						case "PRKEY"
 							text = text & "ключ софта с [" & tempValue & "] на [" & newValue & "]"
 						
+						case "service_tag"
+							text = text & "сервис-тег с [" & tempValue & "] на [" & newValue & "]"
+						
 						case "ID_prn"
 							text = text & "типовой принтер (ID) с [" & tempValue & "] на [" & newValue & "]"
 						
