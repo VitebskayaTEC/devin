@@ -1,19 +1,19 @@
 <!-- #include virtual ="/devin/core/core.inc" -->
-<% 
+<%
 	dim conn, rs, sql, i
 
 	dim id : id = request.querystring("id")
-	
+
 	set conn = server.createObject("ADODB.Connection")
 	set rs = server.createObject("ADODB.Recordset")
 
 
 	' Запрос к данным о списании
 	sql = "SELECT W_Name, W_Type, W_Date, W_Params, W_Description, G_ID, W_Last_Excel, W_Last_Date FROM writeoff WHERE (W_ID = " & id & ")"
-	
+
 	conn.open everest
 	rs.open sql, conn
-	
+
 	if rs.eof then
 		' Списание не найдено
 		response.write "<div class='cart-header'>Объект не найден!</div>" _
@@ -42,11 +42,11 @@
 		rs.open "SELECT O_Alias AS O_Index, O_Alias, O_Name, O_Data FROM catalog_writeoffs ORDER BY O_Name", conn
 		if rs.eof then
 			response.write "Нет доступа к справочнику"
-		else 
+		else
 			response.write "<select name='W_Type'><option value='0'>?"
 			do while not rs.eof
 				if rs("O_Index") = writeoff(1) then
-					response.write "<option selected value='" & rs("O_Alias") & "'>" & rs("O_Name")					
+					response.write "<option selected value='" & rs("O_Alias") & "'>" & rs("O_Name")
 					defParams = rs("O_Data")
 				else
 					response.write "<option value='" & rs("O_Alias") & "'>" & rs("O_Name")
@@ -57,7 +57,7 @@
 		end if
 		rs.close
 		response.write "</tr>"
-		
+
 		' Дата создания списания
 		response.write "<tr><td>Дата создания<td><input name='W_Date' value='" & datevalue(writeoff(2)) & "' style='width: 100px' /></tr>"
 
@@ -71,8 +71,8 @@
 			params = split(writeoff(3), ";;")
 			Nparams = ubound(params)
 		end if
-		if not isnull(defParams) then 
-			if instr(defParams, ";;") > 0 then 
+		if not isnull(defParams) then
+			if instr(defParams, ";;") > 0 then
 				defParams = split(defParams, ";;")
 				defNParams = ubound(defParams)
 			end if
@@ -82,11 +82,11 @@
 				if defParams(i) <> "" then response.write "<tr><td>" & defParams(i) else response.write "<tr><td>{неизвестный параметр}"
 				if not (i > Nparams) and (Nparams <> 0) then
 					response.write "<td><input name='params" & i & "' value='" & params(i) & "' /></tr>"
-				else 
+				else
 					response.write "<td><input name='params" & i & "' value='' /></tr>"
-				end if 
+				end if
 			next
-		else 
+		else
 			response.write "<tr><td>Параметры экспорта<td>В справочнике не определены поля для параметров</tr>"
 		end if
 
@@ -98,11 +98,11 @@
 		rs.open "SELECT G_ID AS O_Index, G_ID, G_Title FROM [GROUP] WHERE (G_Type = 'repair') ORDER BY G_Title", conn
 		if rs.eof then
 			response.write "Нет доступа к справочнику"
-		else 
+		else
 			response.write "<select name='G_ID'><option value='0'>?"
 			do while not rs.eof
 				if rs(0) = writeoff(5) then
-					response.write "<option selected value='" & rs(1) & "'>" & rs(2)					
+					response.write "<option selected value='" & rs(1) & "'>" & rs(2)
 				else
 					response.write "<option value='" & rs(1) & "'>" & rs(2)
 				end if
@@ -112,13 +112,13 @@
 		end if
 		rs.close
 		response.write "</tr>"
-		
+
 		if writeoff(7) <> "" and not isnull(writeoff(7)) then
 			' Ссылка на последний созданный при экспорте Excel файл
 			response.write "<tr><td>Ссылка на распечатку<td><a href='/devin/excels/" & writeoff(6) & "'>" & writeoff(6) & "</a></tr>"
 
 			' Дата последнего экспорта в Excel
-			response.write "<tr><td>Последнияя печать<td>" & writeoff(7) & "</tr>"
+			response.write "<tr><td>Последняя печать<td>" & writeoff(7) & "</tr>"
 		end if
 
 		' Меню операций и завершение карточки
@@ -131,7 +131,7 @@
 		& "</tr></table>"
 
 	end if
-	
+
 	conn.close
 	set rs = nothing
 	set conn = nothing

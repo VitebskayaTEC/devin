@@ -1,28 +1,28 @@
 <!-- #include virtual ="/devin/core/core.inc" -->
-<% 
+<%
 	dim conn 	: set conn = server.createObject("ADODB.Connection")
 	dim rs 		: set rs = server.createObject("ADODB.Recordset")
 	dim id 		: id = request.querystring("id")
 
 	dim wParams, wType, wName, wDate, defExcel
-	
+
 	dim drag(3)
-	
+
 	conn.open "Driver={SQL Server}; Server=WEB1\SQLCORE; Initial Catalog=site; Uid=core_user; Pwd=core_123;"
 	rs.open "SELECT D_Gold,D_Silver,D_MPG FROM DragMetal", conn
-	
-	if not rs.eof then 
+
+	if not rs.eof then
 		drag(0) = rs(0)
 		drag(1) = rs(1)
 		drag(2) = rs(2)
 	end if
-			
+
 	rs.close
 	conn.close
-	
+
 	conn.open everest
 
-	sub drop(str) 
+	sub drop(str)
 		on error resume next
 		response.write "<div class='error'>" & str & "</div>"
 		book.close false
@@ -46,7 +46,7 @@
 		wDate = rs(3)
 		defExcel = rs(4)
 		' Если параметры в списании не заданы, получаем шаблон данных
-		if wParams = "" or isnull(wParams) then wParams = rs(5) 
+		if wParams = "" or isnull(wParams) then wParams = rs(5)
 	end if
 	rs.close
 
@@ -65,7 +65,7 @@
 	excel.application.enableEvents = false
 	excel.application.displayAlerts = false
 	dim book 	: set book = excel.workbooks.open(defExcel)
-	dim sheet, i, j, sum, f(200, 10)	 
+	dim sheet, i, j, sum, f(200, 10)
 
 	select case wType
 		'Эксплуатационные расходы'
@@ -74,12 +74,12 @@
 			if wParams = "" or isnull(wParams) then drop("Не заданы параметры по умолчанию для данного типа списания")
 			wParams = split(wParams, ";;")
 			if ubound(wParams) <> 1 then drop("Недостаточное количество параметров для экспорта. Получено " & ubound(wParams) & ", ожидается 2 параметра")
-					
+
 			sheet.cells(14, 1).value = "      Комиссия,  назначенная приказом №108 от 28.08.2012г. произвела подсчет и списание товарно-материальных ценностей, израсходованных в " & month1(Month(wDate) - 1) & " " & Year(wDate) & " г. Были использованы  следующие материалы:"
-					
+
 			rs.open "SELECT SKLAD.NCard, SKLAD.Name, REMONT.Units, SKLAD.Price, DEVICE.inventory, SKLAD.uchet FROM REMONT LEFT OUTER JOIN SKLAD ON REMONT.ID_U = SKLAD.NCard LEFT OUTER JOIN DEVICE ON REMONT.ID_D = DEVICE.number_device WHERE (REMONT.W_ID = " & id & ")", CONN
-			if rs.eof then 
-			
+			if rs.eof then
+
 			else
 				i = 0
 				do while not rs.eof
@@ -119,57 +119,85 @@
 				sheet.cells(21 + j, 7).Value = FormatNumber(CCur(f(j, 2)) * CCur(f(j, 3)), , -1)
 				sheet.cells(21 + j, 8).Value = f(j, 4)
 			next
-					
+
 			sheet.cells(40 + i, 1).Value = "Акт составлен " & day(wDate) & " " & month2(Month(wDate) - 1) & " " & year(wDate) & " г."
 			sheet.cells(42 + i, 4).Value = wParams(0)
 			sheet.cells(42 + i, 7).Value = wParams(1)
-				
+
 		' Ремонт основного средства
 		case "mat"
 			set sheet = book.worksheets(8)
-			
+
 			' Данные обязательного ввода
 			sheet.cells(26, 17).value = id
 			if day(wDate) > 9 then
 				sheet.cells(27, 17).value = chr(34) & day(wDate) & chr(34) & " " & month2(month(wDate) - 1) & " " & year(wDate) & " г."
-				if month(wDate) > 9 then 
+				if month(wDate) > 9 then
 					sheet.cells(28, 17).value = day(wDate) & "." & month(wDate) & "." & year(wDate) & " г."
-				else 
+				else
 					sheet.cells(28, 17).value = day(wDate) & ".0" & month(wDate) & "." & year(wDate) & " г."
 				end if
-			else 
+			else
 				sheet.cells(27, 17).value = chr(34) & "0" & day(wDate) & chr(34) & " " & month2(month(wDate) - 1) & " " & year(wDate) & " г."
-				if month(wDate) > 9 then 
+				if month(wDate) > 9 then
 					sheet.cells(28, 17).value = "0" & day(wDate) & "." & month(wDate) & "." & year(wDate) & " г."
-				else 
+				else
 					sheet.cells(28, 17).value = "0" & day(wDate) & ".0" & month(wDate) & "." & year(wDate) & " г."
 				end if
 			end if
 			sheet.cells(29, 17).value = month1(month(wDate) - 1) & " " & year(wDate) & " г."
 			sheet.cells(28, 40).value = year(wDate) & " г."
 			rs.open "SELECT TOP (1) ID_D, COUNT(INum) AS N FROM REMONT WHERE (W_ID = " & id & ") GROUP BY ID_D", CONN
-			if rs.eof then 
-				drop("Не указано основное средство, на которое оформлены ремонты") 
+			if rs.eof then
+				drop("Не указано основное средство, на которое оформлены ремонты")
 			else
 				dim number_device : number_device = trim(rs(0)) 'id ОС
 				dim ns : ns = rs(1) 'кол-во ремонтов
 			end if
 			rs.close
-			rs.open "SELECT TOP (1) description1C, inventory, number_serial, MOL FROM DEVICE WHERE (number_device = '" & number_device & "')", CONN
+			rs.open "SELECT TOP (1) inventory, description, description1C, number_serial, MOL FROM DEVICE WHERE (number_device = '" & number_device & "')", CONN
 			if rs.eof then
 				drop("Не найдена карточка основного средства")
 			else
-				sheet.cells(30, 17).value = trim(rs(0))
-				sheet.cells(32, 17).value = trim(rs(1))
-				sheet.cells(33, 17).value = trim(rs(2))
+				dim inventory: inventory = trim(rs(0))
+				dim description: description = trim(rs(1))
+				dim description1c: description1c = trim(rs(2))
+				select case inventory
+					case "075755"
+						if description1c = "" or isNull(description1c) then
+							sheet.cells(30, 17).value = "Оборудование ПТК АСУ - " & description
+						else
+							sheet.cells(30, 17).value = "Оборудование ПТК АСУ - " & description1c
+						end if
+					case "075750"
+						if description1c = "" or isNull(description1c) then
+							sheet.cells(30, 17).value = "Оборудование корпоративной сети - " & description
+						else
+							sheet.cells(30, 17).value = "Оборудование корпоративной сети - " & description1c
+						end if
+					case "075155"
+						if description1c = "" or isNull(description1c) then
+							sheet.cells(30, 17).value = "Оборудование АСКУЭ ММПГ - " & description
+						else
+							sheet.cells(30, 17).value = "Оборудование АСКУЭ ММПГ - " & description1c
+						end if
+					case else
+						if description1c = "" or isNull(description1c) then
+							sheet.cells(30, 17).value = description
+						else
+							sheet.cells(30, 17).value = description1c
+						end if
+				end select
+				sheet.cells(32, 17).value = inventory
+				sheet.cells(33, 17).value = trim(rs(3))
 				sheet.cells(34, 17).value = ns
-				sheet.cells(53, 40).value = trim(rs(3))
+				sheet.cells(53, 40).value = trim(rs(4))
 			end if
 			rs.close
 
 			' Таблица потребностей материальных ресурсов - циклом по деталям - sql
 			rs.open "SELECT REMONT.Units, SKLAD.Name, SKLAD.Price, SKLAD.NCard FROM REMONT LEFT OUTER JOIN SKLAD ON REMONT.ID_U = SKLAD.NCard WHERE (REMONT.W_ID = " & id & ")", conn
-			if rs.eof then 
+			if rs.eof then
 				drop("Не найдено ни одной позиции на складе из указанных в ремонтах основного средства")
 			else
 				i = 0
@@ -189,9 +217,21 @@
 			sheet.cells(11, 17).value = drag(0)
 			sheet.cells(12, 17).value = drag(1)
 			sheet.cells(13, 17).value = drag(2)
-			
+
+			wParams = split(wParams, ";;")
+
+			if ubound(wParams) > 4 then
+				sheet.cells(51, 28).value = wParams(0) & " " & wParams(1)
+				sheet.cells(53, 28).value = wParams(1) & " " & wParams(0)
+				sheet.cells(53, 17).value = wParams(2)
+				sheet.cells(35, 17).value = wParams(3)
+				sheet.cells(34, 17).value = wParams(4)
+				sheet.cells(28, 49).value = wParams(5)
+			end if
+
+
 	end select
-			
+
 	dim excelName : excelName = wName & " " & date
 	book.saveas "D:\data\DFS\Files\Inetpub\wwwroot\DEVIN\Excels\" & excelName & ".xls"
 	response.write "<a href='/devin/excels/" & excelName & ".xls'>" & excelName & "</a>"

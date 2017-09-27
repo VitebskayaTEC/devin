@@ -1,14 +1,14 @@
 <!-- #include virtual ="/devin/core/core.inc" -->
-<% 
+<%
 	dim conn, rs, sql, repair(24), pos, i
 
 	dim id : id = request.querystring("id")
-	
+
 	set conn = server.createObject("ADODB.Connection")
 	set rs = server.createObject("ADODB.Recordset")
 
-	conn.open everest	
-	
+	conn.open everest
+
 	'Получаем список всех ремонтов
 	sql = "SELECT " _
 	& "REMONT.ID_D, " _
@@ -42,7 +42,7 @@
 	& "WHERE (REMONT.INum = " & id & ")"
 	rs.open sql, conn
 	'response.write sql
-	
+
 	if rs.eof then
 		response.write "<div class='cart-header'>Объект не найден!</div>" _
 		& "<table class='cart-menu'><tr><td onclick='cartClose()'>Закрыть</td></tr></table>"
@@ -53,7 +53,7 @@
 		response.write "<div class='cart-header'>Ремонт № " & id & "</div>" _
 		& "<form id='form' method='post'>" _
 		& "<table class='cart-table'>" _
-		& "<tr><th colspan='2'><a href='/devin/device/?id=" & repair(0) & "'>Устройство</a></tr>" _
+		& "<tr><th colspan='2'><a href='/devin/device/##" & repair(0) & "'>Устройство</a></tr>" _
 		& "<tr><td>Инвентарный №<td>" & repair(1) & "</tr>" _
 		& "<tr><td>Наименование<td>" & repair(2) & "</tr>" _
 		& "<tr><td>Описание<td>" & repair(3) & "</tr>" _
@@ -61,14 +61,14 @@
 		& "<tr><td>М.О.Л.<td>" & repair(5) & "</tr>" _
 		& "<tr><td>Расположение<td>" & repair(6) & "</tr>"
 		if instr(id, "PRN") > 0 then response.write "<tr><td>Типовой принтер<td>" & repair(8) & "</tr>"
-		
+
 		response.write "<tr><th colspan='2'><a href='/devin/storage/##" & repair(9) & "'>Деталь</a></tr>" _
 		& "<tr><td>Наименование<td>" & repair(10) & "</tr>" _
 		& "<tr><td>Инвентарный №<td>" & repair(11) & "</tr>" _
 		& "<tr><td>Стоимость, шт.<td>" & repair(12) & "</tr>" _
 		& "<tr><td>Счет учета<td>" & repair(13) & "</tr>"
 		if instr(id, "PRN") > 0 then response.write "<tr><td>Типовой картридж<td>" & repair(14) & "</tr>"
-		
+
 		response.write "<tr><th colspan='2'>Инфо</tr>" _
 		& "<tr><td>Кол-во деталей исп.<td><input name='units' type='number' style='width: 100px' value='" & repair(15) & "' /></tr>" _
 		& "<tr><td>Дата ремонта<td><input name='date' value='" & datevalue(repair(16)) & "' style='width: 100px' /></tr>" _
@@ -94,7 +94,7 @@
 		& "<td onclick='cartClose()'>Закрыть</td>" _
 		& "</tr></table>"
 	end if
-	
+
 	rs.close
 	conn.close
 	set rs = nothing

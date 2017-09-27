@@ -3,13 +3,13 @@
 	dim conn 	: set conn = server.createobject("ADODB.Connection")
 	dim rs 		: set rs = server.createobject("ADODB.Recordset")
 	dim id 		: id = replace(request.querystring("id"), "off", "")
-	
+
 	conn.open everest
 	rs.open "SELECT W_Name, W_Type, W_Date, W_Params, W_Description, G_ID FROM writeoff WHERE (W_ID = '" & id & "')", conn
 	if rs.eof then
 		response.write "<div class='error'>Нет данных по данному ID</div>"
 	else
-		dim writeoff(5), i, temp	
+		dim writeoff(5), i, temp
 
 		for i = 0 to 5
 			writeoff(i) = rs(i)
@@ -26,7 +26,7 @@
 
 		temp = request.form("W_Type")
 		if temp <> writeoff(1) or isnull(writeoff(1)) then
-			if text <> "" then 
+			if text <> "" then
 				text = text & ", "
 				sql = sql & ", "
 			end if
@@ -38,9 +38,9 @@
 		if not isdate(temp) then
 			response.write "<div class='error'>Введено некорректное значение даты. Ожидается формат дд.мм.гггг</div>"
 			response.end
-		end if 
+		end if
 		if datevalue(temp) <> datevalue(writeoff(2)) then
-			if text <> "" then 
+			if text <> "" then
 				text = text & ", "
 				sql = sql & ", "
 			end if
@@ -50,13 +50,19 @@
 
 		dim key
 		temp = ""
-		for each key in request.form
-			if instr(key, "params") > 0 then
-				if temp <> "" then temp = temp & ";;" & DecodeUTF8(request.form(key)) else temp = DecodeUTF8(request.form(key))
+		dim first: first = true
+		for i = 0 to 20
+			if not isNull(request.form("params" & i)) and not isEmpty(request.form("params" & i)) then
+				if first then
+					temp = temp & DecodeUTF8(request.form("params" & i))
+				else
+					temp = temp & ";;" & DecodeUTF8(request.form("params" & i))
+				end if
+				first = false
 			end if
 		next
-		if temp <> writeoff(3) then
-			if text <> "" then 
+		if temp <> writeoff(3) or isNull(writeoff(3)) then
+			if text <> "" then
 				text = text & ", "
 				sql = sql & ", "
 			end if
@@ -66,7 +72,7 @@
 
 		temp = DecodeUTF8(request.form("W_Description"))
 		if temp <> writeoff(4) then
-			if text <> "" then 
+			if text <> "" then
 				text = text & ", "
 				sql = sql & ", "
 			end if
@@ -75,15 +81,15 @@
 		end if
 
 		temp = request.form("G_ID")
-		if isnull(writeoff(5)) then 
-			if text <> "" then 
+		if isnull(writeoff(5)) then
+			if text <> "" then
 				text = text & ", "
 				sql = sql & ", "
 			end if
 			text = text & "папка с [group" & writeoff(5) & "] на [group" & temp & "]"
 			sql = sql & "G_ID = '" & temp & "'"
 		elseif cstr(temp) <> cstr(writeoff(5)) then
-			if text <> "" then 
+			if text <> "" then
 				text = text & ", "
 				sql = sql & ", "
 			end if
@@ -91,8 +97,8 @@
 			sql = sql & "G_ID = '" & temp & "'"
 		end if
 
-		if text <> "" then 
-			conn.execute "UPDATE writeoff SET " & sql & " WHERE (W_ID = '" & id & "')"			
+		if text <> "" then
+			conn.execute "UPDATE writeoff SET " & sql & " WHERE (W_ID = '" & id & "')"
 			text = "Обновлена карточка списания [off" & id & "], изменены: " & text
 			response.write log("off" & id, text) & "<div class='done'>" & text & "</div>"
 		else
