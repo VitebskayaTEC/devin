@@ -17,13 +17,26 @@
 
 	sub render(k)
 		dim check(2)
+		dim storageLed
+		if cint(repairs(k, 10)) <> cint(repairs(k, 11)) + cint(repairs(k, 12)) + cint(repairs(k, 13)) then
+			storageLed = " warning"
+		elseif cint(repairs(k, 10)) = cint(repairs(k, 13)) then
+			storageLed = " off"
+		elseif cint(repairs(k, 11)) = 0 then
+			storageLed = " onwork"
+		elseif cint(repairs(k, 12)) > 0 then
+			storageLed = " onwork"
+		else
+			storageLed = ""
+		end if
+
 		if repairs(k, 8) = "1" then check(0) = "checked" else check(0) = ""
 		if repairs(k, 9) = "1" then check(1) = "checked" else check(1) = ""
 		if repairs(k, 0) = "" or repairs(k, 0) = "0" or repairs(k, 0) = "-1" or isnull(repairs(k, 0)) then check(2) = "" else check(2) = " hide_first"
 		response.write "<tr id='" & repairs(k, 2) & "' in='rg" & repairs(k, 0) & "' class='item " & check(2) & "'>" _
 			& "<td><input type='checkbox' class='selecter' />" _
 			& "<td><b>" & repairs(k, 3) & "</b> " & repairs(k, 4) _
-			& "<td>" & repairs(k, 5) _
+			& "<td><div class='led" & storageLed & "'></div> " & repairs(k, 5) _
 			& "<td>" & repairs(k, 6) _
 			& "<td>" & datevalue(repairs(k, 7)) _
 			& "<td><input type='checkbox' disabled " & check(0) & " />" _
@@ -31,13 +44,13 @@
 			& "</tr>"
 	end sub
 
-	dim writeoff(200, 4), repairs(1000, 9), Nwriteoff, Nrepairs, i, j, sql
+	dim writeoff(200, 4), repairs(1000, 13), Nwriteoff, Nrepairs, i, j, sql
 
 	conn.open everest
 
 	dim search : search = DecodeUTF8(request.querystring("text"))
-	
-	if search = "" then	
+
+	if search = "" then
 
 		' Получение списка групп
 		sql = "SELECT G_ID, G_Inside, G_Title FROM [GROUP] WHERE (G_Type = 'repair')"
@@ -54,7 +67,7 @@
 			rs.movenext
 		loop
 		rs.close
-	
+
 		' Получение списка всех списаний
 		sql = "" _
 		& " SELECT " _
@@ -75,7 +88,7 @@
 			loop
 			Nwriteoff = Nwriteoff - 1
 		end if
-		rs.close	
+		rs.close
 
 		' Получение списка всех ремонтов
 		sql = "SELECT " _
@@ -88,7 +101,11 @@
 		& "REMONT.Units, " _
 		& "REMONT.Date, " _
 		& "REMONT.IfSpis, " _
-		& "REMONT.Virtual " _
+		& "REMONT.Virtual, " _
+		& "SKLAD.Nadd, " _
+		& "SKLAD.Nis, " _
+		& "SKLAD.Nuse, " _
+		& "SKLAD.Nbreak " _
 		& "FROM REMONT " _
 		& "LEFT OUTER JOIN DEVICE ON REMONT.ID_D = DEVICE.number_device " _
 		& "LEFT OUTER JOIN SKLAD ON REMONT.ID_U = SKLAD.NCard " _
@@ -100,11 +117,11 @@
 			rs.movefirst
 			Nrepairs = 0
 			do while not rs.eof
-				for i = 0 to 9
+				for i = 0 to 13
 					repairs(Nrepairs, i) = trim(rs(i))
 				next
 				rs.movenext
-				Nrepairs = Nrepairs + 1			
+				Nrepairs = Nrepairs + 1
 			loop
 			Nrepairs = Nrepairs - 1
 		end if
@@ -114,22 +131,22 @@
 		' Отображение нераспределенных ремонтов
 		response.write "<div class='unit' id='solo'>" _
 			& "<table class='caption'><tr>" _
-			& "<td width='24px'><div class='icon ic-cached'></div>" _ 
+			& "<td width='24px'><div class='icon ic-cached'></div>" _
 			& "<th>Не распределенные ремонты" _
 			& "</tr></table><div class='items_block'>" _
 			& head
 		for i = 0 to Nrepairs
 			if isnull(repairs(i, 1)) then render(i)
-		next				
+		next
 		response.write "</tbody></table></div></div>"
-		
+
 
 		' Отображение списаний с вложенными ремонтами
 		dim cookie, inGroup
 		for i = 0 to Nwriteoff
 			cookie = request.cookies("off" & writeoff(i, 1))
 			if writeoff(i, 0) = "" or writeoff(i, 0) = "0" or writeoff(i, 0) = "-1" or isnull(writeoff(i, 0)) then inGroup = "" else inGroup = " hide_first"
-			response.write "<div class='unit writeoff " & cookie & inGroup & "' in='rg" & writeoff(i, 0) & "'>" _ 
+			response.write "<div class='unit writeoff " & cookie & inGroup & "' in='rg" & writeoff(i, 0) & "'>" _
 				& "<table class='caption'><tr>" _
 				& "<td width='24px' menu='writeoff' onmousedown='_menu(this)'><div class='icon ic-info-outline'></div>" _
 				& "<th>" & writeoff(i, 2) _
@@ -150,25 +167,25 @@
 			cookie = request.cookies("rg" & groups(i, 0))
 			if groups(i, 1) = "" or groups(i, 1) = "0" or groups(i, 1) = "-1" or isnull(groups(i, 1)) then
 				response.write "<div class='unit group " & cookie & "' id='rg" & groups(i, 0) & "' in='rg" & groups(i, 1) & "'>"
-			else 
+			else
 				response.write "<div class='unit hide_first group " & cookie & "' id='rg" & groups(i, 0) & "' in='rg" & groups(i, 1) & "'>"
 			end if
 			response.write "<table class='caption'><tr>" _
-							& "<td width='24px' menu='group' onmousedown='_menu(this)'><div class='icon ic-folder'></div>" _ 
+							& "<td width='24px' menu='group' onmousedown='_menu(this)'><div class='icon ic-folder'></div>" _
 							& "<th>" & groups(i, 2) _
 							& "</tr></table>"
-			if cookie = "open" then 
-				response.write "<div class='items_block'>" & head 
-			else 
+			if cookie = "open" then
+				response.write "<div class='items_block'>" & head
+			else
 				response.write "<div class='items_block hide'>" & head
 			end if
 			response.write "</tbody></table></div></div>"
 		next
 
 		' Скрипт для группировки позиций и составления списка доступных для перемещения контейнеров
-		%>		
+		%>
 		<script id='insert_move_select'>
-			document.getElementById('move_select').innerHTML = "<select id='moveKey'><option value='0'>Разместить отдельно<%	
+			document.getElementById('move_select').innerHTML = "<select id='moveKey'><option value='0'>Разместить отдельно<%
 				for i = 0 to Nwriteoff - 1
 					response.write "<option value='w" & writeoff(i, 1) & "'>[Списание] " & writeoff(i, 2)
 				next
@@ -212,7 +229,11 @@
 		& "REMONT.Units, " _
 		& "REMONT.Date, " _
 		& "REMONT.IfSpis, " _
-		& "REMONT.Virtual " _
+		& "REMONT.Virtual, " _
+		& "SKLAD.Nadd, " _
+		& "SKLAD.Nis, " _
+		& "SKLAD.Nuse, " _
+		& "SKLAD.Nbreak " _
 		& "FROM REMONT " _
 		& "LEFT OUTER JOIN DEVICE ON REMONT.ID_D = DEVICE.number_device " _
 		& "LEFT OUTER JOIN SKLAD ON REMONT.ID_U = SKLAD.NCard " _
@@ -225,12 +246,12 @@
 			rs.movefirst
 			Nrepairs = 0
 			do while not rs.eof
-				for i = 0 to 9
+				for i = 0 to 13
 					repairs(Nrepairs, i) = trim(rs(i))
 				next
 				rs.movenext
 				render(Nrepairs)
-				Nrepairs = Nrepairs + 1			
+				Nrepairs = Nrepairs + 1
 			loop
 			Nrepairs = Nrepairs - 1
 			response.write "</tbody></table></div>"
