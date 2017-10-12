@@ -171,9 +171,12 @@
 	conn.close: set conn = nothing
 	set keys = nothing
 
-	response.write "<div class='cart-links'><a onclick='cartHistoryRepair()'>История ремонтов</a>"
+	response.write "<div class='cart-links'><a onclick='cartHistoryRepair()'>История ремонтов</a><br/>"
 	if cls = "CMP" then
-		response.write "<a onclick='cartAidaAutorun()'>Автозагрузка</a><a onclick='cartAidaDevices()'>Оборудование</a>"
+		response.write "<a onclick='cartAidaAutorun()'>Автозагрузка</a><br/><a onclick='cartAidaDevices()'>Оборудование</a><br/>"
+	end if
+	if cls = "CMP" or cls = "DIS" or cls = "PRN" then
+		response.write "<a onclick='cartDefect()'>Дефектный акт</a>"
 	end if
 
 	response.write "</div><div id='console'></div><table class='cart-menu'><tr>" _
