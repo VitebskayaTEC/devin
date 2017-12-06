@@ -12,7 +12,7 @@
 </head>
 
 <body>
-	<% 
+	<%
 		menu("<li><a onclick='exportToExcel()'>Печать заказа на закупку картриджей</a>")
 
 		dim conn: set conn = Server.CreateObject("ADODB.Connection")
@@ -48,9 +48,9 @@
 			& "CARTRIDGE.Type AS AltType, " _
 			& "CARTRIDGE.Color AS Color " _
 			& "FROM CARTRIDGE " _
-			& "INNER JOIN Sklad ON CARTRIDGE.N = SKLAD.ID_cart " _		
+			& "INNER JOIN Sklad ON CARTRIDGE.N = SKLAD.ID_cart " _
 			& "ORDER BY Type, Caption"
-			
+
 		rs.open sql, conn
 		do while not rs.eof
 			' Получение промежуточного значения ИД картриджа для сравнения
@@ -71,7 +71,7 @@
 				if cost = "0" then cost = minBaseValue * 1.2 else cost = cost * fixcost
 				' Если полученное значение стоимости больше, чем предыдущее, будет выбрано новое
 				defPrice = rs("DefPrice")
-				if isNull(defPrice) or defPrice = "" or defPrice = "0" or not isNumeric(defPrice) then	
+				if isNull(defPrice) or defPrice = "" or defPrice = "0" or not isNumeric(defPrice) then
 					if cost > cartridges(Ncartridges, 5) then cartridges(Ncartridges, 5) = round(cost, 2)
 				end if
 
@@ -84,13 +84,13 @@
 				' Тип картриджа
 				cartridges(Ncartridges, 0) = rs("Type")
 				select case cartridges(Ncartridges, 0)
-					case "flow"   
+					case "flow"
 						cartridges(Ncartridges, 0) = "Картридж струйный"
-					case "laser"  
+					case "laser"
 						cartridges(Ncartridges, 0) = "Тонер-картридж"
-					case "matrix" 
+					case "matrix"
 						cartridges(Ncartridges, 0) = "Картридж матричный"
-					case else     
+					case else
 						cartridges(Ncartridges, 0) = "Картридж"
 				end select
 				' Название картриджа
@@ -110,8 +110,8 @@
 				if cost = "0" then cost = minBaseValue * fixcost else cost = cost * fixcost
 				' Если в каталоге не явно задана стоимость, то присваивается стоимость, которая получена на основе расчета
 				defPrice = rs("DefPrice")
-				if isNull(defPrice) or defPrice = "" or defPrice = "0" or not isNumeric(defPrice) then	
-					cartridges(Ncartridges, 5) = round(cost, 2) 
+				if isNull(defPrice) or defPrice = "" or defPrice = "0" or not isNumeric(defPrice) then
+					cartridges(Ncartridges, 5) = round(cost, 2)
 				else
 					cartridges(Ncartridges, 5) = ccur(defPrice)
 				end if
@@ -123,7 +123,7 @@
 				cartridges(Ncartridges, 8) = rs("Color")
 
 			end if
-		
+
 			rs.movenext
 		loop
 		rs.close
@@ -212,7 +212,7 @@
 				cursorCartridge = rs("ID_C")
 
 				' Если новая пара принтер-картридж
-				if cursorPrinter <> activePrinter or cursorCartridge <> activeCartridge then				
+				if cursorPrinter <> activePrinter or cursorCartridge <> activeCartridge then
 
 					' Проверка на первый раз (так как при первом срабатывании еще нет данных)
 					if activePrinter <> "" then analyzer()
@@ -223,12 +223,12 @@
 
 					' Сброс массива с данными по ремонтам пары
 					N = 0
-					
-				else 
+
+				else
 					' Если тот же самый принтер и картридж, то добавление в массив данных
 				end if
 
-				' Получение данных по очередному ремонту и сохранение в массив промежуточных значений	
+				' Получение данных по очередному ремонту и сохранение в массив промежуточных значений
 				response.write "<tr>"
 				for i = 0 to 7
 					data(N, i) = rs(i + 2)
@@ -247,12 +247,12 @@
 			response.write "</tbody></table></div></div>"
 
 		rs.close
-		
+
 		conn.close
 		set rs   = nothing
 		set conn = nothing
 
-		
+
 		' Отрисовка данных по всем типовым картриджам в отдельном блоке
 		cookie = request.cookies("analyzeCartridges")
 		response.write "<div class='unit group " & cookie & "' id='analyzeCartridges'>" _
@@ -276,22 +276,22 @@
 			& "<td>" & cartridges(i, 5) _
 			& "<td>" & cartridges(i, 2) _
 			& "<td>"
-			
+
 			' Определение того, нужно ли заказывать картриджи (оповещение через отдельный столбец в таблице)
-			if cartridges(i, 3) then 
+			if cartridges(i, 3) then
 				forecast = cartridges(i, 4) - cartridges(i, 2)
 				if forecast > 0 then
 					response.write "Предлагается заказать " & forecast & " шт."
 				elseif cartridges(i, 2) = 0 then
 					forecast = 1
-					response.write "Предлагается заказать 1 картридж для наличия резерва (замены не планируются)"	
+					response.write "Предлагается заказать 1 картридж для наличия резерва (замены не планируются)"
 				else
 					forecast = 0
-					response.write "Заказ картриджей не требуется"	
+					response.write "Заказ картриджей не требуется"
 				end if
 			elseif cartridges(i, 2) = 0 then
 				forecast = 1
-				response.write "Предлагается заказать 1 картридж для наличия резерва (не проведено ни одного ремонта)"	
+				response.write "Предлагается заказать 1 картридж для наличия резерва (не проведено ни одного ремонта)"
 			else
 				forecast = 0
 				response.write "Замены картриджей не проводились"
@@ -320,7 +320,7 @@
 					forecast = 0
 					response.write "Недостаточно данных. Замены не предполагаются<br/>"
 				end if
-			else 
+			else
 				' Расчет временных рамок
 				firstDate      = data(0, 3)
 				lastDate       = data(N - 1, 3)
@@ -354,7 +354,7 @@
 					exit for
 				end if
 			next
-			
+
 			response.write "<br/></th></tr>"
 		end sub
 	%>
@@ -364,10 +364,10 @@
 		<div><a onclick='$(this).closest(".panel").slideUp(100)'>Закрыть</a></div>
 	</div>
 
-	<script src='/devin/js/jquery-1.12.4.min.js'></script>
-	<script src="/devin/js/jquery-ui.min.js"></script>
+	<script src='/cdn/jquery-1.12.4.min.js'></script>
+	<script src="/cdn/jquery-ui.min.js"></script>
 	<script src='/devin/js/core.js'></script>
-	<script src='/devin/js/js-analyze.js'></script>	
-</body>	
+	<script src='/devin/js/js-analyze.js'></script>
+</body>
 
 </html>

@@ -5,8 +5,8 @@
 <head>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta http-equiv="content-type" Content="text/html; charset=windows-1251" />
+	<link href="/cdn/jquery-ui.min.css" rel="stylesheet" />
 	<link href="/devin/css/core.css" rel="stylesheet" />
-	<link href="/devin/css/jquery-ui.min.css" rel="stylesheet" type="text/css" />
 	<link href="/devin/css/device.css" rel="stylesheet" />
 	<link href="/devin/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 	<title>DEVIN | Устройства</title>
@@ -14,11 +14,11 @@
 
 <body>
 
-	<% 
+	<%
 		dim search: search = DecodeUTF8(request.querystring("text"))
 		menu("<li><input def='Поиск' class='def' value='" & search & "'/>" _
 		& "<li><a class='has-icon' onmousedown='_menu(this)' menu='main'><div class='icon ic-menu'></div></a>")
-		'onkeyup='search(this)' 
+		'onkeyup='search(this)'
 	%>
 
 	<div id='selected' class='panel'>
@@ -26,7 +26,7 @@
 		<div><div id='move_select'><select id='moveKey'></select></div><a onclick='moveSelectedDevices()'>Переместить</a></div>
 		<div><a onclick='removeAllSelection()'>Сбросить выбор</a></div>
 	</div>
-	  
+
 	<div id="excl" class='panel'>
 		<form method="POST" enctype="multipart/form-data" action="/devin/views/device_1c_compare.asp?typeof=0">
 			<select onchange="parentNode.action='/devin/views/device_1c_compare.asp?typeof='+this.value;" name='typeof'>
@@ -42,8 +42,8 @@
 		</form>
 	</div>
 
-	<script src='/devin/js/jquery-1.12.4.min.js'></script>
-	
+	<script src='/cdn/jquery-1.12.4.min.js'></script>
+
 	<div id='view' class='view'><% server.execute "view.asp" %></div>
 
 	<div id='cart' class='cart-new'></div>
@@ -74,12 +74,12 @@
 		<li onclick='$(this).parent().fadeOut(100)'>Отмена
 	</ul>
 
-	<script src="/devin/js/jquery-ui.min.js"></script>
+	<script src="/cdn/jquery-ui.min.js"></script>
 	<script src='/devin/js/core.js'></script>
 	<script src='/devin/js/device.js'></script>
 	<script>
-		var sortKey = "<%=request.queryString("key")%>", 
-			sortDesc = "<%=request.queryString("desc")%>", 
+		var sortKey = "<%=request.queryString("key")%>",
+			sortDesc = "<%=request.queryString("desc")%>",
 			sortText = "<%=request.queryString("text")%>";
 
 		$(".view")
@@ -90,7 +90,7 @@
 		$("#cart")
 			.on("submit", "form", function() { event.preventDefault() })
 	</script>
-	
+
 
 </body>
 

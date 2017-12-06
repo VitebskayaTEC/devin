@@ -5,9 +5,9 @@
 <HEAD>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta http-equiv="Content-Type" content="text/html; charset=windows-1251" />
-	<link href="/devin/css/core.css" rel="stylesheet" type="text/css" />
-	<link href="/devin/css/jquery-ui.min.css" rel="stylesheet" type="text/css" />
-	<link href="/devin/css/storage.css" rel="stylesheet" type="text/css" />
+	<link href="/cdn/jquery-ui.min.css" rel="stylesheet" />
+	<link href="/devin/css/core.css" rel="stylesheet" />
+	<link href="/devin/css/storage.css" rel="stylesheet" />
 	<link href="/devin/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 	<title>DEVIN | Склад</title>
 </HEAD>
@@ -33,8 +33,8 @@
 				</select></tr>
 			<tr><td>
 				<input type="submit" value="Загрузить" />
-				<input type="button" value="Закрыть" onclick="compare()" />			
-			</tr>		
+				<input type="button" value="Закрыть" onclick="compare()" />
+			</tr>
 		</table>
 		</form>
 	</div>
@@ -52,8 +52,8 @@
 		<div><a onclick='closeExportsPanel()'>Закрыть</a></div>
 	</div>
 
-	<script src="/devin/js/jquery-1.12.4.min.js"></script>
-	
+	<script src="/cdn/jquery-1.12.4.min.js"></script>
+
 	<div class='view' id='view'>
 		<% server.execute "view.asp" %>
 	</div>
@@ -66,7 +66,7 @@
 		<li onclick='cartCreate()'>Создать позицию на складе
 		<li onclick='location="/devin/storage/labels/"'>Просмотр прихода картриджей
 	</ul>
-	
+
 	<ul class='context-menu' id='group'>
 		<li onclick='groupEdit()'>Переименовать
 		<li onclick='groupBeforeMove()'>Переместить
@@ -81,7 +81,7 @@
 		<li onclick='$(this).parent().fadeOut(100)'>Отмена
 	</ul>
 
-	<script src="/devin/js/jquery-ui.min.js"></script>
+	<script src="/cdn/jquery-ui.min.js"></script>
 	<script src="/devin/js/core.js"></script>
 	<script src="/devin/js/storage.js"></script>
 	<script>

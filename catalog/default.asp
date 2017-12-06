@@ -5,8 +5,8 @@
 <head>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta http-equiv="content-type" Content="text/html; charset=windows-1251" />
+	<link href="/cdn/jquery-ui.min.css" rel="stylesheet" />
 	<link href="/devin/css/core.css" rel="stylesheet" />
-	<link href="/devin/css/jquery-ui.min.css" rel="stylesheet" type="text/css" />
 	<link href="/devin/css/catalog.css" rel="stylesheet" />
 	<link href="/devin/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 	<title>DEVIN | Каталог</title>
@@ -14,14 +14,14 @@
 
 <body>
 
-<% 
+<%
 	menu("<li><input onkeyup='search(this)' def='Поиск' class='def' value=''/><li><a class='has-icon' onmousedown='_menu(this)' menu='main'><div class='icon ic-menu'></div></a>")
 
-	dim conn : 	set conn = server.createObject("ADODB.Connection")		
+	dim conn : 	set conn = server.createObject("ADODB.Connection")
 	dim rs : 	set rs = server.createObject("ADODB.Recordset")
 	conn.open everest
 
-	response.write "<div class='view'><table><tr><td><div class='unit'><table class='caption'><tr><th>Принтеры</tr></table>"	
+	response.write "<div class='view'><table><tr><td><div class='unit'><table class='caption'><tr><th>Принтеры</tr></table>"
 		rs.open "SELECT N, Caption FROM PRINTER ORDER BY Caption", conn
 		if not rs.eof then
 			response.write "<table class='items'><tbody>"
@@ -60,8 +60,8 @@
 		<li onclick='createCartridge()'>Создать картридж
 	</ul>
 
-	<script src='/devin/js/jquery-1.12.4.min.js'></script>
-	<script src="/devin/js/jquery-ui.min.js"></script>
+	<script src='/cdn/jquery-1.12.4.min.js'></script>
+	<script src="/cdn/jquery-ui.min.js"></script>
 	<script src='/devin/js/core.js'></script>
 	<script src='/devin/js/catalog.js'></script>
 	<script>

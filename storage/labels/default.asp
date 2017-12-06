@@ -6,7 +6,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta http-equiv="content-type" Content="text/html; charset=windows-1251" />
 	<link href="/devin/css/core.css" rel="stylesheet" />
-	<link href="/devin/css/storage.css" rel="stylesheet" type="text/css" />
+	<link href="/devin/css/storage.css" rel="stylesheet" />
 	<link href="/devin/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 	<title>DEVIN | Приход принтеров</title>
 </HEAD>
@@ -31,7 +31,7 @@
 	</div>
 
 	<%
-		if false then 
+		if false then
 			dim excelApp   : set excelApp   = server.createobject("Excel.Application")
 			excelApp.application.enableEvents  = false
 			excelApp.application.displayAlerts = false
@@ -47,8 +47,8 @@
 
 	<div id='cart' class='cart-new'></div>
 
-	<script src="/devin/js/jquery-1.12.4.min.js"></script>
-	<script src="/devin/js/jquery-ui.min.js"></script>
+	<script src="/cdn/jquery-1.12.4.min.js"></script>
+	<script src="/cdn/jquery-ui.min.js"></script>
 	<script src="/devin/js/core.js"></script>
 	<script src="/devin/js/storage.js"></script>
 	<script>
