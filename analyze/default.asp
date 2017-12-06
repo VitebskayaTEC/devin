@@ -48,10 +48,9 @@
 			& "CARTRIDGE.Type AS AltType, " _
 			& "CARTRIDGE.Color AS Color " _
 			& "FROM CARTRIDGE " _
-			& "INNER JOIN SKLAD ON CARTRIDGE.N = SKLAD.ID_cart " _
-			
+			& "INNER JOIN Sklad ON CARTRIDGE.N = SKLAD.ID_cart " _		
 			& "ORDER BY Type, Caption"
-
+			
 		rs.open sql, conn
 		do while not rs.eof
 			' Получение промежуточного значения ИД картриджа для сравнения
@@ -283,10 +282,16 @@
 				forecast = cartridges(i, 4) - cartridges(i, 2)
 				if forecast > 0 then
 					response.write "Предлагается заказать " & forecast & " шт."
+				elseif cartridges(i, 2) = 0 then
+					forecast = 1
+					response.write "Предлагается заказать 1 картридж для наличия резерва (замены не планируются)"	
 				else
 					forecast = 0
-					response.write "Заказ картриджей не требуется"
+					response.write "Заказ картриджей не требуется"	
 				end if
+			elseif cartridges(i, 2) = 0 then
+				forecast = 1
+				response.write "Предлагается заказать 1 картридж для наличия резерва (не проведено ни одного ремонта)"	
 			else
 				forecast = 0
 				response.write "Замены картриджей не проводились"

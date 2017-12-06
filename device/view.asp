@@ -35,12 +35,13 @@
 	& "LEFT OUTER JOIN [GROUP] ON [GROUP].G_ID = DEVICE.G_ID " _
 	& "WHERE (DEVICE.deleted = 0) ORDER BY " & key(sortKey) & direction(sortDirection)
 
-	if search <> "" then 
+	if search <> "" then
 		sql = replace(sql, "WHERE", replace("WHERE (DEVICE.inventory {0} OR DEVICE.class_device {0} OR DEVICE.number_device {0} OR DEVICE.name {0} OR DEVICE.number_comp {0} OR DEVICE.description1C {0} OR DEVICE.description {0} OR DEVICE.install_date {0} OR DEVICE.MOL {0} OR DEVICE.number_serial {0} OR DEVICE.number_passport {0} OR DEVICE.attribute {0}) AND ", "{0}", " LIKE '%" & search & "%'"))
 	end if
 	'response.write "<div class='debug'>" & sql & "</div>"
 
 	dim i, j, q
+	dim led
 	dim devices(1500, 9), Ndevices
 	conn.open everest
 	rs.open   sql, conn
@@ -54,7 +55,7 @@
 		loop
 	rs.close
 
-	if search = "" then 
+	if search = "" then
 
 		' Составление массива указателей на позиции-компьютеры
 		dim computers(500, 1), Ncomputers
@@ -99,15 +100,16 @@
 			response.write "<div class='title-wrapper' id='" & computers(j, 0) & "'>" _
 			& "<div class='title'>Компьютер " & devices(computers(j, 1), 3) & " - открыть карточку</div></div>" & head
 			for i = 0 to Ndevices
-				if devices(i, 4) = computers(j, 0) then 
+				if devices(i, 4) = computers(j, 0) then
 					if devices(i, 9) = "" or devices(i, 9) = "0" or devices(i, 9) = "-1" or isnull(devices(i, 9)) then
 						className = ""
 					else
 						className = "hide_first"
 					end if
+					if devices(i, 8) = 1 then led = "on" else led = "off"
 					response.write "<tr id='" & devices(i, 2) & "' in='dg" & devices(i, 9) & "' class='item " & className & "'>" _
 					& "<td><input type='checkbox' class='selecter' />" _
-					& "<td><div class='led on'></div>" _
+					& "<td><div class='led " & devices(i, 8) & "'></div>" _
 					& "<td>" & devices(i, 3) _
 					& "<td>" & devices(i, 0) _
 					& "<td>" & devices(i, 6) _
@@ -117,7 +119,7 @@
 			next
 			response.write "</tbody></table></div></div>"
 		next
-			
+
 		' Не распределенные элементы
 		sql = "SELECT " _
 		& "DEVICE.number_device, " _
@@ -125,7 +127,8 @@
 		& "DEVICE.name, " _
 		& "DEVICE.inventory, " _
 		& "DEVICE.MOL, " _
-		& "DEVICE.description " _
+		& "DEVICE.description, " _
+		& "DEVICE.used " _
 		& "FROM DEVICE " _
 		& "LEFT OUTER JOIN DEVICE AS DEVICE_1 ON DEVICE.number_comp = DEVICE_1.number_device " _
 		& "LEFT OUTER JOIN [GROUP] ON [GROUP].G_ID = DEVICE.G_ID " _
@@ -134,13 +137,14 @@
 		rs.open sql, conn
 		if not rs.eof then
 			response.write "<div class='unit' id='solo'><table class='caption'><tr>" _
-			& "<td width='24px'><div class='icon ic-cached'></div>" _ 
+			& "<td width='24px'><div class='icon ic-cached'></div>" _
 			& "<th>Не распределенные устройства" _
 			& "</tr></table>" & head
 			do while not rs.eof
+				if rs("used") then led = "on" else led = "off"
 				response.write "<tr id='" & trim(rs(0)) & "' in='dg" & rs(1) & "' class='item'>" _
 				& "<td><input type='checkbox' class='selecter' />" _
-				& "<td><div class='led on'></div>" _
+				& "<td><div class='led " & led & "'></div>" _
 				& "<td>" & trim(rs(2)) _
 				& "<td>" & trim(rs(3)) _
 				& "<td>" & trim(rs(4)) _
@@ -168,23 +172,23 @@
 					groups(Ngroups, i) = rs(i)
 				next
 				cookie = request.cookies("dg" & groups(Ngroups, 0))
-			
+
 				if groups(Ngroups, 1) = "" or groups(Ngroups, 1) = "0" or groups(Ngroups, 1) = "-1" or isnull(groups(Ngroups, 1)) then
 					response.write "<div class='unit group " & cookie & "' id='dg" & groups(Ngroups, 0) & "' in='dg" & groups(Ngroups, 1) & "'>"
-				else 
+				else
 					response.write "<div class='unit hide_first group " & cookie & "' id='dg" & groups(Ngroups, 0) & "' in='dg" & groups(Ngroups, 1) & "'>"
 				end if
 				response.write "<table class='caption'><tr>" _
-				& "<td width='24px' menu='group' onmousedown='_menu(this)'><div class='icon ic-folder'></div>" _ 
+				& "<td width='24px' menu='group' onmousedown='_menu(this)'><div class='icon ic-folder'></div>" _
 				& "<th>" & groups(Ngroups, 2) _
 				& "</tr></table>"
-				if cookie = "open" then 
-					response.write "<div class='items_block'>" & head 
-				else 
+				if cookie = "open" then
+					response.write "<div class='items_block'>" & head
+				else
 					response.write "<div class='items_block hide'>" & head
 				end if
 				response.write "</tbody></table></div></div>"
-				
+
 				Ngroups = Ngroups + 1
 				rs.movenext
 			loop
@@ -192,9 +196,9 @@
 		rs.close
 
 		' Скрипт для группировки позиций и составления списка доступных для перемещения контейнеров
-		%>		
+		%>
 		<script id='insert_move_select'>
-			document.getElementById('move_select').innerHTML = "<select id='moveKey'><option value='0'>Разместить отдельно<%	
+			document.getElementById('move_select').innerHTML = "<select id='moveKey'><option value='0'>Разместить отдельно<%
 				for i = 0 to Ncomputers - 1
 					response.write "<option value='cmp" & computers(i, 0) & "'>[Компьютер] " & devices(computers(i, 1), 3)
 				next
@@ -226,7 +230,7 @@
 	else
 
 		response.write"<div class='unit'><table class='caption'><tr><th>Поиск совпадений по запросу: " & search & "</tr></table>" & head
-		for i = 0 to Ndevices - 1 
+		for i = 0 to Ndevices - 1
 			response.write "<tr id='" & devices(i, 2) & "'>" _
 			& "<td><input type='checkbox' class='selecter' />" _
 			& "<td><div class='led on'></div>" _

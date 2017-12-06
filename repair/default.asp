@@ -3,7 +3,7 @@
 <HTML>
 
 <HEAD>
-	<meta http-equiv="X-UA-Compatible" content="IE=edge" /> 
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta http-equiv="Content-Type" content="text/html; charset=windows-1251" />
 	<link href="/devin/css/core.css" rel="stylesheet" type="text/css" />
 	<link href="/devin/css/jquery-ui.min.css" rel="stylesheet" type="text/css" />
@@ -40,6 +40,7 @@
 
 	<ul class='context-menu' id='main'>
 		<li onclick='location="/devin/analyze/"'>Расход картриджей
+		<li onclick='location="/devin/repair/report_year/"'>Годовой отчет по ремонтам
 		<li onclick='groupCreate()'>Создать группу
 		<li onclick='writeoffCreate()'>Создать списание
 		<li onclick='writeoffSetup()'>Шаблоны списаний
