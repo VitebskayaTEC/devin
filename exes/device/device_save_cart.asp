@@ -183,6 +183,7 @@
 	if sql <> "" then
 		sql = "UPDATE DEVICE SET " & sql & " WHERE (number_device = '" & id & "')"
 		text = "Обновлена карточка устройства " & name & " [" & id & "], изменены: " & text
+			response.write sql & "<br />\n"
 		conn.execute sql
 		sql = log(id, text)
 		response.write text

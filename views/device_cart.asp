@@ -66,7 +66,7 @@
 
 	if cls <> "CMP" then
 		response.write "<tr><td>Компьютер<td><select name='number_comp'><option value='0'>?"
-		rs.Open "SELECT RTRIM(number_device), RTRIM(number_device), RTRIM(name) FROM DEVICE WHERE (class_device = 'CMP') ORDER BY name", conn
+		rs.open "SELECT RTRIM(number_device), RTRIM(number_device), RTRIM(name) FROM DEVICE WHERE (class_device = 'CMP' AND deleted = 0) ORDER BY name", conn
 		temp = keys("number_comp")
 		do while not rs.eof
 			if temp = rs(0) then
@@ -167,7 +167,7 @@
 
 	response.write "</select></tr></table></form>"
 
-	rs.close:   set rs = nothing
+	rs.close:   set rs   = nothing
 	conn.close: set conn = nothing
 	set keys = nothing
 

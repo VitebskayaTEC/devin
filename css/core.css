@@ -1,4 +1,4 @@
-﻿/* Общие стили */
+/* Общие стили */
 
 body,
 div,
@@ -126,31 +126,31 @@ a.has-icon {
 /* Элементы */
 
 .unit {
-    /*margin: 5px;*/
-    margin-top: 1px;
-    margin-bottom: 1px;
-    background: #fff;
-    color: #000;
-    border: 1px solid #fff;
-    cursor: default;
+    margin: 10px 0;
+    background: #ddd;
+    border: 1px solid #999;
 }
 
-.unit>table:first-child {
-    border-top: 0;
-}
+    .unit > table {
+        width: 100%;
+        background: #fff;
+        cursor: pointer;
+    }
 
 .unit:hover .caption,
 .items tbody tr:hover,
-.items th:hover,
-.title:hover {
+.items th:hover {
     color: #007bd6;
 }
 
 .open {
-    border-color: #2AA4FE;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    border-color: #FF5722;
+    box-shadow: 0 1px 8px 0 #E6B451;
 }
+
+    .open > table {
+        background: #E6B451;
+    }
 
 .open:hover .caption {
     color: #000;
@@ -163,12 +163,12 @@ a.has-icon {
 }
 
 .group .items-block {
-    background: #e0e0e0;
-    padding: 5px;
+    background: #fff;
+    padding: 10px;
 }
 
 .group .unit {
-    margin: 5px;
+    margin: 10px;
 }
 
 .hide_first {
@@ -179,11 +179,11 @@ a.has-icon {
 /* Табличные данные */
 
 .items {
-    font: normal 11pt Calibri, serif;
     border: 1px solid transparent;
     border-top: 1px solid #c7c7c7;
     background: #eee;
     color: #000;
+    cursor: pointer;
 }
 
 #solo .items {
@@ -193,16 +193,41 @@ a.has-icon {
 
 .items th {
     font: normal 10pt Calibri, serif;
+    padding: 0 3px;
+    text-align: left;
 }
 
 .items td {
     padding: 3px;
+    font: normal 10pt Calibri, serif;
+}
+
+.title-wrapper {
+    padding: 5px;
 }
 
 .title {
-    padding-left: 30px;
-    padding-bottom: 6px;
+    padding: 5px;
+    background: #fff;
+    color: #000;
+    border: 1px solid #333;
+    display: inline-block;
+    cursor: pointer;
 }
+
+.title:hover {
+    background: #E6B451;
+}
+
+.selected.title-wrapper {
+    background: #ddd;
+}
+
+.selected .title {
+    background: #333;
+    color: #E6B451;
+}
+
 
 .caption {
     cursor: pointer;

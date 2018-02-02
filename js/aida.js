@@ -1,10 +1,10 @@
 function toggle(node) {
 	var $unit = $(node).closest('.unit');
 	if ($unit.hasClass("open")) {
-		$unit.animate({ marginTop: "1px", marginBottom: "1px" }, 150).children(".items_block").slideToggle(150, function() { $unit.removeClass("open"); });
+		$unit.children(".items_block").slideToggle(150, function() { $unit.removeClass("open"); });
 		setCookie($unit.attr("id"), "", { expires: 9999999999 });
 	} else {
-		$unit.animate({ marginTop: "10px", marginBottom: "10px" }, 150).addClass("open").children(".items_block").slideToggle(150);
+		$unit.addClass("open").children(".items_block").slideToggle(150);
 		setCookie($unit.attr("id"), "open", { expires: 9999999999 });
 	}
 }

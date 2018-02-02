@@ -8,10 +8,10 @@ function toggle(node) {
     var $unit = $(node).closest('.unit');
 	var id = $unit.attr("id") ? $unit.attr("id") : $unit.find(".title-wrapper:first-child").attr("id") ;
     if ($unit.hasClass("open")) {
-        $unit.animate({marginTop: "1px", marginBottom: "1px"}, 150).children(".items_block").slideToggle(150, function() { $unit.removeClass("open"); });
+        $unit.children(".items_block").slideToggle(150, function() { $unit.removeClass("open"); });
         setCookie(id, "close", { expires: 9999999999 });
     } else {
-        $unit.animate({marginTop: "10px", marginBottom: "10px"}, 150).addClass("open").children(".items_block").slideToggle(150);
+        $unit.addClass("open").children(".items_block").slideToggle(150);
         setCookie(id, "open", { expires: 9999999999 });
     }
 }

@@ -5,7 +5,7 @@ function toggle(node) {
 		: $unit.find('.title-wrapper:first-child').attr('id');
 	if ($unit.hasClass('open')) {
 		$unit
-			.animate({ marginTop: '1px', marginBottom: '1px' }, 150)
+			//.animate({ marginTop: '1px', marginBottom: '1px' }, 150)
 			.children('.items_block')
 			.slideToggle(150, function() {
 				$unit.removeClass('open');
@@ -13,7 +13,7 @@ function toggle(node) {
 		setCookie(id, '', { expires: 9999999999 });
 	} else {
 		$unit
-			.animate({ marginTop: '10px', marginBottom: '10px' }, 150)
+			//.animate({ marginTop: '10px', marginBottom: '10px' }, 150)
 			.addClass('open')
 			.children('.items_block')
 			.slideToggle(150);
@@ -116,9 +116,7 @@ function cartDefect() {
 }
 
 function cartCreate() {
-	$.get('/devin/exes/device/device_create.asp?r=' + Math.random(), function(
-		data
-	) {
+	$.get('/devin/exes/device/device_create.asp?r=' + Math.random(), function(data) {
 		if (data.indexOf('error') < 0) {
 			id = data;
 			reload({});
@@ -137,6 +135,7 @@ function cartCreate() {
 function cartSave() {
 	$.post(
 		'/devin/exes/device/device_save_cart.asp?id=' + id,
+		//'/devin.net/devices/api/devicesave.ashx?id=' + id,
 		$('#cart-form').serialize(),
 		function(data) {
 			if (data.indexOf('error: ') == -1) {

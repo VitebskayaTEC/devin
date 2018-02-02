@@ -15,7 +15,7 @@
 	& "<th width='80px' data-type='number'>инв. номер" _
 	& "<th width='140px' data-type='string'>м.о.л." _
 	& "<th data-type='string'>описание" _
-	& "</tr></thead><tbody>"
+	& "</tr></thead><tbody class='drop-source'>"
 
 	if sortKey = "" or isnull(sortKey) then sortKey  = "5"
 	if sortDirection  = "" or isnull(sortDirection) then sortDirection = "0"
@@ -107,7 +107,7 @@
 						className = "hide_first"
 					end if
 					if devices(i, 8) = 1 then led = "on" else led = "off"
-					response.write "<tr id='" & devices(i, 2) & "' in='dg" & devices(i, 9) & "' class='item " & className & "'>" _
+					response.write "<tr id='" & devices(i, 2) & "' in='dg" & devices(i, 9) & "' class='item drop-el " & className & "'>" _
 					& "<td><input type='checkbox' class='selecter' />" _
 					& "<td><div class='led " & devices(i, 8) & "'></div>" _
 					& "<td>" & devices(i, 3) _
@@ -122,13 +122,13 @@
 
 		' Не распределенные элементы
 		sql = "SELECT " _
+		& "DEVICE.used, " _
 		& "DEVICE.number_device, " _
 		& "[GROUP].G_ID, " _
 		& "DEVICE.name, " _
 		& "DEVICE.inventory, " _
 		& "DEVICE.MOL, " _
-		& "DEVICE.description, " _
-		& "DEVICE.used " _
+		& "DEVICE.description " _
 		& "FROM DEVICE " _
 		& "LEFT OUTER JOIN DEVICE AS DEVICE_1 ON DEVICE.number_comp = DEVICE_1.number_device " _
 		& "LEFT OUTER JOIN [GROUP] ON [GROUP].G_ID = DEVICE.G_ID " _
@@ -141,14 +141,14 @@
 			& "<th>Не распределенные устройства" _
 			& "</tr></table>" & head
 			do while not rs.eof
-				if rs("used") then led = "on" else led = "off"
-				response.write "<tr id='" & trim(rs(0)) & "' in='dg" & rs(1) & "' class='item'>" _
+				if rs(0) then led = "on" else led = "off"
+				response.write "<tr id='" & trim(rs(1)) & "' in='dg" & rs(2) & "' class='item drop-el'>" _
 				& "<td><input type='checkbox' class='selecter' />" _
 				& "<td><div class='led " & led & "'></div>" _
-				& "<td>" & trim(rs(2)) _
 				& "<td>" & trim(rs(3)) _
 				& "<td>" & trim(rs(4)) _
 				& "<td>" & trim(rs(5)) _
+				& "<td>" & trim(rs(6)) _
 				& "</tr>"
 				rs.movenext
 			loop

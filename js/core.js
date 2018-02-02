@@ -1,14 +1,13 @@
-/*
-Обслуживание текстовых полей ввода с классом def, предполагающих наличие в пустом поле поясняющего текста
-Поясняющий текст указывается через атрибут def для каждого из текстовых полей
-*/
-$("input.def")
-	.each(function() {
-		this.setAttribute("placeholder", this.getAttribute("def"));
-		_blur(this)
-	})
-	.on("focus", function() { _focus(this) })
-	.on("blur", function() { _blur(this) });
+// Обслуживание текстовых полей ввода с классом def, предполагающих наличие в пустом поле поясняющего текста
+// Поясняющий текст указывается через атрибут def для каждого из текстовых полей
+$("input.def").each(function() {
+	this.setAttribute("placeholder", this.getAttribute("def"));
+	_blur(this)
+})
+
+$(document)
+	.on("focus", "input.def", function() { _focus(this) })
+	.on("blur", "input.def", function() { _blur(this) });
 
 function _blur(input) {
 	if (input.value == '') {
@@ -24,11 +23,10 @@ function _focus(input) {
 	}
 }
 
-/*
-Работа с cookie значениями
-Можно устанавливать и читать значения
-Для удаления значения необходимо выполнить установку значения, но указать при этом expires: -1
-*/
+
+// Работа с cookie значениями
+// Можно устанавливать и читать значения
+// Для удаления значения необходимо выполнить установку значения, но указать при этом expires: -1
 function getCookie(name) {
 	var matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
 	return matches ? decodeURIComponent(matches[1]) : undefined;
@@ -54,9 +52,7 @@ function setCookie(name, value, options) {
 }
 
 
-/* 
-Поиск по строкам таблицы
-*/
+/** Поиск по строкам таблицы */
 function _search(input) {
 	var index = input.parentNode.cellIndex;
 	var tbody = input.parentNode.parentNode.parentNode.parentNode.getElementsByTagName("tbody")[0];
@@ -73,12 +69,10 @@ function _search(input) {
 }
 
 
-/*
-Контекстные меню
-*/
+/** Контекстные меню */
 var when, menuId;
 
-// Контекстное меню по клику
+/** Контекстное меню по клику */
 function _menu(obj) {
 	$(".context-menu:visible").css("display", "none");
 	clearTimeout(when);
@@ -95,15 +89,16 @@ function _menu(obj) {
 }
 
 
-/*
-Диалоговые окна для взаимодействия с пользователем и выполнения несложных операций
-Должно предусматривать: 
-	выбор варианта/отмена
-	подтверждение/отмена
-	ввод данных/отмена
-	уведомление
-*/
+/**
+ * Диалоговые окна для взаимодействия с пользователем и выполнения несложных операций
+ * Должно предусматривать:
+ * выбор варианта/отмена
+ * подтверждение/отмена
+ * ввод данных/отмена
+ * уведомление
+ * */
 function _modal(target, source, handler) {
+
 	// Скрытие всех активных меню
 	$(".context-menu:visible").css("display", "none");
 	clearTimeout(when);
@@ -117,9 +112,7 @@ function _modal(target, source, handler) {
 }
 
 
-/*
-Функционал групп
-*/
+/** Функционал групп */
 function _group() {
 	var _in;
 	$("tr.item,div.group").each(function() {
@@ -159,7 +152,7 @@ function groupBeforeMove() {
 	// Составляем список исключений
 	exceptions.push(menuId); // Сама перемещаемая группа
 	exceptions.push($(obj).parent().closest(".group").attr("id")); // Группа, в которой аходится перемещаемая (на 1 уровне вложенности)
-	$(obj).find(".group").each(function() { exceptions.push(this.id) }); // Все группы, вложенные в перемещаемую 
+	$(obj).find(".group").each(function() { exceptions.push(this.id) }); // Все группы, вложенные в перемещаемую
 
 	// Составляем список доступных вариантов для перемещения
 	var select = "<option value='0'>Расположить отдельно";
@@ -212,25 +205,26 @@ var restore = function() {
 }
 
 
-/*
-Drag-n-drop функционал
-*/
+/* Drag-n-drop функционал */
+$(function () {
+	$("#cart")
+		.draggable().draggable("disable");
+	$("#cart")
+		.on("mousedown", ".cart-header", function() { $("#cart").draggable("enable"); })
+		.on("mouseup", ".cart-header", function() { $("#cart").draggable("disable"); });
+})
 
-$("#cart")
-	.draggable().draggable("disable")
-	.on("mousedown", ".cart-header", function() { $("#cart").draggable("enable"); })
-	.on("mouseup", ".cart-header", function() { $("#cart").draggable("disable"); });
 
 
-/*
-Сортировка в таблице по столбцу
-Для его корректной работы нужно четко указать элементы thead и tbody, а так же прописать тип данных в столбце для каждого th в thead
-Типы для сортировки: 
-	number - приведение к числовому значению
-	date - приведение к дате, работает с форматами дд.мм.гггг
-	string - алфавитное сравнение
-	type - алфавитное сравнение по имени класса элемента div в ячейке
-*/
+/**
+ * Сортировка в таблице по столбцу
+ * Для его корректной работы нужно четко указать элементы thead и tbody, а так же прописать тип данных в столбце для каждого th в thead
+ * Типы для сортировки:
+ * number - приведение к числовому значению
+ * date - приведение к дате, работает с форматами дд.мм.гггг
+ * string - алфавитное сравнение
+ * type - алфавитное сравнение по имени класса элемента div в ячейке
+ * */
 function _sort(th) {
 	function to_date(s) {
 		if (s.indexOf(" ") > -1) {
@@ -244,7 +238,7 @@ function _sort(th) {
 				return new Date(t[2], t[1], t[0]);
 			} else {
 				var t = s.split(":");
-				return new Date("2000", "1", "1", t[0], t[1], t[2]);
+				return new Date(2000, 1, 1, t[0], t[1], t[2]);
 			}
 		}
 	}
@@ -300,9 +294,9 @@ function _sort(th) {
 	table.appendChild(tbody);
 }
 
-/* 
+/*
 Реализация истории браузера с учетом ajax вьювов через location.hash
-Функция cartOpenBack отдается на откуп конкретному приложению, для корректной обработки типа открываемого элемента 
+Функция cartOpenBack отдается на откуп конкретному приложению, для корректной обработки типа открываемого элемента
 */
 var id = "",
 	hashSet = true;
@@ -339,11 +333,11 @@ function cartClose() {
 }
 
 
-/* 
-Мульти-выбор табличных элементов (универсальный) 
-Все действия с выбранными элементами реализуются в div#selected и собственных обработчиках
-Для обработки списка выбранных элементов используется глобальный массив selected и сериализующая его функция selectionToForm(имя, разделитель)
-*/
+/**
+ * Мульти-выбор табличных элементов (универсальный)
+ * Все действия с выбранными элементами реализуются в div#selected и собственных обработчиках
+ * Для обработки списка выбранных элементов используется глобальный массив selected и сериализующая его функция selectionToForm(имя, разделитель)
+ * */
 $(".view")
 	.on("change", ".items input.selecter-all", function() { setAllSelection(this) })
 	.on("change", ".items input.selecter", function() { setSelection(this) });
@@ -406,7 +400,7 @@ function selectionPanel() {
 	var $sel = $("#selected");
 	if (selected.length > 0) {
 		"none" == $sel.css("display") && $sel.slideDown(100);
-		$sel.find("b").html(selected.length);
+		$sel.find("b").html(String(selected.length));
 	} else {
 		"none" != $sel.css("display") && $sel.slideUp(100);
 	}
@@ -420,9 +414,30 @@ function selectionToForm(name, separate) {
 	return text;
 }
 
-
-
 function closeExportsPanel() {
 	$('#excelExports').slideUp(100);
 	document.getElementById("excelExportsLink").innerHTML = "";
+}
+
+
+
+$(function () {
+	setDroppable()
+	setDraggable()
+	console.log('set drop')
+})
+
+function setDroppable() {
+	$('.drop-source').droppable({
+		accept: '.drop-el',
+		classes: {
+			'ui-droppable-hover': '.drop-hover'
+		}
+	});
+}
+
+function setDraggable() {
+	$('.drop-el').draggable({
+		appendTo: '.drop-source'
+	});
 }
