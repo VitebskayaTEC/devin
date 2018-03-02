@@ -76,7 +76,7 @@
 
 	<script src="/cdn/jquery-ui.min.js"></script>
 	<script src='/devin/js/core.js'></script>
-	<script src='/devin/js/device.js'></script>
+	<script src='/devin/js/device.js?v=1'></script>
 	<script>
 		var sortKey = "<%=request.queryString("key")%>",
 			sortDesc = "<%=request.queryString("desc")%>",

@@ -167,13 +167,11 @@
 
 	response.write "</select></tr></table></form>"
 
-	rs.close:   set rs   = nothing
-	conn.close: set conn = nothing
-	set keys = nothing
-
 	response.write "<div class='cart-links'><a onclick='cartHistoryRepair()'>История ремонтов</a><br/>"
 	if cls = "CMP" then
-		response.write "<a onclick='cartAidaAutorun()'>Автозагрузка</a><br/><a onclick='cartAidaDevices()'>Оборудование</a><br/>"
+		response.write "<a onclick='cartAidaAutorun()'>Автозагрузка</a>" _
+		& "<br/><a onclick='cartAidaPrograms(""" & keys("name") & """)'>Операционная система и установленное ПО</a><br/>" _
+		& "<a onclick='cartAidaDevices()'>Оборудование</a><br/>"
 	end if
 	if cls = "CMP" or cls = "DIS" or cls = "PRN" then
 		response.write "<a onclick='cartDefect()'>Дефектный акт</a>"
@@ -191,4 +189,8 @@
 	& "<td onclick='cartCopy()'>Копир.</td>" _
 	& "<td onclick='cartClose()'>Закрыть</td>" _
 	& "</tr></table>"
+
+	rs.close:   set rs   = nothing
+	conn.close: set conn = nothing
+	set keys = nothing
 %>

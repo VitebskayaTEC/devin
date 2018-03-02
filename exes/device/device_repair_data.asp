@@ -6,9 +6,9 @@
 
 	dim id : id = request.querystring("id")
 	dim only : only = Request.QueryString("only")
-	dim classname : classname = Request.QueryString("classname")
+	dim group : group = Request.QueryString("gid")
 	if only = "" or isnull(only) or only = "1" then only = true else only = false
-	if classname = "" or isnull(classname)  then classname = "ALL"
+	if group = "" or isnull(group)  then group = 0
 	
 	' Составление sql запроса
 	sql = "SELECT SKLAD.NCard AS Count, SKLAD.Nis, SKLAD.NCard AS ID, SKLAD.NCard, SKLAD.class_name, SKLAD.Name, SKLAD.uchet, SKLAD.NCard AS V "
@@ -22,7 +22,7 @@
 	else
 		sql = sql & "WHERE (SKLAD.Nis > 0) AND (SKLAD.delit = 1) "
 	end if
-	if classname <> "ALL" then sql = sql & "AND (SKLAD.class_name = '" & classname & "') "
+	if group <> 0 then sql = sql & "AND (SKLAD.G_Id = " & group & ") "
 	sql = sql & "ORDER BY SKLAD.class_name, SKLAD.NCard, SKLAD.name"
 
 	' Получение списка деталей 

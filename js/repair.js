@@ -73,7 +73,18 @@ function writeoffCreate() {
 }
 
 function writeoffExport() {
-	$("#console").load("/devin/exes/repair/writeoff_export_to_excel.asp?id=" + id.replace("off", "") + "&r=" + Math.random());
+	$.ajax({
+		url: "http://web.vst.vitebsk.energo.net/devin/writeoff/print/" + id.replace("off", ""),
+		crossDomain: true,
+		xhrFields: {
+			origin: "http://www.vst.vitebsk.energo.net",
+			withCredentials: true
+		}
+	}).done(function (data) {
+		$("#console").html(data);
+	})
+
+	//$("#console").load("http://web.vst.vitebsk.energo.net/devin/writeoff/print/" + id.replace("off", "") + "&r=" + Math.random());
 }
 
 function onSelectedRepairs() {
@@ -116,11 +127,23 @@ function writeoffOpen() {
 
 // Экспорт списания в Excel без открытия карточки
 function writeoffPrint() {
-	$.get("/devin/exes/repair/writeoff_export_to_excel.asp?id=" + menuId.replace("off", "") + "&r=" + Math.random(), function(data) {
+	$.ajax({
+		url: "http://web.vst.vitebsk.energo.net/devin/writeoff/print/" + menuId.replace("off", ""),
+		crossDomain: true,
+		xhrFields: {
+			origin: "http://www.vst.vitebsk.energo.net",
+			withCredentials: true
+		}
+	}).done(function (data) {
 		document.getElementById("excelExportsLink").innerHTML = data;
 		$(".panel:not(#excelExports").fadeOut(100);
 		$("#excelExports").fadeIn(100);
-	});
+	})
+	/* $.get("http://web.vst.vitebsk.energo.net/devin/writeoff/print/" + menuId.replace("off", ""), function(data) {
+		document.getElementById("excelExportsLink").innerHTML = data;
+		$(".panel:not(#excelExports").fadeOut(100);
+		$("#excelExports").fadeIn(100);
+	}); */
 }
 
 // Списывание всех ремонтов в списании

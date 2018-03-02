@@ -104,6 +104,15 @@ function cartAidaAutorun() {
 		.fadeIn(100);
 }
 
+function cartAidaPrograms(name) {
+	$.get('/devin/views/device_aida_programs.asp', { 
+			name: name,
+			r: Math.random()
+		}, function (data) {
+			$('#cart').html(data).fadeIn(100);
+		});
+}
+
 function cartDefect() {
 	$('#cart')
 		.load(
@@ -307,7 +316,7 @@ function filterClassName(node) {
 	$('#repair-data').load(
 		'/devin/exes/device/device_repair_data.asp?only=no&id=' +
 			id +
-			'&classname=' +
+			'&gid=' +
 			node.value +
 			'&r=' +
 			Math.random()
@@ -316,7 +325,7 @@ function filterClassName(node) {
 
 function filterOnly(node) {
 	if (node.checked) {
-		document.getElementById('classname').value = class_device;
+		document.getElementById('group').value = class_device;
 		$('#repair-data').load(
 			'/devin/exes/device/device_repair_data.asp?only=1&id=' +
 				id +
@@ -327,8 +336,8 @@ function filterOnly(node) {
 		$('#repair-data').load(
 			'/devin/exes/device/device_repair_data.asp?only=no&id=' +
 				id +
-				'&classname=' +
-				document.getElementById('classname').value +
+				'&gid=' +
+				document.getElementById('group').value +
 				'&r=' +
 				Math.random()
 		);

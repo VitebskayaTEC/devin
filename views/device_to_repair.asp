@@ -22,23 +22,27 @@
 	end if
 	rs.close
 %>
-	<div>Тип деталей:
-		<select id='classname' onchange='filterClassName(this)'>
-			<option value='ALL'>Все
-			<option value='CMP'>Компьютер
-			<option value='PRN'>Принтер
-			<option value='DIS'>Монитор
-			<option value='SWT'>Модем
-			<option value='SCN'>Сканер
-			<option value='UPS'>UPS
-			<option value='TO'>ТО
-			<option value='RR'>Другое
-			<option value='LIC'>Лицензия
-		</select> 
+	<div>Запчасть:
+		<select id='group' onchange='filterClassName(this)'>
+		<%
+		rs.open "SELECT G_Id, G_Title FROM [GROUP] WHERE G_Type = 'storage'", conn
+		if not rs.eof then
+			do while not rs.eof
+				response.write "<option value='" & rs(0) & "'>" & rs(1) & "</option>"
+				rs.moveNext
+			loop
+		end if 
+		rs.close
+		%>
+		</select>
+		
 		<input type='checkbox' id='only' checked onchange='filterOnly(this)' /><label for='only'>Только доступные</label>
+	</div>
+	<div>
 		<input type='checkbox' id='writeoff' /><label for='writeoff'>Сгруппировать</label>
 		<input type='text' class='def' def='название группы' value='Ремонты за <%=date%>' id='writeoff-name' />
 	</div>
+
 	<form id='repair-form'>
 		<div class='cart-overflow' id='repair-data'></div>
 	</form>
