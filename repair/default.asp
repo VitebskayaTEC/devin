@@ -69,7 +69,7 @@
 
 	<script src="/cdn/jquery-ui.min.js"></script>
 	<script src="/devin/js/core.js"></script>
-	<script src='/devin/js/repair.js'></script>
+	<script src='/devin/js/repair.js?v=1'></script>
 
 </BODY>
 

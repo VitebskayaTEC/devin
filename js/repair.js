@@ -74,7 +74,7 @@ function writeoffCreate() {
 
 function writeoffExport() {
 	$.ajax({
-		url: "http://web.vst.vitebsk.energo.net/devin/writeoff/print/" + id.replace("off", ""),
+		url: "http://web.vst.vitebsk.energo.net/export/writeoff/print/" + id.replace("off", ""),
 		crossDomain: true,
 		xhrFields: {
 			origin: "http://www.vst.vitebsk.energo.net",
@@ -128,7 +128,7 @@ function writeoffOpen() {
 // Экспорт списания в Excel без открытия карточки
 function writeoffPrint() {
 	$.ajax({
-		url: "http://web.vst.vitebsk.energo.net/devin/writeoff/print/" + menuId.replace("off", ""),
+		url: "http://web.vst.vitebsk.energo.net/export/writeoff/print/" + menuId.replace("off", ""),
 		crossDomain: true,
 		xhrFields: {
 			origin: "http://www.vst.vitebsk.energo.net",
