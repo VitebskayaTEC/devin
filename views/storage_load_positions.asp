@@ -84,18 +84,21 @@
 	dim storage(1000, 3), Nstorage
 	sql = "SELECT NCard, Date, Nadd, Inum FROM SKLAD WHERE " & sql & " ORDER BY NCard"
 	
-	conn.open everest
-	rs.open sql, conn
-		Nstorage = 0
-		do while not rs.eof
-			for i = 0 to 3
-				storage(Nstorage, i) = rs(i)
-			next
-			rs.movenext
-			Nstorage = Nstorage + 1
-		loop
-	rs.close
-	conn.close
+	if (Nexcel > 0) then
+		conn.open everest
+		rs.open sql, conn
+			Nstorage = 0
+			do while not rs.eof
+				for i = 0 to 3
+					storage(Nstorage, i) = rs(i)
+				next
+				rs.movenext
+				Nstorage = Nstorage + 1
+			loop
+		rs.close
+		conn.close
+	end if
+	
 	set rs = nothing
 	set conn = nothing
 	
