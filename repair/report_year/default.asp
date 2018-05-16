@@ -22,29 +22,9 @@
 	<%
 		dim conn: set conn = server.createObject("ADODB.Connection")
 		dim rs:   set rs   = server.createObject("ADODB.Recordset")
+		dim sql
+		
 		conn.open everest
-
-		dim sql: sql = "SELECT " _
-			& "w.W_Id              AS Id,  " _
-			& "w.W_Date            AS [Date], " _
-			& "w.W_Name            AS [Name], " _
-			& "r.Inum              AS Repair_Id, " _
-			& "r.Date              AS Repair_Date, " _
-			& "r.Units             AS Repair_Count, " _
-			& "r.Author            AS Repair_User, " _
-			& "d.number_device     AS Repair_Device_Id, " _
-			& "d.name              AS Repair_Device_Name, " _
-			& "d.description       AS Repair_Device_Description, " _
-			& "s.Ncard             AS Repair_Storage_Id, " _
-			& "s.Name              AS Repair_Storage_Name, " _
-			& "s.Price             AS Repair_Storage_Price, " _
-			& "(r.Units * s.Price) AS Repair_Price " _
-			& "FROM Writeoff w " _
-			& "LEFT OUTER JOIN Remont r ON w.W_ID = r.W_ID " _
-			& "LEFT OUTER JOIN Device d ON r.Id_D = d.number_device " _
-			& "LEFT OUTER JOIN Sklad s ON r.Id_U = s.Ncard " _
-			& "WHERE Year(w.W_Date) = Year(GetDate()) AND r.IfSpis = 1 " _
-			& "ORDER BY [Date], Id, Repair_Date, Repair_Device_Id;"
 
 		sql = "SELECT " _
 			& "w.W_Id              AS Id,  " _
