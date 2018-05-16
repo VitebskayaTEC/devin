@@ -206,13 +206,14 @@ var restore = function() {
 
 
 /* Drag-n-drop функционал */
-$(function () {
+if (document.getElementById('cart')) {
 	$("#cart")
 		.draggable().draggable("disable");
 	$("#cart")
 		.on("mousedown", ".cart-header", function() { $("#cart").draggable("enable"); })
 		.on("mouseup", ".cart-header", function() { $("#cart").draggable("disable"); });
-})
+}
+
 
 
 
@@ -417,27 +418,4 @@ function selectionToForm(name, separate) {
 function closeExportsPanel() {
 	$('#excelExports').slideUp(100);
 	document.getElementById("excelExportsLink").innerHTML = "";
-}
-
-
-
-$(function () {
-	setDroppable()
-	setDraggable()
-	console.log('set drop')
-})
-
-function setDroppable() {
-	$('.drop-source').droppable({
-		accept: '.drop-el',
-		classes: {
-			'ui-droppable-hover': '.drop-hover'
-		}
-	});
-}
-
-function setDraggable() {
-	$('.drop-el').draggable({
-		appendTo: '.drop-source'
-	});
 }

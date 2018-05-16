@@ -16,7 +16,7 @@
 
 	<%
 		dim search : search = DecodeUTF8(request.querystring("text"))
-		menu("<li><input onkeyup='search(this)' def='Поиск' class='def' value='" & search & "'/>" _
+		menu("<li><input onkeyup='search(this)' placeholder='Поиск' value='" & search & "'/>" _
 		& "<li><a class='has-icon' onmousedown='_menu(this)' menu='main'><div class='icon ic-menu'></div></a>")%>
 
 	<div id='selected' class='panel'>
@@ -39,32 +39,33 @@
 	<div id="cart" class='cart-new'></div>
 
 	<ul class='context-menu' id='main'>
-		<li onclick='location="/devin/analyze/"'>Расход картриджей
-		<li onclick='location="/devin/repair/report_year/"'>Годовой отчет по ремонтам
-		<li onclick='groupCreate()'>Создать группу
-		<li onclick='writeoffCreate()'>Создать списание
-		<li onclick='writeoffSetup()'>Шаблоны списаний
+		<li onclick='location="/devin/analyze/"'>Закупка картриджей</li>
+		<li onclick='location="/devin/repair/report_year/"'>Годовой отчет по ремонтам</li>
+		<li onclick='location="/devin/repair/cartridges_usage/"'>Годовой отчет по картриджам</li>
+		<li onclick='groupCreate()'>Создать группу</li>
+		<li onclick='writeoffCreate()'>Создать списание</li>
+		<li onclick='writeoffSetup()'>Шаблоны списаний</li>
 	</ul>
 	<ul class='context-menu' id='writeoff'>
-		<li onclick='writeoffOpen()'>Открыть карточку
-		<li onclick='writeoffPrint()'>Печать
-		<li onclick='groupBeforeMove()'>Переместить
-		<li onclick='offMenuRepairs()'>Отметить все ремонты как списаные
-		<li onclick='onMenuRepairs()'>Отметить все ремонты как активные
-		<li onclick='deleteMenuRepairs()'>Отменить все ремонты
-		<li onclick='writeoffDelete()'>Удалить списание
+		<li onclick='writeoffOpen()'>Открыть карточку</li>
+		<li onclick='writeoffPrint()'>Печать</li>
+		<li onclick='groupBeforeMove()'>Переместить</li>
+		<li onclick='offMenuRepairs()'>Отметить все ремонты как списаные</li>
+		<li onclick='onMenuRepairs()'>Отметить все ремонты как активные</li>
+		<li onclick='deleteMenuRepairs()'>Отменить все ремонты</li>
+		<li onclick='writeoffDelete()'>Удалить списание</li>
 	</ul>
 	<ul class='context-menu' id='group'>
-		<li onclick='groupEdit()'>Переименовать
-		<li onclick='groupBeforeMove()'>Переместить
-		<li onclick='groupCreateInner()'>Создать вложенную группу
-		<li onclick='groupErase()'>Очистить
-		<li onclick='groupDelete()'>Удалить
+		<li onclick='groupEdit()'>Переименовать</li>
+		<li onclick='groupBeforeMove()'>Переместить</li>
+		<li onclick='groupCreateInner()'>Создать вложенную группу</li>
+		<li onclick='groupErase()'>Очистить</li>
+		<li onclick='groupDelete()'>Удалить</li>
 	</ul>
 	<ul class='context-menu' id='modal'>
-		<li>
-		<li>Ок
-		<li onclick='$(this).parent().fadeOut(100)'>Отмена
+		<li></li>
+		<li>Ок</li>
+		<li onclick='$(this).parent().fadeOut(100)'>Отмена</li>
 	</ul>
 
 	<script src="/cdn/jquery-ui.min.js"></script>

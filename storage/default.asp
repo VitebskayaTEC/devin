@@ -16,7 +16,7 @@
 
 	<%
 		dim search: search = DecodeUTF8(request.querystring("text"))
-		menu("<li><input onkeyup='search(this)' def='Поиск' class='def' value='" & search & "'/>" _
+		menu("<li><input onkeyup='search(this)' placeholder='Поиск' value='" & search & "'/>" _
 		& "<li><a class='has-icon' onmousedown='_menu(this)' menu='main'><div class='icon ic-menu'></div></a>")
 	%>
 

@@ -187,10 +187,10 @@
 		<script id='insert_move_select'>
 			document.getElementById('move_select').innerHTML = "<select id='moveKey'><option value='0'>Разместить отдельно<%
 				for i = 0 to Nwriteoff - 1
-					response.write "<option value='w" & writeoff(i, 1) & "'>[Списание] " & writeoff(i, 2)
+					response.write "<option value='w" & writeoff(i, 1) & "'>[Списание] " & replace(writeoff(i, 2), """", "\""")
 				next
 				for i = 0 to Ngroups - 1
-					response.write "<option value='g" & groups(i, 0) & "'>[Группа] " & groups(i, 2)
+					response.write "<option value='g" & groups(i, 0) & "'>[Группа] " & replace(groups(i, 2), """", "\""")
 				next
 			%></select>";
 			{

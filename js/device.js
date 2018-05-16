@@ -129,14 +129,7 @@ function cartCreate() {
 		if (data.indexOf('error') < 0) {
 			id = data;
 			reload({});
-			$('#cart')
-				.load(
-					'/devin/views/device_cart.asp?id=' +
-						id +
-						'&r=' +
-						Math.random()
-				)
-				.fadeIn(100);
+			$('#cart').load('/devin/views/device_cart.asp?id=' + id + '&r=' + Math.random()).fadeIn(100);
 		}
 	});
 }
@@ -199,11 +192,11 @@ function history() {
 var state = {
 	key: 0,
 	direction: 0,
-	text: '',
+	search: '',
 	queryString: function() {
 		return (
-			'text=' +
-			encodeURIComponent(this.text) +
+			'search=' +
+			encodeURIComponent(document.getElementById('search').value) +
 			'&key=' +
 			this.key +
 			'&direction=' +

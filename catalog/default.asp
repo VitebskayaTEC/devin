@@ -15,7 +15,7 @@
 <body>
 
 <%
-	menu("<li><input onkeyup='search(this)' def='Поиск' class='def' value=''/><li><a class='has-icon' onmousedown='_menu(this)' menu='main'><div class='icon ic-menu'></div></a>")
+	menu("<li><input onkeyup='search(this)' placeholder='Поиск' value=''/><li><a class='has-icon' onmousedown='_menu(this)' menu='main'><div class='icon ic-menu'></div></a>")
 
 	dim conn : 	set conn = server.createObject("ADODB.Connection")
 	dim rs : 	set rs = server.createObject("ADODB.Recordset")

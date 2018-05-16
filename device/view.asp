@@ -7,7 +7,7 @@
 	dim sortKey:       sortKey       = request.queryString("key")
 	dim sortDirection: sortDirection = request.queryString("direction")
 	dim id:            id            = request.queryString("id")
-	dim search:        search        = DecodeUTF8(request.queryString("text"))
+	dim search:        search        = request.queryString("search")
 	dim head:          head          = "<table class='items'><thead>" _
 	& "<td width='20px'><input type='checkbox' class='selecter-all' />" _
 	& "<th width='20px' data-type='type'>" _

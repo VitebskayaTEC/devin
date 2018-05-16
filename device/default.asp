@@ -15,8 +15,8 @@
 <body>
 
 	<%
-		dim search: search = DecodeUTF8(request.querystring("text"))
-		menu("<li><input def='Поиск' class='def' value='" & search & "'/>" _
+		dim search: search = request.querystring("search")
+		menu("<li><form method='get' action='./'><input name='search' id='search' placeholder='Поиск' value='" & search & "'/></form>" _
 		& "<li><a class='has-icon' onmousedown='_menu(this)' menu='main'><div class='icon ic-menu'></div></a>")
 		'onkeyup='search(this)'
 	%>
@@ -76,11 +76,11 @@
 
 	<script src="/cdn/jquery-ui.min.js"></script>
 	<script src='/devin/js/core.js'></script>
-	<script src='/devin/js/device.js?v=1'></script>
+	<script src='/devin/js/device.js?v=2'></script>
 	<script>
 		var sortKey = "<%=request.queryString("key")%>",
 			sortDesc = "<%=request.queryString("desc")%>",
-			sortText = "<%=request.queryString("text")%>";
+			sortText = "<%=request.queryString("search")%>";
 
 		$(".view")
 			.on("mousedown", ".unit:not(#solo) .caption th,.unit:not(#solo) .caption td:not(:first-child)", function() { toggle(this) })
