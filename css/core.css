@@ -1,4 +1,8 @@
-/* Общие стили */
+/* Base */
+
+* {
+	box-sizing: border-box;
+}
 
 body,
 div,
@@ -11,8 +15,8 @@ li {
 }
 
 body {
-    background-image: url(../img/background.png);
-    font: normal 12pt Segoe UI;
+    background-image: url('../img/background.png');
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 table {
@@ -21,7 +25,7 @@ table {
 }
 
 
-/* Меню */
+/* Navigation menu */
 
 .main-menu {
     position: fixed;
@@ -47,7 +51,7 @@ table {
 
 .main-menu li a {
     display: block;
-    min-width: 80px;
+    min-width: 100px;
     padding: 3px;
     padding-top: 6px;
     padding-bottom: 6px;
@@ -79,7 +83,7 @@ a.has-icon {
 }
 
 
-/* Шапка главной таблицы */
+/* Main view table header */
 
 .main {
     background: #fff;
@@ -123,7 +127,7 @@ a.has-icon {
 }
 
 
-/* Элементы */
+/* View elements */
 
 .unit {
     margin: 10px 0;
@@ -176,7 +180,7 @@ a.has-icon {
 }
 
 
-/* Табличные данные */
+/* View table data */
 
 .items {
     border: 1px solid transparent;
@@ -251,7 +255,7 @@ a.has-icon {
 }
 
 
-/* Карточка элемента  */
+/* Element's cart  */
 
 .cart-new {
     display: none;
@@ -388,7 +392,71 @@ label:hover {
 }
 
 
-/* Контекстные меню */
+/* View filter */
+
+.filter {
+    background: #fff;
+    padding: 4px;
+    display: inline-block;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+}
+
+.filter input {
+    padding: 4px;
+}
+
+.filter select {
+    padding: 4px 30px 4px 10px;
+}
+
+
+/* View statistics data */
+
+.stats {
+    background: #fff;
+    border: 1px solid #ccc;
+}
+
+.stats th {
+    padding: 4px;
+    font-weight: 500;
+    font-size: 10pt;
+    background: #E6B451;
+}
+
+.stats td {
+    padding: 4px;
+    font-size: 10pt;
+    border: 1px solid #ccc;
+    text-align: center;
+}
+
+.stats tr td:first-child,
+.stats tr th:first-child {
+    text-align: left;
+}
+
+.stats tbody tr:hover,
+.stats tbody tr:hover a {
+    background: #eee;
+}
+
+.stats a {
+    color: #000;
+    text-decoration: none;
+}
+
+.stats tbody tr a:hover {
+    color: #3E97F9;
+    text-decoration: underline;
+}
+
+.stats .summary td {
+    background: #90dc78;
+}
+
+/* Context menu */
 
 .context-menu {
     display: none;
@@ -422,7 +490,7 @@ label:hover {
 }
 
 
-/* Вспомогательные стили */
+/* Addons */
 
 .hide {
     display: none;
@@ -469,7 +537,6 @@ label:hover {
     height: 8px;
     border-radius: 100%;
 	background: #43A85B;
-	display: inline;
 	display: inline-block;
 	margin-right: 5px;
 }
@@ -527,7 +594,7 @@ label:hover {
 }
 
 
-/* CSS анимации */
+/* animations */
 
 .unit,
 .open {
@@ -536,7 +603,7 @@ label:hover {
 }
 
 
-/* Иконки */
+/* icons */
 
 .icon {
     display: inline-block;
@@ -557,8 +624,6 @@ label:hover {
     background: url('/devin/img/devin_icons_blue.png') no-repeat
 }
 
-
-/*.u_selected > .g_head .g_info .icon, .u_selected > .g_icon .icon, .enabled.icon { background: url('../img/devin_icons_yellow.png') no-repeat }*/
 
 .ic-add {
     background-position: 0 0 !important
