@@ -129,7 +129,7 @@
 
 		<tr>
 			<td>Ì.Î.Ë.</td>
-			<td><input name='mol' value='<%=keys("MOL")%>"' /></td>
+			<td><input name='mol' value='<%=keys("MOL")%>' /></td>
 		</tr>
 
 		<tr>
@@ -205,7 +205,7 @@
 				<input class='numbers' name='passportgold' value='<%=keys("PassportGold")%>' />
 				<a>
 					<b>
-						<% if not IsNull(keys("Devices1C_Gold")) then response.write (Fix(keys("Devices1C_Gold") * 10000) / 10000) %>
+						<% if not IsNull(keys("Devices1C_Gold")) then response.write (Fix(keys("Devices1C_Gold") * 100000) / 100000) %>
 					</b>
 				</a>
 			</td>
@@ -217,7 +217,7 @@
 				<input class='numbers' name='passportsilver' value='<%=keys("PassportSilver")%>' />
 				<a>
 					<b>
-						<% if not IsNull(keys("Devices1C_Silver")) then response.write (Fix(keys("Devices1C_Silver") * 10000) / 10000) %>
+						<% if not IsNull(keys("Devices1C_Silver")) then response.write (Fix(keys("Devices1C_Silver") * 100000) / 100000) %>
 					</b>
 				</a>
 			</td>
@@ -229,7 +229,7 @@
 				<input class='numbers' name='passportplatinum' value='<%=keys("PassportPlatinum")%>' />
 				<a>
 					<b>
-						<% if not IsNull(keys("Devices1C_Platinum")) then response.write (Fix(keys("Devices1C_Platinum") * 10000) / 10000) %>
+						<% if not IsNull(keys("Devices1C_Platinum")) then response.write (Fix(keys("Devices1C_Platinum") * 100000) / 100000) %>
 					</b>
 				</a>
 			</td>
@@ -241,7 +241,7 @@
 				<input class='numbers' name='passportmpg' value='<%=keys("PassportMPG")%>' />
 				<a>
 					<b>
-						<% if not IsNull(keys("Devices1C_Mpg")) then response.write (Fix(keys("Devices1C_Mpg") * 10000) / 10000) %>
+						<% if not IsNull(keys("Devices1C_Mpg")) then response.write (Fix(keys("Devices1C_Mpg") * 100000) / 100000) %>
 					</b>
 				</a>
 			</td>
