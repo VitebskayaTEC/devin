@@ -31,14 +31,13 @@
 				response.write "<option value='" & rs(0) & "'>" & rs(1) & "</option>"
 				rs.moveNext
 			loop
-		end if 
+		end if
 		rs.close
 		%>
 		</select>
-		
+
 		<input type='checkbox' id='only' checked onchange='filterOnly(this)' /><label for='only'>Только доступные</label>
-	</div>
-	<div>
+
 		<input type='checkbox' id='writeoff' /><label for='writeoff'>Сгруппировать</label>
 		<input type='text' class='def' def='название группы' value='Ремонты за <%=date%>' id='writeoff-name' />
 	</div>
@@ -55,10 +54,10 @@
 
 	<script>
 		$("#repair-data").load("/devin/exes/device/device_repair_data.asp?id=<%=id%>&r=" + Math.random());
-		document.getElementById("repair-form").onsubmit = function () { 
+		document.getElementById("repair-form").onsubmit = function () {
 			var event = event || window.event;
-			event.preventDefault(); 
+			event.preventDefault();
 		};
 		var class_device = "<%=class_device%>";
-		document.getElementById("classname").value = class_device;		
+		document.getElementById("classname").value = class_device;
 	</script>

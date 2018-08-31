@@ -7,7 +7,7 @@
 	dim sql  : sql = ""
 
 	conn.open everest
-	
+
 	response.write "<div class='cart-header'>ОС и ПО компьютера " & name & "</div>"
 
 	' Получение ID репорта на выбранный комп. Комп выбирается по имени (хз почему, т.к. привязка по uuid)
@@ -55,6 +55,6 @@
 	conn.close
 	set rs = nothing
 	set conn = nothing
-	
+
 	response.write "<table class='cart-menu'><tr><td onclick='cartBack()'>Вернуться к карточке<td onclick='cartClose()'>Закрыть</tr></table>"
 %>

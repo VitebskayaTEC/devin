@@ -270,13 +270,13 @@ a.has-icon {
     font: normal 12pt Segoe UI;
     padding: 6px;
     cursor: default;
-    min-width: 600px;
+    min-width: 610px;
     max-width: 1400px;
     min-height: 500px;
 }
 
 #cart {
-    max-width: 600px;
+    max-width: 610px;
 }
 
 .cart {
@@ -617,11 +617,11 @@ label:hover {
 }
 
 .icon {
-    background: url('/devin/img/devin_icons_black.png') no-repeat
+    background: url('/devin/content/img/devin_icons_black.png') no-repeat
 }
 
 .icon:hover {
-    background: url('/devin/img/devin_icons_blue.png') no-repeat
+    background: url('/devin/content/img/devin_icons_blue.png') no-repeat
 }
 
 

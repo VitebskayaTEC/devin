@@ -1,6 +1,6 @@
 <!-- #include virtual ="/devin/core/core.inc" -->
 <%
-	sub drop(str) 
+	sub drop(str)
 		response.write str
 		response.end
 	end sub
@@ -23,7 +23,7 @@
 	dim conn 	: set conn = server.createobject("ADODB.Connection")
 	dim rs 		: set rs = server.createobject("ADODB.Recordset")
 
-	
+
 	conn.open everest
 	rs.open sql, conn
 	if not rs.eof then
@@ -45,7 +45,7 @@
 			& "INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS) VALUES (@Date, 'repair' + @INum, @User, 'Администратор DEVIN', 'Ремонт [repair' + @Inum + '] помечен как активный');" _
 			& "" _
 			& "COMMIT;"
-		
+
 			rs.movenext
 		loop
 	end if

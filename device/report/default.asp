@@ -5,9 +5,9 @@
 <head>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta http-equiv="content-type" Content="text/html; charset=windows-1251" />
-	<link href="/devin/css/core.css" rel="stylesheet" />
-	<link href="/devin/css/device.css" rel="stylesheet" />
-	<link href="/devin/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+	<link href="/devin/content/css/core.css" rel="stylesheet" />
+	<link href="/devin/content/css/device.css" rel="stylesheet" />
+	<link href="/devin/content/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 	<title>DEVIN | Устройства</title>
 </head>
 
@@ -41,7 +41,7 @@
 		</form>
 	</div>
 
-	<script src='/cdn/jquery-1.12.4.min.js'></script>
+	<script src='/devin/content/lib/jquery-1.12.4.min.js'></script>
 
 	<div id='view' class='view'><% server.execute "view.asp" %></div>
 
@@ -73,9 +73,9 @@
 		<li onclick='$(this).parent().fadeOut(100)'>Отмена
 	</ul>
 
-	<script src="/cdn/jquery-ui.min.js"></script>
-	<script src='/devin/js/core.js'></script>
-	<script src='/devin/js/device.js'></script>
+	<script src="/devin/content/lib/jquery-ui.min.js"></script>
+	<script src='/devin/content/js/core.js'></script>
+	<script src='/devin/content/js/device.js'></script>
 	<script>
 		var sortKey = "<%=request.queryString("key")%>",
 			sortDesc = "<%=request.queryString("desc")%>",

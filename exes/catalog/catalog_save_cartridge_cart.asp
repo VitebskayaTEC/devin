@@ -13,7 +13,7 @@
 		dim sql : sql = ""
 		dim ifErr : ifErr = false
 
-		' Наименование 
+		' Наименование
 		val = DecodeUTF8(request.form("Caption"))
 		if rs(0) <> val then
 			sql = sql & "Caption = '" & val & "'"
@@ -27,7 +27,7 @@
 					if sql <> "" then sql = sql & ", "
 					sql = sql & "Price = '" & val & "'"
 				end if
-			else 
+			else
 				response.write "<div class='error'>Введено отрицательное значение стоимости. Ожидается положительное число</div>"
 				ifErr = true
 			end if
@@ -39,7 +39,7 @@
 			ifErr = true
 		end if
 
-		' Тип 
+		' Тип
 		val = request.form("Type")
 		if rs(2) <> val or isnull(rs(2)) then
 			if sql <> "" then sql = sql & ", "
@@ -67,7 +67,7 @@
 			else
 				response.write "<div class='done'>Нет изменений</div>"
 			end if
-		end if		
+		end if
 	end if
 	rs.close
 	conn.close

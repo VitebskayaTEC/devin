@@ -7,9 +7,9 @@
 <HEAD>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta http-equiv="content-type" Content="text/html; charset=windows-1251" />
-	<link href="/devin/css/core.css" rel="stylesheet" />
-	<link href="/devin/css/device.css" rel="stylesheet" />
-	<link href="/devin/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+	<link href="/devin/content/css/core.css" rel="stylesheet" />
+	<link href="/devin/content/css/device.css" rel="stylesheet" />
+	<link href="/devin/content/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 	<title>DEVIN | 1С</title>
 </HEAD>
 
@@ -17,13 +17,13 @@
 
 <%
 	menu("<li><a onclick='queryAll()'>Применить все</a>")
-	
+
 	response.write "<div class='view'>"
 
 	' Загружаем файл отчета
 	dim Uploader : set Uploader = new FileUploader
 	dim File, excelName
-	
+
 	Uploader.Upload()
 	If Uploader.Files.Count <> 0 Then
 		for each File In Uploader.Files.Items
@@ -32,8 +32,8 @@
 		next
 		objStream1.close
 		set objStream1 = nothing
-	end if	
-	
+	end if
+
 	' Открытие Excel отчета и считывание данных
 	dim i, j
 	dim excel 		: set excel = createobject("Excel.Application")
@@ -41,7 +41,7 @@
 	excel.application.displayalerts = false
 	dim workbook 	: set workbook = excel.workbooks.open("D:\data\DFS\Files\Inetpub\wwwroot\DEVIN\Excels\" & excelName)
 	dim cells 		: set cells = workbook.activesheet.cells
-	
+
 	dim exCells 	: exCells = array(11, 12, 13, 16, 21, 33) 'Обозначение, инв. номер, цена 1шт, дата прихода, кол-во прихода, кол-во остатка, счет учета
 	dim escape, position, excelData(1000, 5), Nexcel, cursor
 	escape = 0
@@ -49,9 +49,9 @@
 	Nexcel = 0
 	do while not escape > 5
 		cursor = cells(position, 33)
-		if cursor = "" or isnull(cursor) then 
+		if cursor = "" or isnull(cursor) then
 			escape = escape + 1 'если пустая клетка, начинаем их считать, если 5 подряд - выход
-		else 
+		else
 			escape = 0 'обнуляем счетчик пустых клеток, т.к. еще не конец документа
 			'проверка, есть ли остаток
 			if cells(position, 21) <> " " then
@@ -70,20 +70,20 @@
 	set workbook = nothing
 	set cells = nothing
 
-	
+
 	' Получение данных из базы
 	dim conn, rs, sql
 	set conn = server.createobject("ADODB.Connection")
 	set rs = server.createobject("ADODB.Recordset")
-	
+
 	for i = 0 to Nexcel
 		if i > 0 then sql = sql & " OR "
 		sql = sql & "(NCard = '" & excelData(i, 1) & "')"
 	next
-	
+
 	dim storage(1000, 3), Nstorage
 	sql = "SELECT NCard, Date, Nadd, Inum FROM SKLAD WHERE " & sql & " ORDER BY NCard"
-	
+
 	if (Nexcel > 0) then
 		conn.open everest
 		rs.open sql, conn
@@ -98,10 +98,10 @@
 		rs.close
 		conn.close
 	end if
-	
+
 	set rs = nothing
 	set conn = nothing
-	
+
 	' Выполнение обновления или добавления
 	dim compared, queryAll, className, queryOne
 	dim user : user = replace(request.servervariables("REMOTE_USER"), "VST\", "")
@@ -112,7 +112,7 @@
 	& "<th width='100px'>Инвентарный №<th>Наименование<th width='100px'>Дата прихода 1С<th width='100px'>Приход по 1C<th width='180px'>Приход по Devin" _
 	& "</thead><tbody>"
 	for i = 0 to Nexcel
-		
+
 		compared = false
 		for j = 0 to Nstorage
 			if excelData(i, 1) = storage(j, 0) then
@@ -120,7 +120,7 @@
 				if cstr(excelData(i, 4)) <> cstr(storage(j, 2)) then
 					queryOne = "UPDATE SKLAD SET Nadd = '" & excelData(i, 4) & "', Date = '" & DateToSql(excelData(i, 3)) & "' WHERE (NCard = '" & storage(j, 0) & "') "  & chr(13) _
 					& "INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS) VALUES (GETDATE(), '" & excelData(i, 1) & "', '" & user & "', 'Администратор DEVIN', 'Позиция " & excelData(i, 0) & " [" & excelData(i, 1) & "] обновлена на основании данных из выгрузки 1С [" & excelName & "], изменены: приход с [" & storage(j, 2) & "] на [" & excelData(i, 4) & "], дата прихода с [" & datevalue(storage(j, 1)) & "] на [" & datevalue(excelData(i, 3)) & "]')"
-				
+
 					response.write "<tr>" _
 					& "<td>" & excelData(i, 1) _
 					& "<td>" & excelData(i, 0)  _
@@ -129,15 +129,15 @@
 					& "<td>" & storage(j, 2) & " (" & datevalue(storage(j, 1)) & ") " _
 					& "<input type='button' value='Обновить' onclick='queryOne(this)' /><div class='hide'>" & queryOne & "</div>" _
 					& "</tr>"
-					
+
 					queryAll = queryAll & queryOne & chr(13)
 				end if
 			end if
 		next
-		if not compared then 
+		if not compared then
 			' Выбор типа для позиции
 			className = ""
-		
+
 			queryOne = "INSERT INTO SKLAD (Ncard, Name, Date, Price, Nadd, Nis, Nuse, Nbreak, uchet, G_ID, delit, class_name) VALUES (" _
 			& "'" & excelData(i, 1) & "', " _
 			& "'" & excelData(i, 0) & "', " _
@@ -152,7 +152,7 @@
 			& "'1', " _
 			& "'" & className & "') "  & chr(13) _
 			& "INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS) VALUES (GETDATE(), '" & excelData(i, 1) & "', '" & user & "', 'Администратор DEVIN', 'Позиция " & excelData(i, 0) & " [" & excelData(i, 1) & "] добавлена из выгрузки 1С [" & excelName & "]')"
-		
+
 			response.write "<tr>" _
 			& "<td>" & excelData(i, 1) _
 			& "<td>" & excelData(i, 0) _
@@ -161,19 +161,19 @@
 			& "<td>не найден " _
 			& "<input type='button' value='Добавить' onclick='queryOne(this)'/><div class='hide'>" & queryOne & "</div>" _
 			& "</tr>"
-			
+
 			queryAll = queryAll & queryOne & chr(13)
 		end if
 	next
 	if queryAll <> "" then
 		response.write "<div class='hide' id='queryAll'>" & queryAll & "</div>"
-	else 
+	else
 		response.write "<tr><td colspan='5'>Новых данных нет</tr>"
 	end if
 	response.write "</tbody></table></div></div>"
 %>
 
-<script src='/devin/js/jquery-1.12.4.min.js'></script>
+<script src='/devin/content/js/jquery-1.12.4.min.js'></script>
 <script>
 	function queryAll() {
 		if (document.getElementById("queryAll")) {
@@ -189,7 +189,7 @@
 			alert("Нет новых данных для внесения изменений");
 		}
 	}
-	
+
 	function queryOne(button) {
 		var div = button.parentNode.getElementsByTagName("div");
 		if (div.length > 0) {

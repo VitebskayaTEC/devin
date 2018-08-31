@@ -9,7 +9,7 @@
 	rs.open "SELECT MAX(W_ID) FROM writeoff", conn
 		dim id : id = "off" & rs(0)
 	rs.close
-	
+
 	response.write log(id, "Создано списание [" & id & "]") & id
 
 	conn.close

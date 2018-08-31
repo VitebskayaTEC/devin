@@ -1,7 +1,7 @@
 <!-- #include virtual ="/devin/core/core.inc" -->
 <%
 	dim R : R = request.form("repairs")
-	if R = "" or isnull(R) then 
+	if R = "" or isnull(R) then
 		response.write "<div class='error'>Не получен список выбранных элементов</div>"
 		response.end
 	else

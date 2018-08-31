@@ -1,6 +1,6 @@
 <!-- #include virtual ="/devin/core/core.inc" -->
 <%
-	dim conn 	: set conn = server.createObject("ADODB.Connection")		
+	dim conn 	: set conn = server.createObject("ADODB.Connection")
 	dim rs 		: set rs = server.createObject("ADODB.Recordset")
 	dim id 		: id = replace(request.queryString("id"), "prn", "")
 	dim sql
@@ -30,7 +30,7 @@
 
 	' Связи
 	response.write "<table class='cart-table catalog-compares'><tr><td><br /><b>Связи с типовыми картриждами:</b><td></tr>"
-	
+
 	sql = "SELECT CARTRIDGE.N, CARTRIDGE.Caption FROM OFFICE INNER JOIN PRINTER ON OFFICE.Printer = PRINTER.N INNER JOIN CARTRIDGE ON OFFICE.Cartridge = CARTRIDGE.N WHERE (PRINTER.N = " & id & ") ORDER BY CARTRIDGE.Caption"
 	'response.write sql
 	rs.open sql, conn
@@ -67,7 +67,7 @@
 	loop
 	rs.close
 	response.write "</select><td width='30px'><div class='icon ic-add' onclick='addCompare()'></div></tr></table>"
-	
+
 	' Получаем список всех устройств, имеющих привязку к этому принтеру
 
 	sql = "SELECT DEVICE.number_device, DEVICE.name, DEVICE.description, DEVICE.attribute FROM DEVICE INNER JOIN PRINTER ON DEVICE.ID_prn = PRINTER.N WHERE (PRINTER.N = " & id & ")"
@@ -89,7 +89,7 @@
 		& "<table class='cart-menu'><tr>" _
 		& "<td onclick='cartSave()'>Сохранить" _
 		& "<td onclick='cartDelete()'>Удалить" _
-		& "<td onclick='cartClose()'>Закрыть" _ 
+		& "<td onclick='cartClose()'>Закрыть" _
 		& "</tr></table>"
 
 	drop("")

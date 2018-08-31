@@ -229,8 +229,8 @@
 	end select
 
 	dim excelName : excelName = wName & " " & date
-	book.saveas "D:\data\DFS\Files\Inetpub\wwwroot\DEVIN\Excels\" & excelName & ".xls"
-	response.write "<a href='/devin/excels/" & excelName & ".xls'>" & excelName & "</a>"
+	book.saveas "C:\Inetpub\wwwroot\Devin\Content\Excels\" & excelName & ".xls"
+	response.write "<a href='/devin/content/excels/" & excelName & ".xls'>" & excelName & "</a>"
 
 	book.close false
 	set sheet = nothing

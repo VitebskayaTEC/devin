@@ -9,7 +9,7 @@
 
 
 	' Запрос к данным о списании
-	sql = "SELECT W_Name, W_Type, W_Date, W_Params, W_Description, G_ID, W_Last_Excel, W_Last_Date FROM writeoff WHERE (W_ID = " & id & ")"
+	sql = "SELECT W_Name, W_Type, W_Date, W_Params, W_Description, G_ID, W_Last_Excel, W_Last_Date, W_Cost_Article FROM writeoff WHERE (W_ID = " & id & ")"
 
 	conn.open everest
 	rs.open sql, conn
@@ -21,8 +21,8 @@
 		rs.close
 	else
 		' Запись данных в массив для дальнейшей обработки
-		dim writeoff(7)
-		for i = 0 to 7
+		dim writeoff(8)
+		for i = 0 to 8
 			writeoff(i) = rs(i)
 		next
 		rs.close
@@ -92,6 +92,14 @@
 
 		' Описание списания
 		response.write "<tr><td>Описание<td><textarea name='W_Description'>" & writeoff(4) & "</textarea></tr>"
+
+		' Статьи расходов
+		if writeoff(1) <> "expl" then
+			response.write "<tr><td>Статья расходов</td><td><select name='W_Cost_Article'><option value='0'>Не выбрана</option>"
+			if writeoff(8) = 1 then response.write "<option value='1' selected>Эксплуатационные расходы</option>" else response.write "<option value='1'>Эксплуатационные расходы</option>"
+			if writeoff(8) = 2 then response.write "<option value='2' selected>Орг. техника</option>" else response.write "<option value='2'>Орг. техника</option>"
+			if writeoff(8) = 3 then response.write "<option value='3' selected>ПТК АСУ</option>" else response.write "<option value='3'>ПТК АСУ</option>"
+		end if
 
 		' Группа
 		response.write "<tr><td>Группа<td>"

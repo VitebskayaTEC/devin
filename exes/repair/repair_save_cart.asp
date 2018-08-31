@@ -5,7 +5,7 @@
 	dim rs : set rs = server.createobject("ADODB.Recordset")
 	dim sql : sql = ""
 	dim text : text = ""
-	
+
 	conn.open everest
 	rs.open "SELECT TOP (1) REMONT.Units, REMONT.IfSpis, REMONT.Virtual, SKLAD.NCard, REMONT.Date FROM REMONT LEFT OUTER JOIN SKLAD ON SKLAD.NCard = REMONT.ID_U WHERE (REMONT.INum = '" & id & "')", conn
 	dim repair(4), i
@@ -15,17 +15,17 @@
 	rs.close
 
 	dim ifspis : ifspis = request.form("ifspis")
-	if ifspis <> cstr(repair(1)) then 
-		
+	if ifspis <> cstr(repair(1)) then
+
 		if text <> "" then text = text & ", "
 		if ifspis = "1" then
 			text = text & "ремонт отмечен как списанный"
 			if not isnull(repair(3)) then sql = sql & "UPDATE SKLAD SET Nbreak = Nbreak + " & repair(0) & ", Nuse = Nuse - " & repair(0) & " WHERE (NCard = '" & repair(3) & "') " & chr(13)
-			
+
 		else
 			text = text & "ремонт отмечен как активный"
 			if not isnull(repair(3)) then sql = sql & "UPDATE SKLAD SET Nbreak = Nbreak - " & repair(0) & ", Nuse = Nuse + " & repair(0) & " WHERE (NCard = '" & repair(3) & "') " & chr(13)
-			
+
 		end if
 	end if
 
@@ -42,7 +42,7 @@
 		end if
 
 	end if
-	
+
 	dim dateVal : dateVal = request.form("date")
 	if isdate(dateVal) then
 		if datevalue(dateVal) <> datevalue(repair(4)) then
@@ -50,14 +50,14 @@
 			text = text & "дата ремонта с " & datevalue(repair(4)) & " на " & datevalue(dateVal)
 		end if
 	end if
-	
+
 	dim units : units = request.form("units")
 	if isnumeric(units) then
 		if cint(units) <> cint(repair(0)) then
 			if text <> "" then text = text & ", "
 			text = text & "количество с [" & repair(0) & "] на [" & units & "]"
-			if not isnull(repair(3)) then 
-				if ifspis = "1" then 
+			if not isnull(repair(3)) then
+				if ifspis = "1" then
 					if virtual = "1" then
 						sql = sql & "UPDATE SKLAD SET Nbreak = Nbreak - " & repair(0) & " + " & units & " WHERE (NCard = '" & repair(3) & "')" & chr(13)
 					else
@@ -73,15 +73,15 @@
 			end if
 		end if
 	end if
-	
-	if text <> "" then 
-	
+
+	if text <> "" then
+
 		sql = sql & "UPDATE REMONT SET Date = '" & DateToSql(request.form("date")) & "',  Units = " & units & ", IfSpis = " & ifspis & ", Virtual = " & virtual & " WHERE (INum = '" & id & "')" & chr(13)
-	
+
 		dim user : user = replace(request.servervariables("REMOTE_USER"), "VST\", "")
 		text = "Обновлен ремонт [repair" & id & "], изменены: " & text
 		sql = sql & "INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS) VALUES (GETDATE(), 'repair" & id & "', '" & user & "', 'Администратор DEVIN', '" & text & "')"
-	
+
 		conn.execute sql
 		response.write "<div class='done'>" & text & "</div>"
 	else

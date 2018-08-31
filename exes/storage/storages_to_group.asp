@@ -5,7 +5,7 @@
 	dim storage, sql
 	sql = ""
 	for each storage in storages
-		if storage <> "" then 
+		if storage <> "" then
 			if sql <> "" then sql = sql & " OR "
 			sql = sql & "Ncard = '" & storage & "'"
 		end if

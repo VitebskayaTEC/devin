@@ -3,7 +3,7 @@
 	dim conn : set conn = Server.CreateObject("ADODB.Connection")
 	dim rs : set rs = Server.CreateObject("ADODB.Recordset")
 	dim id : id = Request.QueryString("id")
-	
+
 	' Получение имени устройства, на которое запрашивается отчет, и его ключа uuid
 	dim sql : sql = "SELECT name, DMI_UUID FROM DEVICE WHERE (number_device = '" & id & "')"
 	conn.open everest
@@ -29,7 +29,7 @@
 	& "ORDER BY IPage, IDevice, IGroup, IField, IValue"
 
 	'response.write sql
-	
+
 	rs.open sql, conn
 	if not rs.eof then
 		response.write "" _
@@ -39,19 +39,19 @@
 		& "<tr>" _
 		& "<th width='300px' data-type='string' onclick='_sort(this)'>Устройство" _
 		& "<th data-type='string' onclick='_sort(this)'>Информация" _
-		
+
 		& "</tr>" _
 		& "</thead>"
-		
+
 		'& "<th data-type='string' onclick='_sort(this)'>Значение" _
-		
+
 		dim idevice : idevice = ""
 		dim ideviceOld : ideviceOld = ""
 		do while not rs.eof
 			idevice = trim(rs("IDevice"))
 			if idevice = ideviceOld then
 				response.write "<div><b>" & trim(rs("IField")) & "</b>: " & trim(rs("IValue")) & "</div>"
-			else 
+			else
 				if ideviceOld <> "" then response.write "</div></tr>"
 				ideviceOld = idevice
 				response.write "" _
@@ -71,7 +71,7 @@
 	conn.close
 	set rs = nothing
 	set conn = nothing
-	
+
 	response.write "<table class='cart-menu'><tr><td onclick='cartBack()'>Вернуться к карточке<td onclick='cartClose()'>Закрыть</tr></table>"
 %>
 <script>

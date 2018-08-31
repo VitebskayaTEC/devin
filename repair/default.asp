@@ -5,10 +5,10 @@
 <HEAD>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta http-equiv="Content-Type" content="text/html; charset=windows-1251" />
-	<link href="/cdn/jquery-ui.min.css" rel="stylesheet" />
-	<link href="/devin/css/core.css" rel="stylesheet" type="text/css" />
-	<link href="/devin/css/repair.css" rel="stylesheet" type="text/css" />
-	<link href="/devin/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+	<link href="/devin/content/lib/jquery-ui.min.css" rel="stylesheet" />
+	<link href="/devin/content/css/core.css" rel="stylesheet" type="text/css" />
+	<link href="/devin/content/css/repair.css" rel="stylesheet" type="text/css" />
+	<link href="/devin/content/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
     <title>DEVIN | Ремонты</title>
 </HEAD>
 
@@ -32,7 +32,7 @@
 		<div><a>Закрыть</a></div>
 	</div>
 
-	<script src='/cdn/jquery-1.12.4.min.js'></script>
+	<script src='/devin/content/lib/jquery-1.12.4.min.js'></script>
 
 	<div id='view' class='view'><% server.execute "view.asp" %></div>
 
@@ -68,9 +68,9 @@
 		<li onclick='$(this).parent().fadeOut(100)'>Отмена</li>
 	</ul>
 
-	<script src="/cdn/jquery-ui.min.js"></script>
-	<script src="/devin/js/core.js"></script>
-	<script src='/devin/js/repair.js?v=1'></script>
+	<script src="/devin/content/lib/jquery-ui.min.js"></script>
+	<script src="/devin/content/js/core.js"></script>
+	<script src='/devin/content/js/repair.js?v=1'></script>
 
 </BODY>
 

@@ -5,10 +5,10 @@
 <HEAD>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta http-equiv="Content-Type" content="text/html; charset=windows-1251" />
-	<link href="/devin/css/core.css" rel="stylesheet" type="text/css" />
-	<link href="/devin/css/jquery-ui.min.css" rel="stylesheet" type="text/css" />
-	<link href="/devin/css/repair.css" rel="stylesheet" type="text/css" />
-	<link href="/devin/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+	<link href="/devin/content/css/core.css" rel="stylesheet" type="text/css" />
+	<link href="/devin/content/css/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+	<link href="/devin/content/css/repair.css" rel="stylesheet" type="text/css" />
+	<link href="/devin/content/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
     <title>DEVIN | Годовой отчет по ремонтам</title>
 </HEAD>
 
@@ -23,7 +23,7 @@
 		dim conn: set conn = server.createObject("ADODB.Connection")
 		dim rs:   set rs   = server.createObject("ADODB.Recordset")
 		dim sql
-		
+
 		conn.open everest
 
 		sql = "SELECT " _
@@ -108,10 +108,10 @@
 	%>
 	</div>
 
-	<script src='/devin/js/jquery-1.12.4.min.js'></script>
-	<script src="/devin/js/jquery-ui.min.js"></script>
-	<script src="/devin/js/core.js"></script>
-	<script src="/devin/js/repair.js"></script>
+	<script src='/devin/content/js/jquery-1.12.4.min.js'></script>
+	<script src="/devin/content/js/jquery-ui.min.js"></script>
+	<script src="/devin/content/js/core.js"></script>
+	<script src="/devin/content/js/repair.js"></script>
 	<script>
 		var $units = $('.unit');
 		var allcost = 0;

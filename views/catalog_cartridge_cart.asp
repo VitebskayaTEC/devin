@@ -1,6 +1,6 @@
 <!-- #include virtual ="/devin/core/core.inc" -->
 <%
-	dim conn 	: set conn = server.createObject("ADODB.Connection")		
+	dim conn 	: set conn = server.createObject("ADODB.Connection")
 	dim rs 		: set rs = server.createObject("ADODB.Recordset")
 	dim id 		: id = replace(request.queryString("id"), "cart", "")
 
@@ -19,7 +19,7 @@
 	' Получаем данные о картридже
 	dim cartridge(4), i
 	rs.open "SELECT Caption, Price, Type, Color, Description FROM CARTRIDGE WHERE N = " & id, conn
-		if rs.eof then 
+		if rs.eof then
 			drop("Нет данных по данному ID")
 		else
 			for i = 0 to 4
@@ -34,7 +34,7 @@
 	if rs.eof then
 		drop("Ошибка при загрузке справочника типовых параметров")
 	else
-		Ncolors = 0 
+		Ncolors = 0
 		Ntypes = 0
 		do while not rs.eof
 			if rs("C_type") = "Type" then
@@ -66,7 +66,7 @@
 		do while not rs.eof
 			uchet = rs(0)
 			price = rs(1)
-			
+
 
 			' Если счет учета - материалы, то стоимость берется с половинным коэффициентом, т.к. часть стоимости возмещена
 			if uchet = "10.5.1" then fixcost = 1.2 else fixcost = 2.4
@@ -76,7 +76,7 @@
 			prices(Nprices) = round(price, 2)
 
 			Nprices = Nprices + 1
-			
+
 			rs.moveNext
 		loop
 
@@ -87,7 +87,7 @@
 
 		price = round(( price / Nprices ), 2)
 		response.write "Вычислено: ~" & price & " б.р."
-	else 
+	else
 		response.write "Данных о стоимости нет"
 	end if
 	rs.close
@@ -96,17 +96,17 @@
 
 	response.write "</tr><tr><td>Тип<td><select name='Type'><option value='0'>?"
 	for i = 0 to Ntypes - 1
-		if cartridge(2) = types(i, 0) then 
+		if cartridge(2) = types(i, 0) then
 			response.write "<option value='" & types(i, 0) & "' selected>" & types(i, 1)
-		else 
+		else
 			response.write "<option value='" & types(i, 0) & "'>" & types(i, 1)
 		end if
 	next
 	response.write "</select></tr><tr><td>Цвет<td><select name='Color'><option value='0'>?"
 	for i = 0 to Ncolors - 1
-		if cartridge(3) = colors(i, 0) then 
+		if cartridge(3) = colors(i, 0) then
 			response.write "<option value='" & colors(i, 0) & "' selected>" & colors(i, 1)
-		else 
+		else
 			response.write "<option value='" & colors(i, 0) & "'>" & colors(i, 1)
 		end if
 	next
@@ -148,7 +148,7 @@
 	loop
 	rs.close
 	response.write "</select><td width='30px'><div class='icon ic-add' onclick='addCompare()'></div></tr></table>"
-	
+
 	' Получаем список позиций на складе, связанных с этим картриджем
 	rs.open "SELECT SKLAD.NCard AS ID, SKLAD.NCard, SKLAD.Name, SKLAD.Nis FROM CARTRIDGE LEFT OUTER JOIN SKLAD ON CARTRIDGE.N = SKLAD.ID_cart WHERE (SKLAD.delit = 1) AND (SKLAD.Nis > 0) AND (CARTRIDGE.N = " & id & ") ORDER BY SKLAD.NCard, SKLAD.Name", conn
 	if not rs.eof then
@@ -166,7 +166,7 @@
 		& "<table class='cart-menu'><tr>" _
 		& "<td onclick='cartSave()'>Сохранить" _
 		& "<td onclick='cartDelete()'>Удалить" _
-		& "<td onclick='cartClose()'>Закрыть" _ 
+		& "<td onclick='cartClose()'>Закрыть" _
 		& "</tr></table>"
 
 	conn.close

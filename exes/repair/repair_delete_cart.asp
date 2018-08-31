@@ -2,7 +2,7 @@
 <%
 	dim conn : set conn = server.createobject("ADODB.Connection")
 	conn.open everest
-	
+
 	conn.execute "" _
 	& "BEGIN TRANSACTION;" _
 	& "" _

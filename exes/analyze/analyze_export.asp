@@ -15,7 +15,7 @@
 		quarter = "в III квартале"
 	elseif month(date) > 2 then
 		quarter = "во II квартале"
-	else 
+	else
 		quarter = "в I квартале"
 	end if
 
@@ -57,7 +57,7 @@
 	dim excel:    set excel    = createObject("Excel.Application")
 		excel.application.enableEvents  = false
 	    excel.application.displayAlerts = false
-	dim workbook: set workbook = excel.workbooks.open("D:\data\DFS\Files\Inetpub\wwwroot\DEVIN\exl\analyze.xls")
+	dim workbook: set workbook = excel.workbooks.open("C:\Inetpub\wwwroot\Devin\Content\exl\analyze.xls")
 	dim sheet:    set sheet    = workbook.worksheets(1)
 
 
@@ -105,12 +105,12 @@
 	sheet.range("A18:J" & (18 + N)).Rows.AutoFit
 
 
-		workbook.saveAs "D:\data\DFS\Files\Inetpub\wwwroot\DEVIN\Excels\analyze.xls"
+		workbook.saveAs "C:\Inetpub\wwwroot\Devin\Content\Excels\analyze.xls"
 	    workbook.close false
 		excel.quit
 	set sheet    = nothing
-	set workbook = nothing 
+	set workbook = nothing
 	set excel    = nothing
 
-	response.write "<a href='/devin/excels/analyze.xls' download>Сохранить файл</a>"
+	response.write "<a href='/devin/content/excels/analyze.xls' download>Сохранить файл</a>"
 %>

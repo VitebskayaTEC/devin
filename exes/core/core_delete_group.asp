@@ -16,7 +16,7 @@
 	conn.execute "UPDATE " & table & " SET G_ID = 0 WHERE (G_ID = '" & request.form("gid") & "')"
 
 	conn.execute "DELETE FROM [GROUP] WHERE (G_ID = '" & request.form("gid") & "')"
-	
+
 	conn.close
 	set conn = nothing
 %>

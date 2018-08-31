@@ -50,13 +50,13 @@
 			dim rs : set rs = server.createobject("ADODB.Recordset")
 			dim sql
 			dim id : id = request.querystring("id")
-			if request.querystring("t") = "id" then 
+			if request.querystring("t") = "id" then
 				sql = "SELECT EDATE, CNAME, CUSER, EVENTS FROM ELMEVENTS WHERE (EVGR = 'Администратор DEVIN') AND (CName = '" & id & "') ORDER BY EDATE DESC"
-			else 
+			else
 				sql = "SELECT EDATE, CNAME, CUSER, EVENTS FROM ELMEVENTS WHERE (CName = '" & id & "') ORDER BY EDATE DESC"
 			end if
 			rs.open sql, conn
-			
+
 				if not rs.eof then
 					do while not rs.eof
 						response.write "<tr><td>" & rs("EDATE") & "<td>" & trim(rs("CNAME")) & "<td>" & trim(rs("CUSER")) & "<td>" & S_D(trim(rs("EVENTS"))) & "</tr>"

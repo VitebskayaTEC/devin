@@ -31,11 +31,11 @@
 			data(1) = request.form(key & "count")
 			' Виртуальный делать ремонт или нет
 			data(2) = request.form(key & "virtual")
-			if data(2) = "on" then 
-				data(2) = "1" 
+			if data(2) = "on" then
+				data(2) = "1"
 				update = update & "UPDATE SKLAD SET nuse = nuse + " & data(1) & " WHERE (ncard = '" & data(0) & "') " & chr(13)
 				response.write log(id, "Ремонт: использована позиция с инвентарным № [" & data(0) & "] в количестве [" & data(1) & "] шт. (виртуальный)")
-			else 
+			else
 				data(2) = "0"
 				update = update & "UPDATE SKLAD SET nuse = nuse + " & data(1) & ", nis = nis - " & data(1) & " WHERE (ncard = '" & data(0) & "') " & chr(13)
 				response.write log(id, "Ремонт: использована позиция с инвентарным № [" & data(0) & "] в количестве [" & data(1) & "] шт.")

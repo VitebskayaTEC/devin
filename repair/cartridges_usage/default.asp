@@ -5,16 +5,16 @@
 <HEAD>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta http-equiv="Content-Type" content="text/html; charset=windows-1251" />
-	<link href="/devin/css/core.css" rel="stylesheet" type="text/css" />
-	<link href="/devin/css/jquery-ui.min.css" rel="stylesheet" type="text/css" />
-	<link href="/devin/css/repair.css" rel="stylesheet" type="text/css" />
-	<link href="/devin/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+	<link href="/devin/content/css/core.css" rel="stylesheet" type="text/css" />
+	<link href="/devin/content/css/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+	<link href="/devin/content/css/repair.css" rel="stylesheet" type="text/css" />
+	<link href="/devin/content/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 	<title>DEVIN | Годовой отчет по ремонтам</title>
 </HEAD>
 
 <BODY>
 
-	<% 
+	<%
 		menu("")
 
 		dim y: y = request.queryString("year")
@@ -25,7 +25,7 @@
 
 	<div id='view' class='view'>
 		<form action="/devin/repair/cartridges_usage/" method="get" class="filter">
-			Сводная таблица по заменам картриджей на 
+			Сводная таблица по заменам картриджей на
 			<select name="year">
 				<%
 					dim selected
@@ -46,7 +46,7 @@
 		dim tempName, tempLocation, tempId, tempDate, tempCount, allCount
 		dim currentName
 		dim dataLength, data(1000, 13)
-		
+
 		conn.open everest
 
 		sql = "SELECT c.Caption AS [Name], c.N AS [Id], r.Date AS [Date], r.Units AS [Count] FROM Remont r LEFT OUTER JOIN Sklad s LEFT OUTER JOIN Cartridge c ON c.N = s.ID_cart ON s.Ncard = r.ID_U WHERE s.class_name = 'PRN' AND Year(r.Date) = " & y & " ORDER BY c.Caption"
@@ -89,14 +89,14 @@
 
 						dataLength  = dataLength + 1
 						currentName = tempName
-						
+
 						data(dataLength, 0)  = tempName
 						data(dataLength, 13) = tempId
 
 						for i = 1 to 12
 							data(dataLength, i) = 0
 						next
-						
+
 					end if
 
 					data(dataLength, month(tempDate)) = data(dataLength, month(tempDate)) + tempCount
@@ -135,7 +135,7 @@
 		rs.open sql, conn
 		if not rs.eof then
 	%>
-		
+
 		<table class='stats'>
 			<thead>
 				<tr>
@@ -170,14 +170,14 @@
 
 						dataLength  = dataLength + 1
 						currentName = tempName
-						
+
 						data(dataLength, 0)  = tempName & "<br /><small>" & tempLocation & "</small>"
 						data(dataLength, 13) = tempId
 
 						for i = 1 to 12
 							data(dataLength, i) = 0
 						next
-						
+
 					end if
 
 					data(dataLength, month(tempDate)) = data(dataLength, month(tempDate)) + tempCount
@@ -213,8 +213,8 @@
 	%>
 	</div>
 
-	<script src='/devin/js/jquery-1.12.4.min.js'></script>
-	<script src="/devin/js/core.js"></script>
+	<script src='/devin/content/js/jquery-1.12.4.min.js'></script>
+	<script src="/devin/content/js/core.js"></script>
 </BODY>
 
 </HTML>

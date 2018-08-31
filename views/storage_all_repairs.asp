@@ -1,6 +1,6 @@
 <!-- #include virtual ="/devin/core/core.inc" -->
 <%
-	sub drop(str) 
+	sub drop(str)
 		on error resume next
 		rs.close
 		conn.close
@@ -27,7 +27,7 @@
 	next
 	dim storages(1000, 2), i, Nstorages
 	rs.open "SELECT NCard, Name, Nis FROM SKLAD WHERE (" & sql & ") AND (Nis > 0) ORDER BY NCard", conn
-	if rs.eof then 
+	if rs.eof then
 		drop("Нет элементов для оформления ремонтов")
 	else
 		Nstorages = -1
@@ -91,5 +91,7 @@
 	(function() {
 		var computers = document.getElementById("computers-first").innerHTML;
 		$("#cart").find(".computers-container").html(computers);
+
+		//$('.computers').bselect();
 	})()
 </script>

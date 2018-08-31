@@ -29,12 +29,12 @@
 			Vold = key
 			if isnull(Vold) then Vold = "" else Vold = trim(cstr(Vold))
 			if key.name = "class_name" then cls = Vold
-			if key.name = "Name" then name = Vold	
+			if key.name = "Name" then name = Vold
 			if (key.name <> "ID_cart") or (key.name = "ID_cart" and cls = "PRN") then
 				Vnew = cstr(DecodeUTF8(request.form(key.name)))
 				if key.name = "NCard" then ncard = Vnew
 				if Vnew <> Vold then
-					if text <> "" then 
+					if text <> "" then
 						text = text & ", "
 						sql = sql & ", "
 					end if
@@ -47,16 +47,16 @@
 				end if
 			end if
 		next
-	else 
+	else
 		response.write "<div class='error'>Нет данных по данному ID</div>"
 		response.end
 	end if
 	rs.close
 
 	' Проверка на уникальность инвентарного номера
-	if ncard <> id then 
+	if ncard <> id then
 		rs.open "SELECT NCard FROM SKLAD WHERE (NCard = '" & ncard & "')"
-		if not rs.eof then 
+		if not rs.eof then
 			rs.close
 			set rs = nothing
 			conn.close
@@ -74,7 +74,7 @@
 		'response.write "UPDATE SKLAD SET " & sql & " WHERE (Ncard = '" & id & "')"
 		conn.execute "UPDATE SKLAD SET " & sql & " WHERE (Ncard = '" & id & "')"
 		response.write log(id, text)
-	else 
+	else
 		response.write "<div class='done'>Изменений не было</div>"
 	end if
 

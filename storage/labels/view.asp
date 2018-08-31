@@ -1,6 +1,6 @@
 <!-- #include virtual ="/devin/core/core.inc" -->
 <%
-	' Забираем данные из складской базы	
+	' Забираем данные из складской базы
 	dim conn: set conn = server.createobject("ADODB.Connection")
 	dim rs:   set rs   = server.createobject("ADODB.Recordset")
 	dim sql:  sql = "SELECT SKLAD.NCard, SKLAD.Name, CARTRIDGE.Caption, SKLAD.Date, SKLAD.Nadd, SKLAD.Nis, SKLAD.uchet FROM SKLAD LEFT OUTER JOIN CARTRIDGE ON SKLAD.ID_cart = CARTRIDGE.N WHERE class_name = 'PRN' AND delit = 1 AND Nis > 0 ORDER BY Date DESC"
@@ -12,7 +12,7 @@
 	rs.open sql, conn
 
 	if not rs.eof then
-		
+
 		response.write "<div class='unit'><table class='caption'><tr><th>Картриджи на складе</tr></table>" _
 			& "<table class='items'><thead><tr>" _
 			& "<th width='30px'><input type='checkbox' class='selecter-all' />" _
@@ -47,11 +47,11 @@
 				& "</tr>"
 
 			rs.movenext
-			
+
 		loop
 
 		response.write "</tbody></table></div>"
-		
+
 	end if
 
 	rs.close

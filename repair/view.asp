@@ -10,6 +10,7 @@
 	& "<th data-type='string'>объект ремонта" _
 	& "<th data-type='string' width='460px'>деталь" _
 	& "<th data-type='number' width='50px'>кол-во" _
+	& "<th data-type='number' width='70px'>стоимость" _
 	& "<th data-type='date' width='70px'>дата" _
 	& "<th data-type='string' width='40px'>спис." _
 	& "<th data-type='string' width='40px'>вирт." _
@@ -38,13 +39,14 @@
 			& "<td><b>" & repairs(k, 3) & "</b> " & repairs(k, 4) _
 			& "<td><div class='led" & storageLed & "'></div> " & repairs(k, 5) _
 			& "<td>" & repairs(k, 6) _
+			& "<td>" & (repairs(k, 14) * repairs(k, 6)) & " р." _
 			& "<td>" & datevalue(repairs(k, 7)) _
 			& "<td><input type='checkbox' disabled " & check(0) & " />" _
 			& "<td><input type='checkbox' disabled " & check(1) & " />" _
 			& "</tr>"
 	end sub
 
-	dim writeoff(200, 4), repairs(1000, 13), Nwriteoff, Nrepairs, i, j, sql
+	dim writeoff(200, 4), repairs(1000, 14), Nwriteoff, Nrepairs, i, j, sql
 
 	conn.open everest
 
@@ -105,7 +107,8 @@
 		& "SKLAD.Nadd, " _
 		& "SKLAD.Nis, " _
 		& "SKLAD.Nuse, " _
-		& "SKLAD.Nbreak " _
+		& "SKLAD.Nbreak, " _
+		& "SKLAD.Price " _
 		& "FROM REMONT " _
 		& "LEFT OUTER JOIN DEVICE ON REMONT.ID_D = DEVICE.number_device " _
 		& "LEFT OUTER JOIN SKLAD ON REMONT.ID_U = SKLAD.NCard " _
@@ -117,7 +120,7 @@
 			rs.movefirst
 			Nrepairs = 0
 			do while not rs.eof
-				for i = 0 to 13
+				for i = 0 to 14
 					repairs(Nrepairs, i) = trim(rs(i))
 				next
 				rs.movenext
@@ -142,15 +145,21 @@
 
 
 		' Отображение списаний с вложенными ремонтами
-		dim cookie, inGroup
+		dim cookie, inGroup, allCost
 		for i = 0 to Nwriteoff
+			allCost = 0
 			cookie = request.cookies("off" & writeoff(i, 1))
 			if writeoff(i, 0) = "" or writeoff(i, 0) = "0" or writeoff(i, 0) = "-1" or isnull(writeoff(i, 0)) then inGroup = "" else inGroup = " hide_first"
+
+			for j = 0 to Nrepairs
+				if repairs(j, 1) = writeoff(i, 1) then allCost = allCost + (repairs(j, 6) * repairs(j, 14))
+			next
 			response.write "<div class='unit writeoff " & cookie & inGroup & "' in='rg" & writeoff(i, 0) & "'>" _
 				& "<table class='caption'><tr>" _
 				& "<td width='24px' menu='writeoff' onmousedown='_menu(this)'><div class='icon ic-info-outline'></div>" _
 				& "<th>" & writeoff(i, 2) _
 				& "<td width='250px'>" & writeoff(i, 3) _
+				& "<td width='150px'>" & allCost & " р." _
 				& "<td width='70px'>" & datevalue(writeoff(i, 4)) _
 				& "</tr></table>"
 			if cookie = "open" then response.write "<div class='items_block'>" else response.write "<div class='items_block hide'>"

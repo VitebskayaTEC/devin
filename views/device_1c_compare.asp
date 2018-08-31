@@ -7,13 +7,13 @@
 <HEAD>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta http-equiv="content-type" Content="text/html; charset=windows-1251" />
-	<link href="/devin/css/core.css" rel="stylesheet" />
-	<link href="/devin/css/device.css" rel="stylesheet" />
-	<link href="/devin/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+	<link href="/devin/content/css/core.css" rel="stylesheet" />
+	<link href="/devin/content/css/device.css" rel="stylesheet" />
+	<link href="/devin/content/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 	<title>DEVIN | Сверка по 1С</title>
 </HEAD>
 
-<BODY> 
+<BODY>
 
 <%
     menu("<li><a onclick=''>Совпадающие</a>" _
@@ -25,7 +25,7 @@
     ' Загружаем файл отчета
 	' dim Uploader : set Uploader = new FileUploader
 	dim File, excelName
-	
+
 	' Uploader.Upload()
 	' If Uploader.Files.Count <> 0 Then
 	' 	for each File In Uploader.Files.Items
@@ -74,9 +74,9 @@
 		i = 9
 		dim tooManyEmpty: tooManyEmpty = 0
 		do while not tooManyEmpty = 5
-			if cells(i, 12) = "" then 
+			if cells(i, 12) = "" then
 				tooManyEmpty = tooManyEmpty + 1
-			elseif regex.test(cstr(cells(i, 1).value)) then 
+			elseif regex.test(cstr(cells(i, 1).value)) then
 				Edata(NEdata, 0) = cells(i, 12)
 				Edata(NEdata, 1) = cells(i, 1)
 				Edata(NEdata, 2) = cells(i, 16)
@@ -85,7 +85,7 @@
 			end if
 			i = i + 1
 		loop
-	else 
+	else
 		response.write "<div class='error'>Не разрешенный тип запроса</div>"
 	end if
 
@@ -94,7 +94,7 @@
 	set workbook = nothing
 	set cells = nothing
 
-	
+
 
 	dim conn: set conn = server.createObject("ADODB.Connection")
 	dim rs: set rs = server.createObject("ADODB.Recordset")

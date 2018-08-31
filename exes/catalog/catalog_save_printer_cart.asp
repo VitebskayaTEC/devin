@@ -16,17 +16,17 @@
 			if sql <> "" then sql = sql & ", "
 			sql = sql & "Caption = '" & val & "'"
 		end if
-		
+
 		val = DecodeUTF8(request.form("Description"))
 		if rs(1) <> val or isnull(rs(1)) then
 			if sql <> "" then sql = sql & ", "
 			sql = sql & "Description = '" & val & "'"
 		end if
-		
+
 		if sql <> "" then
 			conn.execute "UPDATE PRINTER SET " & sql & " WHERE N = " & id
 			response.write "<div class='done'>Сохранено</div>"
-		else 
+		else
 			response.write "<div class='done'>Нет изменений</div>"
 		end if
 	end if

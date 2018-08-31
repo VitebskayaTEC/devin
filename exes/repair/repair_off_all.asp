@@ -9,7 +9,7 @@
 		& "FROM REMONT " _
 		& "INNER JOIN [writeoff] ON REMONT.W_ID = writeoff.W_ID " _
 		& "WHERE (writeoff.W_ID = '" & id & "') AND (REMONT.IfSpis = 0)"
-	
+
 	conn.open everest
 	rs.open   sql, conn
 	if not rs.eof then
@@ -27,12 +27,12 @@
 			& "INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS) VALUES (@Date, @Ncard, @User, 'Администратор DEVIN', 'Обновлена позиция [' + @Ncard + '] при переводе ремонта [repair' + @Inum + '] в списанные: ' + CAST(@Units AS varchar(10)) + ' шт. деталей перемещены из используемых в списанные');" _
 			& "INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS) VALUES (@Date, 'repair' + @INum, @User, 'Администратор DEVIN', 'Ремонт [repair' + @Inum + '] помечен как списанный');" _
 			& "COMMIT;"
-				
+
 			rs.movenext
 		loop
 	end if
 	rs.close
-	
+
 	conn.close
 	set rs   = nothing
 	set conn = nothing

@@ -6,14 +6,14 @@
 		else
 			response.write "<tr class='item hide_first' in='sg" & arr(9) & "' id='" & arr(0) & "'><th><input type='checkbox' class='selecter' /><td width='20px'>"
 		end if
-		if arr(3) <> arr(5) + arr(6) + arr(7) then 	
+		if arr(3) <> arr(5) + arr(6) + arr(7) then
 			response.write "<div class='led warning'></div>" ' Несоответствия
-		elseif arr(3) = arr(7) then 
+		elseif arr(3) = arr(7) then
 			response.write "<div class='led off'></div>" ' Списаны
 		elseif arr(5) = 0 then
 			response.write "<div class='led onwork'></div>" ' Целиком в работе
-		elseif arr(6) > 0 then				
-			response.write "<div class='led onwork'></div>" ' В работе		
+		elseif arr(6) > 0 then
+			response.write "<div class='led onwork'></div>" ' В работе
 		else
 			response.write "<div class='led'></div>" ' Все оставшиеся
 		end if
@@ -63,24 +63,24 @@
 
 	dim data(9), i, j
 	dim search : search = DecodeUTF8(request.querystring("text"))
-	
-	if search = "" then	
+
+	if search = "" then
 
 		dim offs(1000, 9)
 		dim Noffs : Noffs = 0
 
 		' Отображение записей
 		sql = "SELECT Ncard, Name, Price, NAdd, Date, Nis, Nuse, Nbreak, uchet, G_ID FROM SKLAD WHERE (delit > 0) ORDER BY Date DESC"
-		rs.open sql, conn 
+		rs.open sql, conn
 			response.write "<div class='unit' id='solo'>" _
 			& "<table class='caption'><tr>" _
-			& "<td width='24px'><div class='icon ic-cached'></div>" _ 
+			& "<td width='24px'><div class='icon ic-cached'></div>" _
 			& "<th>Не распределенные позиции" _
 			& "</tr></table>" _
 			& "<div class='items_block'>" & head
 			do while not rs.eof
 				' Получение данных из записи в базе
-				for i = 0 to 9 
+				for i = 0 to 9
 					data(i) = rs(i)
 				next
 
@@ -91,7 +91,7 @@
 					Noffs = Noffs + 1
 				else
 					renderItem(data)
-				end if	
+				end if
 
 				rs.movenext
 			loop
@@ -102,17 +102,17 @@
 		cookie = request.cookies("aggregateOff")
 		response.write "<div class='unit " & cookie & "' id='aggregateOff'>"
 		response.write "<table class='caption'><tr>" _
-						& "<td width='24px'><div class='icon ic-cached'></div>" _ 
+						& "<td width='24px'><div class='icon ic-cached'></div>" _
 						& "<th>Списанные позиции" _
 						& "</tr></table>"
-		if cookie = "open" then 
-			response.write "<div class='items_block'>" & head 
-		else 
+		if cookie = "open" then
+			response.write "<div class='items_block'>" & head
+		else
 			response.write "<div class='items_block hide'>" & head
 		end if
 
 		for i = 0 to Noffs - 1
-			for j = 0 to 9 
+			for j = 0 to 9
 				data(j) = offs(i, j)
 			next
 			renderItem(data)
@@ -125,16 +125,16 @@
 			cookie = request.cookies("sg" & groups(i, 0))
 			if groups(i, 1) = "" or groups(i, 1) = "0" or groups(i, 1) = "-1" or isnull(groups(i, 1)) then
 				response.write "<div class='unit group " & cookie & "' id='sg" & groups(i, 0) & "' in='sg" & groups(i, 1) & "'>"
-			else 
+			else
 				response.write "<div class='unit hide_first group " & cookie & "' id='sg" & groups(i, 0) & "' in='sg" & groups(i, 1) & "'>"
 			end if
 			response.write "<table class='caption'><tr>" _
-							& "<td width='24px' menu='group' onmousedown='_menu(this)'><div class='icon ic-folder'></div>" _ 
+							& "<td width='24px' menu='group' onmousedown='_menu(this)'><div class='icon ic-folder'></div>" _
 							& "<th>" & groups(i, 2) _
 							& "</tr></table>"
-			if cookie = "open" then 
-				response.write "<div class='items_block'>" & head 
-			else 
+			if cookie = "open" then
+				response.write "<div class='items_block'>" & head
+			else
 				response.write "<div class='items_block hide'>" & head
 			end if
 			response.write "</tbody></table></div></div>"
@@ -143,12 +143,12 @@
 	else
 
 		sql = replace("SELECT Ncard, Name, Price, NAdd, Date, Nis, Nuse, Nbreak, uchet, G_ID FROM SKLAD WHERE (delit > 0) AND ((Ncard LIKE '%{0}%') OR (Name LIKE '%{0}%') OR (Name LIKE '%{0}%') OR (Date LIKE '%{0}%') OR (uchet LIKE '%{0}%')) ORDER BY CAST(Ncard AS int)", "{0}", search)
-		rs.open sql, conn 
+		rs.open sql, conn
 
 		response.write("<div class='unit'><table class='caption'><tr><th>Поиск совпадений по запросу: " & search & "</tr></table>" & head)
 		if not rs.eof then
 			do while not rs.eof
-				for i = 0 to 9 
+				for i = 0 to 9
 					data(i) = rs(i)
 				next
 
@@ -157,12 +157,12 @@
 				rs.movenext
 			loop
 			response.write("</tbody></table></div>")
-		else 
+		else
 			response.write "<div class='error'>Совпадений нет</div>"
 		end if
 		response.write("</tbody></table>")
 		rs.close
-	end if	
+	end if
 %>
 	<script id='insert_move_select'>
 		document.getElementById('move_select').innerHTML = "<select><option value='0'>Расположить отдельно<%for i = 0 to Ngroups - 1

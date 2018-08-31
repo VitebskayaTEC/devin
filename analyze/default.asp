@@ -5,9 +5,9 @@
 <head>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta http-equiv="Content-Type" content="text/html; charset=windows-1251" />
-	<link rel="shortcut icon" href="/devin/img/favicon.ico" type="image/x-icon" />
-	<link href="/devin/css/core.css" rel="stylesheet" />
-	<link href="/devin/css/analyze.css" rel="stylesheet" />
+	<link rel="shortcut icon" href="/devin/content/img/favicon.ico" type="image/x-icon" />
+	<link href="/devin/content/css/core.css" rel="stylesheet" />
+	<link href="/devin/content/css/analyze.css" rel="stylesheet" />
 	<title>DEVIN | Расход картриджей</title>
 </head>
 
@@ -364,10 +364,10 @@
 		<div><a onclick='$(this).closest(".panel").slideUp(100)'>Закрыть</a></div>
 	</div>
 
-	<script src='/cdn/jquery-1.12.4.min.js'></script>
-	<script src="/cdn/jquery-ui.min.js"></script>
-	<script src='/devin/js/core.js'></script>
-	<script src='/devin/js/js-analyze.js'></script>
+	<script src='/devin/content/lib/jquery-1.12.4.min.js'></script>
+	<script src="/devin/content/lib/jquery-ui.min.js"></script>
+	<script src='/devin/content/js/core.js'></script>
+	<script src='/devin/content/js/js-analyze.js'></script>
 </body>
 
 </html>

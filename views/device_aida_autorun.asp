@@ -3,7 +3,7 @@
 	dim conn : set conn = Server.CreateObject("ADODB.Connection")
 	dim rs : set rs = Server.CreateObject("ADODB.Recordset")
 	dim id : id = Request.QueryString("id")
-	
+
 	' Получение имени устройства, на которое запрашивается отчет, и его ключа uuid
 	dim sql : sql = "SELECT name, DMI_UUID FROM DEVICE WHERE (number_device = '" & id & "')"
 	conn.open everest
@@ -54,6 +54,6 @@
 	conn.close
 	set rs = nothing
 	set conn = nothing
-	
+
 	response.write "<table class='cart-menu'><tr><td onclick='cartBack()'>Вернуться к карточке<td onclick='cartClose()'>Закрыть</tr></table>"
 %>

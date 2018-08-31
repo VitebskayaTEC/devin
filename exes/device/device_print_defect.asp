@@ -19,7 +19,7 @@
 	dim excel: set excel = createObject("Excel.Application")
 		excel.application.enableEvents  = false
 		excel.application.displayAlerts = false
-	dim book:  set book  = excel.workbooks.open("D:\data\DFS\Files\Inetpub\wwwroot\DEVIN\exl\defect.xls")
+	dim book:  set book  = excel.workbooks.open("C:\Inetpub\wwwroot\Devin\Content\exl\defect.xls")
 	dim sheet: set sheet = book.worksheets(1)
 
 	dim id:          id          = DecodeUTF8(request.form("id"))
@@ -78,8 +78,8 @@
 	sheet.cells(39, 1).value = defects
 
 	dim excelName : excelName = "Дефектный акт " & date & " " & id
-	book.saveas "D:\data\DFS\Files\Inetpub\wwwroot\DEVIN\Excels\" & excelName & ".xls"
-	response.write "<a href='/devin/excels/" & excelName & ".xls'>" & excelName & "</a>"
+	book.saveas "C:\Inetpub\wwwroot\Devin\Content\Excels\" & excelName & ".xls"
+	response.write "<a href='/devin/content/excels/" & excelName & ".xls'>" & excelName & "</a>"
 
 		book.close false
 	set sheet = nothing

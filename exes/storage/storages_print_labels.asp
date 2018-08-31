@@ -3,9 +3,9 @@
 	dim storages : storages = split(request.form("select"), ";")
 	dim sql: sql = ""
 	dim storage
-	
+
 	for each storage in storages
-		if storage <> "" then 
+		if storage <> "" then
 			if sql <> "" then sql = sql & " OR "
 			sql = sql & "Ncard = '" & storage & "'"
 		end if
@@ -37,7 +37,7 @@
 		dim excelApp   : set excelApp = server.createobject("Excel.Application")
 		excelApp.application.enableEvents = false
 		excelApp.application.displayAlerts = false
-		dim excelBook  : set excelBook = excelApp.workbooks.open("D:\data\DFS\Files\Inetpub\wwwroot\DEVIN\exl\labels.xls")
+		dim excelBook  : set excelBook = excelApp.workbooks.open("C:\Inetpub\wwwroot\Devin\Content\exl\labels.xls")
 		dim excelCells : set excelCells = excelBook.activesheet.cells
 
 		dim isLeft: isLeft = true
@@ -68,19 +68,19 @@
 				excelCells(rowCount * 3, 4) = cstr(data(i, 2))
 
 				rowCount = rowCount + 1
-				isLeft = true				
+				isLeft = true
 			end if
 
 		next
 
-		excelBook.saveAs "D:\data\DFS\Files\Inetpub\wwwroot\DEVIN\Excels\labels.xls"
+		excelBook.saveAs "C:\Inetpub\wwwroot\Devin\Content\Excels\labels.xls"
 		excelBook.close false
 		set excelCells = nothing
 		set excelBook  = nothing
 		excelApp.quit
 		set excelApp   = nothing
 
-		response.write "<a onclick='closeExportsPanel()' href='/devin/excels/labels.xls'>Бирки</a>"
+		response.write "<a onclick='closeExportsPanel()' href='/devin/context/excels/labels.xls'>Бирки</a>"
 
 	else
 
@@ -93,5 +93,5 @@
 	set rs   = nothing
 	set conn = nothing
 
-	
+
 %>

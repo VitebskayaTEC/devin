@@ -5,13 +5,13 @@
 	dim id 		: id = replace(request.querystring("id"), "off", "")
 
 	conn.open everest
-	rs.open "SELECT W_Name, W_Type, W_Date, W_Params, W_Description, G_ID FROM writeoff WHERE (W_ID = '" & id & "')", conn
+	rs.open "SELECT W_Name, W_Type, W_Date, W_Params, W_Description, G_ID, W_Cost_Article FROM writeoff WHERE (W_ID = '" & id & "')", conn
 	if rs.eof then
 		response.write "<div class='error'>Нет данных по данному ID</div>"
 	else
-		dim writeoff(5), i, temp
+		dim writeoff(6), i, temp
 
-		for i = 0 to 5
+		for i = 0 to 6
 			writeoff(i) = rs(i)
 		next
 
@@ -78,6 +78,16 @@
 			end if
 			text = text & "описание с [" & writeoff(4) & "] на [" & temp & "]"
 			sql = sql & "W_Description = '" & temp & "'"
+		end if
+
+		temp = request.form("W_Cost_Article")
+		if temp <> writeoff(6) or isNull(writeoff(6)) then
+			if text <> "" then
+				text = text & ", "
+				sql = sql & ", "
+			end if
+			text = text & "статья расходов с [" & writeoff(6) & "] на [" & temp & "]"
+			sql = sql & "W_Cost_Article = '" & temp & "'"
 		end if
 
 		temp = request.form("G_ID")

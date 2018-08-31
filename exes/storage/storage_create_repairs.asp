@@ -3,7 +3,7 @@
 	dim allrepairs : allrepairs = request.form("allrepairs")
 
 	' ѕроверка, пришли ли данные из формы
-	if isnull(allrepairs) or allrepairs = "" then 
+	if isnull(allrepairs) or allrepairs = "" then
 		response.write "<div class='error'>ƒанные по выбранным ремонтам не были получены</div>"
 	else
 		dim repairs : repairs = split(allrepairs, "<separate>")
@@ -23,7 +23,7 @@
 					conn.execute "BEGIN TRANSACTION;" _
 					& "DECLARE @ID_D varchar(20), @ID_U varchar(10), @Units int, @Virtual int, @Date datetime, @User varchar(15);" _
 					& "SET @ID_U = '" & repairArray(0) & "';" _
-					& "SET @ID_D = '" & repairArray(1) & "';" _		
+					& "SET @ID_D = '" & repairArray(1) & "';" _
 					& "SET @Units = " & repairArray(2) & ";" _
 					& "SET @Virtual = " & repairArray(3) & ";" _
 					& "SET @Date = GETDATE();" _
@@ -61,7 +61,7 @@
 		dim ifOne : ifOne = null
 		dim repairsCount : repairsCount = 0
 		rs.open "SELECT Inum, ROW_NUMBER() OVER(ORDER BY W_ID) AS N FROM REMONT WHERE (W_ID = -2) ORDER BY Inum DESC", conn
-			if not rs.eof then 
+			if not rs.eof then
 				ifOne = rs(0)
 				repairsCount = rs(1)
 			end if
@@ -89,7 +89,7 @@
 		else
 			if repairsAllCount > 0 then
 				response.write "<div class='error'>Ќе было создано ни одного ремонта из " & repairsAllCount & "</div>"
-			else 
+			else
 				response.write "<div class='error'>Ќе было получено ни одного ремонта</div>"
 			end if
 		end if

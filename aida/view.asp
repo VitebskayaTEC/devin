@@ -35,7 +35,7 @@
 	& "LEFT OUTER JOIN [GROUP] ON [GROUP].G_ID = DEVICE.G_ID " _
 	& "WHERE (DEVICE.deleted = 0) ORDER BY " & key(sortKey) & direction(sortDirection)
 
-	if search <> "" then 
+	if search <> "" then
 		sql = replace(sql, "WHERE", replace("WHERE (DEVICE.inventory {0} OR DEVICE.class_device {0} OR DEVICE.number_device {0} OR DEVICE.name {0} OR DEVICE.number_comp {0} OR DEVICE.description1C {0} OR DEVICE.description {0} OR DEVICE.install_date {0} OR DEVICE.MOL {0} OR DEVICE.number_serial {0} OR DEVICE.number_passport {0} OR DEVICE.attribute {0}) AND ", "{0}", " LIKE '%" & search & "%'"))
 	end if
 	'response.write "<div class='debug'>" & sql & "</div>"
@@ -54,7 +54,7 @@
 		loop
 	rs.close
 
-	if search = "" then 
+	if search = "" then
 
 		dim RHost, RHostTemp, IDTemp
 
@@ -68,7 +68,7 @@
 		do while not rs.eof
 			RHostTemp = rs("RHost")
 			IDTemp = rs("ID")
-			if RHostTemp <> RHost then 
+			if RHostTemp <> RHost then
 				if RHost <> "" then response.write "</table></div></div>"
 				if request.cookies("comp" & RHostTemp) = "open" then
 					response.write "<div class='unit open' id='comp" & RHostTemp & "'>" _
@@ -92,9 +92,9 @@
 					& "<table class='items'>"
 				end if
 				RHost = RHostTemp
-				ID = IDTemp	
+				ID = IDTemp
 				response.write "<tr><td width='250px'>" & rs("IField") & "<td>" & rs("IValue") & "</tr>"
-			else 
+			else
 				if ID = IDTemp then response.write "<tr><td width='250px'>" & rs("IField") & "<td>" & rs("IValue") & "</tr>"
 			end if
 			rs.movenext
@@ -105,7 +105,7 @@
 	else
 
 		response.write"<div class='unit'><table class='caption'><tr><th>Поиск совпадений по запросу: " & search & "</tr></table>" & head
-		for i = 0 to Ndevices - 1 
+		for i = 0 to Ndevices - 1
 			response.write "<tr id='" & devices(i, 2) & "'>" _
 			& "<td><input type='checkbox' class='selecter' />" _
 			& "<td><div class='led on'></div>" _

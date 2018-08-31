@@ -5,10 +5,11 @@
 <HEAD>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<meta http-equiv="Content-Type" content="text/html; charset=windows-1251" />
-	<link href="/cdn/jquery-ui.min.css" rel="stylesheet" />
-	<link href="/devin/css/core.css" rel="stylesheet" />
-	<link href="/devin/css/storage.css" rel="stylesheet" />
-	<link href="/devin/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+	<link href="/devin/content/lib/jquery-ui.min.css" rel="stylesheet" />
+	<link href="/devin/content/css/core.css" rel="stylesheet" />
+	<link href="/devin/content/css/storage.css" rel="stylesheet" />
+	<link href="/devin/content/css/bselect.min.css" rel="stylesheet" />
+	<link href="/devin/content/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 	<title>DEVIN | Склад</title>
 </HEAD>
 
@@ -52,7 +53,7 @@
 		<div><a onclick='closeExportsPanel()'>Закрыть</a></div>
 	</div>
 
-	<script src="/cdn/jquery-1.12.4.min.js"></script>
+	<script src="/devin/content/lib/jquery-1.12.4.min.js"></script>
 
 	<div class='view' id='view'>
 		<% server.execute "view.asp" %>
@@ -81,9 +82,10 @@
 		<li onclick='$(this).parent().fadeOut(100)'>Отмена
 	</ul>
 
-	<script src="/cdn/jquery-ui.min.js"></script>
-	<script src="/devin/js/core.js"></script>
-	<script src="/devin/js/storage.js"></script>
+	<script src="/devin/content/lib/jquery-ui.min.js"></script>
+	<script src="/devin/content/js/core.js"></script>
+	<script src="/devin/content/js/storage.js"></script>
+	<script src="/devin/content/js/bselect.min.js"></script>
 	<script>
 		var sortText = "<%=search%>";
 		$(".view")

@@ -14,10 +14,10 @@
 		sql = sql & "(INum = " & inum & ")"
 		response.write log("repair" & inum, "Ремонт [" & inum & "] перемещен в списание [" & key & "]")
 	next
-	
+
 	sql = "UPDATE REMONT SET G_ID = " & key & " WHERE " & sql
-	conn.open everest	
-	conn.execute sql	
+	conn.open everest
+	conn.execute sql
 	conn.close
 	set conn = nothing
 %>

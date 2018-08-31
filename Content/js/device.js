@@ -30,6 +30,7 @@ function cartOpen(node) {
 function cartOpenBack() {
 	$('#cart')
 		.fadeIn(100)
+		.css({ maxWidth: 600 })
 		.load('/devin/views/device_cart.asp?id=' + id + '&r=' + Math.random());
 	$('.view .selected').removeClass('selected');
 	try {
@@ -42,17 +43,14 @@ function cartBack() {
 }
 
 function deviceToRepair() {
-	$('#cart')
-		.fadeIn(100)
-		.load(
-			'/devin/views/device_to_repair.asp?id=' + id + '&r=' + Math.random()
-		);
+	$('#cart').fadeIn(100).load('/devin/views/device_to_repair.asp?id=' + id + '&r=' + Math.random()).css({ width: 1000, maxWidth: 1000 });
 }
 
 function cartHistoryRepair() {
 	$('#cart')
 		.html("<b class='load'>загрузка...</b>")
 		.fadeIn(100)
+		.css({ maxWidth: 600 })
 		.load(
 			'/devin/views/device_history_repair.asp?id=' +
 				id +
@@ -61,25 +59,16 @@ function cartHistoryRepair() {
 		);
 }
 
-function cartHistory(query) {
-	$('#cart')
-		.html("<b class='load'>загрузка...</b>")
-		.fadeIn(100)
-		.load(
-			'/devin/views/device_history.asp?id=' +
-				id +
-				'&' +
-				query +
-				'&r=' +
-				Math.random()
-		);
+function cartHistory(_id) {
+	$('#cart').html("<b class='load'>загрузка...</b>").fadeIn(100).css({ maxWidth: 600 });
+	$.get('/devin/views/device_history.asp', { id: _id, r: Math.random() }, data => document.getElementById('cart').innerHTML = data);
 }
 
 function cartAida() {
 	$('#cart')
 		.html("<b class='load'>загрузка...</b>")
 		.load('/devin/views/device_aida.asp?id=' + id + '&r=' + Math.random())
-		.fadeIn(100);
+		.fadeIn(100).css({ maxWidth: 600 });
 }
 
 function cartAidaDevices() {
@@ -90,7 +79,7 @@ function cartAidaDevices() {
 				'&r=' +
 				Math.random()
 		)
-		.fadeIn(100);
+		.fadeIn(100).css({ maxWidth: 600 });
 }
 
 function cartAidaAutorun() {
@@ -101,7 +90,7 @@ function cartAidaAutorun() {
 				'&r=' +
 				Math.random()
 		)
-		.fadeIn(100);
+		.fadeIn(100).css({ maxWidth: 600 });
 }
 
 function cartAidaPrograms(name) {
@@ -109,7 +98,7 @@ function cartAidaPrograms(name) {
 			name: name,
 			r: Math.random()
 		}, function (data) {
-			$('#cart').html(data).fadeIn(100);
+			$('#cart').html(data).fadeIn(100).css({ maxWidth: 600 });
 		});
 }
 
@@ -121,7 +110,7 @@ function cartDefect() {
 				'&r=' +
 				Math.random()
 		)
-		.fadeIn(100);
+		.fadeIn(100).css({ maxWidth: 600 });
 }
 
 function cartCreate() {
@@ -129,7 +118,7 @@ function cartCreate() {
 		if (data.indexOf('error') < 0) {
 			id = data;
 			reload({});
-			$('#cart').load('/devin/views/device_cart.asp?id=' + id + '&r=' + Math.random()).fadeIn(100);
+			$('#cart').load('/devin/views/device_cart.asp?id=' + id + '&r=' + Math.random()).fadeIn(100).css({ maxWidth: 600 });
 		}
 	});
 }
@@ -166,7 +155,7 @@ function cartCopy() {
 							'&r=' +
 							Math.random()
 					)
-					.fadeIn(100);
+					.fadeIn(100).css({ maxWidth: 600 });
 			}
 		}
 	);
@@ -177,14 +166,14 @@ function cartDelete() {
 		reload({});
 		$('#cart').fadeOut(100, function() {
 			document.getElementById('cart').innerHTML = '';
-		});
+		}).css({ maxWidth: 600 });
 	});
 }
 
 function history() {
 	$('#cart')
 		.html("<b class='load'>загрузка...</b>")
-		.fadeIn(100)
+		.fadeIn(100).css({ maxWidth: 600 })
 		.load('/devin/views/history.ashx?r=' + Math.random());
 	$('.view .selected').removeClass('selected');
 }

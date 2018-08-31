@@ -84,7 +84,7 @@
 				</select>
 			</td>
 		</tr>
-		
+
 		<tr>
 			<td>Номер устройства</td>
 			<td>
@@ -173,7 +173,7 @@
 					<%
 						rs.Open "Select T_alias, T_alias,T_name From catalog_os Order by T_name", CONN
 						do while not rs.eof
-							if keys("os") = trim(rs(0)) then
+							if keys("OS") = trim(rs(0)) then
 								response.write "<option selected value='" & trim(rs(1)) & "'>" & trim(rs(2))
 							else
 								response.write "<option value='" & trim(rs(1)) & "'>" & trim(rs(2))
@@ -190,17 +190,17 @@
 		<% if cls = "CMP" then %>
 		<tr>
 			<td>Ключ ОС</td>
-			<td><input name='OSKEY' value='<%=keys("oskey")%>' /></td>
+			<td><input name='OSKEY' value='<%=keys("OSKEY")%>' /></td>
 		</tr>
 
 		<tr>
 			<td>Ключ для софта</td>
-			<td><input name='PRKEY' value='<%=keys("prkey")%>' /></td>
+			<td><input name='PRKEY' value='<%=keys("PRKEY")%>' /></td>
 		</tr>
 		<% end if %>
 
 		<tr>
-			<td>Золото по паспорту</td>
+			<td>Золото</td>
 			<td>
 				<input class='numbers' name='passportgold' value='<%=keys("PassportGold")%>' />
 				<a>
@@ -212,7 +212,7 @@
 		</tr>
 
 		<tr>
-			<td>Серебро по паспорту</td>
+			<td>Серебро</td>
 			<td>
 				<input class='numbers' name='passportsilver' value='<%=keys("PassportSilver")%>' />
 				<a>
@@ -224,7 +224,7 @@
 		</tr>
 
 		<tr>
-			<td>Платина по паспорту</td>
+			<td>Платина</td>
 			<td>
 				<input class='numbers' name='passportplatinum' value='<%=keys("PassportPlatinum")%>' />
 				<a>
@@ -236,7 +236,18 @@
 		</tr>
 
 		<tr>
-			<td>МПГ по паспорту</td>
+			<td>Палладий</td>
+			<td>
+				<a>
+					<b>
+						<% if not IsNull(keys("Devices1C_Palladium")) then response.write (Fix(keys("Devices1C_Palladium") * 100000) / 100000) %>
+					</b>
+				</a>
+			</td>
+		</tr>
+
+		<tr>
+			<td>МПГ</td>
 			<td>
 				<input class='numbers' name='passportmpg' value='<%=keys("PassportMPG")%>' />
 				<a>
@@ -368,6 +379,10 @@
 				<td><%=keys("Devices1C_Platinum")%></td>
 			</tr>
 			<tr>
+				<td>Палладий</td>
+				<td><%=keys("Devices1C_Palladium")%></td>
+			</tr>
+			<tr>
 				<td>МПГ</td>
 				<td><%=keys("Devices1C_Mpg")%></td>
 			</tr>
@@ -383,7 +398,7 @@
 
 	<% if cls = "CMP" then %>
 	<a onclick='cartAidaAutorun()'>Автозагрузка</a>
-	<b r/>
+	<br/>
 	<a onclick='cartAidaPrograms("<%=keys("name")%>")'>Операционная система и установленное ПО</a>
 	<br/>
 	<a onclick='cartAidaDevices()'>Оборудование</a><br/>
@@ -392,7 +407,6 @@
 	<% if cls = "CMP" or cls = "DIS" or cls = "PRN" then %>
 	<a onclick='cartDefect()'>Дефектный акт</a>
 	<% end if %>
-
 </div>
 
 <div id='console'></div>
@@ -404,10 +418,11 @@
 
 		<% if cls = "CMP" then %>
 		<td onclick='cartAida()'>Everest</td>
-		<td onclick='cartHistory("t=name")'>История по имени</td>
+		<td onclick='cartHistory("<%=keys("name")%>")'>История по имени</td>
+
 		<% end if %>
 
-		<td onclick='cartHistory("t=id")'>История по инв.н.</td>
+		<td onclick='cartHistory("<%=keys("number_device")%>")'>История по инв.н.</td>
 		<td onclick='cartDelete()'>Удалить</td>
 		<td onclick='cartCopy()'>Копир.</td>
 		<td onclick='cartClose()'>Закрыть</td>

@@ -4,7 +4,7 @@
 	conn.open everest
 
 	conn.execute "UPDATE report SET RHostComment = 'deleted' WHERE (RHost = '" & request.form("rhost") & "')"
-	
+
 	conn.close
 	set conn = nothing
 %>
