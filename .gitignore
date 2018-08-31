@@ -1,3 +1,11 @@
-.vscode/
-excels/
-node_modules/
+﻿################################################################################
+# Данный GITIGNORE-файл был автоматически создан Microsoft(R) Visual Studio.
+################################################################################
+
+/bin
+/Content/excels
+/obj
+/Properties
+/Web.Debug.config
+/Web.Release.config
+/Devin.csproj.user

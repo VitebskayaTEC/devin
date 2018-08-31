@@ -33,7 +33,7 @@ function exportToExcel() {
 	for (var i = 0; i < trs.length; i++) {
 		var input = trs[i].querySelector("input");
 		var val = +input.value;
-		if (val > 0 && val != NaN) {
+		if (val > 0 && !isNaN(val)) {
 			// Получаем данные, если предполагается или введено некоторое положительное количество
 			formData += (formData == "" ? "" : "----") +
 				encodeURIComponent(trs[i].querySelector("a").innerHTML.toString()) + "__" +

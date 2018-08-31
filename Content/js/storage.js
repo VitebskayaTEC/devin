@@ -24,7 +24,7 @@ function search(input) {
 }
 
 function cartOpenBack() {
-    $("#cart").attr("class", "cart-new").load("/devin/views/storage_cart.asp?id=" + id + "&r=" + Math.random()).fadeIn(150);
+    $("#cart").attr("class", "cart-new").load("/devin/asp/storage_cart.asp?id=" + id + "&r=" + Math.random()).fadeIn(150);
     $(".selected").removeClass("selected");
     $("#" + id).addClass("selected");
 }
@@ -34,7 +34,7 @@ function cartRestore(consoleText) {
 }
 
 function cartHistory(node) {
-    $("#cart").load("/devin/views/storage_history.asp?id=" + id + "&r=" + Math.random()).fadeIn(150);
+    $("#cart").load("/devin/asp/storage_history.asp?id=" + id + "&r=" + Math.random()).fadeIn(150);
 }
 
 function cartBack() {
@@ -63,7 +63,7 @@ function cartDelete() {
 }
 
 function cartRepair() {
-    $("#cart").load("/devin/views/storage_repair.asp?id=" + id + "&r=" + Math.random()).fadeIn(150);
+    $("#cart").load("/devin/asp/storage_repair.asp?id=" + id + "&r=" + Math.random()).fadeIn(150);
 }
 
 function cartSave() {
@@ -77,7 +77,7 @@ function cartSave() {
                 }, 50);
             });
 
-            $("#cart").load("/devin/views/storage_cart.asp?id=" + id + "&r=" + Math.random(), function() {
+            $("#cart").load("/devin/asp/storage_cart.asp?id=" + id + "&r=" + Math.random(), function() {
                 try {
                     document.getElementById("console").innerHTML = data;
                 } catch (e) {}
@@ -90,7 +90,7 @@ function cartSave() {
                 }, 50);
             });
 
-            $("#cart").load("/devin/views/storage_cart.asp?id=" + id + "&r=" + Math.random(), function() {
+            $("#cart").load("/devin/asp/storage_cart.asp?id=" + id + "&r=" + Math.random(), function() {
                 try {
                     document.getElementById("console").innerHTML = data;
                 } catch (e) {}
@@ -107,26 +107,26 @@ function compare() {
 function compareSetSource(node) {
     switch (node.value) {
         case "in":
-            document.getElementById("compare-form").action = "/devin/views/storage_load_positions.asp";
+            document.getElementById("compare-form").action = "/devin/asp/storage_load_positions.asp";
             break;
         case "out":
-            document.getElementById("compare-form").action = "/devin/views/storage_load_rest.asp";
+            document.getElementById("compare-form").action = "/devin/asp/storage_load_rest.asp";
             break;
         case "compare":
-            document.getElementById("compare-form").action = "/devin/views/storage_1c_compare.asp";
+            document.getElementById("compare-form").action = "/devin/asp/storage_1c_compare.asp";
             break;
     }
 }
 
 function allStoragesToRepair() {
-    $.post("/devin/views/storage_all_repairs.asp?r=" + Math.random(), selectionToForm("select", ";"), function(data) {
+    $.post("/devin/asp/storage_all_repairs.asp?r=" + Math.random(), selectionToForm("select", ";"), function(data) {
         $("#cart").addClass("repairs").html(data).fadeIn(150);
         removeAllSelection();
     });
 }
 
 function storageToRepair() {
-    $.post("/devin/views/storage_all_repairs.asp?r=" + Math.random(), "select=" + id + ";", function(data) {
+    $.post("/devin/asp/storage_all_repairs.asp?r=" + Math.random(), "select=" + id + ";", function(data) {
         $("#cart").addClass("repairs").html(data).fadeIn(150);
     });
 }

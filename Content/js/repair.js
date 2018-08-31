@@ -24,7 +24,7 @@ function cartOpen(node) {
 
 function cartOpenBack() {
 	$("#cart")
-		.load("/devin/views/" + (id.indexOf("off") < 0 ? "repair_cart.asp" : "writeoff_cart.asp") + "?id=" + id.replace("off", "") + "&r=" + Math.random())
+		.load("/devin/asp/" + (id.indexOf("off") < 0 ? "repair_cart.asp" : "writeoff_cart.asp") + "?id=" + id.replace("off", "") + "&r=" + Math.random())
 		.fadeIn(150);
 	$(".view .selected").removeClass("selected");
 	$("#" + id).addClass("selected");
@@ -33,7 +33,7 @@ function cartOpenBack() {
 function cartSave() {
 	$.post("/devin/exes/repair/" + (id.indexOf("off") < 0 ? "repair" : "writeoff") + "_save_cart.asp?id=" + id + "&r=" + Math.random(), $("#form").serialize(), function(data) {
 		if (data.indexOf("error") < 0) {
-			$("#cart").load("/devin/views/" + (id.indexOf("off") < 0 ? "repair_cart.asp" : "writeoff_cart.asp") + "?id=" + id.replace("off", "") + "&r=" + Math.random(), function() {
+			$("#cart").load("/devin/asp/" + (id.indexOf("off") < 0 ? "repair_cart.asp" : "writeoff_cart.asp") + "?id=" + id.replace("off", "") + "&r=" + Math.random(), function() {
 				document.getElementById("console").innerHTML = data;
 			})
 		} else {
@@ -57,7 +57,7 @@ function cartDelete() {
 }
 
 function writeoffSetup() {
-	$("#cart").load("/devin/views/writeoff_setup_cart.asp?r=" + Math.random()).fadeIn(150);
+	$("#cart").load("/devin/asp/writeoff_setup_cart.asp?r=" + Math.random()).fadeIn(150);
 	$(".view .selected").removeClass("selected");
 	id = "setup";
 	setHash("setup");
@@ -73,7 +73,7 @@ function writeoffCreate() {
 }
 
 function writeoffExport() {
-	$.get("/export/writeoff/print/" + id.replace("off", "")).done(data => $("#console").html(data));
+	$.get("/devin/writeoffs/print/" + id.replace("off", "")).done(data => $("#console").html(data));
 }
 
 function onSelectedRepairs() {
@@ -116,7 +116,7 @@ function writeoffOpen() {
 
 // Экспорт списания в Excel без открытия карточки
 function writeoffPrint() {
-	$.get("http://web.vst.vitebsk.energo.net/export/writeoff/print/" + menuId.replace("off", "")).done(data => {
+	$.get("/devin/writeoffs/print/" + menuId.replace("off", "")).done(data => {
 		document.getElementById("excelExportsLink").innerHTML = data;
 		$(".panel:not(#excelExports").fadeOut(100);
 		$("#excelExports").fadeIn(100);

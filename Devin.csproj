@@ -1,0 +1,329 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5A7A7F26-96D9-4D9C-A577-1BA955458CBB}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Devin</RootNamespace>
+    <AssemblyName>Devin</AssemblyName>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <MvcBuildViews>false</MvcBuildViews>
+    <UseIISExpress>true</UseIISExpress>
+    <Use64BitIISExpress />
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication>disabled</IISExpressAnonymousAuthentication>
+    <IISExpressWindowsAuthentication>enabled</IISExpressWindowsAuthentication>
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Dapper, Version=1.50.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Dapper.1.50.5\lib\net451\Dapper.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=1.0.0.999, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpZipLib.1.0.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="NPOI, Version=2.3.0.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NPOI.2.3.0\lib\net40\NPOI.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OOXML, Version=2.3.0.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NPOI.2.3.0\lib\net40\NPOI.OOXML.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OpenXml4Net, Version=2.3.0.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NPOI.2.3.0\lib\net40\NPOI.OpenXml4Net.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OpenXmlFormats, Version=2.3.0.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NPOI.2.3.0\lib\net40\NPOI.OpenXmlFormats.dll</HintPath>
+    </Reference>
+    <Reference Include="Slapper, Version=1.0.0.7, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Slapper.AutoMapper.1.0.0.9\lib\Slapper.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.6\lib\net45\System.Web.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.2.6.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.6\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.6\lib\net45\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.6\lib\net45\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.6\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.6\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Abstractions" />
+    <Reference Include="System.Web.Routing" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http">
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest">
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\WriteoffsController.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Database.cs" />
+    <Compile Include="Models\Device.cs" />
+    <Compile Include="Models\Device1C.cs" />
+    <Compile Include="Models\DragMetal.cs" />
+    <Compile Include="Models\Repair.cs" />
+    <Compile Include="Models\Writeoff.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="aida\default.asp" />
+    <Content Include="aida\view.asp" />
+    <Content Include="analyze\default.asp" />
+    <Content Include="asp\aida_cart.asp" />
+    <Content Include="asp\catalog_cartridge_cart.asp" />
+    <Content Include="asp\catalog_printer_cart.asp" />
+    <Content Include="asp\device_1c_compare.asp" />
+    <Content Include="asp\device_aida.asp" />
+    <Content Include="asp\device_aida_autorun.asp" />
+    <Content Include="asp\device_aida_devices.asp" />
+    <Content Include="asp\device_aida_programs.asp" />
+    <Content Include="asp\device_cart.asp" />
+    <Content Include="asp\device_defect_act.asp" />
+    <Content Include="asp\device_history.asp" />
+    <Content Include="asp\device_history_repair.asp" />
+    <Content Include="asp\device_to_repair.asp" />
+    <Content Include="asp\history.asp" />
+    <Content Include="asp\repair_cart.asp" />
+    <Content Include="asp\storage_1c_compare.asp" />
+    <Content Include="asp\storage_all_repairs.asp" />
+    <Content Include="asp\storage_cart.asp" />
+    <Content Include="asp\storage_history.asp" />
+    <Content Include="asp\storage_load_positions.asp" />
+    <Content Include="asp\storage_load_rest.asp" />
+    <Content Include="asp\writeoff_cart.asp" />
+    <Content Include="asp\writeoff_setup_cart.asp" />
+    <Content Include="catalog\default.asp" />
+    <Content Include="Content\css\aida.css" />
+    <Content Include="Content\css\analyze.css" />
+    <Content Include="Content\lib\bselect.min.css" />
+    <Content Include="Content\css\catalog.css" />
+    <Content Include="Content\css\core.css" />
+    <Content Include="Content\css\device.css" />
+    <Content Include="Content\css\repair.css" />
+    <Content Include="Content\css\storage.css" />
+    <Content Include="Content\img\background.png" />
+    <Content Include="Content\img\devin_icons_black.png" />
+    <Content Include="Content\img\devin_icons_blue.png" />
+    <Content Include="Content\img\favicon.ico" />
+    <Content Include="Content\img\white_carbonfiber.png" />
+    <Content Include="Content\js\aida.js" />
+    <Content Include="Content\js\catalog.js" />
+    <Content Include="Content\js\core.js" />
+    <Content Include="Content\js\device.js" />
+    <Content Include="Content\js\js-analyze.js" />
+    <Content Include="Content\js\repair.js" />
+    <Content Include="Content\js\storage.js" />
+    <Content Include="Content\lib\bselect.min.js" />
+    <Content Include="Content\lib\images\ui-bg_glass_40_ffc73d_1x400.png" />
+    <Content Include="Content\lib\images\ui-icons_222222_256x240.png" />
+    <Content Include="Content\lib\images\ui-icons_444444_256x240.png" />
+    <Content Include="Content\lib\images\ui-icons_4b8e0b_256x240.png" />
+    <Content Include="Content\lib\images\ui-icons_555555_256x240.png" />
+    <Content Include="Content\lib\images\ui-icons_777620_256x240.png" />
+    <Content Include="Content\lib\images\ui-icons_777777_256x240.png" />
+    <Content Include="Content\lib\images\ui-icons_a83300_256x240.png" />
+    <Content Include="Content\lib\images\ui-icons_cc0000_256x240.png" />
+    <Content Include="Content\lib\images\ui-icons_cccccc_256x240.png" />
+    <Content Include="Content\lib\images\ui-icons_ffffff_256x240.png" />
+    <Content Include="Content\lib\jquery-1.12.4.min.js" />
+    <Content Include="Content\lib\jquery-ui.min.css" />
+    <Content Include="Content\lib\jquery-ui.min.js" />
+    <Content Include="core\core.inc" />
+    <Content Include="core\upload.asp" />
+    <Content Include="device\default.asp" />
+    <Content Include="device\report\default.asp" />
+    <Content Include="device\view.asp" />
+    <Content Include="exes\aida\aida_delete_report.asp" />
+    <Content Include="exes\analyze\analyze_export.asp" />
+    <Content Include="exes\catalog\catalog_add_compare.asp" />
+    <Content Include="exes\catalog\catalog_create_cartridge.asp" />
+    <Content Include="exes\catalog\catalog_create_printer.asp" />
+    <Content Include="exes\catalog\catalog_delete_cartridge_cart.asp" />
+    <Content Include="exes\catalog\catalog_delete_compare.asp" />
+    <Content Include="exes\catalog\catalog_delete_printer_cart.asp" />
+    <Content Include="exes\catalog\catalog_save_cartridge_cart.asp" />
+    <Content Include="exes\catalog\catalog_save_printer_cart.asp" />
+    <Content Include="exes\core\core_create_group.asp" />
+    <Content Include="exes\core\core_create_group_inner.asp" />
+    <Content Include="exes\core\core_delete_group.asp" />
+    <Content Include="exes\core\core_edit_group.asp" />
+    <Content Include="exes\core\core_erase_group.asp" />
+    <Content Include="exes\core\core_move_group.asp" />
+    <Content Include="exes\device\device_copy.asp" />
+    <Content Include="exes\device\device_create.asp" />
+    <Content Include="exes\device\device_create_repair.asp" />
+    <Content Include="exes\device\device_delete.asp" />
+    <Content Include="exes\device\device_move_all_selected.asp" />
+    <Content Include="exes\device\device_move_computer.asp" />
+    <Content Include="exes\device\device_print_defect.asp" />
+    <Content Include="exes\device\device_repair_data.asp" />
+    <Content Include="exes\device\device_save_cart.asp" />
+    <Content Include="exes\repair\repair_delete_all.asp" />
+    <Content Include="exes\repair\repair_delete_all_selected.asp" />
+    <Content Include="exes\repair\repair_delete_cart.asp" />
+    <Content Include="exes\repair\repair_move_all_selected.asp" />
+    <Content Include="exes\repair\repair_move_all_selected_group.asp" />
+    <Content Include="exes\repair\repair_move_selected.asp" />
+    <Content Include="exes\repair\repair_off_all.asp" />
+    <Content Include="exes\repair\repair_off_all_selected.asp" />
+    <Content Include="exes\repair\repair_on_all.asp" />
+    <Content Include="exes\repair\repair_on_all_selected.asp" />
+    <Content Include="exes\repair\repair_save_cart.asp" />
+    <Content Include="exes\repair\writeoff_create_cart.asp" />
+    <Content Include="exes\repair\writeoff_delete_cart.asp" />
+    <Content Include="exes\repair\writeoff_export_to_excel.asp" />
+    <Content Include="exes\repair\writeoff_move_group.asp" />
+    <Content Include="exes\repair\writeoff_save_cart.asp" />
+    <Content Include="exes\storage\storages_print_labels.asp" />
+    <Content Include="exes\storage\storages_to_group.asp" />
+    <Content Include="exes\storage\storage_create_cart.asp" />
+    <Content Include="exes\storage\storage_create_repairs.asp" />
+    <Content Include="exes\storage\storage_delete_cart.asp" />
+    <Content Include="exes\storage\storage_save_cart.asp" />
+    <Content Include="exes\storage\storage_update_from_1c.asp" />
+    <Content Include="Global.asax" />
+    <Content Include="repair\cartridges_usage\default.asp" />
+    <Content Include="repair\default.asp" />
+    <Content Include="repair\report_year\default.asp" />
+    <Content Include="repair\view.asp" />
+    <Content Include="storage\default.asp" />
+    <Content Include="storage\labels\default.asp" />
+    <Content Include="storage\labels\view.asp" />
+    <Content Include="storage\view.asp" />
+    <Content Include="Web.config" />
+    <Content Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Views\Web.config" />
+    <Content Include="Views\Home\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Content\excels\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="asp\history.ashx" />
+    <Content Include="Content\exl\analyze.xls" />
+    <Content Include="Content\exl\defect.xls" />
+    <Content Include="Content\exl\expl.backup.xls" />
+    <Content Include="Content\exl\expl.xls" />
+    <Content Include="Content\exl\labels.xls" />
+    <Content Include="Content\exl\mat.xls" />
+    <Content Include="Content\exl\mat_org.xls" />
+    <Content Include="Content\exl\test.xls" />
+    <None Include="packages.config" />
+    <None Include="Properties\PublishProfiles\WEB Debug.pubxml" />
+    <None Include="Properties\PublishProfiles\WEB Publish.pubxml" />
+    <Content Include="Views\Writeoffs\CodeError.cshtml" />
+    <Content Include="Views\Writeoffs\Print.cshtml" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
+    <AspNetCompiler VirtualPath="temp" PhysicalPath="$(WebProjectOutputDir)" />
+  </Target>
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>54420</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:54420/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>Данный проект ссылается на пакеты NuGet, отсутствующие на этом компьютере. Используйте восстановление пакетов NuGet, чтобы скачать их.  Дополнительную информацию см. по адресу: http://go.microsoft.com/fwlink/?LinkID=322105. Отсутствует следующий файл: {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target> -->
+</Project>

@@ -22,7 +22,7 @@
 	%>
 
 	<div id="excl" class="panel">
-		<form id='compare-form' method="POST" enctype="multipart/form-data" action="/devin/views/storage_1c_compare.asp">
+		<form id='compare-form' method="POST" enctype="multipart/form-data" action="/devin/asp/storage_1c_compare.asp">
     	<table>
 			<tr><th>Импорт данных из файла</tr>
 			<tr><td><input type="file" name="FILE1" /></tr>

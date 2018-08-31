@@ -27,8 +27,8 @@
 	</div>
 
 	<div id="excl" class='panel'>
-		<form method="POST" enctype="multipart/form-data" action="/devin/views/device_1c_compare.asp?typeof=0">
-			<select onchange="parentNode.action='/devin/views/device_1c_compare.asp?typeof='+this.value;" name='typeof'>
+		<form method="POST" enctype="multipart/form-data" action="/devin/asp/device_1c_compare.asp?typeof=0">
+			<select onchange="parentNode.action='/devin/asp/device_1c_compare.asp?typeof='+this.value;" name='typeof'>
 				<option value='0'>Компьютеры
 				<option value='1'>Принтеры
 				<option value='2'>Мониторы

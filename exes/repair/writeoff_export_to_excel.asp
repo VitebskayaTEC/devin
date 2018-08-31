@@ -8,7 +8,7 @@
 
 	dim drag(3)
 
-	conn.open "Driver={SQL Server}; Server=WEB1\SQLCORE; Initial Catalog=site; Uid=core_user; Pwd=core_123;"
+	conn.open "Driver={SQL Server}; Server=WEB\SQLEXPRESS; Initial Catalog=Site; Uid=Site; Pwd=Site;"
 	rs.open "SELECT D_Gold,D_Silver,D_MPG FROM DragMetal", conn
 
 	if not rs.eof then

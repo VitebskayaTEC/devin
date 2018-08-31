@@ -16,7 +16,7 @@ function cartOpen(node) {
 }
 
 function cartOpenBack() {
-	$("#cart").fadeIn(100).load("/devin/views/aida_cart.asp?id=" + id + "&r=" + Math.random());
+	$("#cart").fadeIn(100).load("/devin/asp/aida_cart.asp?id=" + id + "&r=" + Math.random());
 	$(".view .selected").removeClass("selected");
 	try { $("#" + id).addClass("selected"); } catch (e) {}
 }
