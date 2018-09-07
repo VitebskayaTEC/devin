@@ -207,11 +207,13 @@ var restore = function() {
 
 /* Drag-n-drop функционал */
 if (document.getElementById('cart')) {
-	$("#cart")
-		.draggable().draggable("disable");
-	$("#cart")
-		.on("mousedown", ".cart-header", function() { $("#cart").draggable("enable"); })
-		.on("mouseup", ".cart-header", function() { $("#cart").draggable("disable"); });
+    try {
+        $("#cart")
+            .draggable().draggable("disable");
+        $("#cart")
+            .on("mousedown", ".cart-header", function () { $("#cart").draggable("enable"); })
+            .on("mouseup", ".cart-header", function () { $("#cart").draggable("disable"); });
+    } catch (e) {}
 }
 
 

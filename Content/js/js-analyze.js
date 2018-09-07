@@ -44,7 +44,7 @@ function exportToExcel() {
 		}
 	}
 	document.getElementById("export").style.display = "none";
-	$.post("/devin/exes/analyze/analyze_export.asp", "data=" + formData, function(data) {
+	$.post("/devin/analyze/print", "data=" + formData, function(data) {
 		document.getElementById("export").querySelector("div").innerHTML = data;
 		$("#export").slideDown(100);
 	});

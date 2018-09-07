@@ -48,8 +48,8 @@
     <Reference Include="Dapper, Version=1.50.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Dapper.1.50.5\lib\net451\Dapper.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=1.0.0.999, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpZipLib.1.0.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="NPOI, Version=2.3.0.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
@@ -119,8 +119,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\AnalyzeController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\StoragesController.cs" />
     <Compile Include="Controllers\WriteoffsController.cs" />
+    <Compile Include="Forms\StorageCompare.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -129,6 +132,7 @@
     <Compile Include="Models\Device1C.cs" />
     <Compile Include="Models\DragMetal.cs" />
     <Compile Include="Models\Repair.cs" />
+    <Compile Include="Models\Storage.cs" />
     <Compile Include="Models\Writeoff.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -151,17 +155,15 @@
     <Content Include="asp\device_to_repair.asp" />
     <Content Include="asp\history.asp" />
     <Content Include="asp\repair_cart.asp" />
-    <Content Include="asp\storage_1c_compare.asp" />
     <Content Include="asp\storage_all_repairs.asp" />
     <Content Include="asp\storage_cart.asp" />
     <Content Include="asp\storage_history.asp" />
-    <Content Include="asp\storage_load_positions.asp" />
-    <Content Include="asp\storage_load_rest.asp" />
     <Content Include="asp\writeoff_cart.asp" />
     <Content Include="asp\writeoff_setup_cart.asp" />
     <Content Include="catalog\default.asp" />
     <Content Include="Content\css\aida.css" />
     <Content Include="Content\css\analyze.css" />
+    <Content Include="Content\excels\TextFile1.txt" />
     <Content Include="Content\lib\bselect.min.css" />
     <Content Include="Content\css\catalog.css" />
     <Content Include="Content\css\core.css" />
@@ -193,6 +195,7 @@
     <Content Include="Content\lib\images\ui-icons_cccccc_256x240.png" />
     <Content Include="Content\lib\images\ui-icons_ffffff_256x240.png" />
     <Content Include="Content\lib\jquery-1.12.4.min.js" />
+    <Content Include="Content\lib\jquery-3.3.1.min.js" />
     <Content Include="Content\lib\jquery-ui.min.css" />
     <Content Include="Content\lib\jquery-ui.min.js" />
     <Content Include="core\core.inc" />
@@ -247,7 +250,6 @@
     <Content Include="exes\storage\storage_create_repairs.asp" />
     <Content Include="exes\storage\storage_delete_cart.asp" />
     <Content Include="exes\storage\storage_save_cart.asp" />
-    <Content Include="exes\storage\storage_update_from_1c.asp" />
     <Content Include="Global.asax" />
     <Content Include="repair\cartridges_usage\default.asp" />
     <Content Include="repair\default.asp" />
@@ -264,11 +266,13 @@
     <Content Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
-    <Content Include="Views\Web.config" />
+    <Content Include="Views\Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Views\Home\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Content\excels\" />
+    <Folder Include="Views\Analyze\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="asp\history.ashx" />
@@ -281,10 +285,11 @@
     <Content Include="Content\exl\mat_org.xls" />
     <Content Include="Content\exl\test.xls" />
     <None Include="packages.config" />
-    <None Include="Properties\PublishProfiles\WEB Debug.pubxml" />
-    <None Include="Properties\PublishProfiles\WEB Publish.pubxml" />
+    <None Include="Properties\PublishProfiles\Local Publish.pubxml" />
     <Content Include="Views\Writeoffs\CodeError.cshtml" />
     <Content Include="Views\Writeoffs\Print.cshtml" />
+    <Content Include="Views\Storages\Import.cshtml" />
+    <None Include="Properties\PublishProfiles\WEB Publish.pubxml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

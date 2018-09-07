@@ -2,7 +2,7 @@ function toggle(node) {
     var $unit = $(node).closest('.unit');
     if ($unit.hasClass("open")) {
         $unit.children(".items_block").slideToggle(150, function() {
-            $unit.removeClass("open")
+            $unit.removeClass("open");
         });
         setCookie($unit.attr("id"), "", {
             expires: 999999999
@@ -29,11 +29,7 @@ function cartOpenBack() {
     $("#" + id).addClass("selected");
 }
 
-function cartRestore(consoleText) {
-
-}
-
-function cartHistory(node) {
+function cartHistory() {
     $("#cart").load("/devin/asp/storage_history.asp?id=" + id + "&r=" + Math.random()).fadeIn(150);
 }
 
@@ -67,36 +63,36 @@ function cartRepair() {
 }
 
 function cartSave() {
-    $.post("/devin/exes/storage/storage_save_cart.asp?id=" + id + "&r=" + Math.random(), $("form").serialize(), function(data) {
+    $.post("/devin/exes/storage/storage_save_cart.asp?id=" + id + "&r=" + Math.random(), $("form").serialize(), function (data) {
         // ќбновление view по новым данным
         if (document.location.search.indexOf("text=") < 0) {
-            $.get("view.asp?r=" + Math.random(), function(data) {
+            $.get("view.asp?r=" + Math.random(), function (data) {
                 $("#view").html(data);
-                setTimeout(function() {
+                setTimeout(function () {
                     $("#" + id).addClass("selected");
                 }, 50);
             });
 
-            $("#cart").load("/devin/asp/storage_cart.asp?id=" + id + "&r=" + Math.random(), function() {
+            $("#cart").load("/devin/asp/storage_cart.asp?id=" + id + "&r=" + Math.random(), function () {
                 try {
                     document.getElementById("console").innerHTML = data;
-                } catch (e) {}
+                } catch (e) { }
             });
         } else {
-            $.get("view.asp" + document.location.search + "&r=" + Math.random(), function(data) {
+            $.get("view.asp" + document.location.search + "&r=" + Math.random(), function (data) {
                 $("#view").html(data);
-                setTimeout(function() {
+                setTimeout(function () {
                     $("#" + id).addClass("selected");
                 }, 50);
             });
 
-            $("#cart").load("/devin/asp/storage_cart.asp?id=" + id + "&r=" + Math.random(), function() {
+            $("#cart").load("/devin/asp/storage_cart.asp?id=" + id + "&r=" + Math.random(), function () {
                 try {
                     document.getElementById("console").innerHTML = data;
-                } catch (e) {}
+                } catch (e) { }
             });
         }
-    })
+    });
 }
 
 function compare() {
@@ -211,8 +207,7 @@ function separatePosition(a) {
 // ”даление позиции
 function removePosition(a) {
     // ќпредел€ем позицию, с которой будем работать, и ее класс, чтобы знать о остальных строках этой позиции
-    var tr = a.parentNode.parentNode,
-        pos = tr.className;
+    var tr = a.parentNode.parentNode;
 
     // ѕровер€ем кол-во строк, если оно меньше, чем кол-во на складе, показываем кнопку-разделитель
     //var $allTrs = $(tr).parent().find("." + pos), val = +tr.querySelector("span").innerHTML;

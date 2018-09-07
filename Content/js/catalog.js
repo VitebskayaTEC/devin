@@ -9,10 +9,10 @@ function search(input) {
 	if (val == "") {
 		$(".items tbody tr").css("display", "table-row");
 	} else {
-		$(".items tbody tr").each(function() {
-			var text = this.querySelector("td").innerHTML.toLowerCase();
-			this.style.display = text.indexOf(val) > -1 ? 'table-row' : 'none';
-		})
+        $(".items tbody tr").each(function () {
+            var text = this.querySelector("td").innerHTML.toLowerCase();
+            this.style.display = text.indexOf(val) > -1 ? 'table-row' : 'none';
+        });
 	}
 }
 

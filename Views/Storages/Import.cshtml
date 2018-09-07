@@ -1,0 +1,171 @@
+﻿@model StorageCompare
+
+<!Doctype html>
+<html>
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=windows-1251" />
+    <link rel="stylesheet" href="~/content/lib/jquery-ui.min.css" />
+    <link rel="stylesheet" href="~/content/css/core.css" />
+    <link rel="stylesheet" href="~/Content/css/storage.css" />
+    <link rel="shortcut icon" href="~/content/img/favicon.ico" type="image/x-icon" />
+    <title>DEVIN | Склад | Импорт из 1С</title>
+    <style>
+        .compare_bad {color: #ff0000;}
+        .compare_not_found {color: #208608;}
+    </style>
+</head>
+
+<body>
+
+    <ul class="main-menu">
+        <li>
+            <a href="/" style="width: 36px"><div class="icon ic-exit-to-app"></div></a>
+        </li><li>
+            <a href="/devin/device/">DEVIN</a>
+        </li><li>
+            <a href="/devin/storage/" class="point-now">Склад</a>
+        </li><li>
+            <a href="/devin/repair/">Ремонты</a>
+        </li><li>
+            <a href="/devin/aida/">AIDA</a>
+        </li><li>
+            <a href="/devin/catalog/">Каталог</a>
+        </li><li>
+            <a class="menu-button" onclick="Storage.addAllExcelsToStorage()">Добавить все новые позиции</a>
+        </li>
+    </ul>
+
+    <div id="view" class="view">
+        <div class="unit unit-nohover">
+            <table class="caption">
+                <tr>
+                    <td>Счеты учета: @ViewBag.Title</td>
+                </tr>
+            </table>
+            <table class="items">
+                <thead>
+                    <tr>
+                        <th>Инв. №</th>
+                        <th>Наименование</th>
+                        <th>Дата прихода</th>
+                        <th>Счет учета</th>
+                        <th>На складе сейчас</th>
+                        <th>В ремонте</th>
+                        <th>Остаток по 1С</th>
+                        <td>Действия</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var storage in Model.Storages)
+                    {
+                        string className = "";
+
+                        foreach (var excel in Model.Excels)
+                        {
+                            if (storage.Ncard == excel.Ncard)
+                            {
+                                className = storage.Nis + storage.Nuse == excel.Nadd ? "compare_good" : "compare_bad";
+
+                                <tr class="@className">
+                                    <td>@storage.Ncard</td>
+                                    <td>@storage.Name</td>
+                                    <td>@storage.Date.ToString("d MMMM yyyy")</td>
+                                    <td>@storage.Uchet</td>
+                                    <td>@storage.Nis</td>
+                                    <td>@storage.Nuse</td>
+                                    <td>@excel.Nadd</td>
+                                    <td>
+                                        <button onclick="Storage.openCart('@storage.Ncard')">Карточка</button>
+                                    </td>
+                                </tr>
+                                
+                                break;
+                            }
+                        }
+                    }
+                    @foreach (var excel in Model.Excels)
+                    {
+                        bool isFound = false;
+
+                        foreach (var storage in Model.Storages)
+                        {
+                            if (storage.Ncard == excel.Ncard)
+                            {
+                                isFound = true;
+                                break;
+                            }
+                        }
+
+                        if (!isFound)
+                        {
+                            <tr class="compare_not_found">
+                                <td name="Ncard">@excel.Ncard</td>
+                                <td name="Name">@excel.Name</td>
+                                <td>@excel.Date.ToString("d MMMM yyyy")</td>
+                                <td name="Uchet">@excel.Uchet</td>
+                                <td insert="Nis">не найдено на складе</td>
+                                <td insert="Nuse">не найдено на складе</td>
+                                <td name="Nadd">@excel.Nadd</td>
+                                <td>
+                                    <button onclick="Storage.addExcelToStorage(this)">Добавить на складе</button>
+                                </td>
+                                <td class="hide" name="Date">@excel.Date.ToString("dd.MM.yyyy")</td>
+                                <td class="hide" name="Price">@excel.Price</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+            
+        </div>
+    </div>
+
+    <div id="cart" class="cart-new"></div>
+
+    <script src="~/Content/lib/jquery-3.3.1.min.js"></script>
+    <script src="~/Content/js/core.js"></script>
+    <script>
+
+        var Storage = {
+
+            addExcelToStorage(obj) {
+
+                var excel = {};
+                var $row = $(obj).closest('tr');
+
+                $row.find('td[name]').each(function () { excel[this.getAttribute('name')] = this.innerHTML; });
+
+                $.post('@Url.Action("AddExcelToStorage", "Storages")', excel, () => {
+
+                    $row.find('td[insert="Nis"]').html(excel.Nadd);
+                    $row.find('td[insert="Nuse"]').html(0);
+                    $row.find('td.hide').remove();
+                    $row.removeClass('compare_not_found');
+                    $row.attr('id', excel.NCard);
+
+                    obj.onclick = () => Storage.openCart(excel.Ncard);
+                    obj.innerHTML = 'Открыть карточку';
+                });
+            },
+
+            addAllExcelsToStorage() {
+                var $rows = $('#view').find('.compare_not_found button');
+                if ($rows.length == 0) {
+                    alert('Нет позиций, которые необходимо добавить');
+                } else {
+                    $rows.each(function () { this.click(); });
+                }
+            },
+
+            openCart(ncard) {
+                $("#cart").load("/devin/asp/storage_cart.asp?id=" + ncard + "&r=" + Math.random()).fadeIn(150);
+                $(".selected").removeClass("selected");
+                $("#" + ncard).addClass("selected");
+            }
+        };
+    </script>
+</body>
+
+</html>

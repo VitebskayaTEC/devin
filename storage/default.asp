@@ -8,7 +8,6 @@
 	<link href="/devin/content/lib/jquery-ui.min.css" rel="stylesheet" />
 	<link href="/devin/content/css/core.css" rel="stylesheet" />
 	<link href="/devin/content/css/storage.css" rel="stylesheet" />
-	<link href="/devin/content/css/bselect.min.css" rel="stylesheet" />
 	<link href="/devin/content/img/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 	<title>DEVIN | Склад</title>
 </HEAD>
@@ -22,21 +21,15 @@
 	%>
 
 	<div id="excl" class="panel">
-		<form id='compare-form' method="POST" enctype="multipart/form-data" action="/devin/asp/storage_1c_compare.asp">
-    	<table>
-			<tr><th>Импорт данных из файла</tr>
-			<tr><td><input type="file" name="FILE1" /></tr>
-			<tr><td>
-				<select name="saveto" onchange="compareSetSource(this)">
-					<option value="compare">Выполнить сверку
-					<option value="in">Загрузить приход
-					<!--<option value="out">Загрузить остатки-->
-				</select></tr>
-			<tr><td>
-				<input type="submit" value="Загрузить" />
+		<form id='compare-form' method="POST" enctype="multipart/form-data" action="/devin/storages/import">
+    	    <b>Обработка выгрузки из 1С</b>
+			<div>
+                <input type="file" name="excel" />
+			</div>
+			<div>
+                <input type="submit" value="Загрузить" />
 				<input type="button" value="Закрыть" onclick="compare()" />
-			</tr>
-		</table>
+			</div>
 		</form>
 	</div>
 
@@ -53,7 +46,7 @@
 		<div><a onclick='closeExportsPanel()'>Закрыть</a></div>
 	</div>
 
-	<script src="/devin/content/lib/jquery-1.12.4.min.js"></script>
+	<script src="/devin/content/lib/jquery-3.3.1.min.js"></script>
 
 	<div class='view' id='view'>
 		<% server.execute "view.asp" %>
@@ -82,10 +75,9 @@
 		<li onclick='$(this).parent().fadeOut(100)'>Отмена
 	</ul>
 
-	<script src="/devin/content/lib/jquery-ui.min.js"></script>
+    <script src="/devin/content/lib/jquery-ui.min.js"></script>
 	<script src="/devin/content/js/core.js"></script>
 	<script src="/devin/content/js/storage.js"></script>
-	<script src="/devin/content/js/bselect.min.js"></script>
 	<script>
 		var sortText = "<%=search%>";
 		$(".view")

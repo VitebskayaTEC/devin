@@ -82,6 +82,13 @@ a.has-icon {
     color: #E6B451;
 }
 
+.menu-button {
+    padding: 2px 6px !important;
+    margin: 3px;
+    background: #eee;
+    border: 1px outset #979898;
+}
+
 
 /* Main view table header */
 
@@ -145,6 +152,12 @@ a.has-icon {
 .items tbody tr:hover,
 .items th:hover {
     color: #007bd6;
+}
+
+.unit-nohover:hover .caption,
+.unit-nohover .items tbody tr:hover,
+.unit-nohover .items th:hover {
+    color: #000;
 }
 
 .open {
