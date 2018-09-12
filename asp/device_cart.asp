@@ -13,7 +13,22 @@
 	dim device(22, 2), temp, cls
 
 	'Получаем данные по устройству
-	sql = "Exec GetDeviceById '" & id & "';"
+	sql = "SELECT " _
+		& "d.* " _
+		& ",c.Description      AS [Devices1C_Description] " _
+		& ",c.Guild            AS [Devices1C_Guild] " _
+		& ",c.SubDivision      AS [Devices1C_SubDivision] " _
+		& ",c.Mol              AS [Devices1C_Mol] " _
+		& ",c.BalanceCost      AS [Devices1C_BalanceCost] " _
+		& ",c.DepreciationCost AS [Devices1C_DepreciationCost] " _
+		& ",c.Gold             AS [Devices1C_Gold] " _
+		& ",c.Silver           AS [Devices1C_Silver] " _
+		& ",c.Platinum         AS [Devices1C_Platinum] " _
+		& ",c.Palladium        AS [Devices1C_Palladium] " _
+		& ",c.Mpg              AS [Devices1C_Mpg] " _
+	& "FROM Device d " _
+	& "LEFT OUTER JOIN Devices1C c ON d.inventory = c.inventory " _
+	& "WHERE d.number_device = '" & id & "'"
 	rs.open sql, conn
 	if not rs.eof then
 		dim i
@@ -118,11 +133,6 @@
 		<% end if %>
 
 		<tr>
-			<td>Подпись в 1С</td>
-			<td><input name='description1C' value='<%=keys("description1C")%>' /></td>
-		</tr>
-
-		<tr>
 			<td>Описание</td>
 			<td><textarea name='description'><%=keys("description")%></textarea></td>
 		</tr>
@@ -163,6 +173,18 @@
 				</a>
 			</td>
 		</tr>
+
+        <tr>
+            <td>Последний ремонт</td>
+            <td>
+                <input name="LastRepairDate" style="width: 100px;" value="<%=keys("LastRepairDate")%>" />
+                <%
+                    rs.Open "SELECT Max(Date) FROM Remont WHERE Id_D = '" & id & "'", CONN
+					if isNull(rs(0)) then Response.Write("Ремонты не проводились") else Response.Write("<a><b>" & datevalue(rs(0)) & "</b></a>")
+					rs.Close
+				%>
+            </td>
+        </tr>
 
 		<% if cls = "CMP" then %>
 		<tr>
@@ -284,36 +306,14 @@
 		<% end if %>
 
 		<tr>
-			<td>Используется</td>
+			<td>Списано</td>
 			<td>
 				<select name='used'>
-					<option value='0'>Нет</option>
-					<option value='1' <% if keys("used") = "1" then response.write "selected" %>>Да</option>
+					<option value='0'>Да</option>
+					<option value='1' <% if keys("used") = "1" then response.write "selected" %>>Нет</option>
 				</select>
 			</td>
 		</tr>
-
-		<tr>
-			<td>Сверка с 1С</td>
-			<td>
-				<select name='check1C'>
-					<option value='0'>Нет</option>
-					<option value='1' <% if keys("check1C") = "1" then response.write "selected" %>>Да</option>
-				</select>
-			</td>
-		</tr>
-
-		<% if cls = "CMP" then %>
-		<tr>
-			<td>Сверка с AIDA</td>
-			<td>
-				<select name='checkEverest'>
-					<option value='0'>Нет</option>
-					<option value='1' <% if keys("checkEverest") = "1" then response.write "selected" %>>Да</option>
-				</select>
-			</td>
-		</tr>
-		<% end if %>
 
 		<tr>
 			<td>Группа</td>

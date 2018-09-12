@@ -1,0 +1,209 @@
+﻿@using System.Data.SqlClient
+
+<!Doctype html>
+<html>
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=windows-1251" />
+    <link rel="stylesheet" href="~/content/css/core.css" />
+    <link rel="stylesheet" href="~/content/css/table.css" />
+    <link rel="shortcut icon" href="~/content/img/favicon.ico" type="image/x-icon" />
+    <title>DEVIN | Устройства | Табличный просмотр</title>
+    <style>
+        label {display: block;}
+    </style>
+</head>
+
+<body>
+
+    <ul class="main-menu">
+        <li>
+            <a href="/" style="width: 36px"><div class="icon ic-exit-to-app"></div></a>
+        </li>
+        <li>
+            <a href="/devin/device/" class="point-now">DEVIN</a>
+        </li>
+        <li>
+            <a href="/devin/storage/">Склад</a>
+        </li>
+        <li>
+            <a href="/devin/repair/">Ремонты</a>
+        </li>
+        <li>
+            <a href="/devin/aida/">AIDA</a>
+        </li>
+        <li>
+            <a href="/devin/catalog/">Каталог</a>
+        </li>
+        <li>
+            <input id="search" placeholder="Поиск по полям таблицы" />
+        </li>
+    </ul>
+
+    <div id="view" class="view">
+        @{
+            var Fields = new Dictionary<string, string>
+            {
+                {"inventory", "Инв. номер"},
+                {"class_device", "Тип"},
+                {"name", "Наименование"},
+                {"description", "Описание"},
+                {"install_date", "Дата установки"},
+                {"MOL", "МОЛ"},
+                {"number_serial", "Серийный номер"},
+                {"number_passport", "Паспортный номер"},
+                {"attribute", "Расположение"},
+                {"OS", "ОС"},
+                {"OSKEY", "Ключ ОС"},
+                {"PRKEY", "Ключ софта"},
+                {"service_tag", "Сервис-тег"},
+                {"PassportGold", "Золото по паспорту"},
+                {"PassportSilver", "Серебро по паспорту"},
+                {"PassportPlatinum", "Платина по паспорту"},
+                {"PassportMPG", "МПГ по паспорту"},
+            };
+
+            var Types = new Dictionary<string, string>
+            {
+                {"", "Все"},
+                {"CMP", "Компьютеры"},
+                {"DIS", "Мониторы"},
+                {"PRN", "Принтеры"},
+            };
+
+            string type = Request.QueryString.Get("type") ?? "";
+            string fields = Request.QueryString.Get("fields") ?? "";
+            string used = Request.QueryString.Get("used") ?? "1";
+
+            string sql = "SELECT ";
+            if (fields != "")
+            {
+                sql += fields;
+            }
+            else
+            {
+                bool first = true;
+                foreach (var kv in Fields)
+                {
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        sql += ", ";
+                    }
+                    sql += kv.Key;
+                }
+            }
+
+            sql += " FROM Device WHERE used = '" + used + "'";
+
+            if (type != "")
+            {
+                sql += " AND class_device = '" + type + "'";
+            }
+        }
+
+        <div id="form">
+            <table>
+                <tr>
+                    <td id="fields">
+                        <b>Поля</b>
+                        @foreach (var kv in Fields)
+                        {
+                            <label><input type="checkbox" name="@kv.Key" @(fields.Contains(kv.Key) ? "checked" : "")>@kv.Value</label>
+                        }
+                    </td>
+                    <td>
+                        <b>Типы</b>
+                        <select id="type">
+                            @foreach (var kv in Types)
+                            {
+                                <option value="@kv.Key" @(type == kv.Key ? "selected" : "")>@kv.Value</option>
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        <label><input type="checkbox" id="used" @(used == "1" ? "" : "checked")>Показывать списанные</label>
+                    </td>
+                    <td>
+                        <button onclick="reload()">Обновить</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <table id="data" class="items">
+            @using (var conn = Database.Connection())
+            {
+                using (var command = new SqlCommand(sql, conn))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        int len = reader.FieldCount;
+                        <thead>
+                            <tr>
+                                @for (int i = 0; i < len; i++)
+                                {
+                                    string name = reader.GetDataTypeName(i);
+                                    string sort = "";
+
+                                    if (name == "nvarchar") { sort = "string"; }
+                                    else if (name == "datetime") { sort = "date"; }
+                                    else if (name == "int") { sort = "number"; }
+
+                                    <th data-type="@sort" onclick="_sort(this)">@(Fields.TryGetValue(reader.GetName(i), out string x) ? x : reader.GetName(i))</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @while (reader.Read())
+                            {
+                                <tr>
+                                    @for (int i = 0; i < len; i++)
+                                    {
+                                        if (reader.GetDataTypeName(i) == "datetime")
+                                        {
+                                            DateTime d = (DateTime)reader[i];
+                                            if (d.Year <= 1990)
+                                            {
+                                                <td></td>
+                                            }
+                                            else
+                                            {
+                                                <td>@d.ToString("yyyy.MM.dd")</td>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <td>@reader[i]</td>
+                                        }
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    }
+                }
+            }
+        </table>
+
+    </div>
+
+    <script src="~/Content/js/table.js"></script>
+    <script>
+        function reload() {
+
+            var fields = '';
+            var inputs = document.getElementById('fields').getElementsByTagName('input');
+            for (var i = 0; i < inputs.length; i++) {
+                if (inputs[i].checked) fields += (fields == '' ? '' : ',') + inputs[i].name;
+            }
+
+            document.location = './table?fields=' + fields + '&used=' + (document.getElementById('used').checked ? '0' : '1') + '&type=' + document.getElementById('type').value;
+        }
+    </script>
+</body>
+
+</html>

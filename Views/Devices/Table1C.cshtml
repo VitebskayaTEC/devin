@@ -1,0 +1,222 @@
+﻿@using System.Data.SqlClient
+
+<!Doctype html>
+<html>
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=windows-1251" />
+    <link rel="stylesheet" href="~/content/css/core.css" />
+    <link rel="stylesheet" href="~/content/css/table.css" />
+    <link rel="shortcut icon" href="~/content/img/favicon.ico" type="image/x-icon" />
+    <title>DEVIN | Устройства | Просмотр 1С</title>
+</head>
+
+<body>
+
+    <ul class="main-menu">
+        <li>
+            <a href="/" style="width: 36px"><div class="icon ic-exit-to-app"></div></a>
+        </li>
+        <li>
+            <a href="/devin/device/" class="point-now">DEVIN</a>
+        </li>
+        <li>
+            <a href="/devin/storage/">Склад</a>
+        </li>
+        <li>
+            <a href="/devin/repair/">Ремонты</a>
+        </li>
+        <li>
+            <a href="/devin/aida/">AIDA</a>
+        </li>
+        <li>
+            <a href="/devin/catalog/">Каталог</a>
+        </li>
+        <li>
+            <input id="search" placeholder="Поиск по полям таблицы" />
+        </li>
+    </ul>
+
+    <div id="view" class="view">
+        @{
+            var Fields = new Dictionary<string, string>
+            {
+                {"Inventory", "Инв. номер"},
+                {"Description", "Наименование"},
+                {"Guild", "Цех"},
+                {"SubDivision", "Подразделение"},
+                {"Mol", "М.О.Л."},
+                {"BalanceCost", "Балансная стоимость"},
+                {"DepreciationCost", "Остаточная стоимость"},
+                {"Gold", "Золото"},
+                {"Silver", "Серебро"},
+                {"Platinum", "Платина"},
+                {"Palladium", "Палладий"},
+                {"Mpg", "МПГ"},
+            };
+
+            string fields = Request.QueryString.Get("fields") ?? "";
+            string hide = Request.QueryString.Get("hide") ?? "0";
+
+            string sql = "";
+            if (fields == "")
+            {
+                bool first = true;
+                foreach (var kv in Fields)
+                {
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        fields += ", ";
+                    }
+                    fields += kv.Key;
+                }
+            }
+
+            if (!fields.ToLower().Contains("inventory")) { fields += ", Inventory"; }
+            fields += ", IsHide";
+            sql = "SELECT " + fields + " FROM [Devices1C]";
+
+            if (hide == "0") { sql += " WHERE IsHide IS NULL OR IsHide = 0"; }
+            else if (hide == "1") { sql += " WHERE IsHide = 1"; }
+        }
+
+        <div id="form">
+            <table>
+                <tr>
+                    <td id="fields">
+                        <b>Поля</b>
+                        @foreach (var kv in Fields)
+                        {
+                            <label><input type="checkbox" name="@kv.Key" @(fields.Contains(kv.Key) ? "checked" : "")>@kv.Value</label>
+                        }
+                    </td>
+                    <td>
+                        <select id="hide">
+                            <option value="0" @(hide == "0" ? "selected" : "")>Только видимые</option>
+                            <option value="1" @(hide == "1" ? "selected" : "")>Только скрытые</option>
+                            <option value="all" @(hide == "all" ? "selected" : "")>Все</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button onclick="reload()">Обновить</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <table id="data" class="items">
+            @using (var conn = Database.Connection())
+            {
+                using (var command = new SqlCommand(sql, conn))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        int len = reader.FieldCount;
+                        <thead>
+                            <tr>
+                                @for (int i = 0; i < len; i++)
+                                {
+                                    string typeName = reader.GetDataTypeName(i);
+                                    string name = reader.GetName(i);
+                                    string sort = "";
+
+                                    if (typeName == "nvarchar") { sort = "string"; }
+                                    else if (typeName == "datetime") { sort = "date"; }
+                                    else if (typeName == "int" || name == "float" || name == "Inventory") { sort = "number"; }
+
+                                    if (name == "IsHide")
+                                    {
+                                        <th>Операции</th>
+                                    }
+                                    else if (!(name == "Inventory" && !fields.Contains("Inventory")))
+                                    {
+                                        <th data-type="@sort" onclick="_sort(this)">@(Fields.TryGetValue(reader.GetName(i), out string x) ? x : reader.GetName(i))</th>
+                                    }
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @while (reader.Read())
+                            {
+                                int id = 0;
+
+                                <tr>
+                                    @for (int i = 0; i < len; i++)
+                                    {
+                                        string name = reader.GetName(i);
+                                        string type = reader.GetDataTypeName(i);
+
+                                        if (type == "datetime")
+                                        {
+                                            DateTime d = (DateTime)reader[i];
+                                            if (d.Year <= 1990)
+                                            {
+                                                <td></td>
+                                            }
+                                            else
+                                            {
+                                                <td>@d.ToString("yyyy.MM.dd")</td>
+                                            }
+                                        }
+                                        else if (name == "Inventory")
+                                        {
+                                            id = int.Parse((string)reader[i]);
+                                            if (fields.Contains("Inventory"))
+                                            {
+                                                <td>@reader[i]</td>
+                                            }
+                                        }
+                                        else if (name == "IsHide")
+                                        {
+                                            <td>
+                                                @if (reader[i].ToString() != "True")
+                                                {
+                                                    <button onclick="hide(@id, true)">Скрыть</button>
+                                                }
+                                                else
+                                                {
+                                                    <button onclick="hide(@id, false)">Показать</button>
+                                                }
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td>@reader[i]</td>
+                                        }
+                                    }
+
+
+                                </tr>
+                            }
+                        </tbody>
+                    }
+                }
+            }
+        </table>
+
+    </div>
+
+    <script src="~/Content/js/table.js"></script>
+    <script>
+        function reload() {
+            var fields = '';
+            var inputs = document.getElementById('fields').getElementsByTagName('input');
+            for (var i = 0; i < inputs.length; i++) {
+                if (inputs[i].checked) fields += (fields == '' ? '' : ',') + inputs[i].name;
+            }
+            document.location = './table1c?fields=' + fields + '&hide=' + document.getElementById('hide').value;
+        }
+
+        function hide(id, hide) {
+            fetch('@Url.Action("HideDevice1C")/' + id + "?hide=" + hide)
+                .then(() => location.reload());
+        }
+    </script>
+</body>
+
+</html>

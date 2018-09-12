@@ -1,9 +1,9 @@
 // ќбслуживание текстовых полей ввода с классом def, предполагающих наличие в пустом поле по€сн€ющего текста
 // ѕо€сн€ющий текст указываетс€ через атрибут def дл€ каждого из текстовых полей
-$("input.def").each(function() {
-	this.setAttribute("placeholder", this.getAttribute("def"));
-	_blur(this)
-})
+$("input.def").each(function () {
+    this.setAttribute("placeholder", this.getAttribute("def"));
+    _blur(this);
+});
 
 $(document)
 	.on("focus", "input.def", function() { _focus(this) })

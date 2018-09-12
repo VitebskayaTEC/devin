@@ -120,6 +120,7 @@
   <ItemGroup>
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AnalyzeController.cs" />
+    <Compile Include="Controllers\DevicesController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\StoragesController.cs" />
     <Compile Include="Controllers\WriteoffsController.cs" />
@@ -131,6 +132,7 @@
     <Compile Include="Models\Device.cs" />
     <Compile Include="Models\Device1C.cs" />
     <Compile Include="Models\DragMetal.cs" />
+    <Compile Include="Models\KeyValue.cs" />
     <Compile Include="Models\Repair.cs" />
     <Compile Include="Models\Storage.cs" />
     <Compile Include="Models\Writeoff.cs" />
@@ -163,7 +165,9 @@
     <Content Include="catalog\default.asp" />
     <Content Include="Content\css\aida.css" />
     <Content Include="Content\css\analyze.css" />
+    <Content Include="Content\css\table.css" />
     <Content Include="Content\excels\TextFile1.txt" />
+    <Content Include="Content\js\table.js" />
     <Content Include="Content\lib\bselect.min.css" />
     <Content Include="Content\css\catalog.css" />
     <Content Include="Content\css\core.css" />
@@ -290,6 +294,9 @@
     <Content Include="Views\Writeoffs\Print.cshtml" />
     <Content Include="Views\Storages\Import.cshtml" />
     <None Include="Properties\PublishProfiles\WEB Publish.pubxml" />
+    <Content Include="Views\Devices\Table1C.cshtml" />
+    <Content Include="Views\Devices\Table.cshtml" />
+    <Content Include="Views\Devices\DefectAct.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

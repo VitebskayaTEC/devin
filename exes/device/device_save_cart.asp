@@ -38,6 +38,39 @@
 							text = text & "дата установки с [" & tempValue & "] на [" & newValue & "]"
 						end if
 					end if
+                elseif rs(i).name = "LastRepairDate" then
+                    ' ≈сли пришла дата
+                    if (isDate(newValue)) then 
+                        newValue = CDate(newValue)
+                        ' ≈сли старой даты не было
+                        if tempValue = "" then
+                            if sql <> "" then
+								sql = sql & ", "
+							    text = text & ", "
+							end if
+							sql = sql & "LastRepairDate = '" & DateToSql(newValue) & "'"
+							text = text & "дата последнего ремонта на [" & newValue & "]"
+                        ' ≈сли стара€ дата не совпадает с новой
+                        elseif cdate(tempValue) <> cdate(newValue) then
+							if sql <> "" then
+								sql = sql & ", "
+								text = text & ", "
+							end if
+							sql = sql & rs(i).name & " = '" & DateToSql(newValue) & "'"
+							text = text & "дата последнего ремонта с [" & tempValue & "] на [" & newValue & "]"
+						end if
+                    ' ≈сли дата не пришла
+                    else
+                        if tempValue <> "" then
+                            if sql <> "" then
+								sql = sql & ", "
+								text = text & ", "
+							end if
+							sql = sql & rs(i).name & " = NULL"
+							text = text & "дата последнего ремонта [" & tempValue & "] удалена"
+                        end if
+                    end if
+
 				elseif (rs(i).name = "class_device") and (cstr(tempValue) <> cstr(newValue)) then
 					' ѕодбор нового ID
 					newID(1) = newValue

@@ -18,7 +18,6 @@
 		dim search: search = request.querystring("search")
 		menu("<li><form method='get' action='./'><input name='search' id='search' placeholder='Поиск' value='" & search & "'/></form>" _
 		& "<li><a class='has-icon' onmousedown='_menu(this)' menu='main'><div class='icon ic-menu'></div></a>")
-		'onkeyup='search(this)'
 	%>
 
 	<div id='selected' class='panel'>
@@ -30,15 +29,16 @@
 	<div id="excl" class='panel'>
 		<form method="POST" enctype="multipart/form-data" action="/devin/asp/device_1c_compare.asp?typeof=0">
 			<select onchange="parentNode.action='/devin/asp/device_1c_compare.asp?typeof='+this.value;" name='typeof'>
-				<option value='0'>Компьютеры
-				<option value='1'>Принтеры
-				<option value='2'>Мониторы
-				<option value='3'>Модемы
-				<option value='4'>Сканеры
-				<option value='5'>ИБП
-				<option value='6'>Другое
+				<option value='0'>Компьютеры</option>
+				<option value='1'>Принтеры</option>
+				<option value='2'>Мониторы</option>
+				<option value='3'>Модемы</option>
+				<option value='4'>Сканеры</option>
+				<option value='5'>ИБП</option>
+				<option value='6'>Другое</option>
 			</select>
-			<input type='file' size='50' name="FILE1" /><input actions='openCartridgeCart' type='submit' value="Загрузить" />
+			<input type='file' name="FILE1" />
+            <input type='submit' value="Загрузить" />
 		</form>
 	</div>
 
@@ -49,29 +49,31 @@
 	<div id='cart' class='cart-new'></div>
 
 	<ul class='context-menu' id='main'>
-		<li onclick='cartCreate()'>Создать карточку устройства
-		<li onclick='groupCreate()'>Создать группу
-		<li onclick='history()'>История всех событий DEVIN
-		<li onclick='location="/devin/analyze/"'>Анализ расхода картриджей
-		<li onclick='loadCompare()'>Сверка с 1С
+		<li onclick='cartCreate()'>Создать карточку устройства</li>
+		<li onclick='groupCreate()'>Создать группу</li>
+		<li onclick='history()'>История всех событий DEVIN</li>
+		<li onclick='location="/devin/analyze/"'>Анализ расхода картриджей</li>
+		<li onclick='loadCompare()'>Сверка с 1С</li>
+        <li onclick="document.location = '/devin/devices/table';">Табличный просмотр Devin</li>
+        <li onclick="document.location = '/devin/devices/table1C';">Просмотр данных 1С</li>
 	</ul>
 	<ul class='context-menu' id='computer'>
-		<li onclick='computerOpen()'>Открыть карточку
-		<li onclick='computerAida()'>Отчет из AIDA
-		<li onclick='groupBeforeMove()'>Переместить
-		<li onclick='computerDelete()'>Удалить
+		<li onclick='computerOpen()'>Открыть карточку</li>
+		<li onclick='computerAida()'>Отчет из AIDA</li>
+		<li onclick='groupBeforeMove()'>Переместить</li>
+		<li onclick='computerDelete()'>Удалить</li>
 	</ul>
 	<ul class='context-menu' id='group'>
 		<li onclick='groupEdit()'>Переименовать
-		<li onclick='groupBeforeMove()'>Переместить
-		<li onclick='groupCreateInner()'>Создать вложенную группу
-		<li onclick='groupErase()'>Очистить
-		<li onclick='groupDelete()'>Удалить
+		<li onclick='groupBeforeMove()'>Переместить</li>
+		<li onclick='groupCreateInner()'>Создать вложенную группу</li>
+		<li onclick='groupErase()'>Очистить</li>
+		<li onclick='groupDelete()'>Удалить</li>
 	</ul>
 	<ul class='context-menu' id='modal'>
-		<li>
-		<li>Ок
-		<li onclick='$(this).parent().fadeOut(100)'>Отмена
+		<li></li>
+		<li>Ок</li>
+		<li onclick='$(this).parent().fadeOut(100)'>Отмена</li>
 	</ul>
 
 	<script src="/devin/content/lib/jquery-ui.min.js"></script>

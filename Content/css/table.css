@@ -1,0 +1,28 @@
+#form {
+	background: #fff;
+	border: 1px solid #333;
+	margin: 10px;
+	font-size: 12px;
+}
+
+#data th {
+	color: #2196F3;
+	font-size: 14px;
+}
+
+#data td,
+#data th {
+	border: 1px solid #ccc;
+}
+
+.search input {
+    padding: 6px;
+    padding-left: 20px;
+    width: 100%;
+}
+
+.search {
+    margin-bottom: 10px;
+}
+
+label {display: block;}

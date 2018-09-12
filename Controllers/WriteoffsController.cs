@@ -143,7 +143,6 @@ namespace Devin.Controllers
                             number_device    AS [DeviceNumber],
                             inventory        AS [Inventory], 
                             description      AS [Description], 
-                            description1C    AS [Description1C], 
                             number_serial    AS [SerialNumber], 
                             MOL              AS [Mol],
                             PassportGold     AS [Gold], 
@@ -154,7 +153,7 @@ namespace Devin.Controllers
 
                         if (device == null) return "Устройство не найдено";
 
-                        var metals = conn.Query<Device1C>("SELECT Gold, Silver, Platinum, Palladium, Mpg, SubDivision FROM Devices1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
+                        var metals = conn.Query<Device1C>("SELECT Description, Gold, Silver, Platinum, Palladium, Mpg, SubDivision FROM Devices1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
 
                         if (metals == null) metals = new Device1C();
 
@@ -173,13 +172,13 @@ namespace Devin.Controllers
                             case "075155": valueText = "Оборудование АСКУЭ ММПГ: "; break;
                         }
 
-                        if (!string.IsNullOrEmpty(device.Description1C))
+                        if (!string.IsNullOrEmpty(metals.Description))
                         {
                             sheet.GetRow(29).GetCell(16).SetCellValue(valueText + device.Description);
                         }
                         else
                         {
-                            sheet.GetRow(29).GetCell(16).SetCellValue(valueText + device.Description1C);
+                            sheet.GetRow(29).GetCell(16).SetCellValue(valueText + metals.Description);
                         }
                         sheet.GetRow(31).GetCell(16).SetCellValue(device.Inventory);
                         sheet.GetRow(32).GetCell(16).SetCellValue(device.SerialNumber);

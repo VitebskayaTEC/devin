@@ -2,6 +2,8 @@
 {
     public class Device1C
     {
+        public string Description { get; set; } = "";
+
         public string Mol { get; set; } = "";
 
         public string SubDivision { get; set; } = "";
