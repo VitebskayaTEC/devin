@@ -128,6 +128,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\Cartridge.cs" />
     <Compile Include="Models\Database.cs" />
     <Compile Include="Models\Device.cs" />
     <Compile Include="Models\Device1C.cs" />
@@ -151,7 +152,6 @@
     <Content Include="asp\device_aida_devices.asp" />
     <Content Include="asp\device_aida_programs.asp" />
     <Content Include="asp\device_cart.asp" />
-    <Content Include="asp\device_defect_act.asp" />
     <Content Include="asp\device_history.asp" />
     <Content Include="asp\device_history_repair.asp" />
     <Content Include="asp\device_to_repair.asp" />
@@ -229,7 +229,6 @@
     <Content Include="exes\device\device_delete.asp" />
     <Content Include="exes\device\device_move_all_selected.asp" />
     <Content Include="exes\device\device_move_computer.asp" />
-    <Content Include="exes\device\device_print_defect.asp" />
     <Content Include="exes\device\device_repair_data.asp" />
     <Content Include="exes\device\device_save_cart.asp" />
     <Content Include="exes\repair\repair_delete_all.asp" />

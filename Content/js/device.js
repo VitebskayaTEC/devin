@@ -103,13 +103,7 @@ function cartAidaPrograms(name) {
 }
 
 function cartDefect() {
-	$('#cart')
-		.load(
-			'/devin/asp/device_defect_act.asp?id=' +
-				id +
-				'&r=' +
-				Math.random()
-		)
+	$('#cart').load('/devin/devices/DefectAct?id=' + id + '&r=' + Math.random())
 		.fadeIn(100).css({ maxWidth: 600 });
 }
 

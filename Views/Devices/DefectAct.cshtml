@@ -1,0 +1,200 @@
+﻿@{
+    string id = Request.QueryString.Get("id") ?? "";
+
+    using (var conn = Database.Connection())
+    {
+        <div class="cart-header">Дефектный акт для @id</div>
+
+        var data = conn.Query(@"SELECT
+            Device.class_device   AS ClassDevice,
+            Devices1C.Description AS Description1C,
+            Devices1C.Mol         AS Mol1C,
+            Device.Description    AS Description,
+            Device.Inventory,
+            Device.Name,
+            Computers.name       AS ComputerName,
+            Device.install_date  AS DateInstall,
+            Device.Mol
+        FROM Device
+        LEFT OUTER JOIN Devices1C ON Device.Inventory = Devices1C.Inventory
+        LEFT OUTER JOIN Device AS Computers ON Device.number_comp = Computers.number_device
+        WHERE Device.number_device = @Id", new { Id = id }).FirstOrDefault();
+
+        if (data == null)
+        {
+            <div class='cart-overflow'>Устройство не найдено в базе данных</div>
+            <table class='cart-menu'>
+                <tbody>
+                    <tr>
+                        <td onclick='cartBack()'>Вернуться к карточке</td>
+                        <td onclick='cartClose()'>Закрыть</td>
+                    </tr>
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="cart-overflow">
+                <table class="cart-table">
+                    <tbody>
+                        <tr>
+                            <td>На дату</td>
+                            <td><input style="width: 100px" id="DateInstall" value="@data.DateInstall.ToString("dd.MM.yyyy")" /></td>
+                        </tr>
+                        <tr>
+                            <td>Наименование по 1С</td>
+                            <td><textarea id="Description">@(string.IsNullOrEmpty(data.Description1C) ? data.Description : data.Description1C)</textarea></td>
+                        </tr>
+                        <tr>
+                            <td>Инвентарный номер</td>
+                            <td><input id="Inventory" value="@data.Inventory" /></td>
+                        </tr>
+                        <tr>
+                            @if (data.ClassDevice == "CMP")
+                            {
+                                <td>Сетевое имя</td>
+                            }
+                            else
+                            {
+                                <td>Имя компьютера</td>
+                            }
+                            <td><input id="Name" value="@data.Name" /></td>
+                        </tr>
+                        <tr>
+                            <td>М.О.Л. (должность)</td>
+                            <td><input id="mol_post" value="" /></td>
+                        </tr>
+                        <tr>
+                            <td>М.О.Л. (фамилия и.о.)</td>
+                            <td><input id="mol_name" value="@(string.IsNullOrEmpty(data.Mol1C) ? data.Mol : data.Mol1C)" /></td>
+                        </tr>
+                        <tr>
+                            <td>Время наработки</td>
+                            <td><input id="work_time" style="width: 100px;" value="@(Math.Round((DateTime.Now - data.DateInstall).TotalHours))" /> часов</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <br />
+                <b>Неисправности</b>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <td>
+                                Тип:
+                                <select id="defect_position" onchange="checkIfUnique(this)">
+                                    @if (data.ClassDevice == "CMP")
+                                    {
+                                        <option value="motherboard">Материнская плата</option>
+                                        <option value="cpu">Процессор</option>
+                                        <option value="power">Блок питания</option>
+                                        <option value="ram">Оперативная память</option>
+                                        <option value="hdd">Жесткий диск</option>
+                                        <option value="videocard">Видеокарта</option>
+                                    }
+                                    <option value="unique">Свое</option>
+                                </select>
+                            </td>
+                            <td id="defect_unique"></td>
+                            <td>Кол-во: <input id="defect_count" style="width: 60px;" value="1" /></td>
+                            <td><button onclick="addDefectPosition()">Добавить</button></td>
+                        </tr>
+                    </thead>
+                </table>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th width="100px"></th>
+                            <th width="100px"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="defect_container"></tbody>
+                </table>
+                <div id="defect_link"></div>
+            </div>
+            
+            <table class='cart-menu'>
+                <tbody>
+                    <tr>
+                        <td onclick='cartBack()'>Вернуться к карточке</td>
+                        <td onclick='defectPrint()'>Печать</td>
+                        <td onclick='cartClose()'>Закрыть</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <script>
+                function addDefectPosition() {
+                    var count = document.getElementById('defect_count').value;
+                    if (isNaN(+count) || count == '') return alert('Количество деталей должно быть числом');
+
+                    var select = document.getElementById('defect_position');
+                    var type = select.value;
+                    var text = (type === 'unique') ? document.getElementById('unique_name').value : select.options[select.selectedIndex].innerHTML;
+                    if (type === 'unique' && String(document.getElementById('unique_name').value) == '') return alert("Не введено название неисправности");
+
+                    $('#defect_container')
+                        .append('<tr><td val="' + type + '">' + text + '</td><td>' + Math.round(count) + '</td><td><button onclick="deletePosition(this)">Удалить</button></td></tr>');
+                }
+
+                function deletePosition(button) {
+                    var row = button.parentNode.parentNode;
+                    row.parentNode.removeChild(row);
+                }
+
+                function checkIfUnique(select) {
+                    document.getElementById('defect_unique').innerHTML = (select.value === 'unique')
+                        ? 'Свое: <input type="text" id="unique_name" />'
+                        : '';
+                }
+
+                function defectPrint() {
+                    var form = 'id=@id>';
+                    form += '&type=@data.ClassDevice>';
+                    form += '&date=' + encodeURIComponent(document.getElementById('DateInstall').value);
+                    form += '&description=' + encodeURIComponent(document.getElementById('Description').innerHTML);
+                    form += '&inventory=' + encodeURIComponent(document.getElementById('Inventory').value);
+                    form += '&name=' + encodeURIComponent(document.getElementById('Name').value);
+                    form += '&mol_post=' + encodeURIComponent(document.getElementById('mol_post').value);
+                    form += '&mol_name=' + encodeURIComponent(document.getElementById('mol_name').value);
+                    form += '&work_time=' + encodeURIComponent(document.getElementById('work_time').value);
+                    form += '&positions=';
+
+                    $('#defect_container tr').each(function (i) {
+                        let td = this.getElementsByTagName('td');
+                        form +=
+                            (i > 0
+                                ? ';;'
+                                : '') +
+                            (td[0].getAttribute('val') !== 'unique'
+                                ? td[0].getAttribute('val')
+                                : encodeURIComponent(td[0].innerHTML)) +
+                            '::' +
+                            encodeURIComponent(td[1].innerHTML);
+                    });
+
+                    let link = document.getElementById('defect_link');
+                    link.innerHTML = '<i>... идет печать ...</i>';
+
+                    $.post('@Url.Action("PrintDefectAct")?r=' + Math.random(), form)
+                        .done(data => link.innerHTML = data)
+                        .fail(() => link.innerHTML = '<div class="error">Произошла ошибка</div>');
+                }
+            </script>
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+

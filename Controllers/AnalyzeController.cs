@@ -1,4 +1,5 @@
-﻿using NPOI.HSSF.UserModel;
+﻿using Devin.Models;
+using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.SS.Util;
 using System;
@@ -8,26 +9,6 @@ using System.Web.Mvc;
 
 namespace Devin.Controllers
 {
-    public class Cartridge
-    {
-        public string Name { get; set; }
-
-        public string Type { get; set; }
-
-        public string Color { get; set; }
-
-        public int Count { get; set; }
-
-        public float Cost { get; set; }
-    }
-
-    public class CartridgeType
-    {
-        public string Name { get; set; }
-
-        public List<Cartridge> Cartridges { get; set; } = new List<Cartridge>();
-    }
-
     public class AnalyzeController : Controller
     {
         public string Print()
@@ -35,8 +16,9 @@ namespace Devin.Controllers
             // Получение исходных данных
             float cost = 0;
             int count = 0;
-            var types = new List<CartridgeType>();
-            CartridgeType lastType = new CartridgeType { Name = "" };
+            var types = new List<List<Cartridge>>();
+            var lastType = new List<Cartridge>();
+            string lastName = "";
 
             string[] Data = (Request.Form.Get("data") ?? "").Split(new string[] { "----" }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -67,15 +49,13 @@ namespace Devin.Controllers
                     case "5color": cartridge.Color = "многоцветный"; break;
                 }
 
-                if (lastType.Name != cartridge.Type)
+                if (lastName != cartridge.Type)
                 {
-                    types.Add(lastType = new CartridgeType
-                    {
-                        Name = cartridge.Type
-                    });
+                    types.Add(lastType = new List<Cartridge>());
+                    lastName = cartridge.Type;
                 }
 
-                lastType.Cartridges.Add(cartridge);
+                lastType.Add(cartridge);
 
                 cost += cartridge.Cost;
                 count++;
@@ -114,7 +94,7 @@ namespace Devin.Controllers
 
             foreach (var type in types)
             {
-                foreach (var cartridge in type.Cartridges)
+                foreach (var cartridge in type)
                 {
                     IRow row = sheet.GetRow(endRegion);
                     endRegion++;
@@ -126,7 +106,7 @@ namespace Devin.Controllers
                     row.Height = -1;
                 }
 
-                sheet.GetRow(startRegion).GetCell(1).SetCellValue(type.Name);
+                sheet.GetRow(startRegion).GetCell(1).SetCellValue(type[0].Type);
                 sheet.AddMergedRegion(new CellRangeAddress(startRegion, endRegion - 1, 1, 2));
 
                 startRegion = endRegion;
