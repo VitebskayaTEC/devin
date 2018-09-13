@@ -488,6 +488,14 @@ label:hover {
     list-style-type: none;
 }
 
+.context-menu .passive {
+    padding: 0;
+}
+
+.context-menu .passive hr {
+    border: .5px solid #666;
+}
+
 .context-menu li:hover {
     color: #E6B451
 }

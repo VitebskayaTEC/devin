@@ -57,5 +57,8 @@ namespace Devin.Models
         public string Palladium { get; set; } = "";
 
         public string MPG { get; set; }
+
+
+        public virtual string NetworkName { get; set; }
     }
 }

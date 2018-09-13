@@ -296,6 +296,8 @@
     <Content Include="Views\Devices\Table1C.cshtml" />
     <Content Include="Views\Devices\Table.cshtml" />
     <Content Include="Views\Devices\DefectAct.cshtml" />
+    <Content Include="Views\Devices\Compare1C.cshtml" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

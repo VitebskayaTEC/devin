@@ -1,0 +1,46 @@
+﻿<!Doctype html>
+<html>
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=windows-1251" />
+    <link rel="stylesheet" href="~/content/css/core.css" />
+    <link rel="shortcut icon" href="~/content/img/favicon.ico" type="image/x-icon" />
+    <title>@ViewBag.Title</title>
+    @RenderSection("styles", false)
+</head>
+
+<body>
+
+    @{ string url = Request.Url.AbsoluteUri; }
+    <ul class="main-menu">
+        <li>
+            <a href="~/" style="width: 36px"><div class="icon ic-exit-to-app"></div></a>
+        </li><li>
+            <a href="~/device/" class="@(url.Contains("device") ? "point-now" : "")">DEVIN</a>
+        </li><li>
+            <a href="~/storage/" class="@(url.Contains("storage") ? "point-now" : "")">Склад</a>
+        </li><li>
+            <a href="~/repair/" class="@(url.Contains("repair") ? "point-now" : "")">Ремонты</a>
+        </li><li>
+            <a href="~/aida/" class="@(url.Contains("aida") ? "point-now" : "")">AIDA</a>
+        </li><li>
+            <a href="~/catalog/" class="@(url.Contains("catalog") ? "point-now" : "")">Каталог</a>
+        </li><li>
+            <input id="search" placeholder="@(ViewBag.Search ?? "Поиск...")" />
+        </li>
+        @RenderSection("menu", false)
+    </ul>
+
+    <div id="view" class="view">
+        @RenderBody()
+    </div>
+
+    <div id="cart" class="cart-new"></div>
+
+    @RenderSection("html", false)
+
+    @RenderSection("scripts", false)
+</body>
+
+</html>

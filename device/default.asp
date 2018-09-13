@@ -51,11 +51,14 @@
 	<ul class='context-menu' id='main'>
 		<li onclick='cartCreate()'>Создать карточку устройства</li>
 		<li onclick='groupCreate()'>Создать группу</li>
+        <li class="passive"><hr /></li>
 		<li onclick='history()'>История всех событий DEVIN</li>
+        <li class="passive"><hr /></li>
 		<li onclick='location="/devin/analyze/"'>Анализ расхода картриджей</li>
-		<li onclick='loadCompare()'>Сверка с 1С</li>
+        <li class="passive"><hr /></li>
         <li onclick="document.location = '/devin/devices/table';">Табличный просмотр Devin</li>
         <li onclick="document.location = '/devin/devices/table1C';">Просмотр данных 1С</li>
+        <li onclick="document.location = '/devin/devices/compare1C';">Сверка с 1С</li>
 	</ul>
 	<ul class='context-menu' id='computer'>
 		<li onclick='computerOpen()'>Открыть карточку</li>

@@ -1,0 +1,188 @@
+﻿@{ 
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "DEVIN | Устройства | Сравнение с 1С";
+}
+
+@section styles {
+    <style>
+        .compare_ounline {
+            border: 1px solid #333;
+        }
+
+        .compare {
+            width: 100%;
+            background: #fff;
+        }
+
+        .compare thead {
+            background: #ddd;
+            border-bottom: 2px solid #333;
+        }
+
+        .compare th,
+        .compare td {
+            font-size: 12px;
+            border: 1px solid #ccc;
+            text-align: left;
+            vertical-align: top;
+            padding: 3px 5px;
+        }
+
+        .compare tbody tr:hover td {
+            color: #1a6094;
+        }
+
+        th.right-border,
+        td.right-border {
+            border-right-color: #333 !important;
+        }
+
+        th.bottom-border,
+        td.bottom-border {
+            border-bottom-color: #333 !important;
+        }
+    </style>
+}
+
+@{ 
+    string devicesSQL = @"SELECT
+	    Devices.Inventory
+	    ,Devices.class_device AS DeviceClass
+	    ,Devices.number_device AS DeviceNumber
+	    ,Devices.Description
+	    ,Devices.Mol
+	    ,Devices.Attribute AS Location
+	    ,CASE 
+		    WHEN Computers.Name IS NULL THEN 
+			    CASE WHEN Devices.class_device = 'CMP' THEN Devices.name ELSE NULL END
+		    ELSE Computers.Name
+	    END AS NetworkName
+    FROM Device AS Devices
+	    LEFT OUTER JOIN Device AS Computers ON Devices.number_comp = Computers.number_device
+    WHERE (Devices.deleted IS NULL OR Devices.deleted = 0) AND (Devices.used = 1)
+    ORDER BY Devices.Inventory";
+
+    string devices1cSQL = @"SELECT 
+	    Inventory
+        ,Description
+        ,Guild
+        ,SubDivision
+        ,Mol
+    FROM Devices1C
+    WHERE IsHide IS NULL OR IsHide = 0
+    ORDER BY Inventory";
+
+    var types = new Dictionary<string, string>
+    {
+        { "CMP", "Компьютеры" },
+        { "DIS", "Мониторы" },
+        { "MOD", "Модемы и преобразователи" },
+        { "PRN", "Принтеры и МФУ" },
+        { "RR", "Другое" },
+        { "RRC", "Компьютеры (списанные)" },
+        { "SCN", "Сканеры" },
+        { "SWT", "Коммутаторы" },
+        { "UPS", "ИБП" },
+    };
+
+    using (var conn = Database.Connection())
+    {
+        var devices = conn.Query<Device>(devicesSQL);
+        var devices1c = conn.Query<Device1C>(devices1cSQL);
+
+        <div class="compare_ounline">
+            <table class="compare" id="data">
+                <thead>
+                    <tr>
+                        <th data-type="number" data-way="up" onclick="_sort(this)" rowspan="2" class="right-border" id="inv">Инв. номер</th>
+                        <th colspan="5" class="right-border bottom-border">DEVIN</th>
+                        <th colspan="4" class="bottom-border">1C</th>
+                    </tr>
+                    <tr>
+                        <th data-type="string" onclick="_sort(this)">Тип</th>
+                        <th data-type="string" onclick="_sort(this)">Наименование</th>
+                        <th data-type="string" onclick="_sort(this)">М.О.Л.</th>
+                        <th data-type="string" onclick="_sort(this)">Расположение</th>
+                        <th data-type="string" onclick="_sort(this)" class="right-border">Сетевое имя</th>
+                        <th data-type="string" onclick="_sort(this)">Наименование</th>
+                        <th data-type="string" onclick="_sort(this)">Цех</th>
+                        <th data-type="string" onclick="_sort(this)">Подразделение</th>
+                        <th data-type="string" onclick="_sort(this)">М.О.Л.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var device in devices)
+                {
+                    bool found = false;
+                    <tr>
+                        <td class="right-border">@device.Inventory</td>
+                        <td onmouseup="go('/devin/device/##@device.DeviceNumber')">@types[device.DeviceClass]</td>
+                        <td onmouseup="go('/devin/device/##@device.DeviceNumber')">@device.Description</td>
+                        <td onmouseup="go('/devin/device/##@device.DeviceNumber')">@device.Mol</td>
+                        <td onmouseup="go('/devin/device/##@device.DeviceNumber')">@device.Location</td>
+                        <td onmouseup="go('/devin/device/##@device.DeviceNumber')" class="right-border">@device.NetworkName</td>
+                        @foreach (var device1c in devices1c)
+                        {
+                            if (device1c.Inventory == device.Inventory)
+                            {
+                                <td>@device1c.Description</td>
+                                <td>@device1c.Guild</td>
+                                <td>@device1c.SubDivision</td>
+                                <td>@device1c.Mol</td>
+                                found = true;
+                                break;
+                            }
+                        }
+                        @if (!found)
+                        {
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        }
+                    </tr>
+                }
+                @foreach (var device1c in devices1c)
+                {
+                    bool found = false;
+                    foreach (var device in devices)
+                    {
+                        if (device.Inventory == device1c.Inventory)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                    {
+                        <tr>
+                            <td class="right-border">@device1c.Inventory</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="right-border"></td>
+                            <td>@device1c.Description</td>
+                            <td>@device1c.Guild</td>
+                            <td>@device1c.SubDivision</td>
+                            <td>@device1c.Mol</td>
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+@section scripts {
+    <script src="~/Content/js/table.js"></script>
+    <script>
+        function go(url) {
+            var e = event || window.event;
+            e.preventDefault();
+            if (e.button === 1) window.open(url);
+        }
+        document.getElementById('inv').click();
+    </script>    
+}

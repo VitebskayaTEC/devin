@@ -78,9 +78,9 @@ function _menu(obj) {
 	clearTimeout(when);
 
 	var menu = document.getElementById(obj.getAttribute("menu"));
-	menu.onmouseleave = function() { when = setTimeout(function() { $(menu).fadeOut(100); }, 1000); }
-	menu.onmouseenter = function() { clearTimeout(when); }
-	menu.onclick = function() { $(menu).fadeOut(100); }
+    menu.onmouseleave = function () { when = setTimeout(function () { $(menu).fadeOut(100); }, 1000); };
+    menu.onmouseenter = function () { clearTimeout(when); };
+    menu.onclick = function () { $(menu).fadeOut(100); };
 	menu.style.top = ($(obj).offset().top + 6) + "px";
 	menu.style.left = ($(obj).offset().left + 2) + "px";
 	$(menu).fadeIn(100);

@@ -104,6 +104,8 @@ namespace Devin.Controllers
 
         public ActionResult Table1C() => View();
 
+        public ActionResult Compare1C() => View();
+
         public void HideDevice1C(int Id, bool Hide)
         {
             using (var conn = Database.Connection())

@@ -2,9 +2,13 @@
 {
     public class Device1C
     {
+        public string Inventory { get; set; }
+
         public string Description { get; set; } = "";
 
         public string Mol { get; set; } = "";
+
+        public string Guild { get; set; } = "";
 
         public string SubDivision { get; set; } = "";
 
