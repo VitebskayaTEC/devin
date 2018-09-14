@@ -38,7 +38,6 @@
 	if search <> "" then
 		sql = replace(sql, "WHERE", replace("WHERE (DEVICE.inventory {0} OR DEVICE.class_device {0} OR DEVICE.number_device {0} OR DEVICE.name {0} OR DEVICE.number_comp {0} OR DEVICE.description1C {0} OR DEVICE.description {0} OR DEVICE.install_date {0} OR DEVICE.MOL {0} OR DEVICE.number_serial {0} OR DEVICE.number_passport {0} OR DEVICE.attribute {0}) AND ", "{0}", " LIKE '%" & search & "%'"))
 	end if
-	'response.write "<div class='debug'>" & sql & "</div>"
 
 	dim i, j, q
 	dim led
@@ -68,14 +67,6 @@
 			end if
 		next
 
-		response.write "<table class='main'><tr>" _
-		& "<th width='180px'>Компьютер" _
-		& "<th width='60px'>№" _
-		& "<th width='200px'>Местоположение" _
-		& "<th width='140px'>МОЛ" _
-		& "<th>Описание" _
-		& "</tr></table>"
-
 		' Распределение элементов по компьютерам
 		dim cookie, className
 		for j = 0 to Ncomputers - 1
@@ -85,10 +76,12 @@
 			else
 				className = " hide_first"
 			end if
+            if devices(computers(j, 1), 8) = 1 then led = "on" else led = "off"
 			response.write "<div class='unit computer " & cookie & className & "' in='dg" & devices(computers(j, 1), 9) & "'>" _
 			& "<table class='caption'><tr>" _
 			& "<td width='30px'><div class='icon ic-computer' menu='computer' onmousedown='_menu(this)'></div>" _
-			& "<th width='150px'>" & devices(computers(j, 1), 3) _
+			& "<th width='200px'>" & devices(computers(j, 1), 3) _
+            & "<td width='40px'><div class='led " & led & "'></div></td>" _
 			& "<td width='60px'>" & devices(computers(j, 1), 0) _
 			& "<td width='200px'>" & devices(computers(j, 1), 7) _
 			& "<td width='140px'>" & devices(computers(j, 1), 6) _
@@ -109,7 +102,7 @@
 					if devices(i, 8) = 1 then led = "on" else led = "off"
 					response.write "<tr id='" & devices(i, 2) & "' in='dg" & devices(i, 9) & "' class='item drop-el " & className & "'>" _
 					& "<td><input type='checkbox' class='selecter' />" _
-					& "<td><div class='led " & devices(i, 8) & "'></div>" _
+					& "<td><div class='led " & led & "'></div>" _
 					& "<td>" & devices(i, 3) _
 					& "<td>" & devices(i, 0) _
 					& "<td>" & devices(i, 6) _
@@ -133,7 +126,7 @@
 		& "LEFT OUTER JOIN DEVICE AS DEVICE_1 ON DEVICE.number_comp = DEVICE_1.number_device " _
 		& "LEFT OUTER JOIN [GROUP] ON [GROUP].G_ID = DEVICE.G_ID " _
 		& "WHERE (DEVICE.deleted = 0) AND (DEVICE.class_device <> 'cmp') AND (DEVICE_1.name IS NULL)"
-		'response.write "<div class='debug'>" & sql & "</div>"
+
 		rs.open sql, conn
 		if not rs.eof then
 			response.write "<div class='unit' id='solo'><table class='caption'><tr>" _
@@ -141,7 +134,7 @@
 			& "<th>Не распределенные устройства" _
 			& "</tr></table>" & head
 			do while not rs.eof
-				if rs(0) then led = "on" else led = "off"
+				if rs(0) = 1 then led = "on" else led = "off"
 				response.write "<tr id='" & trim(rs(1)) & "' in='dg" & rs(2) & "' class='item drop-el'>" _
 				& "<td><input type='checkbox' class='selecter' />" _
 				& "<td><div class='led " & led & "'></div>" _
@@ -231,9 +224,10 @@
 
 		response.write"<div class='unit'><table class='caption'><tr><th>Поиск совпадений по запросу: " & search & "</tr></table>" & head
 		for i = 0 to Ndevices - 1
+            if (devices(i, 8) = 1) then led = "on" else led = "off"
 			response.write "<tr id='" & devices(i, 2) & "'>" _
 			& "<td><input type='checkbox' class='selecter' />" _
-			& "<td><div class='led on'></div>" _
+			& "<td><div class='led " & led & "'></div>" _
 			& "<td>" & devices(i, 3) _
 			& "<td>" & devices(i, 0) _
 			& "<td>" & devices(i, 6) _

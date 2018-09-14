@@ -166,7 +166,8 @@ a.has-icon {
 }
 
     .open > table {
-        background: #E6B451;
+        background: #ffe8b1;
+        border-bottom: 1px solid #FF5722;
     }
 
 .open:hover .caption {
@@ -233,7 +234,7 @@ a.has-icon {
 }
 
 .title:hover {
-    background: #E6B451;
+    background: #ffe8b1;
 }
 
 .selected.title-wrapper {
@@ -252,14 +253,14 @@ a.has-icon {
 
 .caption td {
     padding: 2px;
-    font: normal 10pt Consolas, sans-serif;
+    font: normal 8pt Segoe UI, sans-serif;
     text-align: left;
 }
 
 .caption th {
     text-align: left;
     padding: 4px;
-    font: bold 13pt Century Gothic, sans-serif;
+    font: 600 13pt Segoe UI, sans-serif;
 }
 
 .selected {
