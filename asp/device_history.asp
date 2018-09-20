@@ -1,18 +1,14 @@
 <!-- #include virtual ="/devin/core/core.inc" -->
 <div class='cart-overflow cart-history-box'>
-	<table class='cart-history'>
+	<table class='cart-history' style="table-layout: inherit">
 		<thead>
 			<tr>
-				<td width='140px'><input type="text" onkeyup='_search(this)' />
-				<td width='110px'><input type="text" onkeyup='_search(this)' />
-				<td width='60px'><input type="text" onkeyup='_search(this)' />
-				<td><input type="text" onkeyup='_search(this)' />
+				<td colspan="3"><input type="text" onkeyup='_search(this, true)' /></td>
 			</tr>
 			<tr>
-				<th data-type='date' onclick='_sort(this)'>Дата
-				<th data-type='string' onclick='_sort(this)'>Объект
-				<th data-type='string' onclick='_sort(this)'>Юзер
-				<th data-type='string' onclick='_sort(this)'>Событие
+				<th width="90px" data-type='date' onclick='_sort(this)'>Дата</th>
+				<th width="60px" data-type='string' onclick='_sort(this)'>Юзер</th>
+				<th data-type='string' onclick='_sort(this)'>Событие</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -20,7 +16,7 @@
 			dim conn : set conn = server.createobject("ADODB.Connection")
 			dim rs   : set rs   = server.createobject("ADODB.Recordset")
 			dim id   : id       = UCASE(request.querystring("id"))
-			dim sql  : sql      = "SELECT EDATE, CUSER, EVENTS FROM ELMEVENTS WHERE UPPER(CName) = '" & id & "' ORDER BY EDATE DESC"
+			dim sql  : sql      = "SELECT EDATE, CUSER, EVENTS FROM ELMEVENTS WHERE CName = '" & UCase(id) & "' ORDER BY EDATE DESC"
 
 			conn.open everest
 			rs.open sql, conn
@@ -30,7 +26,7 @@
 						rs.movenext
 					loop
 				else
-					response.write "<tr><td colspan='4'>Нет данных</tr>"
+					response.write "<tr><td colspan='3'>Нет данных</tr>"
 				end if
 			rs.close
 			set rs = nothing

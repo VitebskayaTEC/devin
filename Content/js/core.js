@@ -53,19 +53,39 @@ function setCookie(name, value, options) {
 
 
 /** Поиск по строкам таблицы */
-function _search(input) {
-	var index = input.parentNode.cellIndex;
-	var tbody = input.parentNode.parentNode.parentNode.parentNode.getElementsByTagName("tbody")[0];
-	var trs = tbody.getElementsByTagName("tr");
-	var val = input.value.toLowerCase();
-	if (val == "") {
-		for (var i = 0; i < trs.length; i++) trs[i].style.display = 'table-row';
-	} else {
-		for (var i = 0; i < trs.length; i++) {
-			var text = trs[i].getElementsByTagName("td")[index].innerHTML.toLowerCase();
-			trs[i].style.display = text.indexOf(val) > -1 ? 'table-row' : 'none';
-		}
-	}
+function _search(input, allTable) {
+
+    if (allTable) {
+        var val = input.value.toLowerCase();
+        var tbody = input.parentNode.parentNode.parentNode.parentNode.getElementsByTagName("tbody")[0];
+        var rows = tbody.getElementsByTagName("tr");
+        if (val == "") {
+            for (var i = 0; i < rows.length; i++) rows[i].style.display = 'table-row';
+        } else {
+            for (var i = 0; i < rows.length; i++) {
+                var cells = rows[i].getElementsByTagName('td');
+                var found = false;
+                for (var j = 0; j < cells.length; j++) {
+                    if (!found && cells[j].innerHTML.toLowerCase().indexOf(val) > -1) found = true;
+                }
+                rows[i].style.display = found ? 'table-row' : 'none';
+            }
+        }
+
+    } else {
+        var index = input.parentNode.cellIndex;
+        var tbody = input.parentNode.parentNode.parentNode.parentNode.getElementsByTagName("tbody")[0];
+        var rows = tbody.getElementsByTagName("tr");
+        var val = input.value.toLowerCase();
+        if (val == "") {
+            for (var i = 0; i < rows.length; i++) rows[i].style.display = 'table-row';
+        } else {
+            for (var i = 0; i < rows.length; i++) {
+                var text = trs[i].getElementsByTagName("td")[index].innerHTML.toLowerCase();
+                rows[i].style.display = text.indexOf(val) > -1 ? 'table-row' : 'none';
+            }
+        }
+    }
 }
 
 
@@ -391,10 +411,10 @@ function setAllSelection(node) {
 }
 
 function removeAllSelection() {
-	$("input.selection").each(function() {
-		this.checked = false;
-		$(this).removeClass("selection");
-	})
+    $("input.selection").each(function () {
+        this.checked = false;
+        $(this).removeClass("selection");
+    });
 	selected = [];
 	selectionPanel();
 }
