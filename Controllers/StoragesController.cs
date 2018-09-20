@@ -54,7 +54,7 @@ namespace Devin.Controllers
             return View(model);
         }
 
-        public void AddExcelToStorage([Bind(Include = "Ncard,Name,Date,Uchet,Nadd")] Storage storage)
+        public void AddExcelToStorage([Bind(Include = "Ncard,Name,Date,Uchet,Nadd,Price")] Storage storage)
         {
             string name = storage.Name.ToLower();
 

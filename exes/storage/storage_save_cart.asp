@@ -41,6 +41,8 @@
 					text = text & key.name & " с [" & Vold & "] на [" & Vnew & "]"
 					if (key.name = "Date") then
 						sql = sql & key.name & " = '" & DateToSql(Vnew) & "'"
+                    elseif (key.name = "Price") then
+                        sql = sql & key.name & " = '" & Replace(Vnew, ",", ".") & "'"
 					else
 						sql = sql & key.name & " = '" & Vnew & "'"
 					end if
