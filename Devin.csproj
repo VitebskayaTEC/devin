@@ -247,7 +247,6 @@
     <Content Include="exes\repair\writeoff_export_to_excel.asp" />
     <Content Include="exes\repair\writeoff_move_group.asp" />
     <Content Include="exes\repair\writeoff_save_cart.asp" />
-    <Content Include="exes\storage\storages_print_labels.asp" />
     <Content Include="exes\storage\storages_to_group.asp" />
     <Content Include="exes\storage\storage_create_cart.asp" />
     <Content Include="exes\storage\storage_create_repairs.asp" />

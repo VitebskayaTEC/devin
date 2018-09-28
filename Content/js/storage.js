@@ -261,7 +261,7 @@ function createRepairs() {
 
 
 function excelExports() {
-    $.post("/devin/exes/storage/storages_print_labels.asp?r=" + Math.random(), selectionToForm("select", ";"), function(data) {
+    $.post("/devin/storages/labels", selectionToForm("select", ";"), function(data) {
         $("#view").load("view.asp?r=" + Math.random());
         document.getElementById("excelExportsLink").innerHTML = data;
         $('#excelExports').slideDown(100);

@@ -1,10 +1,12 @@
 ﻿using Dapper;
 using Devin.Forms;
 using Devin.Models;
+using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Web.Mvc;
 
 namespace Devin.Controllers
@@ -93,6 +95,65 @@ namespace Devin.Controllers
             using (var conn = Database.Connection())
             {
                 conn.Execute("INSERT INTO Sklad (Ncard, Name, Date, Uchet, Nadd, Nis, Nuse, Nbreak, delit, class_name, Price) VALUES (@Ncard, @Name, @Date, @Uchet, @Nadd, @Nadd, 0, 0, 1, @Class_Name, @Price)", storage);
+            }
+        }
+
+        public string Labels()
+        {
+            string sql = "SELECT SKLAD.Nis, SKLAD.Ncard, CARTRIDGE.Caption, SKLAD.Date, SKLAD.Name FROM SKLAD LEFT OUTER JOIN CARTRIDGE ON SKLAD.ID_cart = CARTRIDGE.N WHERE Ncard = '" + (Request.Form.Get("select") ?? "1").Replace(";", "' OR Ncard = '") + "' ORDER BY Date DESC";
+
+            using (var conn = Database.Connection())
+            {
+                var model = conn.Query(sql).AsList();
+
+                if (model.Count == 0) return "Нечего печатать";
+
+                IWorkbook book;
+                using (var fs = new FileStream(Server.MapPath("/devin/content/exl/") + "labels.xls", FileMode.Open, FileAccess.Read))
+                {
+                    book = new HSSFWorkbook(fs);
+                }
+                var sheet = book.GetSheetAt(0);
+
+                bool isLeft = true;
+                int rowCount = 1;
+
+                for (int i = 0; i < model.Count; i++)
+                {
+                    if (isLeft)
+                    {
+                        sheet.GetRow(rowCount * 3 - 3).GetCell(0).SetCellValue("№");
+                        sheet.GetRow(rowCount * 3 - 2).GetCell(0).SetCellValue("Тип:");
+                        sheet.GetRow(rowCount * 3 - 1).GetCell(0).SetCellValue("Приход:");
+
+                        sheet.GetRow(rowCount * 3 - 3).GetCell(1).SetCellValue(model[i].Ncard);
+                        sheet.GetRow(rowCount * 3 - 2).GetCell(1).SetCellValue(model[i].Caption ?? model[i].Name);
+                        sheet.GetRow(rowCount * 3 - 1).GetCell(1).SetCellValue(model[i].Date.ToString("dd.MM.yyyy"));
+
+                        isLeft = false;
+                    }
+                    else
+                    {
+                        sheet.GetRow(rowCount * 3 - 3).GetCell(2).SetCellValue("№");
+                        sheet.GetRow(rowCount * 3 - 2).GetCell(2).SetCellValue("Тип:");
+                        sheet.GetRow(rowCount * 3 - 1).GetCell(2).SetCellValue("Приход:");
+
+                        sheet.GetRow(rowCount * 3 - 3).GetCell(3).SetCellValue(model[i].Ncard);
+                        sheet.GetRow(rowCount * 3 - 2).GetCell(3).SetCellValue(model[i].Caption ?? model[i].Name);
+                        sheet.GetRow(rowCount * 3 - 1).GetCell(3).SetCellValue(model[i].Date.ToString("dd.MM.yyyy"));
+
+
+                        rowCount = rowCount + 1;
+                        isLeft = true;
+                    }
+                }
+                
+                using (var fs = new FileStream(Server.MapPath("/devin/content/excels/") + "Бирки.xls", FileMode.OpenOrCreate, FileAccess.Write))
+                {
+                    book.Write(fs);
+                }
+
+                return "<a href='/devin/content/excels/Бирки.xls'>Сохранить файл</a>"; ;
             }
         }
     }
