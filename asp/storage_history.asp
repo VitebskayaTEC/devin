@@ -16,7 +16,7 @@
 						j = j - 1
 					loop
 					s1 = mid(s1, j + 1, i + 6)
-					ss = ss & left(s, j) & "<a href='/devin/device/?id=" & s1 & "'>" & s1 & "</a>"
+					ss = ss & left(s, j) & "<a href='/devin/devices/?id=" & s1 & "'>" & s1 & "</a>"
 					s = mid(s, i + 7, len(s))
 				else
 					b = false

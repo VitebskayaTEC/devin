@@ -1,0 +1,260 @@
+﻿@using (var conn = Database.Connection())
+{
+    string[] key = new string[] { "name", "inventory", "attribute", "mol", "description", "name, class_device" };
+    string[] direction = new string[] { "", " DESC" };
+    int sortKey = int.TryParse(Request.QueryString.Get("key") ?? "5", out int _sortKey) ? _sortKey : 5;
+    int sortDirection = int.TryParse(Request.QueryString.Get("direction") ?? "0", out int _sortDirection) ? _sortDirection : 0;
+    string id = Request.QueryString.Get("id");
+    string search = Request.QueryString.Get("search");
+
+    string sql = @"SELECT
+        DEVICE.Inventory,
+        DEVICE.class_device  AS DeviceClass,
+        DEVICE.number_device AS DeviceNumber,
+        DEVICE.Name,
+        DEVICE.number_comp   AS ComputerId,
+        DEVICE.Description,
+        DEVICE.Mol,
+        DEVICE.attribute     AS Location,
+        DEVICE.used          AS InUse,
+        [GROUP].G_ID         AS GroupId
+    FROM DEVICE
+    LEFT OUTER JOIN [GROUP] ON [GROUP].G_ID = DEVICE.G_ID
+    WHERE (DEVICE.deleted = 0) ORDER BY " + key[sortKey] + direction[sortDirection];
+
+    if (!string.IsNullOrEmpty(search))
+    {
+        sql = sql.Replace("WHERE", string.Format("WHERE (DEVICE.inventory {0} OR DEVICE.class_device {0} OR DEVICE.number_device {0} OR DEVICE.name {0} OR DEVICE.number_comp {0} OR DEVICE.description1C {0} OR DEVICE.description {0} OR DEVICE.install_date {0} OR DEVICE.MOL {0} OR DEVICE.number_serial {0} OR DEVICE.number_passport {0} OR DEVICE.attribute {0}) AND ", " LIKE '%" + search + "%'"));
+    }
+
+    var computers = new List<Computer>();
+    var _computers = new List<Computer>();
+    var devices = new List<Device>();
+    var folders = new List<Folder>();
+
+    // Получение данных из базы
+    var __devices = conn.Query<Device>(sql).AsList();
+    var _devices = new List<Device>();
+    var _folders = conn.Query<Folder>(@"SELECT 
+	    f.G_ID AS Id,
+	    CASE WHEN p.G_ID IS NULL THEN 0 ELSE p.G_ID END AS FolderId,
+	    f.G_Title AS Title
+    FROM [GROUP] f
+	LEFT OUTER JOIN [GROUP] p ON f.G_Inside = p.G_Id
+    WHERE f.G_Type = 'device'
+    ORDER BY f.G_Title").AsList();
+
+    if (!string.IsNullOrEmpty(search))
+    {
+        <div class='unit'>
+            <table class='caption'>
+                <tr>
+                    <th>Поиск совпадений по запросу: @search</th>
+                </tr>
+            </table>
+            @RenderDevices(__devices)
+        </div>
+    }
+    else
+    {
+        // Получение списка компьютеров из устройств
+        foreach (var d in __devices)
+        {
+            if (d.DeviceClass == "CMP")
+            {
+                _computers.Add(new Computer
+                {
+                    DeviceNumber = d.DeviceNumber,
+                    DeviceClass = d.DeviceClass,
+                    Inventory = d.Inventory,
+                    Name = d.Name,
+                    Description = d.Description,
+                    Mol = d.Mol,
+                    Location = d.Location,
+                    InUse = d.InUse,
+                    GroupId = d.GroupId
+                });
+            }
+            else
+            {
+                _devices.Add(d);
+            }
+        }
+
+        // Распределение устройств по компьютерам
+        bool found = false;
+
+        foreach (var d in _devices)
+        {
+            found = false;
+            foreach (var computer in _computers)
+            {
+                if (d.ComputerId == computer.DeviceNumber)
+                {
+                    computer.Devices.Add(d);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                foreach (var folder in _folders)
+                {
+                    if (d.GroupId == folder.Id)
+                    {
+                        folder.Devices.Add(d);
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    devices.Add(d);
+                }
+            }
+        }
+
+        // Распределение устройств и компьютеров по папкам
+        foreach (var computer in _computers)
+        {
+            found = false;
+            foreach (var folder in _folders)
+            {
+                if (computer.GroupId == folder.Id)
+                {
+                    folder.Computers.Add(computer);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                computers.Add(computer);
+            }
+        }
+
+
+        // Распределение иерархии папок
+        foreach (var folder in _folders)
+        {
+            if (folder.FolderId == 0)
+            {
+                folders.Add(Folder.Build(folder, _folders));
+            }
+        }
+
+        foreach (var computer in computers)
+        {
+            @RenderComputer(computer)
+        }
+
+        <div class="unit" id="solo">
+            <table class="caption">
+                <tr>
+                    <td width="24px"><div class="icon ic-cached"></div></td>
+                    <th>Не распределенные устройства</th>
+                </tr>
+            </table>
+            @RenderDevices(devices)
+        </div>
+
+        foreach (var folder in folders)
+        {
+            @RenderFolder(folder)
+        }
+    }
+}
+
+@helper RenderFolder(Folder folder)
+{
+    string id = "dg" + folder.Id;
+    string open = Request.Cookies.Get(id)?.Value ?? "";
+
+    <div class="unit group @open" id="@id">
+        <table class='caption'>
+            <tr>
+                <td width='24px' menu='group' onmousedown='_menu(this)'>
+                    <div class='icon ic-folder'></div>
+                </td>
+                <th>@folder.Title</th>
+            </tr>
+        </table>
+        <div class="items_block @(open == "open" ? "" : "hide")">
+            @foreach (var sub in folder.SubFolders)
+            {
+                @RenderFolder(sub)
+            }
+            @foreach (var computer in folder.Computers)
+            {
+                @RenderComputer(computer)
+            }
+            @RenderDevices(folder.Devices)
+        </div>
+    </div>
+}
+
+@helper RenderComputer(Computer computer)
+{
+    string id = computer.DeviceNumber;
+    string open = Request.Cookies.Get(id)?.Value ?? "";
+
+    <div class="unit computer @open">
+        <table class="caption">
+            <tr>
+                <td width="30px">
+                    <div class="icon ic-computer" menu='computer' onmousedown='_menu(this)'></div>
+                </td>
+                <th width="200px">@computer.Name</th>
+                <td width="40px"><div class="led @(computer.InUse == 1 ? "on" : "off")"></div></td>
+                <td width="60px">@computer.Inventory</td>
+                <td width="140px">@computer.Location</td>
+                <td width="200px">@computer.Mol</td>
+                <td>@computer.Description</td>
+            </tr>
+        </table>
+        <div class="items_block @(open == "open" ? "" : "hide")">
+            <div class="title-wrapper" id="@computer.DeviceNumber">
+                <div class="title">Компьютер @computer.Name - открыть карточку</div>
+            </div>
+            @RenderDevices(computer.Devices)
+        </div>
+    </div>
+}
+
+@helper RenderDevices(List<Device> devices)
+{
+    if (devices.Count == 0) { return; }
+    <table class="items">
+        @RenderHead()
+        <tbody>
+            @foreach (var device in devices)
+            {
+                <tr id="@device.DeviceNumber" class="item">
+                    <td><input type="checkbox" class="selecter" /></td>
+                    <td><div class="led @(device.InUse == 1 ? "on" : "off")"></div></td>
+                    <td>@device.Name</td>
+                    <td>@device.Inventory</td>
+                    <td>@device.Mol</td>
+                    <td>@device.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@helper RenderHead()
+{ 
+    <thead>
+        <tr>
+            <td width="20px"><input type="checkbox" class="selecter-all" /></td>
+            <th width="20px" data-type="type"></th>
+            <th width="100px" data-type="string">название</th>
+            <th width="80px" data-type="number">инв. номер</th>
+            <th width="140px" data-type="string">м.о.л.</th>
+            <th data-type="string">описание</th>
+        </tr>
+    </thead>
+}

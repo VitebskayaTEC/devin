@@ -130,9 +130,11 @@
     </Compile>
     <Compile Include="Models\Cartridge.cs" />
     <Compile Include="Models\Database.cs" />
+    <Compile Include="Models\Computer.cs" />
     <Compile Include="Models\Device.cs" />
     <Compile Include="Models\Device1C.cs" />
     <Compile Include="Models\DragMetal.cs" />
+    <Compile Include="Models\Folder.cs" />
     <Compile Include="Models\KeyValue.cs" />
     <Compile Include="Models\Repair.cs" />
     <Compile Include="Models\Storage.cs" />
@@ -168,7 +170,6 @@
     <Content Include="Content\css\table.css" />
     <Content Include="Content\excels\TextFile1.txt" />
     <Content Include="Content\js\table.js" />
-    <Content Include="Content\lib\bselect.min.css" />
     <Content Include="Content\css\catalog.css" />
     <Content Include="Content\css\core.css" />
     <Content Include="Content\css\device.css" />
@@ -186,7 +187,6 @@
     <Content Include="Content\js\js-analyze.js" />
     <Content Include="Content\js\repair.js" />
     <Content Include="Content\js\storage.js" />
-    <Content Include="Content\lib\bselect.min.js" />
     <Content Include="Content\lib\images\ui-bg_glass_40_ffc73d_1x400.png" />
     <Content Include="Content\lib\images\ui-icons_222222_256x240.png" />
     <Content Include="Content\lib\images\ui-icons_444444_256x240.png" />
@@ -202,11 +202,10 @@
     <Content Include="Content\lib\jquery-3.3.1.min.js" />
     <Content Include="Content\lib\jquery-ui.min.css" />
     <Content Include="Content\lib\jquery-ui.min.js" />
+    <Content Include="Content\lib\select2.min.css" />
+    <Content Include="Content\lib\select2.min.js" />
     <Content Include="core\core.inc" />
     <Content Include="core\upload.asp" />
-    <Content Include="device\default.asp" />
-    <Content Include="device\report\default.asp" />
-    <Content Include="device\view.asp" />
     <Content Include="exes\aida\aida_delete_report.asp" />
     <Content Include="exes\analyze\analyze_export.asp" />
     <Content Include="exes\catalog\catalog_add_compare.asp" />
@@ -297,6 +296,8 @@
     <Content Include="Views\Devices\DefectAct.cshtml" />
     <Content Include="Views\Devices\Compare1C.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\Devices\Index.cshtml" />
+    <Content Include="Views\Devices\List.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -22,9 +22,9 @@
 	<div id='selected' class='panel'>
 		<div>Выбрано элементов: <b></b></div>
 		<div><div id='move_select'><select id='moveKey'></select></div><a onclick='moveSelectedRepairs()'>Переместить</a></div>
-		<div><a actions='offSelectedRepairs' onclick='offSelectedRepairs()'>Отметить все ремонты как списанные</a></div>
-		<div><a actions='onSelectedRepairs' onclick='onSelectedRepairs()'>Отметить все ремонты как активные</a></div>
-		<div><a actions='deleteSelectedRepairs' onclick='deleteSelectedRepairs()'>Отменить все ремонты</a></div>
+		<div><a onclick='offSelectedRepairs()'>Отметить все ремонты как списанные</a></div>
+		<div><a onclick='onSelectedRepairs()'>Отметить все ремонты как активные</a></div>
+		<div><a onclick='deleteSelectedRepairs()'>Отменить все ремонты</a></div>
 		<div><a onclick='removeAllSelection()'>Сбросить выбор</a></div>
 	</div>
 	<div id='excelExports' class='panel' onclick='closeExportsPanel()'>

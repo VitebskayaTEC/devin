@@ -76,7 +76,7 @@
 	if not rs.eof then
 		response.write "<br /><b>Связанные устройства:</b><div class='cart-links'>"
 		do while not rs.eof
-			response.write "<div><a href='/devin/device/##" & trim(rs(0)) & "'>" & trim(rs(1)) & ": " & trim(rs(2)) & "</a><br />" _
+			response.write "<div><a href='/devin/devices/##" & trim(rs(0)) & "'>" & trim(rs(1)) & ": " & trim(rs(2)) & "</a><br />" _
 			& "Расположен: " & trim(rs(3)) & "</div>"
 			rs.moveNext
 		loop

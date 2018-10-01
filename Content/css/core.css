@@ -337,6 +337,9 @@ a.has-icon {
 .cart-table input,
 .cart-table textarea {
     width: 99%;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    padding: 3px 4px;
 }
 
 .cart-table textarea {
@@ -364,11 +367,11 @@ a.has-icon {
     text-decoration: underline;
 }
 
-#cart a {
+.cart-new a {
     color: #3E97F9;
 }
 
-#cart a:hover {
+.cart-new a:hover {
     text-decoration: underline;
 }
 
@@ -513,6 +516,10 @@ label:hover {
 
 
 /* Addons */
+
+.select2-container {
+    min-width: 100px;
+}
 
 .hide {
     display: none;

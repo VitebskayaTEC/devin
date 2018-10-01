@@ -53,7 +53,7 @@
 		response.write "<div class='cart-header'>Ремонт № " & id & "</div>" _
 		& "<form id='form' method='post'>" _
 		& "<table class='cart-table'>" _
-		& "<tr><th colspan='2'><a href='/devin/device/##" & repair(0) & "'>Устройство</a></tr>" _
+		& "<tr><th colspan='2'><a href='/devin/devices/##" & repair(0) & "'>Устройство</a></tr>" _
 		& "<tr><td>Инвентарный №<td>" & repair(1) & "</tr>" _
 		& "<tr><td>Наименование<td>" & repair(2) & "</tr>" _
 		& "<tr><td>Описание<td>" & repair(3) & "</tr>" _

@@ -11,6 +11,10 @@ namespace Devin.Controllers
 {
     public class DevicesController : Controller
     {
+        public ActionResult Index() => View();
+
+        public ActionResult List() => View();
+
         public ActionResult DefectAct() => View();
 
         public string PrintDefectAct()

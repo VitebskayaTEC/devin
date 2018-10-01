@@ -9,6 +9,12 @@
     <link rel="stylesheet" href="~/content/css/table.css" />
 }
 
+@section menu {
+    <li>
+        <input id="search" placeholder="@(ViewBag.Search ?? "Поиск...")" />
+    </li>
+}
+
 
 @{
     var Fields = new Dictionary<string, string>

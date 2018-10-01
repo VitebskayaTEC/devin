@@ -31,7 +31,9 @@ function cartOpenBack() {
 	$('#cart')
 		.fadeIn(100)
 		.css({ maxWidth: 600 })
-		.load('/devin/asp/device_cart.asp?id=' + id + '&r=' + Math.random());
+        .load('/devin/asp/device_cart.asp?id=' + id + '&r=' + Math.random(), function () {
+            $('#cart select').select2();
+        });
 	$('.view .selected').removeClass('selected');
 	try {
 		$('#' + id).addClass('selected');

@@ -39,7 +39,7 @@
 						j = j - 1
 					loop
 					s1 = mid(s1, j + 1, i + 6)
-					ss = ss & left(s, j) & "<a href='/devin/device/##" & s1 & "'>" & s1 & "</a>"
+					ss = ss & left(s, j) & "<a href='/devin/devices/##" & s1 & "'>" & s1 & "</a>"
 					s = mid(s, i + 7, len(s))
 				else
 					b = false
@@ -87,7 +87,7 @@
 	End Function
 
 	Function menu(points)
-		dim temp : temp = "<ul class='main-menu'><li><a href='/' style='width: 36px'><div class='icon ic-exit-to-app'></div></a><li><a href='/devin/device/'>DEVIN</a><li><a href='/devin/storage/'>Склад</a><li><a href='/devin/repair/'>Ремонты</a><li><a href='/devin/aida/'>AIDA</a><li><a href='/devin/catalog/'>Каталог</a>"
+		dim temp : temp = "<ul class='main-menu'><li><a href='/' style='width: 36px'><div class='icon ic-exit-to-app'></div></a><li><a href='/devin/devices/'>DEVIN</a><li><a href='/devin/storage/'>Склад</a><li><a href='/devin/repair/'>Ремонты</a><li><a href='/devin/aida/'>AIDA</a><li><a href='/devin/catalog/'>Каталог</a>"
 		if instr(lcase(Request.ServerVariables("URL")), "analyze") > 0 then 
 			response.write temp & points & "</ul>"
 		else

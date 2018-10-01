@@ -186,7 +186,7 @@
 				loop
 
 				for i = 0 to dataLength
-					response.write "<tr><td><a href='/devin/device/##" & data(i, 13) & "'>" & data(i, 0) & "</a></td>"
+					response.write "<tr><td><a href='/devin/devices/##" & data(i, 13) & "'>" & data(i, 0) & "</a></td>"
 					tempCount = 0
 					for j = 1 to 12
 						if data(i, j) > 0 then

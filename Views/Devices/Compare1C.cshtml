@@ -44,6 +44,12 @@
     </style>
 }
 
+@section menu {
+    <li>
+        <input id="search" placeholder="@(ViewBag.Search ?? "Поиск...")" />
+    </li>
+}
+
 @{ 
     string devicesSQL = @"SELECT
 	    Devices.Inventory
@@ -116,11 +122,11 @@
                     bool found = false;
                     <tr>
                         <td class="right-border">@device.Inventory</td>
-                        <td onmouseup="go('/devin/device/##@device.DeviceNumber')">@types[device.DeviceClass]</td>
-                        <td onmouseup="go('/devin/device/##@device.DeviceNumber')">@device.Description</td>
-                        <td onmouseup="go('/devin/device/##@device.DeviceNumber')">@device.Mol</td>
-                        <td onmouseup="go('/devin/device/##@device.DeviceNumber')">@device.Location</td>
-                        <td onmouseup="go('/devin/device/##@device.DeviceNumber')" class="right-border">@device.NetworkName</td>
+                        <td onmouseup="go('/devin/devices/##@device.DeviceNumber')">@types[device.DeviceClass]</td>
+                        <td onmouseup="go('/devin/devices/##@device.DeviceNumber')">@device.Description</td>
+                        <td onmouseup="go('/devin/devices/##@device.DeviceNumber')">@device.Mol</td>
+                        <td onmouseup="go('/devin/devices/##@device.DeviceNumber')">@device.Location</td>
+                        <td onmouseup="go('/devin/devices/##@device.DeviceNumber')" class="right-border">@device.NetworkName</td>
                         @foreach (var device1c in devices1c)
                         {
                             if (device1c.Inventory == device.Inventory)

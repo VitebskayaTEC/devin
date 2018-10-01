@@ -220,7 +220,7 @@
 		conn.execute sql
 		sql = log(id, text)
 		response.write text
-		if isNewID then response.write "<br /><a href='/devin/device/?id=" & newIDtext & "'>ќбновить страницу, чтобы обновить ID устройства в общем списке</a>"
+		if isNewID then response.write "<br /><a href='/devin/devices/##" & newIDtext & "'>ќбновить страницу, чтобы обновить ID устройства в общем списке</a>"
 	else
 		response.write "»зменений не было"
 	end if
