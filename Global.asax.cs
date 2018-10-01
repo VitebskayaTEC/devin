@@ -1,4 +1,5 @@
-﻿using System.Web.Routing;
+﻿using System.Web.Mvc;
+using System.Web.Routing;
 
 namespace Devin
 {
@@ -6,7 +7,8 @@ namespace Devin
     {
         protected void Application_Start()
         {
-            RouteConfig.RegisterRoutes(RouteTable.Routes);
+            RouteTable.Routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
+            RouteTable.Routes.MapRoute("Default", "{controller}/{action}/{id}", defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional });
         }
     }
 }
