@@ -1,0 +1,175 @@
+﻿@using (var conn = Database.Connection())
+{
+    string search = Request.QueryString.Get("search");
+
+    var _folders = conn.Query<Folder>(@"SELECT 
+	    f.G_ID AS Id,
+	    CASE WHEN p.G_ID IS NULL THEN 0 ELSE p.G_ID END AS FolderId,
+	    f.G_Title AS Title
+    FROM [GROUP] f
+	LEFT OUTER JOIN [GROUP] p ON f.G_Inside = p.G_Id
+    WHERE f.G_Type = 'storage'
+    ORDER BY f.G_Title").AsList();
+
+    if (!string.IsNullOrEmpty(search))
+    {
+        var storages = conn.Query<Storage>(string.Format("SELECT Ncard, Name, Price, Nadd, Date, Nis, Nuse, Nbreak, Uchet, G_ID FROM SKLAD WHERE (Delit > 0) AND ((Ncard LIKE '%{0}%') OR (Name LIKE '%{0}%') OR (Name LIKE '%{0}%') OR (Date LIKE '%{0}%') OR (uchet LIKE '%{0}%')) ORDER BY CAST(Ncard AS int) ORDER BY Date DESC", search)).AsList();
+
+        <div class='unit'>
+            <table class='caption'>
+                <tr>
+                    <th>Поиск совпадений по запросу: @search</th>
+                </tr>
+            </table>
+            @RenderItems(storages)
+        </div>
+    }
+    else
+    {
+        var storages = conn.Query<Storage>("SELECT Ncard, Name, Price, Nadd, Date, Nis, Nuse, Nbreak, Uchet, G_ID FROM SKLAD WHERE (Delit > 0) ORDER BY Date DESC").AsList();
+        var off = new List<Storage>();
+        var solo = new List<Storage>();
+        var folders = new List<Folder>();
+        bool found = false;
+
+        // Получение списка компьютеров из устройств
+        foreach (var storage in storages)
+        {
+            found = false;
+            foreach (var folder in _folders)
+            {
+                if (storage.G_Id == folder.Id)
+                {
+                    folder.Storages.Add(storage);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                if (storage.IsOff())
+                {
+                    off.Add(storage);
+                }
+                else
+                {
+                    solo.Add(storage);
+                }
+            }
+        }
+
+        // Распределение иерархии папок
+        foreach (var folder in _folders)
+        {
+            if (folder.FolderId == 0)
+            {
+                folders.Add(Folder.Build(folder, _folders));
+            }
+        }
+
+        if (solo.Count > 0)
+        {
+            <div class="unit" id="solo">
+                <table class="caption">
+                    <tr>
+                        <td width="24px"><div class="icon ic-cached"></div></td>
+                        <th>Не распределенные позиции</th>
+                    </tr>
+                </table>
+                @RenderItems(solo)
+            </div>
+        }
+
+        @RenderFolder(new Folder
+        {
+            Title = "Списанные позиции",
+            Storages = off
+        }, true);
+
+        foreach (var folder in folders)
+        {
+            @RenderFolder(folder)
+        }
+    }
+}
+
+@helper RenderFolder(Folder folder, bool isOff = false)
+{
+    string id = "dg" + folder.Id;
+    string open = Request.Cookies.Get(id)?.Value ?? "";
+
+    <div class="unit group @open" id="@id">
+        <table class="caption">
+            <tr>
+                @if (isOff)
+                {
+                    <td width='24px'>
+                        <div class='icon ic-cached'></div>
+                    </td>
+                }
+                else
+                {
+                    <td width="24px" menu="group" onmousedown="_menu(this)">
+                        <div class="icon ic-folder"></div>
+                    </td>
+                }
+                <th>@folder.Title</th>
+            </tr>
+        </table>
+        <div class="items_block @(open == "open" ? "" : "hide")">
+            @foreach (var sub in folder.SubFolders)
+            {
+                @RenderFolder(sub)
+            }
+            @RenderItems(folder.Storages)
+        </div>
+    </div>
+}
+
+
+@helper RenderItems(List<Storage> storages)
+{
+    if (storages.Count == 0) { return; }
+    <table class="items">
+        @RenderHead()
+        <tbody>
+            @foreach (var storage in storages)
+            {
+                <tr id="@storage.Ncard" class="item">
+                    <td><input type="checkbox" class="selecter" /></td>
+                    <td><div class="led @storage.Led()"></div></td>
+                    <td>@storage.Ncard</td>
+                    <td>@storage.Name</td>
+                    <td>@storage.Price</td>
+                    <td>@storage.Nadd</td>
+                    <td>@storage.Date.ToString("dd.MM.yyyy")</td>
+                    <td>@storage.Nis</td>
+                    <td>@storage.Nuse</td>
+                    <td>@storage.Nbreak</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@helper RenderHead()
+{ 
+    <thead>
+        <tr>
+            <th width="20px">
+                <input type="checkbox" class="selecter-all" />
+            </th>
+            <th width="20px" data-type="type"></th>
+            <th width="56px" data-type="number">Инв. №</th>
+            <th data-type="string">Наименование</th>
+            <th width="56px" data-type="number">Стоимость</th>
+            <th width="56px" data-type="number">Приход</th>
+            <th width="90px" data-type="date">Дата покупки</th>
+            <th width="60px" data-type="number">На складе</th>
+            <th width="60px" data-type="number">Установлено</th>
+            <th width="60px" data-type="number">Списано</th>
+            <th width="70px" data-type="string">Счет учета</th>
+        </tr>
+    </thead>
+}

@@ -13,6 +13,10 @@ namespace Devin.Controllers
 {
     public class StoragesController : Controller
     {
+        public ActionResult Index() => View();
+
+        public ActionResult List() => View();
+
         public ActionResult Import()
         {
             var model = new StorageCompare();
@@ -97,6 +101,7 @@ namespace Devin.Controllers
                 conn.Execute("INSERT INTO Sklad (Ncard, Name, Date, Uchet, Nadd, Nis, Nuse, Nbreak, delit, class_name, Price) VALUES (@Ncard, @Name, @Date, @Uchet, @Nadd, @Nadd, 0, 0, 1, @Class_Name, @Price)", storage);
             }
         }
+
 
         public string Labels()
         {

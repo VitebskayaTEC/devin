@@ -87,7 +87,7 @@
 	End Function
 
 	Function menu(points)
-		dim temp : temp = "<ul class='main-menu'><li><a href='/' style='width: 36px'><div class='icon ic-exit-to-app'></div></a><li><a href='/devin/devices/'>DEVIN</a><li><a href='/devin/storage/'>Склад</a><li><a href='/devin/repair/'>Ремонты</a><li><a href='/devin/aida/'>AIDA</a><li><a href='/devin/catalog/'>Каталог</a>"
+		dim temp : temp = "<ul class='main-menu'><li><a href='/' style='width: 36px'><div class='icon ic-exit-to-app'></div></a><li><a href='/devin/devices/'>DEVIN</a><li><a href='/devin/storages/'>Склад</a><li><a href='/devin/repair/'>Ремонты</a><li><a href='/devin/aida/'>AIDA</a><li><a href='/devin/catalog/'>Каталог</a>"
 		if instr(lcase(Request.ServerVariables("URL")), "analyze") > 0 then 
 			response.write temp & points & "</ul>"
 		else

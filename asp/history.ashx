@@ -67,7 +67,7 @@ public class history : IHttpHandler {
 
 		// Детали
 		foreach (Match match in Regex.Matches(text, storage_pattern, RegexOptions.IgnoreCase))
-			text = text.Replace(match.Value, "<a href='/devin/storage/##" + match.Value.Replace("исп. ", "") + "'>" + match.Value + "</a>");
+			text = text.Replace(match.Value, "<a href='/devin/storages/##" + match.Value.Replace("исп. ", "") + "'>" + match.Value + "</a>");
 
 		// Элементы каталога
 		foreach (Match match in Regex.Matches(text, catalog_pattern, RegexOptions.IgnoreCase))

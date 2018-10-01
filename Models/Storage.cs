@@ -31,5 +31,15 @@ namespace Devin.Models
         public int Id_Cart { get; set; }
 
         public int G_Id { get; set; }
+
+        public bool IsOff() => (Nadd == Nbreak) && (Nis + Nuse == 0);
+
+        public string Led()
+        {
+            if (Nadd != (Nis + Nuse + Nbreak)) return "warning";
+            else if (Nadd == Nbreak) return "off";
+            else if (Nis == 0 || Nuse > 0) return "onwork";
+            else return "on";
+        }
     }
 }

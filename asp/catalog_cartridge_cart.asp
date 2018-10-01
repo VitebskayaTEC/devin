@@ -154,7 +154,7 @@
 	if not rs.eof then
 		response.write "<br /><b>Позиции со склада, связанные с этим картриджем:</b>"
 		do while not rs.eof
-			response.write "<div><a href='/devin/storage/##" & trim(rs(0)) & "'>" & trim(rs(1)) & ": " & trim(rs(2)) & "</a><br />" _
+			response.write "<div><a href='/devin/storages/##" & trim(rs(0)) & "'>" & trim(rs(1)) & ": " & trim(rs(2)) & "</a><br />" _
 				& trim(rs(2)) & "</div>"
 			rs.moveNext
 		loop

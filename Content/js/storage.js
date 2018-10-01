@@ -16,7 +16,7 @@ function toggle(node) {
 }
 
 function search(input) {
-    if (input.value == "" && document.location.search.indexOf("text=") > -1) document.location = '/devin/storage/';
+    if (input.value == "" && document.location.search.indexOf("text=") > -1) document.location = '/devin/storages/';
     var e = event || window.event;
     if (e.keyCode == 13) {
         document.location.search = "text=" + encodeURIComponent(input.value);
@@ -41,7 +41,7 @@ function cartCreate() {
     $.get("/devin/exes/storage/storage_create_cart.asp?r=" + Math.random(), function(data) {
         if (data.indexOf("error") < 0) {
 			restore();
-            document.location = "/devin/storage/##" + data;
+            document.location = "/devin/storages/##" + data;
         }
     });
 }

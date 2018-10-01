@@ -62,7 +62,7 @@
 		& "<tr><td>Расположение<td>" & repair(6) & "</tr>"
 		if instr(id, "PRN") > 0 then response.write "<tr><td>Типовой принтер<td>" & repair(8) & "</tr>"
 
-		response.write "<tr><th colspan='2'><a href='/devin/storage/##" & repair(9) & "'>Деталь</a></tr>" _
+		response.write "<tr><th colspan='2'><a href='/devin/storagess/##" & repair(9) & "'>Деталь</a></tr>" _
 		& "<tr><td>Наименование<td>" & repair(10) & "</tr>" _
 		& "<tr><td>Инвентарный №<td>" & repair(11) & "</tr>" _
 		& "<tr><td>Стоимость, шт.<td>" & repair(12) & "</tr>" _
