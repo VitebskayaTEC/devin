@@ -5,7 +5,7 @@
 
 @section menu {
     <li>
-        <form method="get" action="./">
+        <form method="get" action="@Url.Action(null, "devices")">
             <input name="search" id="search" placeholder="Поиск" value="@Request.QueryString.Get("search")" />
         </form>
     </li><li>

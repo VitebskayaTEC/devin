@@ -1,0 +1,31 @@
+﻿@{
+    ViewBag.Title = "DEVIN | Aida";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section menu {
+    <li>
+        <form method="get" action="@Url.Action(null, "aida")">
+            <input name="search" id="search" placeholder="Поиск" value="@Request.QueryString.Get("search")" />
+        </form>
+    </li>
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/content/lib/jquery-ui.min.css" />
+    <link rel="stylesheet" href="~/content/lib/select2.min.css" />
+    <link rel="stylesheet" href="~/content/css/repair.css" />
+}
+
+@section scripts {
+    <script src="~/content/lib/jquery-3.3.1.min.js"></script>
+    <script src="~/content/js/core.js"></script>
+    <script src="~/content/js/aida.js"></script>
+    <script>
+        $(".view")
+            .on("mousedown", ".caption", function () { toggle(this) })
+            .on("mousedown", ".title", function () { cartOpen(this) })
+    </script>
+}
+
+@Html.Action("list")

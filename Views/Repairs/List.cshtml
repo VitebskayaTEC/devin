@@ -1,0 +1,287 @@
+﻿@using (var conn = Database.Connection())
+{
+    string id = Request.QueryString.Get("id");
+    string search = Request.QueryString.Get("search");
+    string where = string.IsNullOrEmpty(search)
+        ? "" : $"WHERE d.name LIKE '%{search}%' OR d.description LIKE '%{search}%' OR d.number_device LIKE '%{search}%' OR s.Name LIKE '%{search}%' OR s.Ncard LIKE '%{search}%'";
+
+    var raws = conn.Query($@"SELECT
+        r.INum    AS [Id]
+        ,f.G_ID   AS [FolderId]
+        ,w.W_ID   AS [WriteoffId]
+        ,r.Id_D   AS [DeviceNumber]
+        ,r.Id_U   AS [StorageInventory]
+        ,r.Units
+        ,r.Date
+        ,r.IfSpis
+        ,r.Virtual
+
+        ,d.Inventory    AS [Device_Inventory]
+        ,d.name         AS [Device_Name]
+        ,d.Description  AS [Device_Description]
+        ,d.class_device AS [Device_DeviceClass]
+
+        ,s.Name   AS [Storage_Name]
+        ,s.Nadd   AS [Storage_Nadd]
+        ,s.Nis    AS [Storage_Nis]
+        ,s.Nuse   AS [Storage_Nuse]
+        ,s.Nbreak AS [Storage_Nbreak]
+        ,s.Price  AS [Storage_Price]
+    FROM REMONT r
+    LEFT OUTER JOIN DEVICE d   ON r.ID_D = d.number_device
+    LEFT OUTER JOIN SKLAD s    ON r.ID_U = s.NCard
+    LEFT OUTER JOIN [GROUP] f  ON r.G_ID = f.G_ID
+    LEFT OUTER JOIN writeoff w ON r.W_ID = w.W_ID
+    {where}
+    ORDER BY f.G_ID, w.W_ID, r.Date DESC").AsList();
+
+    var _repairs = new List<Repair>();
+
+    foreach (var raw in raws)
+    {
+        _repairs.Add(new Repair
+        {
+            Id = raw.Id ?? 0,
+            FolderId = raw.FolderId ?? 0,
+            WriteoffId = raw.WriteoffId ?? 0,
+            DeviceNumber = raw.DeviceNumber,
+            StorageInventory = raw.StorageInventory,
+            Units = raw.Units ?? 0,
+            Date = raw.Date,
+            IfSpis = raw.IfSpis == 1,
+            Virtual = raw.Virtual == 1,
+            Author = raw.Author,
+            Device = new Device
+            {
+                Inventory = raw.Inventory_Inventory,
+                Name = raw.Device_Name,
+                Description = raw.Device_Description,
+                DeviceClass = raw.Device_DeviceClass
+            },
+            Storage = new Storage
+            {
+                Name = raw.Storage_Name,
+                Nadd = raw.Storage_Nadd ?? 0,
+                Nis = raw.Storage_Nis ?? 0,
+                Nuse = raw.Storage_Nuse ?? 0,
+                Nbreak = raw.Storage_Nbreak ?? 0,
+                Price = raw.Storage_Price ?? 0,
+            }
+        });
+    }
+
+    if (!string.IsNullOrEmpty(search))
+    {
+        <div class='unit'>
+            <table class='caption'>
+                <tr>
+                    <th>Поиск совпадений по запросу: @search</th>
+                </tr>
+            </table>
+            @RenderItems(_repairs)
+        </div>
+    }
+    else
+    {
+        var _writeoffs = conn.Query<Writeoff>(@"SELECT
+            w.W_ID    AS [Id]
+            ,w.W_Name AS [Name]
+            ,w.W_Date AS [Date]
+            ,c.O_Name AS [Type]
+            ,f.G_ID   AS [FolderId]
+        FROM writeoff w
+        LEFT OUTER JOIN catalog_writeoffs c ON w.W_Type = c.O_Alias
+        LEFT OUTER JOIN [GROUP] f ON w.G_ID = f.G_ID
+        ORDER BY w.W_Date DESC").AsList();
+
+        var _folders = conn.Query<Folder>(@"SELECT
+            f.G_ID AS Id,
+            CASE WHEN p.G_ID IS NULL THEN 0 ELSE p.G_ID END AS FolderId,
+            f.G_Title AS Title
+        FROM [GROUP] f
+        LEFT OUTER JOIN [GROUP] p ON f.G_Inside = p.G_Id
+        WHERE f.G_Type = 'repair'
+        ORDER BY f.G_Title").AsList();
+
+        var repairs = new List<Repair>();
+        var writeoffs = new List<Writeoff>();
+        var folders = new List<Folder>();
+        bool found;
+
+        foreach (var repair in _repairs)
+        {
+            found = false;
+            foreach (var writeoff in _writeoffs)
+            {
+                if (repair.WriteoffId == writeoff.Id)
+                {
+                    writeoff.Repairs.Add(repair);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                foreach (var folder in _folders)
+                {
+                    if (repair.FolderId == folder.Id)
+                    {
+                        folder.Repairs.Add(repair);
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    repairs.Add(repair);
+                }
+            }
+        }
+
+        foreach (var writeoff in _writeoffs)
+        {
+            found = false;
+            foreach (var folder in _folders)
+            {
+                if (writeoff.FolderId == folder.Id)
+                {
+                    folder.Writeoffs.Add(writeoff);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                writeoffs.Add(writeoff);
+            }
+        }
+
+        foreach (var folder in _folders)
+        {
+            if (folder.FolderId == 0)
+            {
+                folders.Add(Folder.Build(folder, _folders));
+            }
+        }
+
+
+        <div class="unit" id="solo">
+            <table class="caption">
+                <tr>
+                    <td width="24px"><div class="icon ic-cached"></div></td>
+                    <th>Не распределенные ремонты</th>
+                </tr>
+            </table>
+            @RenderItems(repairs)
+        </div>
+
+        foreach (var writeoff in writeoffs)
+        {
+            @RenderWriteoff(writeoff)
+        }
+
+        foreach (var folder in folders)
+        {
+            @RenderFolder(folder)
+        }
+    }
+}
+
+@helper RenderFolder(Folder folder)
+{
+    string id = "rg" + folder.Id;
+    string open = Request.Cookies.Get(id)?.Value ?? "";
+
+    <div class="unit group @open" id="@id">
+        <table class='caption'>
+            <tr>
+                <td width='24px' menu='group' onmousedown='_menu(this)'>
+                    <div class='icon ic-folder'></div>
+                </td>
+                <th>@folder.Title</th>
+            </tr>
+        </table>
+        <div class="items_block @(open == "open" ? "" : "hide")">
+            @foreach (var sub in folder.SubFolders)
+            {
+                @RenderFolder(sub)
+            }
+            @foreach (var writeoff in folder.Writeoffs)
+            {
+                @RenderWriteoff(writeoff)
+            }
+            @RenderItems(folder.Repairs)
+        </div>
+    </div>
+}
+
+@helper RenderWriteoff(Writeoff writeoff)
+{
+    string id = "off" + writeoff.Id;
+    string open = Request.Cookies.Get(id)?.Value ?? "";
+
+    <div class="unit writeoff @open">
+            <table class="caption">
+                <tr>
+                    <td width="30px">
+                        <div class="icon ic-info-outline" menu='computer' onmousedown='_menu(this)'></div>
+                    </td>
+                    <th>@writeoff.Name</th>
+                    <td width="250px">@writeoff.Type</td>
+                    <td width="150px">@writeoff.AllCost() р.</td>
+                    <td width="70px">@writeoff.Date.ToString("dd.MM.yyyy")</td>
+                </tr>
+            </table>
+            <div class="items_block @(open == "open" ? "" : "hide")">
+                <div class='title-wrapper' id='@id'>
+                    <div class='title'>Открыть карточку списания</div>
+                </div>
+                @RenderItems(writeoff.Repairs)
+            </div>
+        </div>
+}
+
+@helper RenderItems(List<Repair> repairs)
+{
+    if (repairs.Count == 0) { return; }
+    <table class="items">
+        @RenderHead()
+        <tbody>
+            @foreach (var repair in repairs)
+            {
+                <tr id="@repair.Id" class="item">
+                    <td><input type="checkbox" class="selecter" /></td>
+                    <td>
+                        <b>@repair.Device.Name</b> @repair.Device.Description
+                    </td>
+                    <td>
+                        <div class="led @repair.Storage.Led()"></div> @repair.Storage.Name
+                    </td>
+                    <td>@repair.Units</td>
+                    <td>@((repair.Units * repair.Storage.Price).ToString("0.00")) р.</td>
+                    <td><input type="checkbox" disabled @(repair.IfSpis ? "checked" : "") /></td>
+			        <td><input type="checkbox" disabled @(repair.IfSpis ? "checked" : "") /></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@helper RenderHead()
+{
+    <thead>
+        <tr>
+            <td width="20px"><input type="checkbox" class="selecter-all" /></td>
+            <th data-type="string">объект ремонта</th>
+            <th data-type="string" width="460px">деталь</th>
+            <th data-type="number" width="50px">кол-во</th>
+            <th data-type="number" width="70px">стоимость</th>
+            <th data-type="date" width="70px">дата</th>
+            <th data-type="string" width="40px">спис.</th>
+            <th data-type="string" width="40px">вирт.</th>
+        </tr>
+    </thead>
+}

@@ -118,15 +118,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\AidaController.cs" />
     <Compile Include="Controllers\AnalyzeController.cs" />
     <Compile Include="Controllers\DevicesController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\RepairsController.cs" />
     <Compile Include="Controllers\StoragesController.cs" />
     <Compile Include="Controllers\WriteoffsController.cs" />
     <Compile Include="Forms\StorageCompare.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\Aida.cs" />
     <Compile Include="Models\Cartridge.cs" />
     <Compile Include="Models\Database.cs" />
     <Compile Include="Models\Computer.cs" />
@@ -141,8 +144,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="aida\default.asp" />
-    <Content Include="aida\view.asp" />
     <Content Include="analyze\default.asp" />
     <Content Include="asp\aida_cart.asp" />
     <Content Include="asp\catalog_cartridge_cart.asp" />
@@ -252,13 +253,9 @@
     <Content Include="exes\storage\storage_save_cart.asp" />
     <Content Include="Global.asax" />
     <Content Include="repair\cartridges_usage\default.asp" />
-    <Content Include="repair\default.asp" />
     <Content Include="repair\report_year\default.asp" />
-    <Content Include="repair\view.asp" />
-    <Content Include="storage\default.asp" />
     <Content Include="storage\labels\default.asp" />
     <Content Include="storage\labels\view.asp" />
-    <Content Include="storage\view.asp" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -297,6 +294,12 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Devices\Index.cshtml" />
     <Content Include="Views\Devices\List.cshtml" />
+    <Content Include="Views\Storages\Index.cshtml" />
+    <Content Include="Views\Storages\List.cshtml" />
+    <Content Include="Views\Repairs\Index.cshtml" />
+    <Content Include="Views\Repairs\List.cshtml" />
+    <Content Include="Views\Aida\List.cshtml" />
+    <Content Include="Views\Aida\Index.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

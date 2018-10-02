@@ -184,7 +184,7 @@
 		rs.open sql, conn
 
 			' Отрисовка данных по ремонтам в отдельном блоке
-			cookie = request.cookies("analyzeRepairs")
+			cookie = request.cookies("analyze"s")
 			response.write "<div class='unit " & cookie & "' id='analyzeRepairs'><table class='caption'><tr><td><th>Данные по ремонтам</tr></table>"
 			if cookie = "open" then response.write "<div class='items_block'>" else response.write "<div class='items_block hide'>"
 			response.write "<table class='items'>" _

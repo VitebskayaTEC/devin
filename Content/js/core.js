@@ -219,7 +219,7 @@ function groupDelete() {
 }
 
 var restore = function() {
-	$.get("view.asp?r=" + Math.random(), function(data) {
+	$.get("./list" + Math.random(), function(data) {
 		$("#view").html(data);
 	});
 }

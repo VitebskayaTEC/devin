@@ -96,7 +96,7 @@
 
 @helper RenderFolder(Folder folder, bool isOff = false)
 {
-    string id = "dg" + folder.Id;
+    string id = "sg" + folder.Id;
     string open = Request.Cookies.Get(id)?.Value ?? "";
 
     <div class="unit group @open" id="@id">

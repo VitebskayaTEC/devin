@@ -194,7 +194,7 @@ var state = {
 
 function reload(obj) {
 	$.extend(state, obj);
-	$('#view').load('view.asp?' + state.queryString(), function() {
+	$('#view').load('/devin/devices/list?' + state.queryString(), function() {
 		$('#' + id).addClass('selected');
 		$('.main th:eq(' + state.key + ')').addClass(
 			state.direction == 0 ? 'sort_up' : 'sort_down'

@@ -1,0 +1,82 @@
+﻿@using (var conn = Database.Connection())
+{
+    string sql = @"SELECT
+        Report.RHost,
+        Report.ID,
+        Report.RUser,
+        Report.RDateTime,
+        Item.IField,
+        Item.IValue
+    FROM Report INNER JOIN Item ON Report.ID = Item.ReportID
+    WHERE (Item.IPage = 'Суммарная информация') AND (Report.RHostComment <> 'deleted')
+    ORDER BY Report.RHost, Report.ID, Item.IField DESC";
+
+    var model = conn.Query(sql).AsList();
+    var computers = new List<AidaComputer>();
+
+    string rhost = "";
+    var computer = new AidaComputer();
+
+    foreach (var row in model)
+    {
+        if (rhost != row.RHost)
+        {
+            computers.Add(computer = new AidaComputer
+            {
+                RHost = row.RHost,
+                ID = row.ID,
+                RUser = row.RUser,
+                RDateTime = DateTime.Parse(row.RDateTime),
+            });
+
+            rhost = row.RHost;
+        }
+        else
+        {
+            computer.Items.Add(new AidaField
+            {
+                IField = row.IField,
+                IValue = row.IValue
+            });
+        }
+    }
+
+    foreach (var comp in computers)
+    {
+        @RenderComputer(comp)
+    }
+
+}
+
+@helper RenderComputer(AidaComputer computer)
+{
+    string id = computer.RHost;
+    string open = Request.Cookies.Get(id)?.Value ?? "";
+
+    <div class="unit @open">
+        <table class="caption">
+            <tr>
+                <td width="30px">
+                    <div class="icon ic-computer"></div>
+                </td>
+                <th width="150px">@computer.RHost</th>
+                <td width="150px">@computer.RUser</td>
+                <td>@computer.RDateTime.ToString("dd.MM.yyyy") (@((DateTime.Now - computer.RDateTime).Days) дней)</td>
+            </tr>
+        </table>
+        <div class="items_block @(open == "open" ? "" : "hide")">
+            <div class='title-wrapper' id='@id' onclick="cartOpen(this)">
+                <div class='title'>Открыть карточку компьютера</div>
+            </div>
+            <table class="items">
+                @foreach (var item in computer.Items)
+                {
+                    <tr>
+                        <td width="250px">@item.IField</td>
+                        <td>@item.IValue</td>
+                    </tr>
+                }
+            </table>
+        </div>
+        </div>
+}

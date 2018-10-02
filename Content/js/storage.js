@@ -66,7 +66,7 @@ function cartSave() {
     $.post("/devin/exes/storage/storage_save_cart.asp?id=" + id + "&r=" + Math.random(), $("form").serialize(), function (data) {
         // Обновление view по новым данным
         if (document.location.search.indexOf("text=") < 0) {
-            $.get("view.asp?r=" + Math.random(), function (data) {
+            $.get("/devin/storages/list?r=" + Math.random(), function (data) {
                 $("#view").html(data);
                 setTimeout(function () {
                     $("#" + id).addClass("selected");
@@ -79,7 +79,7 @@ function cartSave() {
                 } catch (e) { }
             });
         } else {
-            $.get("view.asp" + document.location.search + "&r=" + Math.random(), function (data) {
+            $.get("/devin/storages/list" + document.location.search + "&r=" + Math.random(), function (data) {
                 $("#view").html(data);
                 setTimeout(function () {
                     $("#" + id).addClass("selected");
@@ -262,7 +262,7 @@ function createRepairs() {
 
 function excelExports() {
     $.post("/devin/storages/labels", selectionToForm("select", ";"), function(data) {
-        $("#view").load("view.asp?r=" + Math.random());
+        $("#view").load("/devin/storages/list?r=" + Math.random());
         document.getElementById("excelExportsLink").innerHTML = data;
         $('#excelExports').slideDown(100);
     });

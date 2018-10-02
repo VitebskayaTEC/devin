@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Devin.Models
 {
@@ -19,5 +20,19 @@ namespace Devin.Models
         public string DefExcel { get; set; }
 
         public string Template { get; set; }
+
+        public int FolderId { get; set; }
+
+        public List<Repair> Repairs { get; set; } = new List<Repair>();
+
+        public float AllCost()
+        {
+            float cost = 0;
+            foreach (var repair in Repairs)
+            {
+                cost += repair.Units * repair.Storage.Price;
+            }
+            return cost;
+        }
     }
 }
