@@ -50,8 +50,7 @@
 
 @helper RenderComputer(AidaComputer computer)
 {
-    string id = computer.RHost;
-    string open = Request.Cookies.Get(id)?.Value ?? "";
+    string open = Request.Cookies.Get(computer.ID.ToString())?.Value ?? "";
 
     <div class="unit @open">
         <table class="caption">
@@ -65,7 +64,7 @@
             </tr>
         </table>
         <div class="items_block @(open == "open" ? "" : "hide")">
-            <div class='title-wrapper' id='@id' onclick="cartOpen(this)">
+            <div class='title-wrapper' id='@computer.ID' onclick="cartOpen(this)">
                 <div class='title'>Открыть карточку компьютера</div>
             </div>
             <table class="items">

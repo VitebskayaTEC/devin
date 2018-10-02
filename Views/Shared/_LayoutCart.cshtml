@@ -1,0 +1,14 @@
+﻿<div class="cart-header">@ViewBag.Title</div>
+
+<div class="cart-overflow">
+    @RenderBody()
+    @RenderSection("body", false)
+</div>
+
+<table class="cart-menu">
+    <tr>
+        @RenderSection("menu", false)
+    </tr>
+</table>
+
+@RenderSection("scripts", false)

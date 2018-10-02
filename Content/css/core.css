@@ -160,17 +160,17 @@ a.has-icon {
     color: #000;
 }
 
-.open {
+.view .open {
     border-color: #FF5722;
     box-shadow: 0 1px 8px 0 #E6B451;
 }
 
-    .open > table {
+    .view .open > table {
         background: #ffe8b1;
         border-bottom: 1px solid #FF5722;
     }
 
-.open:hover .caption {
+.view .open:hover .caption {
     color: #000;
 }
 

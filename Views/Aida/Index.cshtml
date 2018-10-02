@@ -12,19 +12,84 @@
 }
 
 @section styles {
-    <link rel="stylesheet" href="~/content/lib/jquery-ui.min.css" />
-    <link rel="stylesheet" href="~/content/lib/select2.min.css" />
-    <link rel="stylesheet" href="~/content/css/repair.css" />
+    <style>
+        #aida-data {
+            font-family: Consolas;
+            max-width: 1000px;
+            word-break: break-word;
+        }
+
+        .page > *,
+        .set > * {
+            margin-left: 15px
+        }
+
+        .set,
+        .page > a,
+        .set > a {
+            display: none
+        }
+
+        .open,
+        .open > a {
+            display: block
+        }
+
+        #aida-data a:before {
+            content: "+ ";
+        }
+
+        #aida-data a.open:before {
+            content: "- ";
+        }
+
+        .f {
+            color: #555;
+        }
+    </style>
 }
 
 @section scripts {
     <script src="~/content/lib/jquery-3.3.1.min.js"></script>
     <script src="~/content/js/core.js"></script>
-    <script src="~/content/js/aida.js"></script>
     <script>
-        $(".view")
-            .on("mousedown", ".caption", function () { toggle(this) })
-            .on("mousedown", ".title", function () { cartOpen(this) })
+
+        function toggle(node) {
+            var $unit = $(node).closest('.unit');
+            if ($unit.hasClass("open")) {
+                $unit.children(".items_block").slideToggle(150, function () { $unit.removeClass("open"); });
+                setCookie($unit.attr("id"), "", { expires: 9999999999 });
+            } else {
+                $unit.addClass("open").children(".items_block").slideToggle(150);
+                setCookie($unit.attr("id"), "open", { expires: 9999999999 });
+            }
+        }
+
+        function cartOpen(node) {
+            id = node.id;
+            cartOpenBack();
+            setHash(id);
+        }
+
+        function cartOpenBack() {
+            $("#cart").html('loading...').fadeIn(100).load("@Url.Action("cart", "aida")/" + id);
+            $(".view .selected").removeClass("selected");
+            try { $("#" + id).addClass("selected"); } catch (e) { }
+        }
+
+        function cartBack() { cartOpenBack(); }
+
+        function reportDelete() {
+            if (confirm("Отчет по данному компьютеру будет безвозвратно удален. Продолжить?")) {
+                $.post("@Url.Action("delete", "aida")/id", restore);
+                cartClose();
+            }
+        }
+
+        $(".view").on("mousedown", ".caption", function () { toggle(this); });
+        $(document).on("mousedown", "#cart a", function () {
+            $(this).add("#" + this.getAttribute("for")).toggleClass("open");
+        })
     </script>
 }
 

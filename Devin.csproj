@@ -145,11 +145,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="analyze\default.asp" />
-    <Content Include="asp\aida_cart.asp" />
     <Content Include="asp\catalog_cartridge_cart.asp" />
     <Content Include="asp\catalog_printer_cart.asp" />
     <Content Include="asp\device_1c_compare.asp" />
-    <Content Include="asp\device_aida.asp" />
     <Content Include="asp\device_aida_autorun.asp" />
     <Content Include="asp\device_aida_devices.asp" />
     <Content Include="asp\device_aida_programs.asp" />
@@ -165,7 +163,6 @@
     <Content Include="asp\writeoff_cart.asp" />
     <Content Include="asp\writeoff_setup_cart.asp" />
     <Content Include="catalog\default.asp" />
-    <Content Include="Content\css\aida.css" />
     <Content Include="Content\css\analyze.css" />
     <Content Include="Content\css\table.css" />
     <Content Include="Content\excels\TextFile1.txt" />
@@ -180,7 +177,6 @@
     <Content Include="Content\img\devin_icons_blue.png" />
     <Content Include="Content\img\favicon.ico" />
     <Content Include="Content\img\white_carbonfiber.png" />
-    <Content Include="Content\js\aida.js" />
     <Content Include="Content\js\catalog.js" />
     <Content Include="Content\js\core.js" />
     <Content Include="Content\js\device.js" />
@@ -206,7 +202,6 @@
     <Content Include="Content\lib\select2.min.js" />
     <Content Include="core\core.inc" />
     <Content Include="core\upload.asp" />
-    <Content Include="exes\aida\aida_delete_report.asp" />
     <Content Include="exes\analyze\analyze_export.asp" />
     <Content Include="exes\catalog\catalog_add_compare.asp" />
     <Content Include="exes\catalog\catalog_create_cartridge.asp" />
@@ -300,6 +295,8 @@
     <Content Include="Views\Repairs\List.cshtml" />
     <Content Include="Views\Aida\List.cshtml" />
     <Content Include="Views\Aida\Index.cshtml" />
+    <Content Include="Views\Shared\_LayoutCart.cshtml" />
+    <Content Include="Views\Aida\Cart.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

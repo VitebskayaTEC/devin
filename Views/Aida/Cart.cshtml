@@ -1,0 +1,77 @@
+﻿@model int
+@using System.Text;
+
+@{
+    Layout = "~/Views/Shared/_LayoutCart.cshtml";
+    ViewBag.Title = Model;
+}
+
+
+@section body {
+
+    @using (var conn = Database.Connection())
+    {
+        StringBuilder builder = new StringBuilder();
+
+        var computer = conn.Query<AidaComputer>("SELECT * FROM Report WHERE ID = @Model", new { Model }).FirstOrDefault();
+
+        var model = conn.Query(@"SELECT INum, IPage, IDevice, IGroup, IField, IValue FROM Item WHERE ReportID = @Model ORDER BY IPage, IDevice, IGroup, IField", new { Model }).AsList();
+
+        string page = null, device = "", group = "";
+        int inum = 0;
+
+        builder.Append("<div><div><div>");
+
+        foreach (var row in model)
+        {
+            inum = row.INum;
+
+            if (row.IPage != page)
+            {
+                page = row.IPage;
+                device = row.IDevice;
+                group = row.IGroup;
+
+                builder.Append($"</div></div></div>" +
+                    $"<a for='p{inum}'>{page}</a><div id='p{inum}' class='page'>" +
+                    $"<a for='d{inum}'>{device}</a><div id='d{inum}' class='set'>" +
+                    $"<a for='g{inum}'>{group}</a><div id='g{inum}' class='set'>");
+            }
+            else if (row.IDevice != device)
+            {
+                device = row.IDevice;
+                group = row.IGroup;
+
+                builder.Append($"</div></div>" +
+                    $"<a for='d{inum}'>{device}</a><div id='d{inum}' class='set'>" +
+                    $"<a for='g{inum}'>{group}</a><div id='g{inum}' class='set'>");
+            }
+            else if (row.IGroup != group)
+            {
+                group = row.IGroup;
+
+                builder.Append($"</div>" +
+                    $"<a for='g{inum}'>{group}</a><div id='g{inum}' class='set'>");
+            }
+
+            builder.Append("<div class='fv'><span class='f'>" + row.IField + "</span> " + row.IValue + "</div>");
+        }
+
+        builder.Append("</div></div></div>");
+
+        @Html.Raw(builder);
+    }
+}
+
+@section menu {
+    <td onclick='reportDelete()'>Удалить из базы</td>
+    <td onclick='cartClose()'>Закрыть</td>
+}
+
+@section scripts {
+    <script>
+       $('#cart a').each(function () {
+            if (this.innerHTML == "") this.parentNode.innerHTML = document.getElementById(this.getAttribute("for")).innerHTML;
+       });
+    </script>
+}

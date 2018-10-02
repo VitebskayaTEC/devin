@@ -69,7 +69,7 @@ function cartHistory(_id) {
 function cartAida() {
 	$('#cart')
 		.html("<b class='load'>загрузка...</b>")
-		.load('/devin/asp/device_aida.asp?id=' + id + '&r=' + Math.random())
+		.load('/devin/aida/cart/' + id)
 		.fadeIn(100).css({ maxWidth: 600 });
 }
 

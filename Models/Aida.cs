@@ -11,6 +11,8 @@ namespace Devin.Models
 
         public string RUser { get; set; }
 
+        public string RLocation { get; set; }
+
         public DateTime RDateTime { get; set; }
 
         public string IField { get; set; }
@@ -18,6 +20,8 @@ namespace Devin.Models
         public string IValue { get; set; }
 
         public List<AidaField> Items { get; set; } = new List<AidaField>();
+
+        public List<AidaBlock> Blocks { get; set; } = new List<AidaBlock>();
     }
 
     public class AidaField
@@ -27,5 +31,12 @@ namespace Devin.Models
         public string IField { get; set; }
 
         public string IValue { get; set; }
+    }
+
+    public class AidaBlock
+    {
+        public string Caption { get; set; }
+
+        public List<AidaBlock> Blocks { get; set; } = new List<AidaBlock>();
     }
 }
