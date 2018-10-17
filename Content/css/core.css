@@ -1,14 +1,8 @@
-/* Base */
+/* #region Base */
 
-* {
-	box-sizing: border-box;
-}
+* {box-sizing: border-box}
 
-body,
-div,
-table,
-ul,
-li {
+body,div,table,ul,li {
     padding: 0;
     margin: 0;
     border: 0;
@@ -24,8 +18,8 @@ table {
     width: 100%;
 }
 
-
-/* Navigation menu */
+/* #endregion */
+/* #region Navigation menu */
 
 .main-menu {
     position: fixed;
@@ -89,8 +83,8 @@ a.has-icon {
     border: 1px outset #979898;
 }
 
-
-/* Main view table header */
+/* #endregion */
+/* #region Main view table header */
 
 .main {
     background: #fff;
@@ -133,8 +127,8 @@ a.has-icon {
     top: 0;
 }
 
-
-/* View elements */
+/* #endregion */
+/* #region View elements */
 
 .unit {
     margin: 10px 0;
@@ -193,8 +187,8 @@ a.has-icon {
     display: none;
 }
 
-
-/* View table data */
+/* #endregion */
+/* #region View table data */
 
 .items {
     border: 1px solid transparent;
@@ -268,8 +262,8 @@ a.has-icon {
     color: #E6B451!important;
 }
 
-
-/* Element's cart  */
+/* #endregion */
+/* #region Element's cart  */
 
 .cart-new {
     display: none;
@@ -408,8 +402,8 @@ label:hover {
     text-decoration: underline;
 }
 
-
-/* View filter */
+/* #endregion */
+/* #region View filter */
 
 .filter {
     background: #fff;
@@ -427,8 +421,8 @@ label:hover {
     padding: 4px 30px 4px 10px;
 }
 
-
-/* View statistics data */
+/* #endregion */
+/* #region View statistics data */
 
 .stats {
     background: #fff;
@@ -473,7 +467,8 @@ label:hover {
     background: #90dc78;
 }
 
-/* Context menu */
+/* #endregion */
+/* #region Context menu */
 
 .context-menu {
     display: none;
@@ -485,24 +480,20 @@ label:hover {
     box-shadow: 1px 1px 8px #000;
 }
 
-.context-menu li {
-    padding: 3px;
-    padding-left: 12px;
-    padding-right: 10px;
-    list-style-type: none;
-}
+    .context-menu > * {
+        display: block;
+        color: #ddd;
+        padding: 3px;
+        padding-left: 12px;
+        padding-right: 10px;
+        list-style-type: none;
+        text-decoration: none;
+    }
 
-.context-menu .passive {
-    padding: 0;
-}
+    .context-menu > *:hover {color: #E6B451}
 
-.context-menu .passive hr {
-    border: .5px solid #666;
-}
-
-.context-menu li:hover {
-    color: #E6B451
-}
+    .context-menu .passive {padding: 0}
+        .context-menu .passive hr {border: .5px solid #666}
 
 .modal {
     display: none;
@@ -514,52 +505,8 @@ label:hover {
     box-shadow: 1px 1px 8px #000;
 }
 
-
-/* Addons */
-
-.select2-container {
-    min-width: 100px;
-}
-
-.hide {
-    display: none;
-}
-
-.show {
-    display: block;
-}
-
-.done {
-    color: #03a755;
-}
-
-.error {
-    color: #ff0000;
-}
-
-.small-text {
-    font: normal 10pt Segoe UI;
-}
-
-.sort_up:after {
-    content: "↑"
-}
-
-.sort_down:after {
-    content: "↓"
-}
-
-.unfocused {
-    color: #999;
-}
-
-.debug {
-    border: 1px outset #333;
-    border-radius: 3;
-    background: #eee;
-    margin: 10px;
-    padding: 6px;
-}
+/* #endregion */
+/* #region Led */
 
 .led {
     width: 8px;
@@ -570,9 +517,7 @@ label:hover {
 	margin-right: 5px;
 }
 
-.off {
-    background: #777
-}
+.off {background: #777}
 
 .warning {
     background: #fe4848;
@@ -587,43 +532,36 @@ label:hover {
 }
 
 @keyframes blink-warning {
-    from {
-        background: transparent
-    }
-    to {
-        background: #fe4848
-    }
+    from {background: transparent} to {background: #fe4848}
 }
 
 @-webkit-keyframes blink-warning {
-    from {
-        background: transparent
-    }
-    to {
-        background: #fe4848
-    }
+    from {background: transparent} to {background: #fe4848}
 }
 
 @keyframes blink-attention {
-    from {
-        background: transparent
-    }
-    to {
-        background: #E6B451
-    }
+    from {background: transparent} to {background: #E6B451}
 }
 
 @-webkit-keyframes blink-attention {
-    from {
-        background: transparent
-    }
-    to {
-        background: #E6B451
-    }
+    from {background: transparent} to {background: #E6B451}
 }
 
+/* #endregion */
+/* #region Addons */
 
-/* animations */
+.select2-container {min-width: 100px}
+.hide {display: none}
+.show {display: block}
+.done {color: #03a755}
+.error {color: #ff0000}
+.small-text {font: normal 10pt Segoe UI}
+.sort_up:after {content: "↑"}
+.sort_down:after {content: "↓"}
+.unfocused {color: #999}
+
+/* #endregion */
+/* #region Animations */
 
 .unit,
 .open {
@@ -631,8 +569,8 @@ label:hover {
     transition-duration: .15s;
 }
 
-
-/* icons */
+/* #endregion */
+/* #region Icons */
 
 .icon {
     display: inline-block;
@@ -645,235 +583,142 @@ label:hover {
     margin-top: -2px;
 }
 
-.icon {
-    background: url('/devin/content/img/devin_icons_black.png') no-repeat
+.icon {background: url('../img/devin_icons_black.png') no-repeat}
+.icon:hover {background: url('../img/devin_icons_blue.png') no-repeat}
+
+.ic-add {background-position: 0 0 !important}
+.ic-add-circle-outline {background-position: -24px 0 !important}
+.ic-album {background-position: -48px 0 !important}
+.ic-arrow-drop-down {background-position: -72px 0 !important}
+.ic-arrow-drop-up {background-position: -96px 0 !important}
+.ic-assignment-ind {background-position: -120px 0 !important}
+.ic-attach-file {background-position: -144px 0 !important}
+.ic-battery-charging-full {background-position: 0 -24px !important}
+.ic-battery-std {background-position: -24px -24px !important}
+.ic-build {background-position: -48px -24px !important}
+.ic-cached {background-position: -72px -24px !important}
+.ic-check {background-position: -96px -24px !important}
+.ic-check-box {background-position: -120px -24px !important}
+.ic-check-box-outline {background-position: -144px -24px !important}
+.ic-clear {background-position: 0 -48px !important}
+.ic-code {background-position: -24px -48px !important}
+.ic-computer {background-position: -48px -48px !important}
+.ic-content-copy {background-position: -72px -48px !important}
+.ic-content-paste {background-position: -96px -48px !important}
+.ic-delete {background-position: -120px -48px !important}
+.ic-desktop-windows {background-position: -144px -48px !important}
+.ic-exit-to-app {background-position: 0 -72px !important}
+.ic-expand-less {background-position: -24px -72px !important}
+.ic-expand-more {background-position: -48px -72px !important}
+.ic-folder {background-position: -72px -72px !important}
+.ic-folder-open {background-position: -96px -72px !important}
+.ic-gavel-black {background-position: -120px -72px !important}
+.ic-get-app {background-position: -144px -72px !important}
+.ic-help-outline {background-position: 0 -96px !important}
+.ic-history {background-position: -24px -96px !important}
+.ic-info-outline {background-position: -48px -96px !important}
+.ic-memory {background-position: -72px -96px !important}
+.ic-menu {background-position: -96px -96px !important}
+.ic-more-vert {background-position: -120px -96px !important}
+.ic-open-with {background-position: -144px -96px !important}
+.ic-person {background-position: 0 -120px !important}
+.ic-plus-one {background-position: -24px -120px !important}
+.ic-power-settings-new {background-position: -48px -120px !important}
+.ic-print {background-position: -72px -120px !important}
+.ic-redo {background-position: -96px -120px !important}
+.ic-router {background-position: -120px -120px !important}
+.ic-rss-feed {background-position: -144px -120px !important}
+.ic-save {background-position: 0 -144px !important}
+.ic-scanner {background-position: -24px -144px !important}
+.ic-search {background-position: -48px -144px !important}
+.ic-settings {background-position: -72px -144px !important}
+.ic-settings-input-component {background-position: -96px -144px !important}
+.ic-speaker {background-position: -120px -144px !important}
+.ic-tab {background-position: -144px -144px !important}
+.ic-tab-unselected {background-position: 0 -168px !important}
+.ic-tune {background-position: -24px -168px !important}
+.ic-undo {background-position: -48px -168px !important}
+.ic-update {background-position: -72px -168px !important}
+.ic-usb {background-position: -96px -168px !important}
+.ic-wifi {background-position: -120px -168px !important}
+.ic-wifi-tethering {background-position: -144px -168px !important}
+
+/* #endregion */
+/* #region Analyze forms */
+
+.analyzeContainer {
+    border: 1px solid #111;
+    background: #ddd;
 }
 
-.icon:hover {
-    background: url('/devin/content/img/devin_icons_blue.png') no-repeat
+.analyzeContainer__header {
+    background: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 6px;
+}
+
+.analyzeContainer__header_opened {
+    border-bottom: 1px solid #111;
+}
+
+.analyzeContainer__body {
+    background: #ddd;
+    display: none;
+}
+
+.analyzeContainer__body_opened {
+    display: block;
 }
 
 
-.ic-add {
-    background-position: 0 0 !important
+.analyzeBlock {
+    background: #eee;
+    margin: 8px 5px;
+    border: 1px solid #aaa;
+    /* padding: 5px; */
 }
 
-.ic-add-circle-outline {
-    background-position: -24px 0 !important
+.analyzeBlock__header {
+    margin-bottom: 8px;
+    border-bottom: 1px solid #ccc;
+    font-size: 12px;
+    background: #fff;
 }
 
-.ic-album {
-    background-position: -48px 0 !important
+.analyzeBlock__caption {
+    font-size: 16px;
+    text-align: left;
 }
 
-.ic-arrow-drop-down {
-    background-position: -72px 0 !important
+.analyzeBlock__header td {
+    padding: 5px;
 }
 
-.ic-arrow-drop-up {
-    background-position: -96px 0 !important
+.analyzeBlock__caption {
+    font-weight: 500;
 }
 
-.ic-assignment-ind {
-    background-position: -120px 0 !important
+.analyzeBlock__section {
+    margin: 6px;
 }
 
-.ic-attach-file {
-    background-position: -144px 0 !important
+.analyzeBlock__body {
+    font-size: 14px;
 }
 
-.ic-battery-charging-full {
-    background-position: 0 -24px !important
+.analyzeBlock__footer {
+    font-size: 14px;
+    font-weight: 500;
+    color: #3F51B5;
+    padding: 4px;
 }
 
-.ic-battery-std {
-    background-position: -24px -24px !important
+.analyzeBlock__empty {
+    font-size: 14px;
+    font-weight: 500;
+    color: #3F51B5;
+    padding: 0 8px 6px;
 }
 
-.ic-build {
-    background-position: -48px -24px !important
-}
-
-.ic-cached {
-    background-position: -72px -24px !important
-}
-
-.ic-check {
-    background-position: -96px -24px !important
-}
-
-.ic-check-box {
-    background-position: -120px -24px !important
-}
-
-.ic-check-box-outline {
-    background-position: -144px -24px !important
-}
-
-.ic-clear {
-    background-position: 0 -48px !important
-}
-
-.ic-code {
-    background-position: -24px -48px !important
-}
-
-.ic-computer {
-    background-position: -48px -48px !important
-}
-
-.ic-content-copy {
-    background-position: -72px -48px !important
-}
-
-.ic-content-paste {
-    background-position: -96px -48px !important
-}
-
-.ic-delete {
-    background-position: -120px -48px !important
-}
-
-.ic-desktop-windows {
-    background-position: -144px -48px !important
-}
-
-.ic-exit-to-app {
-    background-position: 0 -72px !important
-}
-
-.ic-expand-less {
-    background-position: -24px -72px !important
-}
-
-.ic-expand-more {
-    background-position: -48px -72px !important
-}
-
-.ic-folder {
-    background-position: -72px -72px !important
-}
-
-.ic-folder-open {
-    background-position: -96px -72px !important
-}
-
-.ic-gavel-black {
-    background-position: -120px -72px !important
-}
-
-.ic-get-app {
-    background-position: -144px -72px !important
-}
-
-.ic-help-outline {
-    background-position: 0 -96px !important
-}
-
-.ic-history {
-    background-position: -24px -96px !important
-}
-
-.ic-info-outline {
-    background-position: -48px -96px !important
-}
-
-.ic-memory {
-    background-position: -72px -96px !important
-}
-
-.ic-menu {
-    background-position: -96px -96px !important
-}
-
-.ic-more-vert {
-    background-position: -120px -96px !important
-}
-
-.ic-open-with {
-    background-position: -144px -96px !important
-}
-
-.ic-person {
-    background-position: 0 -120px !important
-}
-
-.ic-plus-one {
-    background-position: -24px -120px !important
-}
-
-.ic-power-settings-new {
-    background-position: -48px -120px !important
-}
-
-.ic-print {
-    background-position: -72px -120px !important
-}
-
-.ic-redo {
-    background-position: -96px -120px !important
-}
-
-.ic-router {
-    background-position: -120px -120px !important
-}
-
-.ic-rss-feed {
-    background-position: -144px -120px !important
-}
-
-.ic-save {
-    background-position: 0 -144px !important
-}
-
-.ic-scanner {
-    background-position: -24px -144px !important
-}
-
-.ic-search {
-    background-position: -48px -144px !important
-}
-
-.ic-settings {
-    background-position: -72px -144px !important
-}
-
-.ic-settings-input-component {
-    background-position: -96px -144px !important
-}
-
-.ic-speaker {
-    background-position: -120px -144px !important
-}
-
-.ic-tab {
-    background-position: -144px -144px !important
-}
-
-.ic-tab-unselected {
-    background-position: 0 -168px !important
-}
-
-.ic-tune {
-    background-position: -24px -168px !important
-}
-
-.ic-undo {
-    background-position: -48px -168px !important
-}
-
-.ic-update {
-    background-position: -72px -168px !important
-}
-
-.ic-usb {
-    background-position: -96px -168px !important
-}
-
-.ic-wifi {
-    background-position: -120px -168px !important
-}
-
-.ic-wifi-tethering {
-    background-position: -144px -168px !important
-}
+/* #endregion*/

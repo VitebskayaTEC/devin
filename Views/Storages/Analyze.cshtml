@@ -1,0 +1,345 @@
+﻿@{
+    ViewBag.Title = "DEVIN | Расход картриджей";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var cartridges = new List<Cartridge>();
+}
+
+@section menu {
+    <li><button onclick="exportToExcel()">Печать заказа на закупку картриджей</button></li>
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/content/lib/jquery-ui.min.css" />
+    <link rel="stylesheet" href="~/content/lib/select2.min.css" />
+    <link rel="stylesheet" href="~/content/css/storage.css" />
+}
+
+@section scripts {
+    <script src="~/content/lib/jquery-1.12.4.min.js"></script>
+    <script src="~/content/js/core.js"></script>
+    <script>
+        $(".view")
+	        .on("mousedown", ".group .items thead th", function() { _sort(this) })
+	        .on("mousedown", ".unit .caption th", function() { toggle(this) });
+
+        function toggle(node) {
+	        var $unit = $(node).closest('.unit');
+	        if ($unit.hasClass("open")) {
+		        $unit.children(".items_block").slideToggle(150, () => $unit.removeClass("open"));
+		        setCookie($unit.attr("id"), "", { expires: 999999999 });
+	        } else {
+		        $unit.addClass("open").children(".items_block").slideToggle(150);
+		        setCookie($unit.attr("id"), "open", { expires: 999999999 });
+	        }
+        }
+
+        function unique(rowA, rowB, way, colNum) {
+	        if (way == "up") {
+		        return rowA.cells[colNum].querySelector("a").innerHTML > rowB.cells[colNum].querySelector("a").innerHTML ? 1 : -1;
+	        } else {
+		        return rowB.cells[colNum].querySelector("a").innerHTML > rowA.cells[colNum].querySelector("a").innerHTML ? 1 : -1;
+	        }
+        };
+
+        function exportToExcel() {
+	        var formData = "";
+	        var trs = document.getElementById("analyzeCartridges").getElementsByTagName("tbody")[1].getElementsByTagName("tr");
+	        for (var i = 0; i < trs.length; i++) {
+		        var input = trs[i].querySelector("input");
+		        var val = +input.value;
+		        if (val > 0 && !isNaN(val)) {
+			        // Получаем данные, если предполагается или введено некоторое положительное количество
+			        formData += (formData == "" ? "" : "----") +
+				        encodeURIComponent(trs[i].querySelector("a").innerHTML.toString()) + "__" +
+				        trs[i].getElementsByTagName("td")[2].innerHTML.toString() + "__" +
+				        input.name + "__" +
+				        val.toFixed(0) + "__" +
+				        input.getAttribute("color");
+		        }
+	        }
+	        document.getElementById("export").style.display = "none";
+	        $.post('@Url.Action("analyzePrint", "storages")', 'data=' + formData, data => {
+		        document.getElementById("export").querySelector("div").innerHTML = data;
+		        $("#export").slideDown(100);
+	        });
+        }
+    </script>
+}
+
+@section html {
+    <div id='export' class='panel'>
+        <div></div>
+        <div><a onclick='$(this).closest(".panel").slideUp(100)'>Закрыть</a></div>
+    </div>
+}
+
+@using (var conn = Database.Connection())
+{
+    int minBaseValue = 23;
+
+    string sql = @"SELECT
+        CARTRIDGE.N       AS Cartridge,
+        CARTRIDGE.Type    AS [Type],
+        CARTRIDGE.Caption AS Caption,
+        SKLAD.Nis         AS [Count],
+        SKLAD.Uchet       AS Account,
+        SKLAD.Price       AS Price,
+        CARTRIDGE.Price   AS DefPrice,
+        SKLAD.ID_cart     AS ID,
+        CARTRIDGE.Type    AS AltType,
+        CARTRIDGE.Color   AS Color
+    FROM CARTRIDGE
+    INNER JOIN Sklad ON CARTRIDGE.N = SKLAD.ID_cart
+    ORDER BY [Type], Caption";
+
+    var cartridge = new Cartridge { Id = 0 };
+
+    var rs = conn.Query(sql).AsList();
+
+    foreach (var row in rs)
+    {
+        double cost;
+        if (row.Price == 0)
+        {
+            cost = minBaseValue * 1.2;
+        }
+        else
+        {
+            double fixCost = row.Account == "10.5.1" ? 1.2 : 2.4;
+            cost = row.Price * fixCost;
+        }
+
+        if (cartridge.Id == row.Cartridge)
+        {
+            cartridge.InStorage += row.Count;
+
+            if (cartridge.DefPrice != 0 && cartridge.Cost < cost)
+            {
+                cartridge.Cost = (float)cost;
+            }
+        }
+        else
+        {
+            cartridges.Add(cartridge = new Cartridge
+            {
+                Id = row.Cartridge,
+                Caption = row.Caption,
+                InStorage = row.Count,
+                Count = 0,
+                Type = row.Type,
+                Color = row.Color,
+                DefPrice = float.TryParse(row.DefPrice, out float f) ? f : 0
+            });
+
+            cartridge.Cost = float.TryParse(row.DefPrice, out f) ? f : (float)cost;
+        }
+    }
+
+    sql = @"SELECT
+        DEVICE.number_device AS ID_P,
+        SKLAD.ID_cart        AS ID_C,
+        COMPUTERS.name       AS Computer,
+        DEVICE.description   AS Device,
+        PRINTER.Caption      AS Printer,
+        REMONT.Date          AS Date,
+        REMONT.Units         AS N,
+        CARTRIDGE.Caption    AS Cartridge,
+        SKLAD.Price          AS Price,
+        SKLAD.Uchet          AS Account
+    FROM REMONT
+        INNER JOIN DEVICE              ON REMONT.ID_D        = DEVICE.number_device
+        INNER JOIN DEVICE AS COMPUTERS ON DEVICE.number_comp = COMPUTERS.number_device
+        INNER JOIN SKLAD               ON REMONT.ID_U        = SKLAD.NCard
+        INNER JOIN PRINTER             ON DEVICE.ID_prn      = PRINTER.N
+        INNER JOIN CARTRIDGE           ON SKLAD.ID_cart      = CARTRIDGE.N
+    WHERE (REMONT.ID_D LIKE '%PRN%') AND (REMONT.Virtual = 0)
+    ORDER BY ID_P, ID_C, Date";
+
+    var repairs = conn.Query(sql).AsList();
+
+    var buffer = new List<dynamic>();
+    string activePrinter = "";
+    int activeCartridge = 0;
+
+    <div class="unit" id="analyzeRepairs">
+        <table class="caption">
+            <tr>
+                <th>Данные по ремонтам</th>
+            </tr>
+        </table>
+        <div class="items_block hide">
+            <table class="items">
+                <thead>
+                    <tr>
+                        <th>Компьютер</th>
+                        <th>Устройство</th>
+                        <th>Тип устройства</th>
+                        <th>Дата</th>
+                        <th>Кол-во</th>
+                        <th>Тип картриджа</th>
+                        <th>Стоимость, шт</th>
+                        <th>Счет учета</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in repairs)
+                    {
+                        if (row.ID_P != activePrinter || row.ID_C != activeCartridge)
+                        {
+                            if (activePrinter != "")
+                            {
+                                <tr>
+                                    <th colspan="8">
+                                        @Html.Raw(Analyzer())
+                                    </th>
+                                </tr>
+                            }
+
+                            activePrinter = row.ID_P;
+                            activeCartridge = row.ID_C;
+
+                            buffer.Clear();
+                        }
+
+                        buffer.Add(row);
+
+                        <tr>
+                            <td>@row.Computer</td>
+                            <td>@row.Device</td>
+                            <td>@row.Printer</td>
+                            <td>@row.Date</td>
+                            <td>@row.N</td>
+                            <td>@row.Cartridge</td>
+                            <td>@row.Price</td>
+                            <td>@row.Account</td>
+                        </tr>
+                    }
+                    <tr>
+                        <th colspan="8">
+                            @Html.Raw(Analyzer())
+                        </th>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="unit open" id="analyzeCartridges">
+        <table class="caption">
+            <tr>
+                <th>Прогноз закупки картриджей</th>
+            </tr>
+        </table>
+        <div class="items_block">
+            <table class="items">
+                <thead>
+                    <tr>
+                        <th data-type="string">Тип картриджа</th>
+                        <th data-type="unique">Наименование картриджа</th>
+                        <th data-type="string">Стоимость</th>
+                        <th data-type="number">На складе</th>
+                        <th data-type="string">Прогноз</th>
+                        <th data-type="none">Итог</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in cartridges)
+                    {
+                        int forecast = 0;
+                        <tr>
+                            <td>@c.Type</td>
+                            <td>@c.Caption</td>
+                            <td>@c.Cost.ToString("0.00")</td>
+                            <td>@c.InStorage</td>
+                            <td>
+                                @if (c.Count > 0)
+                                {
+                                    forecast = c.Count - c.InStorage;
+                                    if (forecast > 0)
+                                    {
+                                        @: Предлагается заказать @forecast шт.
+                                    }
+                                    else if (c.InStorage == 0)
+                                    {
+                                        @: Предлагается заказать 1 картридж для наличия резерва (замены не планируются)
+                                    }
+                                    else
+                                    {
+                                        forecast = 0;
+                                        @: Заказ картриджей не требуется
+                                    }
+                                }
+                                else if (c.InStorage == 0)
+                                {
+                                    forecast = 1;
+                                    @: Предлагается заказать 1 картридж для наличия резерва (не проведено ни одного ремонта)
+                                }
+                                else
+                                {
+                                    forecast = 0;
+                                    @: Замены картриджей не проводились
+                                }
+                            </td>
+                            <td>
+                                <input color="@c.Color" name="@c.Caption" type="number" min="0" onblur="this.value = Math.round(this.value);" value="@forecast" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    string Analyzer()
+    {
+        int limit = 90;
+        int forecast = 0;
+        string s = "";
+
+        if (buffer.Count == 1)
+        {
+            DateTime lastDate = buffer[0].Date;
+            int differenceDate = (DateTime.Now - lastDate).Days;
+
+            if (differenceDate > limit)
+            {
+                forecast = 1;
+                s = "<br/>Недостаточно данных. Предполагается <b>1</b> замена (последняя замена была более [" + limit + "] дней назад)<hr />";
+            }
+            else
+            {
+                s = "<br/>Недостаточно данных. Замены не предполагаются<hr />";
+            }
+        }
+        else
+        {
+            DateTime firstDate = buffer.First().Date;
+            DateTime lastDate = buffer.Last().Date;
+            int differenceDate = (DateTime.Now - firstDate).Days;
+            int leftDate = (DateTime.Now - lastDate).Days;
+
+            double amount = 0;
+            foreach (var x in buffer) { amount += x.N; }
+            double rate = Math.Ceiling(differenceDate / amount);
+
+            forecast = (int)Math.Ceiling(limit / rate);
+
+            s = "<br />Количество дней между первым и последним ремонтами: <b>" + differenceDate + "</b>" +
+                "<br/>Промежуток между заменами, дней: <b>" + rate + "</b>" +
+                "<br/>Дней с последнего ремонта: <b>" + leftDate + "</b>" +
+                "<br/>Предполагаемые замены: <b>" + forecast + "</b><hr />";
+        }
+
+        foreach (var c in cartridges)
+        {
+            if (c.Id == activeCartridge)
+            {
+                c.Count += forecast;
+                break;
+            }
+        }
+
+        return s;
+    }
+}

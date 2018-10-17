@@ -7,5 +7,9 @@ namespace Devin.Controllers
         public ActionResult Index() => View();
 
         public ActionResult List() => View();
+
+        public ActionResult YearReport() => View();
+
+        public ActionResult CartridgesUsage() => View();
     }
 }

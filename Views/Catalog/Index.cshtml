@@ -1,0 +1,176 @@
+﻿@{
+    ViewBag.Title = "DEVIN | Каталог";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section menu {
+    <li>
+        <input onkeyup="search(this)" placeholder="Поиск" value="" />
+    </li><li>
+        <a class='has-icon' onmousedown='_menu(this)' menu='main'><div class='icon ic-menu'></div></a>
+    </li>
+}
+
+@section styles {
+    <style>
+        .view > table td {
+            width: 50%;
+            vertical-align: top;
+        }
+
+        .items input {
+            width: 100%;
+            box-sizing: border-box;
+            font: normal 12pt Segoe UI;
+            border: 1px solid #fff;
+        }
+
+        .catalog-compares tr td:first-child {
+            width: inherit;
+        }
+
+        .cart-links div {
+            word-break: break-word;
+            max-width: 600px;
+        }
+    </style>
+}
+
+@section scripts {
+    <script src="~/content/lib/jquery-3.3.1.min.js"></script>
+    <script src="~/content/js/core.js"></script>
+    <script src="~/content/js/catalog.js"></script>
+    <script>
+        $(".unit").on("mousedown", ".items td", function () { cartOpen(this); });
+
+
+        function cartOpen(node) {
+            id = node.id;
+            cartOpenBack();
+            setHash(id);
+        }
+
+        function search(input) {
+            var val = input.value.toLowerCase();
+            if (val == "") {
+                $(".items tbody tr").css("display", "table-row");
+            } else {
+                $(".items tbody tr").each(function () {
+                    var text = this.querySelector("td").innerHTML.toLowerCase();
+                    this.style.display = text.indexOf(val) > -1 ? 'table-row' : 'none';
+                });
+            }
+        }
+
+        function cartOpenBack() {
+            $("#cart").fadeIn(100).load('@Url.Action("", "asp")/catalog_' + getCart() + '_cart.asp?id=' + id);
+            $(".view .selected").removeClass("selected");
+            try { $("#" + id).parent().addClass("selected"); } catch (e) { }
+        }
+
+        function getCart() {
+            return (id.indexOf("prn") > -1) ? "printer" : "cartridge";
+        }
+
+
+        function createPrinter() {
+            $.post("@Url.Action("catalog", "exes")/catalog_create_printer.asp", function (data) {
+                document.location.hash = "##prn" + data;
+            });
+        }
+
+        function createCartridge() {
+            $.post("@Url.Action("catalog", "exes")/catalog_create_cartridge.asp", function (data) {
+                document.location.hash = "##cart" + data;
+            });
+        }
+
+        /*
+        Работа с карточками каталога (для принтеров и картриджей)
+        */
+
+        function cartSave() {
+            $.post("@Url.Action("catalog", "exes")/catalog_save_" + getCart() + "_cart.asp?id=" + id + "&r=" + Math.random(), $("#form").serialize(), function (data) {
+                document.getElementById("console").innerHTML = data;
+            });
+        }
+
+        function cartDelete() {
+            $.post("@Url.Action("catalog", "exes")/catalog_delete_" + getCart() + "_cart.asp?id=" + id + "&r=" + Math.random(), "", function (data) {
+                $(".view .selected").remove();
+                cartClose();
+            });
+        }
+
+        function addCompare() {
+            $.post("@Url.Action("catalog", "exes")/catalog_add_compare.asp?r=" + Math.random(), "compare=" + document.getElementById("new-compare").value + "&active=" + getCart() + "&id=" + id, function (data) {
+                var text = data;
+                $("#cart").load("@Url.Action("", "asp")/catalog_" + getCart() + "_cart.asp?id=" + id + "&r=" + Math.random(), function () {
+                    document.getElementById("console").innerHTML = text;
+                });
+            });
+        }
+
+        function delCompare(div) {
+            $.post("@Url.Action("catalog", "exes")/catalog_delete_compare.asp?r=" + Math.random(), "compare=" + div.parentNode.getAttribute("data-id") + "&active=" + getCart() + "&id=" + id, function (data) {
+                var text = data;
+                $("#cart").load("@Url.Action("", "asp")/catalog_" + getCart() + "_cart.asp?id=" + id + "&r=" + Math.random(), function () {
+                    document.getElementById("console").innerHTML = text;
+                });
+            });
+        }
+    </script>
+}
+
+@section html {
+    <div class="context-menu" id="main">
+        <a href="~/storages/analyze">Расход картриджей</a>
+        <div onclick="createPrinter()">Создать принтер</div>
+        <div onclick="createCartridge()">Создать картридж</div>
+    </div>
+}
+
+@using (var conn = Database.Connection())
+{
+    var printers = conn.Query<Printer>("SELECT N as Id, Caption FROM PRINTER ORDER BY Caption");
+    var cartridges = conn.Query<Cartridge>("SELECT N as Id, Caption FROM CARTRIDGE ORDER BY Caption");
+
+    <table>
+        <tr>
+            <td>
+                <div class="unit">
+                    <table class="caption">
+                        <tr>
+                            <th>Принтеры</th>
+                        </tr>
+                    </table>
+                    <table class="items">
+                        @foreach (var printer in printers)
+                        {
+                            <tr>
+                                <td id="prn@(printer.Id)">@printer.Caption</td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            </td>
+            <td>
+                <div class="unit">
+                    <table class="caption">
+                        <tr>
+                            <th>Картриджи</th>
+                        </tr>
+                    </table>
+                    <table class="items">
+                        @foreach (var cartridge in cartridges)
+                        {
+                            <tr>
+                                <td id="cart@(cartridge.Id)">@cartridge.Caption</td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+}

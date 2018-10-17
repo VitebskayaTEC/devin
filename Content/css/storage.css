@@ -16,12 +16,13 @@ input[type=number] {
 }
 
 #selected {
-	left: 760px;
+	right: 20px;
 	top: 0;
+	width: 200px;
 }
 
 #excelExports {
-	left: 1000px;
+	left: 1200px;
 	top: 0;
 }
 

@@ -1,129 +1,133 @@
 ﻿@model StorageCompare
 
-<!Doctype html>
-<html>
+@{
+    ViewBag.Title = "DEVIN | Склад | 1С";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
 
-<head>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=windows-1251" />
-    <link rel="stylesheet" href="~/content/lib/jquery-ui.min.css" />
-    <link rel="stylesheet" href="~/content/css/core.css" />
-    <link rel="stylesheet" href="~/Content/css/storage.css" />
-    <link rel="shortcut icon" href="~/content/img/favicon.ico" type="image/x-icon" />
-    <title>DEVIN | Склад | Импорт из 1С</title>
+@section styles {
     <style>
-        .compare_bad {color: #ff0000;}
-        .compare_not_found {color: #208608;}
+        .items tr:hover td {background: #eee}
+        .compare_bad {color: #ff0000!important}
+        .compare_not_found {color: #208608!important}
+        .compare_only_storage {color: #009688!important}
     </style>
-</head>
+}
 
-<body>
+@section menu {
+    <li>
+        <a class="menu-button" onclick="Storage.addAllExcelsToStorage()">Добавить все новые позиции</a>
+    </li>
+}
 
-    <ul class="main-menu">
-        <li>
-            <a href="/" style="width: 36px"><div class="icon ic-exit-to-app"></div></a>
-        </li><li>
-            <a href="/devin/devices/">DEVIN</a>
-        </li><li>
-            <a href="/devin/storage/" class="point-now">Склад</a>
-        </li><li>
-            <a href="/devin/repair/">Ремонты</a>
-        </li><li>
-            <a href="/devin/aida/">AIDA</a>
-        </li><li>
-            <a href="/devin/catalog/">Каталог</a>
-        </li><li>
-            <a class="menu-button" onclick="Storage.addAllExcelsToStorage()">Добавить все новые позиции</a>
-        </li>
-    </ul>
+<div class="unit unit-nohover">
+    <table class="caption">
+        <tr>
+            <th>Сравнение остатков, указанных в выгрузке 1С, с числящимися на складе записями</th>
+        </tr>
+    </table>
+    <table class="items">
+        <thead>
+            <tr>
+                <th>Инв. №</th>
+                <th>Наименование</th>
+                <th>Дата прихода</th>
+                <th>Счет учета</th>
+                <th>На складе сейчас</th>
+                <th>В ремонте</th>
+                <th>Остаток по 1С</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                var storages = new List<Storage>();
+            }
+            @foreach (var storage in Model.Storages)
+            {
+                string className = "";
+                bool hasExcel = false;
 
-    <div id="view" class="view">
-        <div class="unit unit-nohover">
-            <table class="caption">
-                <tr>
-                    <td>Счеты учета: @ViewBag.Title</td>
-                </tr>
-            </table>
-            <table class="items">
-                <thead>
-                    <tr>
-                        <th>Инв. №</th>
-                        <th>Наименование</th>
-                        <th>Дата прихода</th>
-                        <th>Счет учета</th>
-                        <th>На складе сейчас</th>
-                        <th>В ремонте</th>
-                        <th>Остаток по 1С</th>
-                        <td>Действия</td>
+                foreach (var excel in Model.Excels)
+                {
+                    if (storage.Ncard == excel.Ncard)
+                    {
+                        className = storage.Nis + storage.Nuse == excel.Nadd ? "compare_good" : "compare_bad";
+
+                        <tr class="@className">
+                            <td>@storage.Ncard</td>
+                            <td>@storage.Name</td>
+                            <td>@storage.Date.ToString("d MMMM yyyy")</td>
+                            <td>@storage.Uchet</td>
+                            <td>@storage.Nis</td>
+                            <td>@storage.Nuse</td>
+                            <td>@excel.Nadd</td>
+                            <td>
+                                <button onclick="Storage.openCart('@storage.Ncard')">Карточка</button>
+                            </td>
+                        </tr>
+
+                        hasExcel = true;
+                        break;
+                    }
+                }
+
+                if (!hasExcel && (storage.Nis > 0 || storage.Nuse > 0) && (storage.Delit != 0))
+                {
+                    storages.Add(storage);
+                }
+            }
+            @foreach (var excel in Model.Excels)
+            {
+                bool isFound = false;
+
+                foreach (var storage in Model.Storages)
+                {
+                    if (storage.Ncard == excel.Ncard)
+                    {
+                        isFound = true;
+                        break;
+                    }
+                }
+
+                if (!isFound)
+                {
+                    <tr class="compare_not_found">
+                        <td name="Ncard">@excel.Ncard</td>
+                        <td name="Name">@excel.Name</td>
+                        <td>@excel.Date.ToString("d MMMM yyyy")</td>
+                        <td name="Uchet">@excel.Uchet</td>
+                        <td insert="Nis">не найдено на складе</td>
+                        <td insert="Nuse">не найдено на складе</td>
+                        <td name="Nadd">@excel.Nadd</td>
+                        <td>
+                            <button onclick="Storage.addExcelToStorage(this)">Добавить на складе</button>
+                        </td>
+                        <td class="hide" name="Date">@excel.Date.ToString("dd.MM.yyyy")</td>
+                        <td class="hide" name="Price">@excel.Price</td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach (var storage in Model.Storages)
-                    {
-                        string className = "";
+                }
+            }
+            @foreach (var storage in storages)
+            {
+                <tr class="compare_only_storage">
+                    <td>@storage.Ncard</td>
+                    <td>@storage.Name</td>
+                    <td>@storage.Date.ToString("d MMMM yyyy")</td>
+                    <td>@storage.Uchet</td>
+                    <td>@storage.Nis</td>
+                    <td>@storage.Nuse</td>
+                    <td>не найдено в 1С</td>
+                    <td>
+                        <button onclick="Storage.openCart('@storage.Ncard')">Карточка</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
-                        foreach (var excel in Model.Excels)
-                        {
-                            if (storage.Ncard == excel.Ncard)
-                            {
-                                className = storage.Nis + storage.Nuse == excel.Nadd ? "compare_good" : "compare_bad";
-
-                                <tr class="@className">
-                                    <td>@storage.Ncard</td>
-                                    <td>@storage.Name</td>
-                                    <td>@storage.Date.ToString("d MMMM yyyy")</td>
-                                    <td>@storage.Uchet</td>
-                                    <td>@storage.Nis</td>
-                                    <td>@storage.Nuse</td>
-                                    <td>@excel.Nadd</td>
-                                    <td>
-                                        <button onclick="Storage.openCart('@storage.Ncard')">Карточка</button>
-                                    </td>
-                                </tr>
-                                
-                                break;
-                            }
-                        }
-                    }
-                    @foreach (var excel in Model.Excels)
-                    {
-                        bool isFound = false;
-
-                        foreach (var storage in Model.Storages)
-                        {
-                            if (storage.Ncard == excel.Ncard)
-                            {
-                                isFound = true;
-                                break;
-                            }
-                        }
-
-                        if (!isFound)
-                        {
-                            <tr class="compare_not_found">
-                                <td name="Ncard">@excel.Ncard</td>
-                                <td name="Name">@excel.Name</td>
-                                <td>@excel.Date.ToString("d MMMM yyyy")</td>
-                                <td name="Uchet">@excel.Uchet</td>
-                                <td insert="Nis">не найдено на складе</td>
-                                <td insert="Nuse">не найдено на складе</td>
-                                <td name="Nadd">@excel.Nadd</td>
-                                <td>
-                                    <button onclick="Storage.addExcelToStorage(this)">Добавить на складе</button>
-                                </td>
-                                <td class="hide" name="Date">@excel.Date.ToString("dd.MM.yyyy")</td>
-                                <td class="hide" name="Price">@excel.Price</td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
-            
-        </div>
-    </div>
-
-    <div id="cart" class="cart-new"></div>
-
+@section scripts {
     <script src="~/Content/lib/jquery-3.3.1.min.js"></script>
     <script src="~/Content/js/core.js"></script>
     <script>
@@ -160,12 +164,10 @@
             },
 
             openCart(ncard) {
-                $("#cart").load("/devin/asp/storage_cart.asp?id=" + ncard + "&r=" + Math.random()).fadeIn(150);
+                $("#cart").load("@Url.Action("", "asp")/storage_cart.asp?id=" + ncard + "&r=" + Math.random()).fadeIn(150);
                 $(".selected").removeClass("selected");
                 $("#" + ncard).addClass("selected");
             }
         };
     </script>
-</body>
-
-</html>
+}

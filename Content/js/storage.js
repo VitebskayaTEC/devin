@@ -24,9 +24,12 @@ function search(input) {
 }
 
 function cartOpenBack() {
-    $("#cart").attr("class", "cart-new").load("/devin/asp/storage_cart.asp?id=" + id + "&r=" + Math.random()).fadeIn(150);
-    $(".selected").removeClass("selected");
-    $("#" + id).addClass("selected");
+    $.get(links.cart, { id: id }, data => {
+        document.getElementById('cart').innerHTML = data;
+        $('cart').fadeIn(100);
+        document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+        document.getElementById(id).classList.add('selected');
+    });
 }
 
 function cartHistory() {
@@ -64,7 +67,7 @@ function cartRepair() {
 
 function cartSave() {
     $.post("/devin/exes/storage/storage_save_cart.asp?id=" + id + "&r=" + Math.random(), $("form").serialize(), function (data) {
-        // Обновление view по новым данным
+        // РћР±РЅРѕРІР»РµРЅРёРµ view РїРѕ РЅРѕРІС‹Рј РґР°РЅРЅС‹Рј
         if (document.location.search.indexOf("text=") < 0) {
             $.get("/devin/storages/list?r=" + Math.random(), function (data) {
                 $("#view").html(data);
@@ -134,93 +137,93 @@ function storagesToGroup() {
 
 
 /*
-Окно создания группы ремонтов для выбранных позиций
+РћРєРЅРѕ СЃРѕР·РґР°РЅРёСЏ РіСЂСѓРїРїС‹ СЂРµРјРѕРЅС‚РѕРІ РґР»СЏ РІС‹Р±СЂР°РЅРЅС‹С… РїРѕР·РёС†РёР№
 */
 
-// Проверка вводимого значения количества на соответствие допустимым условиям
+// РџСЂРѕРІРµСЂРєР° РІРІРѕРґРёРјРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ РєРѕР»РёС‡РµСЃС‚РІР° РЅР° СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРµ РґРѕРїСѓСЃС‚РёРјС‹Рј СѓСЃР»РѕРІРёСЏРј
 function verifyCounts(input) {
-    // Определяем позицию, с которой будем работать
+    // РћРїСЂРµРґРµР»СЏРµРј РїРѕР·РёС†РёСЋ, СЃ РєРѕС‚РѕСЂРѕР№ Р±СѓРґРµРј СЂР°Р±РѕС‚Р°С‚СЊ
     var tr = input.parentNode.parentNode;
 
-    // Проверка, является ли введенное значение целым числом
+    // РџСЂРѕРІРµСЂРєР°, СЏРІР»СЏРµС‚СЃСЏ Р»Рё РІРІРµРґРµРЅРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ С†РµР»С‹Рј С‡РёСЃР»РѕРј
     if (isNaN(input.value) || (input.value.indexOf(".") > -1) || (input.value.indexOf(",") > -1)) {
         input.value = "0";
         return;
     }
 
-    // Расчет общего введенного количества деталей 
+    // Р Р°СЃС‡РµС‚ РѕР±С‰РµРіРѕ РІРІРµРґРµРЅРЅРѕРіРѕ РєРѕР»РёС‡РµСЃС‚РІР° РґРµС‚Р°Р»РµР№ 
     var allVals = 0,
         query = "." + tr.className;
     for (var i = 0, allInputs = tr.parentNode.querySelectorAll(query); i < allInputs.length; i++)
         if (allInputs[i].querySelector(".number") != input && !allInputs[i].getElementsByTagName("input")[1].checked)
             allVals += +allInputs[i].querySelector(".number").value;
 
-        // Расчет допустимого кол-ва деталей для данной строки и проверка на вхождение в допустимый диапазон
+        // Р Р°СЃС‡РµС‚ РґРѕРїСѓСЃС‚РёРјРѕРіРѕ РєРѕР»-РІР° РґРµС‚Р°Р»РµР№ РґР»СЏ РґР°РЅРЅРѕР№ СЃС‚СЂРѕРєРё Рё РїСЂРѕРІРµСЂРєР° РЅР° РІС…РѕР¶РґРµРЅРёРµ РІ РґРѕРїСѓСЃС‚РёРјС‹Р№ РґРёР°РїР°Р·РѕРЅ
     var val = +input.value,
         max = +tr.querySelector("span").innerHTML - allVals;
     if (val < 0) input.value = 0;
     if (val > max && !tr.getElementsByTagName("input")[1].checked) input.value = max;
 }
 
-// Проверка количества в строке при удалении флага "виртуальный ремонт"
+// РџСЂРѕРІРµСЂРєР° РєРѕР»РёС‡РµСЃС‚РІР° РІ СЃС‚СЂРѕРєРµ РїСЂРё СѓРґР°Р»РµРЅРёРё С„Р»Р°РіР° "РІРёСЂС‚СѓР°Р»СЊРЅС‹Р№ СЂРµРјРѕРЅС‚"
 function virtualVerifyCounts(checkbox) {
     if (!checkbox.checked) {
-        // Определяем позицию, с которой будем работать
+        // РћРїСЂРµРґРµР»СЏРµРј РїРѕР·РёС†РёСЋ, СЃ РєРѕС‚РѕСЂРѕР№ Р±СѓРґРµРј СЂР°Р±РѕС‚Р°С‚СЊ
         var tr = checkbox.parentNode.parentNode;
         var input = tr.querySelector(".number");
 
-        // Расчет общего введенного количества деталей 
+        // Р Р°СЃС‡РµС‚ РѕР±С‰РµРіРѕ РІРІРµРґРµРЅРЅРѕРіРѕ РєРѕР»РёС‡РµСЃС‚РІР° РґРµС‚Р°Р»РµР№ 
         var allVals = 0,
             query = "." + tr.className;
         for (var i = 0, allInputs = tr.parentNode.querySelectorAll(query); i < allInputs.length; i++)
             if (allInputs[i] != tr && !allInputs[i].getElementsByTagName("input")[1].checked)
                 allVals += +allInputs[i].querySelector(".number").value;
 
-            // Расчет допустимого кол-ва деталей для данной строки и проверка на вхождение в допустимый диапазон
+            // Р Р°СЃС‡РµС‚ РґРѕРїСѓСЃС‚РёРјРѕРіРѕ РєРѕР»-РІР° РґРµС‚Р°Р»РµР№ РґР»СЏ РґР°РЅРЅРѕР№ СЃС‚СЂРѕРєРё Рё РїСЂРѕРІРµСЂРєР° РЅР° РІС…РѕР¶РґРµРЅРёРµ РІ РґРѕРїСѓСЃС‚РёРјС‹Р№ РґРёР°РїР°Р·РѕРЅ
         var val = +input.value,
             max = +tr.querySelector("span").innerHTML - allVals;
         if (val > max) input.value = max;
     }
 }
 
-// Разделение позиций
+// Р Р°Р·РґРµР»РµРЅРёРµ РїРѕР·РёС†РёР№
 function separatePosition(a) {
-    // Определяем позицию, с которой будем работать
+    // РћРїСЂРµРґРµР»СЏРµРј РїРѕР·РёС†РёСЋ, СЃ РєРѕС‚РѕСЂРѕР№ Р±СѓРґРµРј СЂР°Р±РѕС‚Р°С‚СЊ
     var tr = a.parentNode.parentNode;
 
-    // Обновляем текущее значение количества у копируемой строки, чтобы новая сумма выбранных элементов не превысила кол-во на складе
+    // РћР±РЅРѕРІР»СЏРµРј С‚РµРєСѓС‰РµРµ Р·РЅР°С‡РµРЅРёРµ РєРѕР»РёС‡РµСЃС‚РІР° Сѓ РєРѕРїРёСЂСѓРµРјРѕР№ СЃС‚СЂРѕРєРё, С‡С‚РѕР±С‹ РЅРѕРІР°СЏ СЃСѓРјРјР° РІС‹Р±СЂР°РЅРЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ РЅРµ РїСЂРµРІС‹СЃРёР»Р° РєРѕР»-РІРѕ РЅР° СЃРєР»Р°РґРµ
     //var oldVal = tr.querySelector(".number").value;
     //tr.querySelector(".number").value = (+oldVal > 0 ? (+oldVal - 1) : 0);
 
-    // Зануляем значение количества у новой строки-копии
+    // Р—Р°РЅСѓР»СЏРµРј Р·РЅР°С‡РµРЅРёРµ РєРѕР»РёС‡РµСЃС‚РІР° Сѓ РЅРѕРІРѕР№ СЃС‚СЂРѕРєРё-РєРѕРїРёРё
     var newTr = tr.cloneNode(true);
     newTr.querySelector(".number").value = 0;
 
-    // Вставка скопированной строки
+    // Р’СЃС‚Р°РІРєР° СЃРєРѕРїРёСЂРѕРІР°РЅРЅРѕР№ СЃС‚СЂРѕРєРё
     tr.parentNode.insertBefore(newTr, tr);
 
-    // Проверка количества строк, оно не должно превышать кол-во на складе. Если кол-во строк достигло кол-ва на складе, скрываем кнопку-разделитель
+    // РџСЂРѕРІРµСЂРєР° РєРѕР»РёС‡РµСЃС‚РІР° СЃС‚СЂРѕРє, РѕРЅРѕ РЅРµ РґРѕР»Р¶РЅРѕ РїСЂРµРІС‹С€Р°С‚СЊ РєРѕР»-РІРѕ РЅР° СЃРєР»Р°РґРµ. Р•СЃР»Рё РєРѕР»-РІРѕ СЃС‚СЂРѕРє РґРѕСЃС‚РёРіР»Рѕ РєРѕР»-РІР° РЅР° СЃРєР»Р°РґРµ, СЃРєСЂС‹РІР°РµРј РєРЅРѕРїРєСѓ-СЂР°Р·РґРµР»РёС‚РµР»СЊ
     //var $allTrs = $(tr).parent().find("." + tr.className), val = +tr.querySelector("span").innerHTML;
     //if (val == $allTrs.length) $allTrs.find(".pos-separate").css("display", "none");
 }
 
-// Удаление позиции
+// РЈРґР°Р»РµРЅРёРµ РїРѕР·РёС†РёРё
 function removePosition(a) {
-    // Определяем позицию, с которой будем работать, и ее класс, чтобы знать о остальных строках этой позиции
+    // РћРїСЂРµРґРµР»СЏРµРј РїРѕР·РёС†РёСЋ, СЃ РєРѕС‚РѕСЂРѕР№ Р±СѓРґРµРј СЂР°Р±РѕС‚Р°С‚СЊ, Рё РµРµ РєР»Р°СЃСЃ, С‡С‚РѕР±С‹ Р·РЅР°С‚СЊ Рѕ РѕСЃС‚Р°Р»СЊРЅС‹С… СЃС‚СЂРѕРєР°С… СЌС‚РѕР№ РїРѕР·РёС†РёРё
     var tr = a.parentNode.parentNode;
 
-    // Проверяем кол-во строк, если оно меньше, чем кол-во на складе, показываем кнопку-разделитель
+    // РџСЂРѕРІРµСЂСЏРµРј РєРѕР»-РІРѕ СЃС‚СЂРѕРє, РµСЃР»Рё РѕРЅРѕ РјРµРЅСЊС€Рµ, С‡РµРј РєРѕР»-РІРѕ РЅР° СЃРєР»Р°РґРµ, РїРѕРєР°Р·С‹РІР°РµРј РєРЅРѕРїРєСѓ-СЂР°Р·РґРµР»РёС‚РµР»СЊ
     //var $allTrs = $(tr).parent().find("." + pos), val = +tr.querySelector("span").innerHTML;
     //if (val > $allTrs.length - 1) $allTrs.find(".pos-separate").css("display", "inline");
 
-    // Удаляем строку
+    // РЈРґР°Р»СЏРµРј СЃС‚СЂРѕРєСѓ
     tr.parentNode.removeChild(tr);
 
-    // Проверяем, остались ли еще позиции для ремонта
+    // РџСЂРѕРІРµСЂСЏРµРј, РѕСЃС‚Р°Р»РёСЃСЊ Р»Рё РµС‰Рµ РїРѕР·РёС†РёРё РґР»СЏ СЂРµРјРѕРЅС‚Р°
     if (document.getElementById("repairs-positions").getElementsByTagName("tr").length == 0) cartClose();
 }
 
-// Обновление количества используемых деталей в ремонте при изменении объекта ремонта
+// РћР±РЅРѕРІР»РµРЅРёРµ РєРѕР»РёС‡РµСЃС‚РІР° РёСЃРїРѕР»СЊР·СѓРµРјС‹С… РґРµС‚Р°Р»РµР№ РІ СЂРµРјРѕРЅС‚Рµ РїСЂРё РёР·РјРµРЅРµРЅРёРё РѕР±СЉРµРєС‚Р° СЂРµРјРѕРЅС‚Р°
 function changeDevice(select) {
     var input = select.parentNode.parentNode.querySelector(".number");
     if (select.value == "0") {
@@ -230,7 +233,7 @@ function changeDevice(select) {
     }
 }
 
-// Сохранение выбранных ремонтов 
+// РЎРѕС…СЂР°РЅРµРЅРёРµ РІС‹Р±СЂР°РЅРЅС‹С… СЂРµРјРѕРЅС‚РѕРІ 
 function createRepairs() {
     var trs = document.getElementById("repairs-positions").getElementsByTagName("tr");
     var form = "allrepairs=";
@@ -245,28 +248,32 @@ function createRepairs() {
 
     $.post("/devin/exes/storage/storage_create_repairs.asp?r=" + Math.random(), form, function(data) {
 
-            // Удаляем возможность повторной отправки запроса при успешной обработке запроса
+            // РЈРґР°Р»СЏРµРј РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ РїРѕРІС‚РѕСЂРЅРѕР№ РѕС‚РїСЂР°РІРєРё Р·Р°РїСЂРѕСЃР° РїСЂРё СѓСЃРїРµС€РЅРѕР№ РѕР±СЂР°Р±РѕС‚РєРµ Р·Р°РїСЂРѕСЃР°
             $(".cart-overflow > table").remove();
             $("#off-group").remove();
             $("#cart").find(".cart-menu td:first-child").remove();
 
-            // Выводим ссылку на группу списаний, либо в приложение "ремонты"
+            // Р’С‹РІРѕРґРёРј СЃСЃС‹Р»РєСѓ РЅР° РіСЂСѓРїРїСѓ СЃРїРёСЃР°РЅРёР№, Р»РёР±Рѕ РІ РїСЂРёР»РѕР¶РµРЅРёРµ "СЂРµРјРѕРЅС‚С‹"
             document.getElementById("console").innerHTML = data;
         })
         .fail(function() {
-            document.getElementById("console").innerHTML = "Произошла ошибка при обработке формы";
+            document.getElementById("console").innerHTML = "РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° РїСЂРё РѕР±СЂР°Р±РѕС‚РєРµ С„РѕСЂРјС‹";
         });
 }
 
 
 
 function excelExports() {
-    $.post("/devin/storages/labels", selectionToForm("select", ";"), function(data) {
-        $("#view").load("/devin/storages/list?r=" + Math.random());
-        document.getElementById("excelExportsLink").innerHTML = data;
-        $('#excelExports').slideDown(100);
+    $.post(links.labels, selectionToForm("select", ";"), data => {
+
+        let a = document.createElement('a');
+        a.href = data;
+        a.download = '';
+        a.click();
+
+        removeAllSelection();
     });
-    removeAllSelection();
+    
 }
 
 function closeExportsPanel() {

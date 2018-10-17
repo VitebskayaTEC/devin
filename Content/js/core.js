@@ -1,5 +1,5 @@
-// Обслуживание текстовых полей ввода с классом def, предполагающих наличие в пустом поле поясняющего текста
-// Поясняющий текст указывается через атрибут def для каждого из текстовых полей
+// РћР±СЃР»СѓР¶РёРІР°РЅРёРµ С‚РµРєСЃС‚РѕРІС‹С… РїРѕР»РµР№ РІРІРѕРґР° СЃ РєР»Р°СЃСЃРѕРј def, РїСЂРµРґРїРѕР»Р°РіР°СЋС‰РёС… РЅР°Р»РёС‡РёРµ РІ РїСѓСЃС‚РѕРј РїРѕР»Рµ РїРѕСЏСЃРЅСЏСЋС‰РµРіРѕ С‚РµРєСЃС‚Р°
+// РџРѕСЏСЃРЅСЏСЋС‰РёР№ С‚РµРєСЃС‚ СѓРєР°Р·С‹РІР°РµС‚СЃСЏ С‡РµСЂРµР· Р°С‚СЂРёР±СѓС‚ def РґР»СЏ РєР°Р¶РґРѕРіРѕ РёР· С‚РµРєСЃС‚РѕРІС‹С… РїРѕР»РµР№
 $("input.def").each(function () {
     this.setAttribute("placeholder", this.getAttribute("def"));
     _blur(this);
@@ -24,9 +24,9 @@ function _focus(input) {
 }
 
 
-// Работа с cookie значениями
-// Можно устанавливать и читать значения
-// Для удаления значения необходимо выполнить установку значения, но указать при этом expires: -1
+// Р Р°Р±РѕС‚Р° СЃ cookie Р·РЅР°С‡РµРЅРёСЏРјРё
+// РњРѕР¶РЅРѕ СѓСЃС‚Р°РЅР°РІР»РёРІР°С‚СЊ Рё С‡РёС‚Р°С‚СЊ Р·РЅР°С‡РµРЅРёСЏ
+// Р”Р»СЏ СѓРґР°Р»РµРЅРёСЏ Р·РЅР°С‡РµРЅРёСЏ РЅРµРѕР±С…РѕРґРёРјРѕ РІС‹РїРѕР»РЅРёС‚СЊ СѓСЃС‚Р°РЅРѕРІРєСѓ Р·РЅР°С‡РµРЅРёСЏ, РЅРѕ СѓРєР°Р·Р°С‚СЊ РїСЂРё СЌС‚РѕРј expires: -1
 function getCookie(name) {
 	var matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
 	return matches ? decodeURIComponent(matches[1]) : undefined;
@@ -52,7 +52,7 @@ function setCookie(name, value, options) {
 }
 
 
-/** Поиск по строкам таблицы */
+/** РџРѕРёСЃРє РїРѕ СЃС‚СЂРѕРєР°Рј С‚Р°Р±Р»РёС†С‹ */
 function _search(input, allTable) {
 
     if (allTable) {
@@ -89,10 +89,10 @@ function _search(input, allTable) {
 }
 
 
-/** Контекстные меню */
+/** РљРѕРЅС‚РµРєСЃС‚РЅС‹Рµ РјРµРЅСЋ */
 var when, menuId;
 
-/** Контекстное меню по клику */
+/** РљРѕРЅС‚РµРєСЃС‚РЅРѕРµ РјРµРЅСЋ РїРѕ РєР»РёРєСѓ */
 function _menu(obj) {
 	$(".context-menu:visible").css("display", "none");
 	clearTimeout(when);
@@ -110,16 +110,16 @@ function _menu(obj) {
 
 
 /**
- * Диалоговые окна для взаимодействия с пользователем и выполнения несложных операций
- * Должно предусматривать:
- * выбор варианта/отмена
- * подтверждение/отмена
- * ввод данных/отмена
- * уведомление
+ * Р”РёР°Р»РѕРіРѕРІС‹Рµ РѕРєРЅР° РґР»СЏ РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёСЏ СЃ РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј Рё РІС‹РїРѕР»РЅРµРЅРёСЏ РЅРµСЃР»РѕР¶РЅС‹С… РѕРїРµСЂР°С†РёР№
+ * Р”РѕР»Р¶РЅРѕ РїСЂРµРґСѓСЃРјР°С‚СЂРёРІР°С‚СЊ:
+ * РІС‹Р±РѕСЂ РІР°СЂРёР°РЅС‚Р°/РѕС‚РјРµРЅР°
+ * РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ/РѕС‚РјРµРЅР°
+ * РІРІРѕРґ РґР°РЅРЅС‹С…/РѕС‚РјРµРЅР°
+ * СѓРІРµРґРѕРјР»РµРЅРёРµ
  * */
 function _modal(target, source, handler) {
 
-	// Скрытие всех активных меню
+	// РЎРєСЂС‹С‚РёРµ РІСЃРµС… Р°РєС‚РёРІРЅС‹С… РјРµРЅСЋ
 	$(".context-menu:visible").css("display", "none");
 	clearTimeout(when);
 
@@ -132,7 +132,7 @@ function _modal(target, source, handler) {
 }
 
 
-/** Функционал групп */
+/** Р¤СѓРЅРєС†РёРѕРЅР°Р» РіСЂСѓРїРї */
 function _group() {
 	var _in;
 	$("tr.item,div.group").each(function() {
@@ -152,30 +152,30 @@ var path = document.location.pathname.split("/"),
 	url = path[path.length - 2];
 
 function groupCreate() {
-	var title = prompt("Название группы: ", "Новая группа (" + (new Date).toLocaleString() + ")");
+	var title = prompt("РќР°Р·РІР°РЅРёРµ РіСЂСѓРїРїС‹: ", "РќРѕРІР°СЏ РіСЂСѓРїРїР° (" + (new Date).toLocaleString() + ")");
 	if (title != null) {
 		$.post("/devin/exes/core/core_create_group.asp?r=" + Math.random(), "app=" + url + "&title=" + encodeURIComponent(title), restore);
 	}
 }
 
 function groupCreateInner() {
-	var title = prompt("Название группы: ", "Новая группа (" + (new Date).toLocaleString() + ")");
+	var title = prompt("РќР°Р·РІР°РЅРёРµ РіСЂСѓРїРїС‹: ", "РќРѕРІР°СЏ РіСЂСѓРїРїР° (" + (new Date).toLocaleString() + ")");
 	if (title != null) {
 		$.post("/devin/exes/core/core_create_group_inner.asp?r=" + Math.random(), "app=" + url + "&in=" + menuId.slice(2) + "&title=" + encodeURIComponent(title), restore);
 	}
 }
 
 function groupBeforeMove() {
-	var obj = $("#" + menuId).closest(".unit"); // Получаем ссылку на группу, относительн которой будет спозиционировано меню
-	var exceptions = []; // Массив возможных вариантов для перемещени данной группы
+	var obj = $("#" + menuId).closest(".unit"); // РџРѕР»СѓС‡Р°РµРј СЃСЃС‹Р»РєСѓ РЅР° РіСЂСѓРїРїСѓ, РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅ РєРѕС‚РѕСЂРѕР№ Р±СѓРґРµС‚ СЃРїРѕР·РёС†РёРѕРЅРёСЂРѕРІР°РЅРѕ РјРµРЅСЋ
+	var exceptions = []; // РњР°СЃСЃРёРІ РІРѕР·РјРѕР¶РЅС‹С… РІР°СЂРёР°РЅС‚РѕРІ РґР»СЏ РїРµСЂРµРјРµС‰РµРЅРё РґР°РЅРЅРѕР№ РіСЂСѓРїРїС‹
 
-	// Составляем список исключений
-	exceptions.push(menuId); // Сама перемещаемая группа
-	exceptions.push($(obj).parent().closest(".group").attr("id")); // Группа, в которой аходится перемещаемая (на 1 уровне вложенности)
-	$(obj).find(".group").each(function() { exceptions.push(this.id) }); // Все группы, вложенные в перемещаемую
+	// РЎРѕСЃС‚Р°РІР»СЏРµРј СЃРїРёСЃРѕРє РёСЃРєР»СЋС‡РµРЅРёР№
+	exceptions.push(menuId); // РЎР°РјР° РїРµСЂРµРјРµС‰Р°РµРјР°СЏ РіСЂСѓРїРїР°
+	exceptions.push($(obj).parent().closest(".group").attr("id")); // Р“СЂСѓРїРїР°, РІ РєРѕС‚РѕСЂРѕР№ Р°С…РѕРґРёС‚СЃСЏ РїРµСЂРµРјРµС‰Р°РµРјР°СЏ (РЅР° 1 СѓСЂРѕРІРЅРµ РІР»РѕР¶РµРЅРЅРѕСЃС‚Рё)
+	$(obj).find(".group").each(function() { exceptions.push(this.id) }); // Р’СЃРµ РіСЂСѓРїРїС‹, РІР»РѕР¶РµРЅРЅС‹Рµ РІ РїРµСЂРµРјРµС‰Р°РµРјСѓСЋ
 
-	// Составляем список доступных вариантов для перемещения
-	var select = "<option value='0'>Расположить отдельно";
+	// РЎРѕСЃС‚Р°РІР»СЏРµРј СЃРїРёСЃРѕРє РґРѕСЃС‚СѓРїРЅС‹С… РІР°СЂРёР°РЅС‚РѕРІ РґР»СЏ РїРµСЂРµРјРµС‰РµРЅРёСЏ
+	var select = "<option value='0'>Р Р°СЃРїРѕР»РѕР¶РёС‚СЊ РѕС‚РґРµР»СЊРЅРѕ";
 	$("div.group").each(function() {
 		var exception = false;
 		for (var i = 0; i < exceptions.length; i++)
@@ -201,7 +201,7 @@ function groupMove() {
 }
 
 function groupEdit() {
-	var title = prompt("Название группы: ", $("#" + menuId).find("th").first().text());
+	var title = prompt("РќР°Р·РІР°РЅРёРµ РіСЂСѓРїРїС‹: ", $("#" + menuId).find("th").first().text());
 	if (title != null) {
 		$.post("/devin/exes/core/core_edit_group.asp?r=" + Math.random(), "gid=" + menuId.slice(2) + "&title=" + encodeURIComponent(title), function() {
 			//restore();
@@ -218,14 +218,10 @@ function groupDelete() {
 	$.post("/devin/exes/core/core_delete_group.asp?r=" + Math.random(), "app=" + url + "&gid=" + menuId.slice(2), restore);
 }
 
-var restore = function() {
-	$.get("./list" + Math.random(), function(data) {
-		$("#view").html(data);
-	});
-}
+var restore = () => $.get('./list', data => document.getElementById('view').innerHTML = data);
 
 
-/* Drag-n-drop функционал */
+/* Drag-n-drop С„СѓРЅРєС†РёРѕРЅР°Р» */
 if (document.getElementById('cart')) {
     try {
         $("#cart")
@@ -240,13 +236,13 @@ if (document.getElementById('cart')) {
 
 
 /**
- * Сортировка в таблице по столбцу
- * Для его корректной работы нужно четко указать элементы thead и tbody, а так же прописать тип данных в столбце для каждого th в thead
- * Типы для сортировки:
- * number - приведение к числовому значению
- * date - приведение к дате, работает с форматами дд.мм.гггг
- * string - алфавитное сравнение
- * type - алфавитное сравнение по имени класса элемента div в ячейке
+ * РЎРѕСЂС‚РёСЂРѕРІРєР° РІ С‚Р°Р±Р»РёС†Рµ РїРѕ СЃС‚РѕР»Р±С†Сѓ
+ * Р”Р»СЏ РµРіРѕ РєРѕСЂСЂРµРєС‚РЅРѕР№ СЂР°Р±РѕС‚С‹ РЅСѓР¶РЅРѕ С‡РµС‚РєРѕ СѓРєР°Р·Р°С‚СЊ СЌР»РµРјРµРЅС‚С‹ thead Рё tbody, Р° С‚Р°Рє Р¶Рµ РїСЂРѕРїРёСЃР°С‚СЊ С‚РёРї РґР°РЅРЅС‹С… РІ СЃС‚РѕР»Р±С†Рµ РґР»СЏ РєР°Р¶РґРѕРіРѕ th РІ thead
+ * РўРёРїС‹ РґР»СЏ СЃРѕСЂС‚РёСЂРѕРІРєРё:
+ * number - РїСЂРёРІРµРґРµРЅРёРµ Рє С‡РёСЃР»РѕРІРѕРјСѓ Р·РЅР°С‡РµРЅРёСЋ
+ * date - РїСЂРёРІРµРґРµРЅРёРµ Рє РґР°С‚Рµ, СЂР°Р±РѕС‚Р°РµС‚ СЃ С„РѕСЂРјР°С‚Р°РјРё РґРґ.РјРј.РіРіРіРі
+ * string - Р°Р»С„Р°РІРёС‚РЅРѕРµ СЃСЂР°РІРЅРµРЅРёРµ
+ * type - Р°Р»С„Р°РІРёС‚РЅРѕРµ СЃСЂР°РІРЅРµРЅРёРµ РїРѕ РёРјРµРЅРё РєР»Р°СЃСЃР° СЌР»РµРјРµРЅС‚Р° div РІ СЏС‡РµР№РєРµ
  * */
 function _sort(th) {
 	function to_date(s) {
@@ -276,9 +272,7 @@ function _sort(th) {
 	for (var i = 0; i < tbody.rows.length; i++) rowsArray.push(tbody.rows[i]);
 	switch (type) {
 		case 'number':
-			compare = function(rowA, rowB) {
-				if (way == "up") { return rowA.cells[colNum].innerHTML - rowB.cells[colNum].innerHTML; } else { return rowB.cells[colNum].innerHTML - rowA.cells[colNum].innerHTML; };
-			};
+			compare = (rowA, rowB) => (way == "up") ? rowA.cells[colNum].innerHTML - rowB.cells[colNum].innerHTML : rowB.cells[colNum].innerHTML - rowA.cells[colNum].innerHTML;
 			break;
 		case 'string':
 			compare = function(rowA, rowB) {
@@ -318,8 +312,8 @@ function _sort(th) {
 }
 
 /*
-Реализация истории браузера с учетом ajax вьювов через location.hash
-Функция cartOpenBack отдается на откуп конкретному приложению, для корректной обработки типа открываемого элемента
+Р РµР°Р»РёР·Р°С†РёСЏ РёСЃС‚РѕСЂРёРё Р±СЂР°СѓР·РµСЂР° СЃ СѓС‡РµС‚РѕРј ajax РІСЊСЋРІРѕРІ С‡РµСЂРµР· location.hash
+Р¤СѓРЅРєС†РёСЏ cartOpenBack РѕС‚РґР°РµС‚СЃСЏ РЅР° РѕС‚РєСѓРї РєРѕРЅРєСЂРµС‚РЅРѕРјСѓ РїСЂРёР»РѕР¶РµРЅРёСЋ, РґР»СЏ РєРѕСЂСЂРµРєС‚РЅРѕР№ РѕР±СЂР°Р±РѕС‚РєРё С‚РёРїР° РѕС‚РєСЂС‹РІР°РµРјРѕРіРѕ СЌР»РµРјРµРЅС‚Р°
 */
 var id = "",
 	hashSet = true;
@@ -357,9 +351,9 @@ function cartClose() {
 
 
 /**
- * Мульти-выбор табличных элементов (универсальный)
- * Все действия с выбранными элементами реализуются в div#selected и собственных обработчиках
- * Для обработки списка выбранных элементов используется глобальный массив selected и сериализующая его функция selectionToForm(имя, разделитель)
+ * РњСѓР»СЊС‚Рё-РІС‹Р±РѕСЂ С‚Р°Р±Р»РёС‡РЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ (СѓРЅРёРІРµСЂСЃР°Р»СЊРЅС‹Р№)
+ * Р’СЃРµ РґРµР№СЃС‚РІРёСЏ СЃ РІС‹Р±СЂР°РЅРЅС‹РјРё СЌР»РµРјРµРЅС‚Р°РјРё СЂРµР°Р»РёР·СѓСЋС‚СЃСЏ РІ div#selected Рё СЃРѕР±СЃС‚РІРµРЅРЅС‹С… РѕР±СЂР°Р±РѕС‚С‡РёРєР°С…
+ * Р”Р»СЏ РѕР±СЂР°Р±РѕС‚РєРё СЃРїРёСЃРєР° РІС‹Р±СЂР°РЅРЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РіР»РѕР±Р°Р»СЊРЅС‹Р№ РјР°СЃСЃРёРІ selected Рё СЃРµСЂРёР°Р»РёР·СѓСЋС‰Р°СЏ РµРіРѕ С„СѓРЅРєС†РёСЏ selectionToForm(РёРјСЏ, СЂР°Р·РґРµР»РёС‚РµР»СЊ)
  * */
 $(".view")
 	.on("change", ".items input.selecter-all", function() { setAllSelection(this) })

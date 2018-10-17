@@ -29,8 +29,13 @@
         var sortText = '@Request.QueryString.Get("search")';
         $('.view')
             .on('mousedown', '.unit:not(#solo) .caption th', function () { toggle(this) })
-            .on('mousedown', '.items thead th:not(:first-child)', function () { _sort(this) })
-            .on('mousedown', '.items tbody td', function () { cartOpen(this) })
+            .on('mousedown', '.items thead th:not(:first-child)', function () { _sort(this) });
+
+        let links = {
+            labels: '@Url.Action("labels", "storages")',
+            list: '@Url.Action("list", "storages")',
+            cart: '@Url.Action("storage_cart.asp", "asp")'
+        }
     </script>
 }
 

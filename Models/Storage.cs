@@ -8,6 +8,7 @@ namespace Devin.Models
 
         public string Name { get; set; }
 
+        [Slapper.AutoMapper.Id]
         public string Ncard { get; set; }
 
         public string Class_Name { get; set; }
@@ -40,6 +41,27 @@ namespace Devin.Models
             else if (Nadd == Nbreak) return "off";
             else if (Nis == 0 || Nuse > 0) return "onwork";
             else return "on";
+        }
+
+        public float RealCost()
+        {
+            var realCost = Price;
+
+            if (Price == 0)
+            {
+                realCost = 24.5F;
+            }
+
+            if (Uchet == "10.5.1")
+            {
+                realCost = realCost * 1.2F;
+            }
+            else
+            {
+                realCost = realCost * 2.4F;
+            }
+
+            return realCost;
         }
     }
 }

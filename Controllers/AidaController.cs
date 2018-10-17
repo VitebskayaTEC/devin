@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Devin.Models;
+using System.Linq;
 using System.Web.Mvc;
 
 namespace Devin.Controllers
@@ -9,8 +10,22 @@ namespace Devin.Controllers
         public ActionResult Index() => View();
 
         public ActionResult List() => View();
-
-        public ActionResult Cart(int Id) => View(model: Id);
+        
+        public ActionResult Cart(string Id)
+        {
+            if (int.TryParse(Id, out int i))
+            {
+                return View(model: i);
+            }
+            else
+            {
+                using (var conn = Database.Connection())
+                {
+                    int id = conn.Query<int>("SELECT Max(Id) FROM Record WHERE UPPER(RHost) = UPPER(@Id)", new { Id }).FirstOrDefault();
+                    return View(model: id);
+                }
+            }
+        }
 
         public void Delete(int Id)
         {

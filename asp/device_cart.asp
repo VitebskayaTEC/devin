@@ -417,7 +417,7 @@
 		<td onclick='deviceToRepair()'>Ремонт</td>
 
 		<% if cls = "CMP" then %>
-		<td onclick='cartAida()'>Everest</td>
+		<td onclick='cartAida("<%=keys("name")%>")'>Everest</td>
 		<td onclick='cartHistory("<%=keys("name")%>")'>История по имени</td>
 
 		<% end if %>

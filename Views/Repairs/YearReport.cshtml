@@ -1,0 +1,96 @@
+﻿@{
+    ViewBag.Title = "DEVIN | Ремонты";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/content/css/repair.css" />
+}
+
+@section scripts {
+    <script src="~/content/lib/jquery-1.12.4.min.js"></script>
+    <script src="~/content/js/core.js"></script>
+    <script>
+        function toggle(node) {
+            $(node).closest('.unit').find('.items_block').slideToggle(100);
+        }
+    </script> 
+}
+
+<div id="summary"></div>
+<br />
+
+@using (var conn = Database.Connection())
+{
+    var writeoffs = AutoMapper.MapDynamic<Writeoff>(conn.Query(@"SELECT
+        w.W_Id              AS Id,
+        w.W_Date            AS [Date],
+        w.W_Name            AS [Name],
+        r.Inum              AS Repairs_Id,
+        r.Units             AS Repairs_Units,
+        (r.Units * s.Price) AS Repairs_StoragePrice,
+        r.Date              AS Repairs_Date,
+        r.Author            AS Repairs_Author,
+        d.number_device     AS Repairs_Device_DeviceNumber,
+        d.name              AS Repairs_Device_Name,
+        d.description       AS Repairs_Device_Description,
+        s.Ncard             AS Repairs_Storage_Ncard,
+        s.Name              AS Repairs_Storage_Name
+    FROM Writeoff w
+    LEFT OUTER JOIN Remont r ON w.W_ID = r.W_ID
+    LEFT OUTER JOIN Device d ON r.Id_D = d.number_device
+    LEFT OUTER JOIN Sklad s  ON r.Id_U = s.Ncard
+    WHERE Year(w.W_Date) = Year(GetDate()) AND r.IfSpis = 1
+    ORDER BY [Date], Id, Repairs_Date, Repairs_Device_DeviceNumber"));
+
+    if (writeoffs.Count() == 0)
+    {
+        <div>На заданный год нет оформленных списаний</div>
+        return;
+    }
+
+    <div style="background: #fff; border: 1px solid #ccc; padding: 10px;">
+        Общая стоимость всех ремонтов за год: @writeoffs.Select(w => w.Repairs.Select(r => r.StoragePrice).Sum()).Sum().ToString("0.00") р.
+    </div>
+
+    foreach (var writeoff in writeoffs)
+    {
+        <div class="unit">
+            <table class="caption" onclick="toggle(this)">
+                <tr>
+                    <td width="80px">@writeoff.Date.ToString("dd.MM.yyyy")</td>
+                    <th width="800px">@writeoff.Name</th>
+                    <td width="140px">Кол-во: @writeoff.Repairs.Select(x => x.Units).Sum()</td>
+                    <td>Стоимость: @writeoff.Repairs.Select(x => x.StoragePrice).Sum().ToString("0.00") р.</td>
+                </tr>
+            </table>
+            <div class="items_block hide">
+                <table class="items">
+                    <thead>
+                        <tr>
+			                <th data-type="string">объект ремонта</th>
+			                <th data-type="string" width="460px">деталь</th>
+			                <th data-type="number" width="50px">кол-во</th>
+			                <th data-type="number" width="80px">стоимость</th>
+			                <th data-type="date" width="160px">дата</th>
+			                <th data-type="string" width="100px">автор</th>
+			            </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var repair in writeoff.Repairs)
+                        {
+                            <tr>
+                                <td><b>@repair.Device.Name</b> @repair.Device.Description</td>
+                                <td>@repair.Storage.Name</td>
+                                <td>@repair.Units</td>
+                                <td>@repair.StoragePrice.ToString("0.00") р.</td>
+                                <td>@repair.Date.ToString("dd.MM.yyyy")</td>
+                                <td>@repair.Author</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+}

@@ -30,7 +30,27 @@
 @section html {
     <div id="selected" class="panel">
         <div>Выбрано элементов: <b></b></div>
-        <div><div id="move_select"><select id="moveKey"></select></div><a onclick="moveSelectedRepairs()">Переместить</a></div>
+        <div>
+            <div id="move_select">
+                <select id="moveKey">
+                @using (var conn = Database.Connection())
+                {
+                    var folders = conn.Query("SELECT G_Id, G_Title FROM [Group] WHERE G_Type = 'repair' ORDER BY G_Title");
+                    foreach (var item in folders)
+                    {
+                        <option value="@item.G_Id">[папка] @item.G_Title</option>
+                    }
+
+                    var writeoffs = conn.Query("SELECT W_Id, W_Name FROM [Writeoff] ORDER BY W_Name");
+                    foreach (var item in writeoffs)
+                    {
+                        <option value="@item.W_Id">[списание] @item.W_Name</option>
+                    }
+                }
+                </select>
+            </div>
+            <a onclick="moveSelectedRepairs()">Переместить</a>
+        </div>
         <div><a onclick="offSelectedRepairs()">Отметить все ремонты как списанные</a></div>
         <div><a onclick="onSelectedRepairs()">Отметить все ремонты как активные</a></div>
         <div><a onclick="deleteSelectedRepairs()">Отменить все ремонты</a></div>
@@ -42,14 +62,14 @@
         <div><a>Закрыть</a></div>
     </div>
 
-    <ul class="context-menu" id="main">
-        <li onclick="location='/devin/analyze/'">Закупка картриджей</li>
-        <li onclick="location='/devin/repair/report_year/'">Годовой отчет по ремонтам</li>
-        <li onclick="location='/devin/repair/cartridges_usage/'">Годовой отчет по картриджам</li>
-        <li onclick="groupCreate()">Создать группу</li>
-        <li onclick="writeoffCreate()">Создать списание</li>
-        <li onclick="writeoffSetup()">Шаблоны списаний</li>
-    </ul>
+    <div class="context-menu" id="main">
+        <a href="~/storages/analyze">Закупка картриджей</a>
+        <a href="~/repairs/yearReport">Годовой отчет по ремонтам</a>
+        <a href="~/repairs/cartridgesUsage">Годовой отчет по картриджам</a>
+        <div onclick="groupCreate()">Создать группу</div>
+        <div onclick="writeoffCreate()">Создать списание</div>
+        <div onclick="writeoffSetup()">Шаблоны списаний</div>
+    </div>
 
     <ul class="context-menu" id="writeoff">
         <li onclick="writeoffOpen()">Открыть карточку</li>

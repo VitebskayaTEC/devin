@@ -4,6 +4,7 @@ namespace Devin.Models
 {
     public class Repair
     {
+        [Slapper.AutoMapper.Id]
         public int Id { get; set; }
 
 

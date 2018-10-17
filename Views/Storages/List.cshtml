@@ -13,7 +13,7 @@
 
     if (!string.IsNullOrEmpty(search))
     {
-        var storages = conn.Query<Storage>(string.Format("SELECT Ncard, Name, Price, Nadd, Date, Nis, Nuse, Nbreak, Uchet, G_ID FROM SKLAD WHERE (Delit > 0) AND ((Ncard LIKE '%{0}%') OR (Name LIKE '%{0}%') OR (Name LIKE '%{0}%') OR (Date LIKE '%{0}%') OR (uchet LIKE '%{0}%')) ORDER BY CAST(Ncard AS int) ORDER BY Date DESC", search)).AsList();
+        var storages = conn.Query<Storage>(string.Format("SELECT Ncard, Name, Price, Nadd, Date, Nis, Nuse, Nbreak, Uchet, G_ID FROM SKLAD WHERE (Delit > 0) AND ((Ncard LIKE '%{0}%') OR (Name LIKE '%{0}%') OR (Name LIKE '%{0}%') OR (Date LIKE '%{0}%') OR (uchet LIKE '%{0}%')) ORDER BY CAST(Ncard AS int)", search)).AsList();
 
         <div class='unit'>
             <table class='caption'>
@@ -139,14 +139,14 @@
                 <tr id="@storage.Ncard" class="item">
                     <td><input type="checkbox" class="selecter" /></td>
                     <td><div class="led @storage.Led()"></div></td>
-                    <td>@storage.Ncard</td>
-                    <td>@storage.Name</td>
-                    <td>@storage.Price</td>
-                    <td>@storage.Nadd</td>
-                    <td>@storage.Date.ToString("dd.MM.yyyy")</td>
-                    <td>@storage.Nis</td>
-                    <td>@storage.Nuse</td>
-                    <td>@storage.Nbreak</td>
+                    <td onclick="cartOpen(this)">@storage.Ncard</td>
+                    <td onclick="cartOpen(this)">@storage.Name</td>
+                    <td onclick="cartOpen(this)">@storage.Price</td>
+                    <td onclick="cartOpen(this)">@storage.Nadd</td>
+                    <td onclick="cartOpen(this)">@storage.Date.ToString("dd.MM.yyyy")</td>
+                    <td onclick="cartOpen(this)">@storage.Nis</td>
+                    <td onclick="cartOpen(this)">@storage.Nuse</td>
+                    <td onclick="cartOpen(this)">@storage.Nbreak</td>
                 </tr>
             }
         </tbody>

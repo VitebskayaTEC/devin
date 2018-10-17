@@ -1,0 +1,175 @@
+﻿@{
+    ViewBag.Title = "DEVIN | Годовой отчет по заменам картриджей";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    DateTime date = DateTime.TryParse("01.01." + (Request.QueryString.Get("year") ?? ""), out DateTime d) ? d : DateTime.Now;
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/content/css/repair.css" />
+}
+
+@section scripts {
+    <script src="~/content/lib/jquery-1.12.4.min.js"></script>
+}
+
+<form action="@Url.Action("cartridgesUsage", "repairs")" method="get" class="filter">
+    Сводная таблица по заменам картриджей на
+    <select name="year">
+        @for (int i = 2016; i < DateTime.Now.Year + 1; i++)
+        {
+            <option value="@i" @(i == date.Year ? "selected" : "")>@i</option>
+        }
+    </select>
+    год &emsp;&emsp;&emsp;
+    <input type="submit" value="Запрос данных" />
+</form>
+<br />
+
+@using (var conn = Database.Connection())
+{
+    var cartridges = AutoMapper.MapDynamic<Cartridge>(conn.Query(@"SELECT
+		c.N       AS [Id],
+        c.Caption AS [Name],
+		r.INum    AS [Repairs_Id],
+        r.Date    AS [Repairs_Date],
+        r.Units   AS [Repairs_Units]
+    FROM Remont r
+    LEFT OUTER JOIN Sklad s
+		LEFT OUTER JOIN Cartridge c ON c.N = s.ID_cart
+    ON s.Ncard = r.ID_U
+    WHERE s.class_name = 'PRN' AND Year(r.Date) = @Year
+    ORDER BY c.Caption", new { date.Year }));
+
+    if (cartridges.Count() > 0)
+    {
+        int[] countsByMonths = new int[12] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+        <table class="stats">
+			<thead>
+				<tr>
+					<th data-type="string">Тип картриджа</th>
+					<th data-type="number" width="50px">Январь</th>
+					<th data-type="number" width="50px">Февраль</th>
+					<th data-type="number" width="50px">Март</th>
+					<th data-type="number" width="50px">Апрель</th>
+					<th data-type="number" width="50px">Май</th>
+					<th data-type="number" width="50px">Июнь</th>
+					<th data-type="number" width="50px">Июль</th>
+					<th data-type="number" width="50px">Август</th>
+					<th data-type="number" width="50px">Сентябрь</th>
+					<th data-type="number" width="50px">Октябрь</th>
+					<th data-type="number" width="50px">Ноябрь</th>
+					<th data-type="number" width="50px">Декабрь</th>
+					<th data-type="number" width="50px">Всего</th>
+				</tr>
+			</thead>
+			<tbody>
+			    @foreach (var cartridge in cartridges)
+                {
+                    int allCount = 0;
+
+                    <tr>
+                        <td>
+                            <a href="~/catalog/##cart@(cartridge.Id)">@cartridge.Name</a>
+                        </td>
+                        @for (int i = 0; i < 12; i++)
+                        {
+                            int count = cartridge.Repairs.Where(r => r.Date.Month == (i + 1)).Select(r => r.Units).Sum();
+                            allCount += count;
+                            countsByMonths[i] += count;
+
+                            <td>@(count == 0 ? "" : count.ToString())</td>
+                        }
+
+                        <td><b>@allCount</b></td>
+                    </tr>
+                }
+                <tr class="summary">
+                    <td>Итого</td>
+                    @for (int i = 0; i < 12; i++)
+                    {
+                        <td>@(countsByMonths[i] == 0 ? "" : countsByMonths[i].ToString())</td>
+                    }
+                    <td><b>@countsByMonths.Sum()</b></td>
+                </tr>
+            </tbody>
+        </table>
+        <br />
+    }
+
+    var devices = AutoMapper.MapDynamic<Device>(conn.Query(@"SELECT
+	    d.number_device AS [DeviceNumber],
+	    d.Description   AS [Description],
+	    d.Attribute     AS [Location],
+	    r.Inum          AS [Repairs_Id],
+	    r.Date          AS [Repairs_Date],
+	    r.Units         AS [Repairs_Units]
+    FROM Remont r
+    LEFT OUTER JOIN Device d ON d.number_device = r.ID_D
+    WHERE d.class_device = 'PRN' AND Year(r.Date) = @Year
+    ORDER BY d.Description", new { date.Year }));
+
+    if (devices.Count() > 0)
+    {
+        int[] countsByMonths = new int[12] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+        <table class="stats">
+            <thead>
+                <tr>
+                    <th data-type="string">
+                        Устройство<br />
+                        <small>Расположение</small>
+                    </th>
+                    <th data-type="number" width="50px">Январь</th>
+                    <th data-type="number" width="50px">Февраль</th>
+                    <th data-type="number" width="50px">Март</th>
+                    <th data-type="number" width="50px">Апрель</th>
+                    <th data-type="number" width="50px">Май</th>
+                    <th data-type="number" width="50px">Июнь</th>
+                    <th data-type="number" width="50px">Июль</th>
+                    <th data-type="number" width="50px">Август</th>
+                    <th data-type="number" width="50px">Сентябрь</th>
+                    <th data-type="number" width="50px">Октябрь</th>
+                    <th data-type="number" width="50px">Ноябрь</th>
+                    <th data-type="number" width="50px">Декабрь</th>
+                    <th data-type="number" width="50px">Всего</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var device in devices)
+                {
+                    int allCount = 0;
+
+                    <tr>
+                        <td>
+                            <a href="~/devices/##@(device.DeviceNumber)">
+                                @device.Description
+                                <br />
+                                <small>@device.Location</small>
+                            </a>
+                        </td>
+                        @for (int i = 0; i < 12; i++)
+                        {
+                            int count = device.Repairs.Where(r => r.Date.Month == (i + 1)).Select(r => r.Units).Sum();
+                            allCount += count;
+                            countsByMonths[i] += count;
+
+                            <td>@(count == 0 ? "" : count.ToString())</td>
+                        }
+
+                        <td><b>@allCount</b></td>
+                    </tr>
+                }
+                <tr class="summary">
+                    <td>Итого</td>
+                    @for (int i = 0; i < 12; i++)
+                    {
+                        <td>@(countsByMonths[i] == 0 ? "" : countsByMonths[i].ToString())</td>
+                    }
+                    <td><b>@countsByMonths.Sum()</b></td>
+                </tr>
+            </tbody>
+        </table>
+    }
+}

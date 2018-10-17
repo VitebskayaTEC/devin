@@ -3,6 +3,7 @@ using Devin.Forms;
 using Devin.Models;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
+using NPOI.SS.Util;
 using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,10 @@ namespace Devin.Controllers
         public ActionResult Index() => View();
 
         public ActionResult List() => View();
+
+        public ActionResult Analyze() => View();
+
+
 
         public ActionResult Import()
         {
@@ -114,7 +119,7 @@ namespace Devin.Controllers
                 if (model.Count == 0) return "Нечего печатать";
 
                 IWorkbook book;
-                using (var fs = new FileStream(Server.MapPath("/devin/content/exl/") + "labels.xls", FileMode.Open, FileAccess.Read))
+                using (var fs = new FileStream(Server.MapPath("../content/exl/") + "labels.xls", FileMode.Open, FileAccess.Read))
                 {
                     book = new HSSFWorkbook(fs);
                 }
@@ -125,41 +130,155 @@ namespace Devin.Controllers
 
                 for (int i = 0; i < model.Count; i++)
                 {
-                    if (isLeft)
+                    for (int j = 0; j < model[i].Nis; j++)
                     {
-                        sheet.GetRow(rowCount * 3 - 3).GetCell(0).SetCellValue("№");
-                        sheet.GetRow(rowCount * 3 - 2).GetCell(0).SetCellValue("Тип:");
-                        sheet.GetRow(rowCount * 3 - 1).GetCell(0).SetCellValue("Приход:");
+                        if (isLeft)
+                        {
+                            sheet.GetRow(rowCount * 3 - 3).GetCell(0).SetCellValue("№");
+                            sheet.GetRow(rowCount * 3 - 2).GetCell(0).SetCellValue("Тип:");
+                            sheet.GetRow(rowCount * 3 - 1).GetCell(0).SetCellValue("Приход:");
 
-                        sheet.GetRow(rowCount * 3 - 3).GetCell(1).SetCellValue(model[i].Ncard);
-                        sheet.GetRow(rowCount * 3 - 2).GetCell(1).SetCellValue(model[i].Caption ?? model[i].Name);
-                        sheet.GetRow(rowCount * 3 - 1).GetCell(1).SetCellValue(model[i].Date.ToString("dd.MM.yyyy"));
+                            sheet.GetRow(rowCount * 3 - 3).GetCell(1).SetCellValue(model[i].Ncard);
+                            sheet.GetRow(rowCount * 3 - 2).GetCell(1).SetCellValue(model[i].Caption ?? model[i].Name);
+                            sheet.GetRow(rowCount * 3 - 1).GetCell(1).SetCellValue(model[i].Date.ToString("dd.MM.yyyy"));
 
-                        isLeft = false;
-                    }
-                    else
-                    {
-                        sheet.GetRow(rowCount * 3 - 3).GetCell(2).SetCellValue("№");
-                        sheet.GetRow(rowCount * 3 - 2).GetCell(2).SetCellValue("Тип:");
-                        sheet.GetRow(rowCount * 3 - 1).GetCell(2).SetCellValue("Приход:");
+                            isLeft = false;
+                        }
+                        else
+                        {
+                            sheet.GetRow(rowCount * 3 - 3).GetCell(2).SetCellValue("№");
+                            sheet.GetRow(rowCount * 3 - 2).GetCell(2).SetCellValue("Тип:");
+                            sheet.GetRow(rowCount * 3 - 1).GetCell(2).SetCellValue("Приход:");
 
-                        sheet.GetRow(rowCount * 3 - 3).GetCell(3).SetCellValue(model[i].Ncard);
-                        sheet.GetRow(rowCount * 3 - 2).GetCell(3).SetCellValue(model[i].Caption ?? model[i].Name);
-                        sheet.GetRow(rowCount * 3 - 1).GetCell(3).SetCellValue(model[i].Date.ToString("dd.MM.yyyy"));
+                            sheet.GetRow(rowCount * 3 - 3).GetCell(3).SetCellValue(model[i].Ncard);
+                            sheet.GetRow(rowCount * 3 - 2).GetCell(3).SetCellValue(model[i].Caption ?? model[i].Name);
+                            sheet.GetRow(rowCount * 3 - 1).GetCell(3).SetCellValue(model[i].Date.ToString("dd.MM.yyyy"));
 
 
-                        rowCount = rowCount + 1;
-                        isLeft = true;
+                            rowCount = rowCount + 1;
+                            isLeft = true;
+                        }
                     }
                 }
                 
-                using (var fs = new FileStream(Server.MapPath("/devin/content/excels/") + "Бирки.xls", FileMode.OpenOrCreate, FileAccess.Write))
+                using (var fs = new FileStream(Server.MapPath("../content/excels/") + "Бирки.xls", FileMode.OpenOrCreate, FileAccess.Write))
                 {
                     book.Write(fs);
                 }
 
-                return "<a href='/devin/content/excels/Бирки.xls'>Сохранить файл</a>"; ;
+                return Url.Action("excels", "content") + "/Бирки.xls";
             }
+        }
+
+        public string AnalyzePrint()
+        {
+            // Получение исходных данных
+            float cost = 0;
+            int count = 0;
+            var types = new List<List<Cartridge>>();
+            var lastType = new List<Cartridge>();
+            string lastName = "";
+
+            string[] Data = (Request.Form.Get("data") ?? "").Split(new string[] { "----" }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string data in Data)
+            {
+                string[] _ = data.Split(new string[] { "__" }, StringSplitOptions.RemoveEmptyEntries);
+
+                var cartridge = new Cartridge
+                {
+                    Name = _[0],
+                    Count = int.Parse(_[3]),
+                    Cost = float.Parse(_[1])
+                };
+
+                switch (_[2]) {
+                    case "flow": cartridge.Type = "Картридж струйный"; break;
+                    case "laser": cartridge.Type = "Тонер-картридж"; break;
+                    case "matrix": cartridge.Type = "Матричная лента"; break;
+                }
+
+                switch (_[4])
+                { 
+                    case "black": cartridge.Color = "черный"; break;
+                    case "blue": cartridge.Color = "голубой"; break;
+                    case "red": cartridge.Color = "красный"; break;
+                    case "yellow": cartridge.Color = "желтый"; break;
+                    case "3color": cartridge.Color = "трехцветный"; break;
+                    case "5color": cartridge.Color = "многоцветный"; break;
+                }
+
+                if (lastName != cartridge.Type)
+                {
+                    types.Add(lastType = new List<Cartridge>());
+                    lastName = cartridge.Type;
+                }
+
+                lastType.Add(cartridge);
+
+                cost += cartridge.Cost;
+                count++;
+            }
+
+
+            // Открытие шаблона
+            IWorkbook book;
+            using (var fs = new FileStream(Server.MapPath("/devin/content/exl/") + "analyze.xls", FileMode.Open, FileAccess.Read))
+            {
+                book = new HSSFWorkbook(fs);
+            }
+            ISheet sheet = book.GetSheetAt(0);
+
+
+            // Заполнение полей
+            int month = DateTime.Now.Month;
+            string quarter = "";
+
+            if (month > 8) quarter = "в IV квартале";
+            else if (month > 5) quarter = "в III квартале";
+            else if (month > 2) quarter = "во II квартале";
+            else quarter = "в II квартале";
+
+            sheet.GetRow(7).GetCell(1).SetCellValue(DateTime.Now.ToString("dd.MM.yyyy"));
+            sheet.GetRow(12).GetCell(1).SetCellValue(
+                sheet.GetRow(12).GetCell(1).StringCellValue.Replace("@quarter", quarter).Replace("@year", DateTime.Now.Year.ToString()));
+            sheet.GetRow(18).GetCell(7).SetCellValue(cost.ToString() + " BYN");
+
+
+            // Заполнение таблицы
+            int startRegion = 17;
+            int endRegion = 17;
+
+            for (int i = 0; i < count - 1; i++) sheet.CopyRow(17, 18 + i);
+
+            foreach (var type in types)
+            {
+                foreach (var cartridge in type)
+                {
+                    IRow row = sheet.GetRow(endRegion);
+                    endRegion++;
+
+                    row.GetCell(3).SetCellValue("шт.");
+                    row.GetCell(4).SetCellValue(cartridge.Count);
+                    row.GetCell(5).SetCellValue(cartridge.Name + ", " + cartridge.Color);
+                    row.GetCell(7).SetCellValue(cartridge.Cost + " BYN за 1 шт.");
+                    row.Height = -1;
+                }
+
+                sheet.GetRow(startRegion).GetCell(1).SetCellValue(type[0].Type);
+                sheet.AddMergedRegion(new CellRangeAddress(startRegion, endRegion - 1, 1, 2));
+
+                startRegion = endRegion;
+            }
+
+           
+            // Сохранение документа
+            using (var fs = new FileStream(Server.MapPath("/devin/content/excels/") + "analyze.xls", FileMode.OpenOrCreate, FileAccess.Write))
+            {
+                book.Write(fs);
+            }
+
+            return "<a href='/devin/content/excels/analyze.xls'>Сохранить файл</a>";
         }
     }
 }

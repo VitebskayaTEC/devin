@@ -1,4 +1,4 @@
-// Глобальные переменные и навешивание функций
+// Р“Р»РѕР±Р°Р»СЊРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ Рё РЅР°РІРµС€РёРІР°РЅРёРµ С„СѓРЅРєС†РёР№
 $(".view")
 	.on("mousedown", ".unit:not(#solo) .caption th,.unit:not(#solo) .caption td:not(:first-child)", function() { toggle(this) })
 	.on("mousedown", ".items tbody td:not(:first-child), .title", function() { cartOpen(this); })
@@ -43,7 +43,7 @@ function cartSave() {
 }
 
 function cartDelete() {
-	if (confirm("Данный объект будет удален. Продолжить?"))
+	if (confirm("Р”Р°РЅРЅС‹Р№ РѕР±СЉРµРєС‚ Р±СѓРґРµС‚ СѓРґР°Р»РµРЅ. РџСЂРѕРґРѕР»Р¶РёС‚СЊ?"))
 	$.get("/devin/exes/repair/" + (id.indexOf("off") < 0 ? "repair" : "writeoff") + "_delete_cart.asp?id=" + id + "&r=" + Math.random(), function() {
 		$("#cart").fadeOut(150);
 		if (document.getElementById(id)) {
@@ -103,18 +103,18 @@ function search(input) {
     }
 }
 
-// Составление списка доступных для перемещения в них данного списания групп. Аналогична такой же функции для групп, но другой коллбэк
+// РЎРѕСЃС‚Р°РІР»РµРЅРёРµ СЃРїРёСЃРєР° РґРѕСЃС‚СѓРїРЅС‹С… РґР»СЏ РїРµСЂРµРјРµС‰РµРЅРёСЏ РІ РЅРёС… РґР°РЅРЅРѕРіРѕ СЃРїРёСЃР°РЅРёСЏ РіСЂСѓРїРї. РђРЅР°Р»РѕРіРёС‡РЅР° С‚Р°РєРѕР№ Р¶Рµ С„СѓРЅРєС†РёРё РґР»СЏ РіСЂСѓРїРї, РЅРѕ РґСЂСѓРіРѕР№ РєРѕР»Р»Р±СЌРє
 function writeoffMove() {
 	$.post("/devin/exes/repair/writeoff_move_group.asp?r=" + Math.random(), "id=" + menuId + "&in=" + $("#modal select:first-child").val(), restore);
 	$("#modal").fadeOut(100);
 }
 
-// Открытие карточки списания из контекстного меню
+// РћС‚РєСЂС‹С‚РёРµ РєР°СЂС‚РѕС‡РєРё СЃРїРёСЃР°РЅРёСЏ РёР· РєРѕРЅС‚РµРєСЃС‚РЅРѕРіРѕ РјРµРЅСЋ
 function writeoffOpen() {
 	cartOpen(document.getElementById(menuId).querySelector(".title"));
 }
 
-// Экспорт списания в Excel без открытия карточки
+// Р­РєСЃРїРѕСЂС‚ СЃРїРёСЃР°РЅРёСЏ РІ Excel Р±РµР· РѕС‚РєСЂС‹С‚РёСЏ РєР°СЂС‚РѕС‡РєРё
 function writeoffPrint() {
 	$.get("/devin/writeoffs/print/" + menuId.replace("off", "")).done(data => {
 		document.getElementById("excelExportsLink").innerHTML = data;
@@ -123,24 +123,24 @@ function writeoffPrint() {
 	})
 }
 
-// Списывание всех ремонтов в списании
+// РЎРїРёСЃС‹РІР°РЅРёРµ РІСЃРµС… СЂРµРјРѕРЅС‚РѕРІ РІ СЃРїРёСЃР°РЅРёРё
 function offMenuRepairs() {
 	$.post("/devin/exes/repair/repair_off_all.asp?r=" + Math.random(), "id=" + menuId.replace("off", ""), restore);
 }
 
-// Отмена списывания всех ремонтов в списании
+// РћС‚РјРµРЅР° СЃРїРёСЃС‹РІР°РЅРёСЏ РІСЃРµС… СЂРµРјРѕРЅС‚РѕРІ РІ СЃРїРёСЃР°РЅРёРё
 function onMenuRepairs() {
 	$.post("/devin/exes/repair/repair_on_all.asp?r=" + Math.random(), "id=" + menuId.replace("off", ""), restore);
 }
 
-// Удаление всех ремонтов в списании
+// РЈРґР°Р»РµРЅРёРµ РІСЃРµС… СЂРµРјРѕРЅС‚РѕРІ РІ СЃРїРёСЃР°РЅРёРё
 function deleteMenuRepairs() {
-	if (confirm("Все ремонты в выбранном списании будут отменены, использованные позиции будут возвращены на склад. Продолжить?"))
+	if (confirm("Р’СЃРµ СЂРµРјРѕРЅС‚С‹ РІ РІС‹Р±СЂР°РЅРЅРѕРј СЃРїРёСЃР°РЅРёРё Р±СѓРґСѓС‚ РѕС‚РјРµРЅРµРЅС‹, РёСЃРїРѕР»СЊР·РѕРІР°РЅРЅС‹Рµ РїРѕР·РёС†РёРё Р±СѓРґСѓС‚ РІРѕР·РІСЂР°С‰РµРЅС‹ РЅР° СЃРєР»Р°Рґ. РџСЂРѕРґРѕР»Р¶РёС‚СЊ?"))
 	$.post("/devin/exes/repair/repair_delete_all.asp?r=" + Math.random(), "id=" + menuId.replace("off", ""), restore);
 }
 
-// Удаление списания с сохранением ремонтов
+// РЈРґР°Р»РµРЅРёРµ СЃРїРёСЃР°РЅРёСЏ СЃ СЃРѕС…СЂР°РЅРµРЅРёРµРј СЂРµРјРѕРЅС‚РѕРІ
 function writeoffDelete() {
-	if (confirm("Данное списание будет удалено (без удаления вложенных ремонтов). Продолжить?"))
+	if (confirm("Р”Р°РЅРЅРѕРµ СЃРїРёСЃР°РЅРёРµ Р±СѓРґРµС‚ СѓРґР°Р»РµРЅРѕ (Р±РµР· СѓРґР°Р»РµРЅРёСЏ РІР»РѕР¶РµРЅРЅС‹С… СЂРµРјРѕРЅС‚РѕРІ). РџСЂРѕРґРѕР»Р¶РёС‚СЊ?"))
 	$.get("/devin/exes/repair/writeoff_delete_cart.asp?id=" + menuId + "&r=" + Math.random(), restore);
 }

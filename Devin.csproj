@@ -119,7 +119,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\AidaController.cs" />
-    <Compile Include="Controllers\AnalyzeController.cs" />
+    <Compile Include="Controllers\CatalogController.cs" />
     <Compile Include="Controllers\DevicesController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\RepairsController.cs" />
@@ -138,13 +138,13 @@
     <Compile Include="Models\DragMetal.cs" />
     <Compile Include="Models\Folder.cs" />
     <Compile Include="Models\KeyValue.cs" />
+    <Compile Include="Models\Printer.cs" />
     <Compile Include="Models\Repair.cs" />
     <Compile Include="Models\Storage.cs" />
     <Compile Include="Models\Writeoff.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="analyze\default.asp" />
     <Content Include="asp\catalog_cartridge_cart.asp" />
     <Content Include="asp\catalog_printer_cart.asp" />
     <Content Include="asp\device_1c_compare.asp" />
@@ -162,12 +162,9 @@
     <Content Include="asp\storage_history.asp" />
     <Content Include="asp\writeoff_cart.asp" />
     <Content Include="asp\writeoff_setup_cart.asp" />
-    <Content Include="catalog\default.asp" />
-    <Content Include="Content\css\analyze.css" />
     <Content Include="Content\css\table.css" />
     <Content Include="Content\excels\TextFile1.txt" />
     <Content Include="Content\js\table.js" />
-    <Content Include="Content\css\catalog.css" />
     <Content Include="Content\css\core.css" />
     <Content Include="Content\css\device.css" />
     <Content Include="Content\css\repair.css" />
@@ -180,7 +177,6 @@
     <Content Include="Content\js\catalog.js" />
     <Content Include="Content\js\core.js" />
     <Content Include="Content\js\device.js" />
-    <Content Include="Content\js\js-analyze.js" />
     <Content Include="Content\js\repair.js" />
     <Content Include="Content\js\storage.js" />
     <Content Include="Content\lib\images\ui-bg_glass_40_ffc73d_1x400.png" />
@@ -202,7 +198,6 @@
     <Content Include="Content\lib\select2.min.js" />
     <Content Include="core\core.inc" />
     <Content Include="core\upload.asp" />
-    <Content Include="exes\analyze\analyze_export.asp" />
     <Content Include="exes\catalog\catalog_add_compare.asp" />
     <Content Include="exes\catalog\catalog_create_cartridge.asp" />
     <Content Include="exes\catalog\catalog_create_printer.asp" />
@@ -247,10 +242,6 @@
     <Content Include="exes\storage\storage_delete_cart.asp" />
     <Content Include="exes\storage\storage_save_cart.asp" />
     <Content Include="Global.asax" />
-    <Content Include="repair\cartridges_usage\default.asp" />
-    <Content Include="repair\report_year\default.asp" />
-    <Content Include="storage\labels\default.asp" />
-    <Content Include="storage\labels\view.asp" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -263,9 +254,7 @@
     </Content>
     <Content Include="Views\Home\Index.cshtml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Views\Analyze\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="asp\history.ashx" />
     <Content Include="Content\exl\analyze.xls" />
@@ -297,6 +286,10 @@
     <Content Include="Views\Aida\Index.cshtml" />
     <Content Include="Views\Shared\_LayoutCart.cshtml" />
     <Content Include="Views\Aida\Cart.cshtml" />
+    <Content Include="Views\Storages\Analyze.cshtml" />
+    <Content Include="Views\Repairs\YearReport.cshtml" />
+    <Content Include="Views\Repairs\CartridgesUsage.cshtml" />
+    <Content Include="Views\Catalog\Index.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

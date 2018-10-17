@@ -50,7 +50,7 @@ function deviceToRepair() {
 
 function cartHistoryRepair() {
 	$('#cart')
-		.html("<b class='load'>загрузка...</b>")
+		.html("<b class='load'>Р·Р°РіСЂСѓР·РєР°...</b>")
 		.fadeIn(100)
 		.css({ maxWidth: 600 })
 		.load(
@@ -62,14 +62,14 @@ function cartHistoryRepair() {
 }
 
 function cartHistory(_id) {
-	$('#cart').html("<b class='load'>загрузка...</b>").fadeIn(100).css({ maxWidth: 600 });
+	$('#cart').html("<b class='load'>Р·Р°РіСЂСѓР·РєР°...</b>").fadeIn(100).css({ maxWidth: 600 });
 	$.get('/devin/asp/device_history.asp', { id: _id, r: Math.random() }, data => document.getElementById('cart').innerHTML = data);
 }
 
-function cartAida() {
+function cartAida(name) {
 	$('#cart')
-		.html("<b class='load'>загрузка...</b>")
-		.load('/devin/aida/cart/' + id)
+		.html("<b class='load'>Р·Р°РіСЂСѓР·РєР°...</b>")
+        .load('/devin/aida/cart/' + name)
 		.fadeIn(100).css({ maxWidth: 600 });
 }
 
@@ -168,7 +168,7 @@ function cartDelete() {
 
 function history() {
 	$('#cart')
-		.html("<b class='load'>загрузка...</b>")
+		.html("<b class='load'>Р·Р°РіСЂСѓР·РєР°...</b>")
 		.fadeIn(100).css({ maxWidth: 600 })
 		.load('/devin/asp/history.ashx?r=' + Math.random());
 	$('.view .selected').removeClass('selected');
@@ -217,7 +217,7 @@ function loadCompare() {
 	$('#excl').slideToggle(100);
 }
 
-/* Создание ремонтов */
+/* РЎРѕР·РґР°РЅРёРµ СЂРµРјРѕРЅС‚РѕРІ */
 
 function togglePosition(node) {
 	var tr = node.parentNode,
@@ -363,7 +363,7 @@ function computerOpen() {
 }
 
 function computerDelete() {
-	if (confirm('Данный компьютер будет удален. Продолжить?')) {
+	if (confirm('Р”Р°РЅРЅС‹Р№ РєРѕРјРїСЊСЋС‚РµСЂ Р±СѓРґРµС‚ СѓРґР°Р»РµРЅ. РџСЂРѕРґРѕР»Р¶РёС‚СЊ?')) {
 		id = menuId;
 		cartDelete();
 	}

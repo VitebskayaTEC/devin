@@ -1,15 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Devin.Models
 {
     public class Device
     {
+        [Slapper.AutoMapper.Id]
+        public string DeviceNumber { get; set; }
+
         public string Inventory { get; set; }
 
         public string DeviceClass { get; set; }
-
-        public string DeviceNumber { get; set; }
-
+        
         public string Name { get; set; }
 
         public string ComputerId { get; set; }
@@ -60,5 +62,11 @@ namespace Devin.Models
 
 
         public virtual string NetworkName { get; set; }
+
+        public Printer Printer { get; set; }
+
+        public IEnumerable<Cartridge> Cartridges { get; set; } = new List<Cartridge>();
+
+        public virtual IEnumerable<Repair> Repairs { get; set; } = new List<Repair>();
     }
 }
