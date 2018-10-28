@@ -1,0 +1,28 @@
+﻿@model string
+
+@using (var conn = Database.Connection())
+{
+    var logs = conn.Query<Activity>(@"SELECT * FROM Activity WHERE Source = 'devices' AND Id = @Model ORDER BY Date DESC", new { Model });
+
+    <div class="cartHistory">
+        <table class="cartHistory__table">
+            <thead>
+                <tr>
+                    <th class="cartHistory__date">Дата</th>
+                    <th>Пользователь</th>
+                    <th>Событие</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in logs)
+                {
+                    <tr>
+                        <td>@log.Date.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>@log.Username</td>
+                        <td>@Html.Raw(log.Text.Replace("\n", "<br />"))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

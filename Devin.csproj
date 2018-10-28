@@ -129,6 +129,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\Activity.cs" />
     <Compile Include="Models\Aida.cs" />
     <Compile Include="Models\Cartridge.cs" />
     <Compile Include="Models\Database.cs" />
@@ -141,25 +142,21 @@
     <Compile Include="Models\Printer.cs" />
     <Compile Include="Models\Repair.cs" />
     <Compile Include="Models\Storage.cs" />
+    <Compile Include="Models\WorkPlace.cs" />
     <Compile Include="Models\Writeoff.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="asp\catalog_cartridge_cart.asp" />
-    <Content Include="asp\catalog_printer_cart.asp" />
     <Content Include="asp\device_1c_compare.asp" />
     <Content Include="asp\device_aida_autorun.asp" />
     <Content Include="asp\device_aida_devices.asp" />
     <Content Include="asp\device_aida_programs.asp" />
-    <Content Include="asp\device_cart.asp" />
     <Content Include="asp\device_history.asp" />
     <Content Include="asp\device_history_repair.asp" />
     <Content Include="asp\device_to_repair.asp" />
     <Content Include="asp\history.asp" />
     <Content Include="asp\repair_cart.asp" />
     <Content Include="asp\storage_all_repairs.asp" />
-    <Content Include="asp\storage_cart.asp" />
-    <Content Include="asp\storage_history.asp" />
     <Content Include="asp\writeoff_cart.asp" />
     <Content Include="asp\writeoff_setup_cart.asp" />
     <Content Include="Content\css\table.css" />
@@ -174,7 +171,6 @@
     <Content Include="Content\img\devin_icons_blue.png" />
     <Content Include="Content\img\favicon.ico" />
     <Content Include="Content\img\white_carbonfiber.png" />
-    <Content Include="Content\js\catalog.js" />
     <Content Include="Content\js\core.js" />
     <Content Include="Content\js\device.js" />
     <Content Include="Content\js\repair.js" />
@@ -198,14 +194,6 @@
     <Content Include="Content\lib\select2.min.js" />
     <Content Include="core\core.inc" />
     <Content Include="core\upload.asp" />
-    <Content Include="exes\catalog\catalog_add_compare.asp" />
-    <Content Include="exes\catalog\catalog_create_cartridge.asp" />
-    <Content Include="exes\catalog\catalog_create_printer.asp" />
-    <Content Include="exes\catalog\catalog_delete_cartridge_cart.asp" />
-    <Content Include="exes\catalog\catalog_delete_compare.asp" />
-    <Content Include="exes\catalog\catalog_delete_printer_cart.asp" />
-    <Content Include="exes\catalog\catalog_save_cartridge_cart.asp" />
-    <Content Include="exes\catalog\catalog_save_printer_cart.asp" />
     <Content Include="exes\core\core_create_group.asp" />
     <Content Include="exes\core\core_create_group_inner.asp" />
     <Content Include="exes\core\core_delete_group.asp" />
@@ -237,10 +225,7 @@
     <Content Include="exes\repair\writeoff_move_group.asp" />
     <Content Include="exes\repair\writeoff_save_cart.asp" />
     <Content Include="exes\storage\storages_to_group.asp" />
-    <Content Include="exes\storage\storage_create_cart.asp" />
     <Content Include="exes\storage\storage_create_repairs.asp" />
-    <Content Include="exes\storage\storage_delete_cart.asp" />
-    <Content Include="exes\storage\storage_save_cart.asp" />
     <Content Include="Global.asax" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
@@ -265,6 +250,7 @@
     <Content Include="Content\exl\mat.xls" />
     <Content Include="Content\exl\mat_org.xls" />
     <Content Include="Content\exl\test.xls" />
+    <Content Include="Content\exl\ReportCart.xlsx" />
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\Local Publish.pubxml" />
     <Content Include="Views\Writeoffs\CodeError.cshtml" />
@@ -290,6 +276,15 @@
     <Content Include="Views\Repairs\YearReport.cshtml" />
     <Content Include="Views\Repairs\CartridgesUsage.cshtml" />
     <Content Include="Views\Catalog\Index.cshtml" />
+    <Content Include="Views\Catalog\PrinterCart.cshtml" />
+    <Content Include="Views\Catalog\CartridgeCart.cshtml" />
+    <Content Include="Views\Storages\Cart.cshtml" />
+    <Content Include="Views\Storages\Repairs.cshtml" />
+    <Content Include="Views\Devices\WorkPlaces.cshtml" />
+    <Content Include="Views\Devices\Cart.cshtml" />
+    <Content Include="Views\Devices\HistoryById.cshtml" />
+    <Content Include="Views\Devices\ElmById.cshtml" />
+    <Content Include="Views\Aida\Data.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

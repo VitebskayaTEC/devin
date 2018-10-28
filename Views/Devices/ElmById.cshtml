@@ -1,0 +1,36 @@
+﻿@model string
+
+@using (var conn = Database.Connection())
+{
+    var logs = conn.Query<Activity>(@"SELECT
+	    EDATE  AS [Date],
+	    EVGR   AS [Id],
+	    --CUSER  AS [Username],
+	    EVENTS AS [Text] 
+    FROM ELMEVENTS WHERE CNAME = @Model
+    ORDER BY EDATE DESC", new { Model });
+
+    <div class="cartHistory">
+        <table class="cartHistory__table">
+            <thead>
+                <tr>
+                    <th width="120px">Дата</th>
+                    @*<th>Пользователь</th>*@
+                    <th width="140px">Событие</th>
+                    <th>Описание</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in logs)
+                {
+                    <tr>
+                        <td>@log.Date.ToString("dd.MM.yyyy HH:mm")</td>
+                        @*<td>@log.Username</td>*@
+                        <td>@log.Id</td>
+                        <td>@log.Text.Replace(",", ", ")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

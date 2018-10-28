@@ -1,0 +1,138 @@
+﻿@model string
+
+@using (var conn = Database.Connection())
+{
+    var storage = conn.Query<Storage>("SELECT Ncard, Name, Class_Name, Price, Nadd, Nis, Nuse, Nbreak, Date, Uchet, Id_Cart, G_Id, Delit FROM Sklad WHERE Ncard = @Model", new { Model }).FirstOrDefault();
+
+    if (storage == null)
+    {
+        <div class="error">Нет данных по данному идентификатору</div>
+        return;
+    }
+
+    string sql = "";
+
+    <div class="cart-header">@(string.IsNullOrEmpty(storage.Name) ? "Имя не задано" : storage.Name) @(storage.Delit == 0 ? " (удален)" : "")</div>
+
+    <div class="">
+        <table class="cart-table cart-form">
+
+            <tr>
+                <td>Инвентарный №</td>
+                <td>
+                    <input name="@nameof(storage.Ncard)" value="@storage.Ncard" style="width: 100px" />
+                </td>
+            </tr>
+            <tr>
+                <td>Наименование</td>
+                <td>
+                    <textarea name="@nameof(storage.Name)">@storage.Name</textarea>
+                </td>
+            </tr>
+            <tr>
+                <td>Тип устройства</td>
+                <td>
+                    <select name="@nameof(storage.Class_Name)">
+                        <option value="">не определен</option>
+                        @{
+                            sql = "SELECT T_alias AS [Key], T_storages AS Text FROM catalog_device_types";
+                            var types = conn.Query(sql);
+                            foreach (var row in types)
+                            {
+                                <option value="@row.Key" @(row.Key == storage.Class_Name ? "selected" : "")>@row.Text</option>
+                            }
+                        }
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>Счет учета</td>
+                <td>
+                    <select name="@nameof(storage.Uchet)">
+                        @{
+                            sql = "SELECT uchet AS [Key], uchet AS Text FROM SKLAD GROUP BY uchet ORDER BY Text";
+                            var accounts = conn.Query(sql);
+                            foreach (var row in accounts)
+                            {
+                                <option value="@row.Key" @(row.Key == storage.Uchet ? "selected" : "")>@row.Text</option>
+                            }
+                        }
+                    </select>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Приход</td>
+                <td><input name="@nameof(storage.Nadd)" type="number" value="@storage.Nadd" /></td>
+            </tr>
+            <tr>
+                <td>Стоимость (р. за шт.)</td>
+                <td><input name="@nameof(storage.Price)" value="@storage.Price.ToString("0.00")" style="width: 100px" /></td>
+            </tr>
+            <tr>
+                <td>Дата прихода</td>
+                <td><input name="@nameof(storage.Date)" type="text" value="@storage.Date.ToString("dd.MM.yyyy")" style="width: 100px" /></td>
+            </tr>
+
+            <tr>
+                <td>На складе</td>
+                <td><input name="@nameof(storage.Nis)" type="number" value="@storage.Nis" /></td>
+            </tr>
+            <tr>
+                <td>Используется</td>
+                <td><input name="@nameof(storage.Nuse)" type="number" value="@storage.Nuse" /></td>
+            </tr>
+            <tr>
+                <td>Списано</td>
+                <td><input name="@nameof(storage.Nbreak)" type="number" value="@storage.Nbreak" /></td>
+            </tr>
+
+            @if (storage.Class_Name == "PRN")
+            {
+                <tr>
+                    <td>Типовой картридж</td>
+                    <td>
+                        <select name="@nameof(storage.Id_Cart)">
+                            <option value="0">не сопоставлен</option>
+                            @{
+                                sql = "SELECT N AS [Key], Caption AS Text FROM CARTRIDGE ORDER BY Caption";
+                                var cartridges = conn.Query(sql);
+                                foreach (var row in cartridges)
+                                {
+                                    <option value="@row.Key" @(row.Key == storage.Id_Cart ? "selected" : "")>@row.Text</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                </tr>
+            }
+
+            <tr>
+                <td>Группа</td>
+                <td>
+                    <select name="@nameof(storage.G_Id)" class="select">
+                        <option value="0">@(storage.IsOff() ? "Списанные позиции" : "Не распределенные позиции")</option>
+                        @{
+                            sql = "SELECT G_ID AS [Key], G_Title AS [Text] FROM [GROUP] WHERE (G_Type = 'storage') ORDER BY G_Title";
+                            var folders = conn.Query(sql);
+                            foreach (var row in folders)
+                            {
+                                <option value="@row.Key" @(row.Key == storage.G_Id ? "selected" : "")>@row.Text</option>
+                            }
+                        }
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="console"></div>
+
+    <table class="cart-menu">
+        <tr>
+            <td onclick="cartSave()">Сохранить</td>
+            <td onclick="cartDelete()">Удалить</td>
+            <td onclick="cartClose()">Закрыть</td>
+        </tr>
+    </table>
+}

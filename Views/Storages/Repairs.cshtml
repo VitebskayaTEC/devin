@@ -1,0 +1,103 @@
+﻿@using (var conn = Database.Connection())
+{
+    string formData = Request.Form.Get("select");
+    if (string.IsNullOrEmpty(formData))
+    {
+        <div class="error">Не получен список выбранных элементов</div>
+        return;
+    }
+
+    string sql = "SELECT Ncard, Name, Nis FROM SKLAD WHERE Ncard = '" + string.Join("' OR Ncard = '", formData.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries)) + "' AND (Nis > 0) ORDER BY NCard";
+
+    var storages = conn.Query<Storage>(sql);
+    if (storages.Count() == 0)
+    {
+        <div class="error">Нет элементов для оформления ремонтов</div>
+        return;
+    }
+
+    <div id="off-group">
+        <input type="text" value="Ремонты за @DateTime.Now.ToString("dd.MM.yyyy")" id="name-off-group" />
+        <input type="checkbox" checked id="create-off-group" />
+        <label for="create-off-group">Сгруппировать созданные ремонты</label>
+    </div>
+
+    <div class="hide" id="computers-first">
+        <select class="computers" onchange="changeDevice(this)">
+            <option value="0">? Не выбрано</option>
+            @{
+                var computers = AutoMapper.MapDynamic<Computer>(conn.Query(@"SELECT
+                    DP.Name,
+                    DP.Number_device AS DeviceNumber,
+                    D.Number_device AS Devices_DeviceNumber,
+                    D.Name AS Devices_Name,
+                    D.Description AS Devices_Description
+                FROM DEVICE AS D
+                LEFT OUTER JOIN DEVICE AS DP ON (D.number_comp = DP.number_device AND DP.deleted <> 1)
+                WHERE (D.deleted <> 1 AND D.used = 1 AND (D.class_device <> 'CMP' OR (D.class_device = 'CMP' AND D.number_device NOT IN (
+                    SELECT number_comp FROM DEVICE WHERE number_comp IS NOT NULL AND number_comp <> '' AND number_comp <> '?' GROUP BY number_comp
+                ))))
+                ORDER BY DP.name, D.name"));
+
+                foreach (var computer in computers)
+                {
+                    <optgroup label="@computer.Name">
+                        <option value="@computer.DeviceNumber">[компьютер] @computer.Name</option>
+                        @foreach (var device in computer.Devices)
+                        {
+                            <option value="@device.DeviceNumber">@device.Description</option>
+                        }
+                    </optgroup>
+                }
+            }
+        </select>
+    </div>
+
+    <div class="cart-overflow small-text">
+        <table>
+            <thead>
+                <tr>
+                    <th>позиция</th>
+                    <th>на какое устройство</th>
+                    <th>кол-во</th>
+                    <th>вирт.</th>
+                </tr>
+            </thead>
+            <tbody id="repairs-positions">
+                @foreach (var storage in storages)
+                {
+                    <tr class="pos" & storages(i, 0) & "">
+                        <td>
+                            @storage.Ncard [<span>@storage.Nis </span> шт. доступно]
+                            <a onclick="removePosition(this)">Удалить</a>
+                            <a onclick="separatePosition(this)" class="pos-separate">Разделить</a>
+                            <br />@storage.Name
+                        </td>
+                        <td class="computers-container"></td>
+                        <td>
+                            <input class="number" type="number" value="0" onkeyup="verifyCounts(this)" onchange="verifyCounts(this)" />
+                        </td>
+                        <td>
+                            <input type="checkbox" onchange="virtualVerifyCounts(this)" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div id='console'></div>
+
+    <table class='cart-menu'>
+        <tr>
+            <td onclick='createRepairs()'>Сохранить</td>
+            <td onclick='cartClose()'>Закрыть</td>
+        </tr>
+    </table>
+
+    <script>
+        // Копирование селекта с устройствами во все строки. Делается на клиенте, чтобы не пересылать одинаковые блоки по сети
+        var computers = document.getElementById("computers-first").innerHTML;
+        $("#cart").find(".computers-container").html(computers);
+    </script>
+}

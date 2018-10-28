@@ -2,6 +2,7 @@
 {
     public class Device1C
     {
+        [Slapper.AutoMapper.Id]
         public string Inventory { get; set; }
 
         public string Description { get; set; } = "";
@@ -21,5 +22,9 @@
         public float Palladium { get; set; } = 0;
 
         public float Mpg { get; set; } = 0;
+
+        public float BalanceCost { get; set; } = 0;
+
+        public float DepreciationCost { get; set; } = 0;
     }
 }

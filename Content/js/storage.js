@@ -23,30 +23,12 @@ function search(input) {
     }
 }
 
-function cartOpenBack() {
-    $.get(links.cart, { id: id }, data => {
-        document.getElementById('cart').innerHTML = data;
-        $('cart').fadeIn(100);
-        document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-        document.getElementById(id).classList.add('selected');
-    });
-}
-
 function cartHistory() {
     $("#cart").load("/devin/asp/storage_history.asp?id=" + id + "&r=" + Math.random()).fadeIn(150);
 }
 
 function cartBack() {
     cartOpenBack();
-}
-
-function cartCreate() {
-    $.get("/devin/exes/storage/storage_create_cart.asp?r=" + Math.random(), function(data) {
-        if (data.indexOf("error") < 0) {
-			restore();
-            document.location = "/devin/storages/##" + data;
-        }
-    });
 }
 
 function filter() {
@@ -65,38 +47,6 @@ function cartRepair() {
     $("#cart").load("/devin/asp/storage_repair.asp?id=" + id + "&r=" + Math.random()).fadeIn(150);
 }
 
-function cartSave() {
-    $.post("/devin/exes/storage/storage_save_cart.asp?id=" + id + "&r=" + Math.random(), $("form").serialize(), function (data) {
-        // Обновление view по новым данным
-        if (document.location.search.indexOf("text=") < 0) {
-            $.get("/devin/storages/list?r=" + Math.random(), function (data) {
-                $("#view").html(data);
-                setTimeout(function () {
-                    $("#" + id).addClass("selected");
-                }, 50);
-            });
-
-            $("#cart").load("/devin/asp/storage_cart.asp?id=" + id + "&r=" + Math.random(), function () {
-                try {
-                    document.getElementById("console").innerHTML = data;
-                } catch (e) { }
-            });
-        } else {
-            $.get("/devin/storages/list" + document.location.search + "&r=" + Math.random(), function (data) {
-                $("#view").html(data);
-                setTimeout(function () {
-                    $("#" + id).addClass("selected");
-                }, 50);
-            });
-
-            $("#cart").load("/devin/asp/storage_cart.asp?id=" + id + "&r=" + Math.random(), function () {
-                try {
-                    document.getElementById("console").innerHTML = data;
-                } catch (e) { }
-            });
-        }
-    });
-}
 
 function compare() {
     $('.panel:not(#excl,#selected)').slideUp(100);
@@ -115,19 +65,6 @@ function compareSetSource(node) {
             document.getElementById("compare-form").action = "/devin/asp/storage_1c_compare.asp";
             break;
     }
-}
-
-function allStoragesToRepair() {
-    $.post("/devin/asp/storage_all_repairs.asp?r=" + Math.random(), selectionToForm("select", ";"), function(data) {
-        $("#cart").addClass("repairs").html(data).fadeIn(150);
-        removeAllSelection();
-    });
-}
-
-function storageToRepair() {
-    $.post("/devin/asp/storage_all_repairs.asp?r=" + Math.random(), "select=" + id + ";", function(data) {
-        $("#cart").addClass("repairs").html(data).fadeIn(150);
-    });
 }
 
 function storagesToGroup() {

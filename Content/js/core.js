@@ -6,8 +6,8 @@ $("input.def").each(function () {
 });
 
 $(document)
-	.on("focus", "input.def", function() { _focus(this) })
-	.on("blur", "input.def", function() { _blur(this) });
+    .on("focus", "input.def", function () { _focus(this); })
+    .on("blur", "input.def", function () { _blur(this); });
 
 function _blur(input) {
 	if (input.value == '') {
@@ -172,7 +172,7 @@ function groupBeforeMove() {
 	// Составляем список исключений
 	exceptions.push(menuId); // Сама перемещаемая группа
 	exceptions.push($(obj).parent().closest(".group").attr("id")); // Группа, в которой аходится перемещаемая (на 1 уровне вложенности)
-	$(obj).find(".group").each(function() { exceptions.push(this.id) }); // Все группы, вложенные в перемещаемую
+    $(obj).find(".group").each(function () { exceptions.push(this.id); }); // Все группы, вложенные в перемещаемую
 
 	// Составляем список доступных вариантов для перемещения
 	var select = "<option value='0'>Расположить отдельно";
@@ -218,7 +218,10 @@ function groupDelete() {
 	$.post("/devin/exes/core/core_delete_group.asp?r=" + Math.random(), "app=" + url + "&gid=" + menuId.slice(2), restore);
 }
 
-var restore = () => $.get('./list', data => document.getElementById('view').innerHTML = data);
+var restore = () => $.get('./list', data => {
+    document.getElementById('view').innerHTML = data;
+    document.getElementById(id).classList.add('selected');
+});
 
 
 /* Drag-n-drop функционал */
@@ -294,7 +297,7 @@ function _sort(th) {
 		case "none":
 			return;
 		case "unique":
-			compare = function(rowA, rowB) { return unique(rowA, rowB, way, colNum) };
+            compare = function (rowA, rowB) { return unique(rowA, rowB, way, colNum); };
 	}
 
 	for (var i = 0, ths = th.parentNode.getElementsByTagName("th"), len = ths.length; i < len; i++) ths[i].className = "";
@@ -319,13 +322,13 @@ var id = "",
 	hashSet = true;
 
 $(window)
-	.on("load", function() { cartOpenByHash() })
-	.on("hashchange", function() { if (hashSet) cartOpenByHash() });
+    .on("load", function () { cartOpenByHash(); })
+    .on("hashchange", function () { if (hashSet) cartOpenByHash(); });
 
 function setHash(hash) {
 	hashSet = false;
 	try { document.location.hash = "##" + hash; } catch (e) {}
-	setTimeout(function() { hashSet = true }, 100);
+	setTimeout(() => hashSet = true, 100);
 }
 
 function cartOpen(node) {
@@ -356,8 +359,8 @@ function cartClose() {
  * Для обработки списка выбранных элементов используется глобальный массив selected и сериализующая его функция selectionToForm(имя, разделитель)
  * */
 $(".view")
-	.on("change", ".items input.selecter-all", function() { setAllSelection(this) })
-	.on("change", ".items input.selecter", function() { setSelection(this) });
+    .on("change", ".items input.selecter-all", function () { setAllSelection(this); })
+    .on("change", ".items input.selecter", function () { setSelection(this); });
 
 var selected = [];
 
@@ -435,3 +438,70 @@ function closeExportsPanel() {
 	$('#excelExports').slideUp(100);
 	document.getElementById("excelExportsLink").innerHTML = "";
 }
+
+
+
+
+/* Переход на другую модель организации JS кода */
+
+
+// Табы
+document.addEventListener('click', ev => {
+    document.querySelectorAll('.tabsSelector').forEach(el => {
+        if (el.contains(ev.target)) {
+            let currentSelector = ev.target.closest('.tabsSelector__item');
+            let tabName = currentSelector.getAttribute('data-tab');
+            let currentContainer = document.querySelector('.tabsContainer__item[data-tab="' + tabName + '"]');
+
+            let changeContainer = () => {
+                document.querySelector('.tabsSelector__item_selected').classList.remove('tabsSelector__item_selected');
+                document.querySelector('.tabsContainer__item_selected').classList.remove('tabsContainer__item_selected');
+                currentSelector.classList.add('tabsSelector__item_selected');
+                currentContainer.classList.add('tabsContainer__item_selected');
+            };
+
+            if (currentContainer) {
+                if (currentContainer.hasAttribute('data-tab-lazy')) {
+                    fetch(currentContainer.getAttribute('data-tab-lazy'))
+                        .then(res => res.text())
+                        .then(text => {
+                            currentContainer.innerHTML = text;
+                            changeContainer();
+                        });
+                }
+                else {
+                    changeContainer();
+                }
+            }
+        }
+    });
+});
+
+//$(document).on('click', '.tabsSelector__item', function () {
+
+//    let currentSelector = this;
+//    let tabName = currentSelector.getAttribute('data-tab');
+//    let currentContainer = document.querySelector('.tabsContainer__item[data-tab="' + tabName + '"]');
+
+//    let changeContainer = () => {
+//        document.querySelector('.tabsSelector__item_selected').classList.remove('tabsSelector__item_selected');
+//        document.querySelector('.tabsContainer__item_selected').classList.remove('tabsContainer__item_selected');
+//        currentSelector.classList.add('tabsSelector__item_selected');
+//        currentContainer.classList.add('tabsContainer__item_selected');
+//    };
+
+//    if (currentContainer) {
+//        if (currentContainer.hasAttribute('data-tab-lazy')) {
+//            fetch(currentContainer.getAttribute('data-tab-lazy'))
+//                .then(res => res.text())
+//                .then(text => {
+//                    currentContainer.innerHTML = text;
+//                    changeContainer();
+//                });
+//        }
+//        else {
+//            changeContainer();
+//        }
+//    }
+
+//});

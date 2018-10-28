@@ -1,0 +1,111 @@
+﻿@{
+    ViewBag.Title = "DEVIN | Учет вычислительной техники по местам";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles {
+    <style>
+        table {
+            width: 100%;
+            border: 1px solid #333;
+        }
+
+        table th {
+            background: #eee;
+            padding: 4px;
+            font-weight: 500;
+            border: 1px solid #333;
+        }
+
+        table td {
+            text-align: center;
+            background: #fff;
+        }
+
+        table input,
+        table select,
+        table textarea {
+            width: 100%;
+            padding: 4px;
+        }
+
+        button {
+            padding: 4px 8px;
+        }
+    </style>    
+}
+
+@section scripts {
+    <script src="~/content/lib/jquery-3.3.1.min.js"></script>
+    <script>
+        class WorkPlaces {
+
+            static Create() {
+                $.post('@Url.Action("createWorkPlace")', () => location.reload());
+            }
+
+            static Update(obj) {
+                var row = obj.parentNode.parentNode;
+                var form = { Id: row.id };
+
+                row.querySelectorAll('input,select,textarea').forEach(el => form[el.name] = el.value);
+
+                $.post('@Url.Action("updateWorkPlace")', form);
+            }
+
+            static Del(obj) {
+                var row = obj.parentNode.parentNode;
+                $.post('@Url.Action("deleteWorkPlace")/' + row.id, () => row.parentNode.removeChild(row));
+            }
+            
+        }
+    </script>
+}
+
+@using (var conn = Database.Connection())
+{
+    var guilds = conn.Query<string>("SELECT Guild FROM Devices1C GROUP BY Guild ORDER BY Guild");
+    var places = conn.Query<WorkPlace>("SELECT * FROM WorkPlaces ORDER BY [Location]");
+
+    <button onclick="WorkPlaces.Create()">Добавить рабочее место</button>
+    <br /><br />
+    <table id="table">
+        <thead>
+            <tr>
+                <th>Расположение рабочего места</th>
+                <th width="250px">Цех</th>
+                <th width="170px">Операции</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var place in places)
+            {
+                <tr id="@place.Id">
+                    <td>
+                        <input type="text" name="@nameof(place.Location)" value="@place.Location" />
+                    </td>
+                    <td>
+                        <select name="@nameof(place.Guild)">
+                            <option value="">не выбран</option>
+                            @foreach (var guild in guilds)
+                            {
+                                if (guild == place.Guild)
+                                {
+                                    <option value="@guild" selected>@guild</option>
+                                }
+                                else
+                                {
+                                    <option value="@guild">@guild</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        <button onclick="WorkPlaces.Update(this)">Сохранить</button>
+                        <button onclick="WorkPlaces.Del(this)">Удалить</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

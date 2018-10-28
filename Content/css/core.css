@@ -276,7 +276,6 @@ a.has-icon {
     box-shadow: 2px 2px 13px 2px #666;
     color: #000;
     font: normal 12pt Segoe UI;
-    padding: 6px;
     cursor: default;
     min-width: 610px;
     max-width: 1400px;
@@ -304,8 +303,6 @@ a.has-icon {
 
 .cart-header {
     text-align: center;
-    margin: -6px;
-    margin-bottom: 6px;
     border-bottom: 1px solid #555;
     padding: 3px;
     background: #333;
@@ -326,11 +323,7 @@ a.has-icon {
 .cart-table select {
     font: normal 11pt Segoe UI;
     box-sizing: border-box;
-}
-
-.cart-table input,
-.cart-table textarea {
-    width: 99%;
+    width: 100%;
     border: 1px solid #aaa;
     border-radius: 5px;
     padding: 3px 4px;
@@ -338,7 +331,7 @@ a.has-icon {
 
 .cart-table textarea {
     resize: none;
-    height: 66px;
+    height: 70px;
 }
 
 .cart-links a {
@@ -354,6 +347,7 @@ a.has-icon {
 
 .cart-menu td {
     text-align: center;
+    padding: 5px 2px;
 }
 
 .cart-menu td:hover {
@@ -372,7 +366,7 @@ a.has-icon {
 #console {
     padding: 6px;
     font: normal 11pt Consolas;
-    max-height: 35px;
+    max-height: 58px;
     overflow-y: auto;
     max-width: 600px;
 }
@@ -480,20 +474,26 @@ label:hover {
     box-shadow: 1px 1px 8px #000;
 }
 
-    .context-menu > * {
+    .context-menu > div,
+    .context-menu > a, 
+    .context-menu > li {
         display: block;
         color: #ddd;
-        padding: 3px;
+        padding: 5px;
         padding-left: 12px;
         padding-right: 10px;
         list-style-type: none;
         text-decoration: none;
     }
 
-    .context-menu > *:hover {color: #E6B451}
+    .context-menu > div:hover,
+    .context-menu > a:hover, 
+    .context-menu > li:hover {color: #E6B451}
 
-    .context-menu .passive {padding: 0}
-        .context-menu .passive hr {border: .5px solid #666}
+    .context-menu  hr {
+        border: .5px solid #666;
+        margin: 2px;
+    }
 
 .modal {
     display: none;
@@ -722,3 +722,66 @@ label:hover {
 }
 
 /* #endregion*/
+
+.tabsSelector {
+    display: table;
+    border-collapse: collapse;
+    background: #ddd;
+    width: 100%;
+    table-layout: fixed;
+}
+
+    .tabsSelector__item {
+        display: table-cell;
+        padding: 4px;
+        border: 1px solid #ccc;
+        background: #ddd;
+        text-align: center;
+    }
+
+    .tabsSelector__item_selected {
+        background: #eee;
+        border-bottom-color: #eee;
+    }
+
+.tabsContainer {
+    border-bottom: 1px solid #ddd;
+    padding: 5px;
+}
+
+    .tabsContainer__item {
+        display: none;
+    }
+
+    .tabsContainer__item_selected {
+        display: block;
+    }
+
+.cartHistory {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+    .cartHistory__table {
+        font-size: 13px;
+        width: 99%;
+        margin: auto;
+    }
+
+    .cartHistory__table th {
+        font-weight: 500;
+        background: #eee;
+    }
+
+    .cartHistory__table td {
+        border: 1px solid #ddd;
+        padding: 3px;
+        vertical-align: top;
+        background: #fff;
+        word-break: break-word;
+    }
+
+    .cartHistory__date {
+        width: 110px;
+        
+    }

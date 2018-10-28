@@ -37,6 +37,30 @@
             .on('mousedown', '.items th', function () { _sort(this) })
         $('#cart')
             .on('submit', 'form', function () { event.preventDefault() })
+
+
+        function cartOpenBack() {
+
+            $.get('@Url.Action("cart")/' + id).done(data => $('#cart')
+                .html(data)
+                .fadeIn(100)
+                .css({ maxWidth: 600 })
+            );
+
+            $('.view .selected').removeClass('selected');
+            try { $('#' + id).addClass('selected'); } catch (e) {}
+        }
+
+        let Device = {
+            PrintReportCart() {
+                fetch('@Url.Action("PrintRecordCart", "Devices")/' + menuId).then(res => res.text()).then(text => {
+                    let a = document.createElement('a');
+                    a.href = text;
+                    a.click();
+                });
+            }
+        };
+
     </script>
 }
 
@@ -64,21 +88,24 @@
         </form>
     </div>
 
-    <ul class="context-menu" id="main">
-        <li onclick="cartCreate()">Создать карточку устройства</li>
-        <li onclick="groupCreate()">Создать группу</li>
-        <li class="passive"><hr /></li>
-        <li onclick="history()">История всех событий DEVIN</li>
-        <li class="passive"><hr /></li>
-        <li onclick="location='/devin/analyze/'">Анализ расхода картриджей</li>
-        <li class="passive"><hr /></li>
-        <li onclick="document.location = '/devin/devices/table';">Табличный просмотр Devin</li>
-        <li onclick="document.location = '/devin/devices/table1C';">Просмотр данных 1С</li>
-        <li onclick="document.location = '/devin/devices/compare1C';">Сверка с 1С</li>
-    </ul>
+    <div class="context-menu" id="main">
+        <div onclick="cartCreate()">Создать карточку устройства</div>
+        <div onclick="groupCreate()">Создать группу</div>
+        <hr />
+        <div onclick="history()">История всех событий DEVIN</div>
+        <hr />
+        <a href="@Url.Action("analyze", "storages")">Анализ расхода картриджей</a>
+        <hr />
+        <a href="@Url.Action("table")">Табличный просмотр Devin</a>
+        <a href="@Url.Action("table1C")">Просмотр данных 1С</a>
+        <a href="@Url.Action("compare1C")">Сверка с 1С</a>
+        <hr />
+        <a href="@Url.Action("workplaces")">Справочник рабочих мест</a>
+    </div>
 
     <ul class="context-menu" id="computer">
         <li onclick="computerOpen()">Открыть карточку</li>
+        <li onclick="Device.PrintReportCart()">Карточка учета техники</li>
         <li onclick="computerAida()">Отчет из AIDA</li>
         <li onclick="groupBeforeMove()">Переместить</li>
         <li onclick="computerDelete()">Удалить</li>

@@ -1,0 +1,360 @@
+﻿@model string
+
+@using (var conn = Database.Connection())
+{
+    var device = conn.Query<Device>(@"SELECT
+        Inventory
+        ,Name
+        ,Description
+        ,Mol
+        ,OS
+        ,OSKey
+        ,PlaceId
+        ,number_device   AS [DeviceNumber]
+        ,class_device    AS [DeviceClass]
+        ,number_comp     AS [ComputerId]
+        ,install_date    AS [DateInstall]
+        ,number_serial   AS [SerialNumber]
+        ,number_passport AS [PassportNumber]
+        ,attribute       AS [Location]
+        ,ID_prn          AS [PrinterId]
+        ,G_ID            AS [GroupId]
+        ,service_tag     AS [ServiceTag]
+        ,used            AS [InUse]
+    FROM Device
+    WHERE number_device = @Model", new { Model }).FirstOrDefault();
+
+    if (device == null)
+    {
+        <div class="error">Нет данных по данному идентификатору</div>
+        return;
+    }
+
+    device.Device1C = conn.Query<Device1C>("SELECT * FROM Devices1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
+
+    <div class="cart-header">@(device.DeviceClass == "CMP" ? device.Name : device.Description)</div>
+
+    <div class="tabsSelector">
+        <div class="tabsSelector__item tabsSelector__item_selected" data-tab="info"><span>Информация</span></div>
+        <div class="tabsSelector__item" data-tab="1c">1С</div>
+        <div class="tabsSelector__item" data-tab="history">Логи</div>
+        @if (device.DeviceClass == "CMP")
+        {
+            <div class="tabsSelector__item" data-tab="aida">Aida</div>
+            <div class="tabsSelector__item" data-tab="elm">ELM</div>
+        }
+    </div>
+
+    <div class="tabsContainer">
+        <div class="tabsContainer__item tabsContainer__item_selected" data-tab="info">
+            <table class="cart-table" id="form">
+
+                <tr>
+                    <td width="200px">Наименование</td>
+                    <td><input name="@nameof(device.Name)" value="@device.Name" /></td>
+                </tr>
+
+                <tr>
+                    <td>Инвентарный номер</td>
+                    <td><input name="@nameof(device.Inventory)" value="@device.Inventory" /></td>
+                </tr>
+
+                <tr>
+                    <td>Тип устройства</td>
+                    <td>
+                        <select name="@nameof(device.DeviceClass)">
+                            <option value="0">? не определен</option>
+                            @{
+                                var classes = conn.Query("SELECT T_alias, T_name FROM catalog_device_types ORDER BY T_name");
+                                foreach (var cls in classes)
+                                {
+                                    <option value="@cls.T_alias" @(cls.T_alias == device.DeviceClass ? "selected" : "")>@cls.T_name</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>За чем закреплено</td>
+                    <td>
+                        <select name="Destination">
+                            <option value="0">отдельно</option>
+                            @{
+                                var folders = conn.Query("SELECT G_ID, G_Title FROM [Group] WHERE G_Type = 'device' ORDER BY G_Title");
+
+                                foreach (var folder in folders)
+                                {
+                                    <option value="folder@(folder.G_ID)" @(folder.G_ID == device.GroupId ? "selected" : "")>[папка] @folder.G_Title</option>
+                                }
+                                if (device.DeviceClass != "CMP")
+                                {
+                                    var computers = conn.Query("SELECT number_device, name FROM Device WHERE class_device = 'CMP' AND used = 1 AND deleted = 0 ORDER BY name");
+                                    foreach (var computer in computers)
+                                    {
+                                        <option value="computer@(computer.number_device)" @(computer.number_device == device.ComputerId ? "selected" : "")>[компьютер] @computer.name</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Описание</td>
+                    <td><textarea name="@nameof(device.Description)">@device.Description</textarea></td>
+                </tr>
+
+                <tr>
+                    <td>М.О.Л.</td>
+                    <td><input name="@nameof(device.Mol)" value="@device.Mol" /></td>
+                </tr>
+
+                <tr>
+                    <td>Расположение</td>
+                    <td><input name="@nameof(device.Location)" value="@device.Location" /></td>
+                </tr>
+
+                <tr>
+                    <td>Помещение</td>
+                    <td>
+                        <select name="@nameof(device.PlaceId)">
+                            <option value="0">? не определен</option>
+                            @{
+                                var places = conn.Query<WorkPlace>("SELECT * FROM WorkPlaces ORDER BY Location");
+                                foreach (var place in places)
+                                {
+                                    <option value="@place.Id" @(place.Id == device.PlaceId ? "selected" : "")>@place.Location</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Серийный номер</td>
+                    <td><input name="@nameof(device.SerialNumber)" value="@device.SerialNumber" /></td>
+                </tr>
+
+                <tr>
+                    <td>Паспортный номер</td>
+                    <td><input name="@nameof(device.PassportNumber)" value="@device.PassportNumber" /></td>
+                </tr>
+
+                <tr>
+                    <td>Сервис-тег</td>
+                    <td><input name="@nameof(device.ServiceTag)" value="@device.ServiceTag" /></td>
+                </tr>
+
+                <tr>
+                    <td>Дата установки</td>
+                    <td>
+                        <input name="@nameof(device.DateInstall)" style="width: 100px" value="@device.DateInstall.ToString("dd.MM.yyyy")" />
+                        <a>
+                            <b>
+                                @((DateTime.Now - device.DateInstall).TotalHours.ToString("0")) часов
+                            </b>
+                        </a>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Последний ремонт</td>
+                    <td>
+                        <input name="@nameof(device.LastRepairDate)" style="width: 100px;" value="@(device.LastRepairDate?.ToString("dd.MM.yyyy"))" />
+                        @{
+                            var lastRepairDate = conn.Query("SELECT Max(Date) FROM Remont WHERE Id_D = @Model", new { Model }).FirstOrDefault();
+                            if (lastRepairDate == null)
+                            {
+                                @: Ремонты не проводились
+                            }
+                            else
+                            {
+                                <a><b>@lastRepairDate.ToString("dd.MM.yyyy")</b></a>
+                            }
+                        }
+                    </td>
+                </tr>
+
+                @if (device.DeviceClass == "CMP")
+                {
+                    <tr>
+                        <td>Операционная система</td>
+                        <td>
+                            <select name="@nameof(device.OS)">
+                                <option value="0">? не выбрана</option>
+                                @{
+                                    var systems = conn.Query("Select T_alias, T_name From catalog_os Order by T_name");
+                                    foreach (var sys in systems)
+                                    {
+                                        <option value="@sys.T_alias" @(sys.T_alias == device.OS ? "selected" : "")>@sys.T_name</option>
+                                    }
+                                }
+                            </select>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Ключ ОС</td>
+                        <td><input name="@nameof(device.OSKey)" value="@device.OSKey" /></td>
+                    </tr>
+                }
+
+                @if (device.DeviceClass == "PRN")
+                {
+                    <tr>
+                        <td>Типовой принтер</td>
+                        <td>
+                            <select name="@nameof(device.PrinterId)">
+                                <option value="0">? не определен</option>
+                                @{
+                                    var printers = conn.Query("Select N, Caption From PRINTER Order by Caption");
+                                    foreach (var printer in printers)
+                                    {
+                                        <option value="@printer.N" @(printer.N == device.PrinterId ? "selected" : "")>@printer.Caption</option>
+                                    }
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                }
+
+                <tr>
+                    <td>Списано</td>
+                    <td>
+                        <select name="@nameof(device.InUse)">
+                            <option value="0">Да</option>
+                            <option value="1" @(device.InUse == 1 ? "selected" : "")>Нет</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="tabsContainer__item" data-tab="1c">
+            @if (device.Device1C == null)
+            {
+                <div>Устройство не найдено в базе 1С</div>
+            }
+            else
+            {
+                <div class="cart-overflow">
+                    <table>
+                        <tr>
+                            <td style="width: 250px;">Наименование</td>
+                            <td>@device.Device1C.Description</td>
+                        </tr>
+                        <tr>
+                            <td>Цех</td>
+                            <td>@device.Device1C.Guild</td>
+                        </tr>
+                        <tr>
+                            <td>Подразделение</td>
+                            <td>@device.Device1C.SubDivision</td>
+                        </tr>
+                        <tr>
+                            <td>М.О.Л.</td>
+                            <td>@device.Device1C.Mol</td>
+                        </tr>
+                        <tr>
+                            <td>Балансная стоимость</td>
+                            <td>@device.Device1C.BalanceCost</td>
+                        </tr>
+                        <tr>
+                            <td>Амортизационная стоимость</td>
+                            <td>@device.Device1C.DepreciationCost</td>
+                        </tr>
+                        <tr>
+                            <td>Золото</td>
+                            <td>@device.Device1C.Gold</td>
+                        </tr>
+                        <tr>
+                            <td>Серебро</td>
+                            <td>@device.Device1C.Silver</td>
+                        </tr>
+                        <tr>
+                            <td>Платина</td>
+                            <td>@device.Device1C.Platinum</td>
+                        </tr>
+                        <tr>
+                            <td>Палладий</td>
+                            <td>@device.Device1C.Palladium</td>
+                        </tr>
+                        <tr>
+                            <td>МПГ</td>
+                            <td>@device.Device1C.Mpg</td>
+                        </tr>
+                    </table>
+                </div>
+            }
+        </div>
+        <div class="tabsContainer__item" data-tab="history" data-tab-lazy="@Url.Action("historyById", "devices", new { Id = device.DeviceNumber })"></div>
+        @if (device.DeviceClass == "CMP")
+        {
+            <div class="tabsContainer__item" data-tab="aida" data-tab-lazy="@Url.Action("data", "aida", new { Id = device.Name })"></div>
+            <div class="tabsContainer__item" data-tab="elm" data-tab-lazy="@Url.Action("elmById", "devices", new { Id = device.Name })"></div>
+        }
+    </div>
+
+    <div id="links" class="cart-links">
+	    <a onclick="cartHistoryRepair()">История ремонтов</a>
+	    <br />
+
+	    @if (device.DeviceClass == "CMP")
+        {
+	        <a onclick="cartAidaAutorun()">Автозагрузка</a>
+	        <br/>
+	        <a onclick="cartAidaPrograms('@device.Name')">Операционная система и установленное ПО</a>
+	        <br/>
+	        <a onclick="cartAidaDevices()">Оборудование</a><br/>
+        }
+
+	    @if ("CMP DIS PRN".Contains(device.DeviceClass))
+        {
+	        <a onclick="cartDefect()">Дефектный акт</a>
+        }
+    </div>
+
+    <div id="console"></div>
+
+    <table class="cart-menu">
+        <tr>
+            <td onclick="DeviceCart.Update('@device.DeviceNumber')">Сохранить</td>
+		    <td onclick="deviceToRepair()">Ремонт</td>
+
+		    @if (device.DeviceClass == "CMP")
+            {
+		        <td onclick="cartAida('@device.Name')">Everest</td>
+		        <td onclick="cartHistory('@device.Name')">История по имени</td>
+            }
+
+		    <td onclick="cartHistory('@device.Name')">История по инв.н.</td>
+		    <td onclick="cartDelete()">Удалить</td>
+		    <td onclick="cartCopy()">Копир.</td>
+		    <td onclick="cartClose()">Закрыть</td>
+        </tr>
+    </table>
+}
+
+<script>
+    var DeviceCart = {
+
+        Update(id) {
+            let form = { DeviceNumber: id };
+
+            document.getElementById('form').querySelectorAll('input,select,textarea').forEach(el => form[el.name] = el.value);
+
+            $.post('@Url.Action("update", "devices")', form)
+                .done(data => {
+                    document.getElementById('console').innerHTML = data.indexOf('error:') == -1
+                        ? `<div class="done">${data}</div>`
+                        : `<div class="error">${data.replace('error:', '')}</div>`;
+                    restore();
+                })
+                .fail(data => document.getElementById('console').innerHTML = `'[${data.status}] ${data.statusText}<br />${data.responseText}`);
+        }
+    };
+
+    $('#cart select').select2({
+        width: '100%'
+    });
+</script>

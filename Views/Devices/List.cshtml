@@ -15,11 +15,12 @@
         DEVICE.number_comp   AS ComputerId,
         DEVICE.Description,
         DEVICE.Mol,
-        DEVICE.attribute     AS Location,
+        WorkPlaces.Location,
         DEVICE.used          AS InUse,
         [GROUP].G_ID         AS GroupId
     FROM DEVICE
-    LEFT OUTER JOIN [GROUP] ON [GROUP].G_ID = DEVICE.G_ID
+    LEFT OUTER JOIN [GROUP]    ON [GROUP].G_ID  = DEVICE.G_ID
+	LEFT OUTER JOIN WorkPlaces ON WorkPlaces.Id = Device.PlaceId
     WHERE (DEVICE.deleted = 0) ORDER BY " + key[sortKey] + direction[sortDirection];
 
     if (!string.IsNullOrEmpty(search))

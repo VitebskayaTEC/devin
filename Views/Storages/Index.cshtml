@@ -33,9 +33,105 @@
 
         let links = {
             labels: '@Url.Action("labels", "storages")',
-            list: '@Url.Action("list", "storages")',
-            cart: '@Url.Action("storage_cart.asp", "asp")'
+            list: '@Url.Action("list", "storages")'
         }
+
+        setInterval(() => {
+            if (document.getElementById(id)) {
+                if (!document.getElementById(id).classList.contains('selected')) {
+                    document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+                    document.getElementById(id).classList.add('selected');
+                }
+            }
+        }, 50);
+
+        function cartOpenBack() {
+            $.get('@Url.Action("cart")/' + id, data => {
+                document.getElementById('cart').innerHTML = data;
+                $('#cart').fadeIn(100);
+            });
+        }
+
+
+        function cartCreate() {
+
+            let ncard = prompt('Введите инвентарный номер новой позиции. Он должен быть уникальным, так как используется в качестве идентификатора при оформлении ремонтов', 0);
+            if (ncard != '') {
+                $.post('@Url.Action("create")/' + ncard, data => {
+                    id = data;
+                    restore();
+                    document.location.hash = '##' + data;
+                });
+            }
+        }
+
+        function cartSave() {
+
+            let form = {};
+            document.querySelector('#cart .cart-form').querySelectorAll('input,select,textarea').forEach(el => form[el.name] = el.type === 'checkbox' ? el.checked : el.value);
+
+            $.post('@Url.Action("update")/' + id, form, data => {
+
+                // Обработка ошибок валидации
+                if (data.indexOf('error') > -1) {
+                    document.getElementById('console').innerHTML = '<div class="error">' + data.replace('error:', '') + '</div>';
+                }
+
+                else if (data === 'Изменений не было') {
+                    document.getElementById('console').innerHTML = '<div class="done">' + data + '</div>';
+                }
+
+                else {
+                    document.getElementById('console').innerHTML = '<div class="done">' + data + '</div>';
+
+                    // Перезагрузка карточки необходима, если поменялся инвентарный номер
+                    if (data.indexOf("<div class='hide' id") > -1) {
+                        id = document.querySelector('#console div.hide').innerHTML;
+                        document.getElementById('console').innerHTML = '';
+                        document.location.hash = '##' + id;
+                        let i = setInterval(() => {
+                            if (document.getElementById('console')) {
+                                if (document.getElementById('console').innerHTML != data) {
+                                    document.getElementById('console').innerHTML = '<div class="done">' + data + '</div>';
+                                    clearInterval(i);
+                                }
+                            }
+                        }, 50);
+                    }
+
+                    // Перезагрузка окна
+                    $.get('@Url.Action("list")/' + document.location.search, data => document.getElementById('view').innerHTML = data);
+                }
+            });
+        }
+
+        function cartDelete() {
+
+            if (!confirm('При удалении позиции со склада все записи о ремонтах и списаниях, созданные с ее использованием, будут повреждены. Это действие необратимо. Продолжить?')) return;
+
+            $.post('@Url.Action("delete")/' + id, data => {
+                $('#cart').fadeOut(100, () => document.getElementById('cart').innerHTML = '');
+                let el = document.getElementById(id);
+                el.parentNode.removeChild(el);
+                document.location.hash = '';
+            });
+        }
+
+        function allStoragesToRepair() {
+
+            $.post("/devin/asp/storage_all_repairs.asp?r=" + Math.random(), selectionToForm("select", ";"), function (data) {
+                $("#cart").addClass("repairs").html(data).fadeIn(150);
+                removeAllSelection();
+            });
+        }
+
+        function storageToRepair() {
+
+            $.post("/devin/asp/storage_all_repairs.asp?r=" + Math.random(), "select=" + id + ";", function (data) {
+                $("#cart").addClass("repairs").html(data).fadeIn(150);
+            });
+        }
+
     </script>
 }
 

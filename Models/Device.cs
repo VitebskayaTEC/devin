@@ -22,6 +22,8 @@ namespace Devin.Models
 
         public DateTime DateInstall { get; set; }
 
+        public DateTime? LastRepairDate { get; set; }
+
         public string Mol { get; set; }
 
         public string SerialNumber { get; set; }
@@ -60,10 +62,16 @@ namespace Devin.Models
 
         public string MPG { get; set; }
 
+        public int PlaceId { get; set; }
+
 
         public virtual string NetworkName { get; set; }
 
         public Printer Printer { get; set; }
+
+        public Device1C Device1C { get; set; }
+
+        public virtual WorkPlace Place { get; set; }
 
         public IEnumerable<Cartridge> Cartridges { get; set; } = new List<Cartridge>();
 

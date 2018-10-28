@@ -1,0 +1,153 @@
+﻿@model int
+
+@using (var conn = Database.Connection())
+{
+    var cartridge = conn.Query<Cartridge>("SELECT N as [Id], CAST(Price AS float) as [Cost], [Type], [Color], [Caption], [Description] FROM Cartridge WHERE N = @Model", new { Model }).FirstOrDefault();
+    if (cartridge == null)
+    {
+        <div class="error">Нет данных по данному идентификатору</div>
+        return;
+    }
+
+    var storages = conn.Query<Storage>(@"SELECT Ncard, Name, Nis
+        FROM Sklad
+        WHERE ID_cart = @Model AND delit = 1 AND Nis > 0 
+        ORDER BY NCard, Name", new { Model });
+
+    float calculateCost = conn.Query<float?>(@"SELECT AVG(Price) FROM (
+	    SELECT 
+		    CASE Price WHEN 0 THEN @BaseCost
+		    ELSE
+			    CASE uchet WHEN '10.5.1' THEN Price * 1.2 
+			    ELSE Price * 2.4 END
+		    END AS Price
+	    FROM SKLAD
+	    WHERE ID_cart = @Model) AS x", new { Model, BaseCost = 24.5F }).FirstOrDefault() ?? 0;
+
+    <div class="cart-header">@cartridge.Caption</div>
+
+    <div class="cart-overflow">
+
+        <table class="cart-table">
+            <tr>
+                <td>Наименование</td>
+                <td><input name="Caption" value="@cartridge.Caption" placeholder="Наименование картриджа" /></td>
+            </tr>
+            <tr>
+                <td>Описание</td>
+                <td><textarea name="Description">@cartridge.Description</textarea></td>
+            </tr>
+            <tr>
+                <td>Типовая стоимость</td>
+                <td>
+                    <input type="number" min="0" name="Cost" style="width: 100px;" />
+                    @(storages.Count() > 0 ? ("Вычисленная: " + calculateCost.ToString("0.00") + "р.") : "")
+                </td>
+            </tr>
+            <tr>
+                <td>Тип</td>
+                <td>
+                    <select name="Type">
+                        @{ 
+                            var types = conn.Query("SELECT C_alias as [Key], C_name AS [Text] FROM catalog_cartridge_types WHERE C_type = 'type' ORDER BY C_Type, C_Name");
+                            foreach (var type in types)
+                            {
+                                <option value="@type.Key" @(type.Key == cartridge.Type ? "selected" : "")>@type.Text</option>
+                            }
+                        }
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>Цвет</td>
+                <td>
+                    <select name="Color">
+                        @{
+                            var colors = conn.Query("SELECT C_alias as [Key], C_name AS [Text] FROM catalog_cartridge_types WHERE C_type = 'color' ORDER BY C_Type, C_Name");
+                            foreach (var color in colors)
+                            {
+                                <option value="@color.Key" @(color.Key == cartridge.Color ? "selected" : "")>@color.Text</option>
+                            }
+                        }
+                    </select>
+                </td>
+            </tr>
+        </table>
+
+        <table class="cart-table catalog-compares">
+            <tr>
+                <td>
+                    <br /><b>Связи с типовыми принтерами:</b>
+                </td>
+            </tr>
+            @{
+                var compared = conn.Query<Printer>("SELECT N as Id, Caption FROM Office INNER JOIN Printer ON Printer.N = Office.Printer WHERE Office.Cartridge = @Model ORDER BY Caption", new { Model });
+
+                if (compared.Count() == 0)
+                {
+                    <tr>
+                        <td>Не установлено ни одной связи</td>
+                    </tr>
+                }
+
+                foreach (var printer in compared)
+                {
+                    <tr>
+                        <td><a href="~/catalog/##prn@(printer.Id)">@printer.Caption</a></td>
+                        <td width="30px" data-id="@printer.Id">
+                            <div class="icon ic-clear" onclick="delCompare(this)"></div>
+                        </td>
+                    </tr>
+                }
+            }
+            <tr>
+                <td>
+                    Добавить связь:
+                    <select id="new-compare">
+                        <option value="0">?</option>
+                        @{
+                            var notCompared = conn.Query<Printer>(@"SELECT PRINTER.N AS Id, PRINTER.Caption 
+                            FROM PRINTER
+                            WHERE PRINTER.N NOT IN (
+                                SELECT PRINTER.N
+                                FROM PRINTER
+                                INNER JOIN OFFICE ON OFFICE.Printer = PRINTER.N
+                                INNER JOIN CARTRIDGE ON OFFICE.Cartridge = CARTRIDGE.N
+                                WHERE (CARTRIDGE.N = @Model)
+                                GROUP BY PRINTER.N
+                            ) ORDER BY PRINTER.Caption", new { Model });
+
+                            foreach (var printer in notCompared)
+                            {
+                                <option value="@printer.Id">@printer.Caption</option>
+                            }
+                        }
+                    </select>
+                </td>
+                <td width="30px">
+                    <div class="icon ic-add" onclick="addCompare()"></div>
+                </td>
+            </tr>
+        </table>
+
+        <br /><b>Позиции со склада, связанные с этим картриджем:</b>
+        <div class="cart-links">
+            @foreach (var storage in storages)
+            {
+                <div>
+                    <a href="~/storages/##@(storage.Ncard)"><b>@storage.Ncard</b> @storage.Name</a> @storage.Nis шт.
+                </div>
+            }
+        </div>
+    </div>
+
+    <div id="console"></div>
+
+    <table class="cart-menu">
+        <tr>
+            <td onclick="cartSave()">Сохранить</td>
+            <td onclick="cartDelete()">Удалить</td>
+            <td onclick="cartClose()">Закрыть</td>
+        </tr>
+    </table>
+}

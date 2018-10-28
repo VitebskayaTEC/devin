@@ -7,7 +7,9 @@ using NPOI.SS.Util;
 using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
+using System.Linq;
 using System.Web.Mvc;
 
 namespace Devin.Controllers
@@ -20,7 +22,9 @@ namespace Devin.Controllers
 
         public ActionResult Analyze() => View();
 
+        public ActionResult Cart(string Id) => View(model: Id);
 
+        public ActionResult Repairs() => View();
 
         public ActionResult Import()
         {
@@ -65,6 +69,117 @@ namespace Devin.Controllers
             return View(model);
         }
 
+
+        public string Create(string Id)
+        {
+            using (var conn = Database.Connection())
+            {
+                conn.Execute("INSERT INTO Sklad (Ncard, Name, Nadd, Nis, Nuse, Nbreak, Date, Id_Cart, delit) VALUES (@Id, '', 1, 1, 0, 0, @Date, 0, 1)", new { Id, DateTime.Now.Date });
+
+                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
+                {
+                    Date = DateTime.Now,
+                    Source = "storages",
+                    Id = Id,
+                    Text = "Создана позиция. Инвертарный номер [" + Id + "]",
+                    Username = User.Identity.Name
+                });
+
+                return Id.ToString();
+            }
+        }
+
+        public string Update(string Id, [Bind(Include = "Ncard,Name,Nadd,Nis,Nuse,Nbreak,Id_Cart,Class_Name,Uchet,G_Id")] Storage storage)
+        {
+            // Валидация 
+            if (!DateTime.TryParse(Request.Form.Get("Date"), out DateTime d)) return "error:Дата прихода введена в неверном формате"; else storage.Date = d;
+            if (!float.TryParse(Request.Form.Get("Price"), out float f)) return "error:Стоимость введена в неверном формате"; else storage.Price = f;
+            if (storage.Price < 0) return "error:Стоимость не может быть отрицательной";
+            if (storage.Nadd < 0) return "error:Количество прихода не может быть отрицательным";
+
+            using (var conn = Database.Connection())
+            {
+                string newNcard = "";
+
+                if (storage.Ncard != Id)
+                {
+                    if (conn.Query("SELECT Ncard FROM Sklad WHERE Ncard = @Ncard", new { storage.Ncard }).Count() != 0) return "error:Введенный инвертарный номер не является уникальным";
+
+                    // Обновление всех логов по инвертарному, чтобы не потерять их, когда поменяется инвентарный номер позиции
+                    conn.Execute("UPDATE Activity SET Id = @Id WHERE Source = 'storages' AND Id = @OldId", new { Id = storage.Ncard, OldId = Id });
+                    newNcard = "<div class='hide' id>" + storage.Ncard + "</div>";
+                }
+
+                // Логирование изменений
+                var _old = conn.Query<Storage>("SELECT Ncard, Name, Class_Name, Price, Nadd, Nis, Nuse, Nbreak, Date, Uchet, Id_Cart, G_Id, Delit FROM Sklad WHERE Ncard = @Id", new { Id }).FirstOrDefault() ?? new Storage();
+
+                var changes = new List<string>();
+                if (_old.Ncard != storage.Ncard) changes.Add($"инвентарный номер [{ _old.Ncard} => {storage.Ncard}]");
+                if ((_old.Name ?? "") != (storage.Name ?? "")) changes.Add($"наименование [\"{ _old.Name}\" => \"{storage.Name}\"]");
+                if (_old.Nadd != storage.Nadd) changes.Add($"кол-во прихода [{ _old.Nadd} => {storage.Nadd}]");
+                if (_old.Nis != storage.Nis) changes.Add($"кол-во на складе [{ _old.Nis} => {storage.Nis}]");
+                if (_old.Nuse != storage.Nuse) changes.Add($"кол-во используемых [{ _old.Nuse} => {storage.Nuse}]");
+                if (_old.Nbreak != storage.Nbreak) changes.Add($"кол-во списанных [{ _old.Nbreak} => {storage.Nbreak}]");
+                if (_old.Id_Cart != storage.Id_Cart) changes.Add($"типовой картридж [{ _old.Id_Cart} => {storage.Id_Cart}]");
+                if (_old.Class_Name != storage.Class_Name) changes.Add($"тип позиции [{ _old.Class_Name} => {storage.Class_Name}]");
+                if (_old.Uchet != storage.Uchet) changes.Add($"счет учета [{ _old.Uchet} => {storage.Uchet}]");
+                if (_old.G_Id != storage.G_Id) changes.Add($"папка [{ _old.G_Id} => {storage.G_Id}]");
+                if (_old.Date != storage.Date) changes.Add($"дата прихода [{ _old.Date} => {storage.Date}]");
+                if (_old.Price != storage.Price) changes.Add($"стоимость [{ _old.Price} => {storage.Price}]");
+
+                if (changes.Count > 0)
+                {
+                    // Сохранение в базе
+                    conn.Execute(@"UPDATE Sklad SET
+                        Ncard      = @Ncard,
+                        Name       = @Name,
+                        Class_Name = @Class_Name,
+                        Price      = @Price,
+                        Nadd       = @Nadd,
+                        Nis        = @Nis,
+                        Nuse       = @Nuse,
+                        Nbreak     = @Nbreak,
+                        Date       = @Date,
+                        Uchet      = @Uchet,
+                        Id_Cart    = @Id_Cart,
+                        G_Id       = @G_Id
+                    WHERE Ncard = '" + Id + "'", storage);
+
+                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
+                    {
+                        Date = DateTime.Now,
+                        Source = "storages",
+                        Id = storage.Ncard,
+                        Text = "Позиция изменена. Изменения: " + string.Join(",\n", changes.ToArray()),
+                        Username = User.Identity.Name
+                    });
+
+                    return "Позиция успешно обновлена! Изменены поля: <br />" + string.Join(",<br />", changes.ToArray()) + newNcard;
+                }
+                else
+                {
+                    return "Изменений не было";
+                }
+            }
+        }
+
+        public void Delete(string Id)
+        {
+            using (var conn = Database.Connection())
+            {
+                conn.Execute("DELETE FROM Sklad WHERE Ncard = @Id", new { Id });
+
+                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
+                {
+                    Date = DateTime.Now,
+                    Source = "storages",
+                    Id = Id,
+                    Text = "Позиция удалена",
+                    Username = User.Identity.Name
+                });
+            }
+        }
+
         public void AddExcelToStorage([Bind(Include = "Ncard,Name,Date,Uchet,Nadd,Price")] Storage storage)
         {
             string name = storage.Name.ToLower();
@@ -106,7 +221,6 @@ namespace Devin.Controllers
                 conn.Execute("INSERT INTO Sklad (Ncard, Name, Date, Uchet, Nadd, Nis, Nuse, Nbreak, delit, class_name, Price) VALUES (@Ncard, @Name, @Date, @Uchet, @Nadd, @Nadd, 0, 0, 1, @Class_Name, @Price)", storage);
             }
         }
-
 
         public string Labels()
         {

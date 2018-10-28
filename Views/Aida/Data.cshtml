@@ -1,0 +1,79 @@
+﻿@model string
+
+@using (var conn = Database.Connection())
+{
+    if (!int.TryParse(Model, out int Id))
+    {
+        Id = conn.Query<int>("SELECT ID FROM Report WHERE RHost = @Model ORDER BY RDateTime DESC", new { Model }).FirstOrDefault();
+    }
+
+    var model = conn.Query(@"SELECT
+        INum,
+        IPage,
+        IDevice,
+        IGroup,
+        IField,
+        IValue
+    FROM Item
+    WHERE ReportID = @Id
+    ORDER BY IPage, IDevice, IGroup, IField", new { Id });
+
+    if (model.Count() == 0)
+    {
+        <div>Компьютер не найден в базе Aida</div>
+        return;
+    }
+
+    string page = null, device = "", group = "";
+    int inum = 0;
+
+    Response.Write("<div class=\"cart-overflow\"><div><div><div>");
+
+    foreach (var row in model)
+    {
+        inum = row.INum;
+
+        if (row.IPage != page)
+        {
+            page = row.IPage;
+            device = row.IDevice;
+            group = row.IGroup;
+
+            Response.Write("</div></div></div>" +
+            "<a for='p" + inum + "'>" + page + "</a><div id='p" + inum + "' class='page'>" +
+            "<a for='d" + inum + "'>" + device + "</a><div id='d" + inum + "' class='set'>" +
+            "<a for='g" + inum + "'>" + group + "</a><div id='g" + inum + "' class='set'>");
+        }
+        else if (row.IDevice != device)
+        {
+            device = row.IDevice;
+            group = row.IGroup;
+
+            Response.Write("</div></div>" +
+            "<a for='d" + inum + "'>" + device + "</a><div id='d" + inum + "' class='set'>" +
+            "<a for='g" + inum + "'>" + group + "</a><div id='g" + inum + "' class='set'>");
+        }
+        else if (row.IGroup != group)
+        {
+            group = row.IGroup;
+
+            Response.Write("</div>" +
+            "<a for='g" + inum + "'>" + group + "</a><div id='g" + inum + "' class='set'>");
+        }
+
+        Response.Write("<div class='fv'><span class='f'>" + row.IField + "</span> " + row.IValue + "</div>");
+    }
+
+    Response.Write("</div></div></div></div>");
+}
+
+<script>
+    $('#cart a').each(function () {
+        if (this.innerHTML == "") this.parentNode.innerHTML = document.getElementById(this.getAttribute("for")).innerHTML;
+    });
+    $(document)
+        .off('mousedown', '#cart a')
+        .on("mousedown", "#cart a", function () {
+            $(this).add("#" + this.getAttribute("for")).toggleClass("open");
+        });
+</script>

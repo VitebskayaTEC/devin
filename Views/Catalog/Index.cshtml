@@ -13,26 +13,17 @@
 
 @section styles {
     <style>
-        .view > table td {
-            width: 50%;
-            vertical-align: top;
-        }
-
+        .view > table td {width: 50%;vertical-align: top}
+        .view a {color: #000;text-decoration: none}
+        .view a:hover {color: #007bd6}
         .items input {
             width: 100%;
             box-sizing: border-box;
             font: normal 12pt Segoe UI;
             border: 1px solid #fff;
         }
-
-        .catalog-compares tr td:first-child {
-            width: inherit;
-        }
-
-        .cart-links div {
-            word-break: break-word;
-            max-width: 600px;
-        }
+        .catalog-compares tr td:first-child {width: inherit}
+        .cart-links div {word-break: break-word;max-width: 600px}
     </style>
 }
 
@@ -41,9 +32,6 @@
     <script src="~/content/js/core.js"></script>
     <script src="~/content/js/catalog.js"></script>
     <script>
-        $(".unit").on("mousedown", ".items td", function () { cartOpen(this); });
-
-
         function cartOpen(node) {
             id = node.id;
             cartOpenBack();
@@ -63,61 +51,62 @@
         }
 
         function cartOpenBack() {
-            $("#cart").fadeIn(100).load('@Url.Action("", "asp")/catalog_' + getCart() + '_cart.asp?id=' + id);
-            $(".view .selected").removeClass("selected");
-            try { $("#" + id).parent().addClass("selected"); } catch (e) { }
+            $.get('@Url.Action("cart", "catalog")/' + id, data => {
+                document.getElementById('cart').innerHTML = data;
+                $("#cart").fadeIn(100);
+
+                let el = document.getElementById(id);
+                if (el) {
+                    document.querySelectorAll('.selected').forEach(x => x.classList.remove('selected'));
+                    el.classList.add('selected');
+                }
+            })
         }
 
         function getCart() {
             return (id.indexOf("prn") > -1) ? "printer" : "cartridge";
         }
 
-
         function createPrinter() {
-            $.post("@Url.Action("catalog", "exes")/catalog_create_printer.asp", function (data) {
-                document.location.hash = "##prn" + data;
-            });
+            $.post('@Url.Action("createPrinter")', _id => document.location.hash = "##prn" + _id);
         }
 
         function createCartridge() {
-            $.post("@Url.Action("catalog", "exes")/catalog_create_cartridge.asp", function (data) {
-                document.location.hash = "##cart" + data;
-            });
+            $.post('@Url.Action("createCartridge")', _id => document.location.hash = "##cart" + _id);
         }
 
-        /*
-        Работа с карточками каталога (для принтеров и картриджей)
-        */
-
         function cartSave() {
-            $.post("@Url.Action("catalog", "exes")/catalog_save_" + getCart() + "_cart.asp?id=" + id + "&r=" + Math.random(), $("#form").serialize(), function (data) {
-                document.getElementById("console").innerHTML = data;
-            });
+            let url = id.indexOf("prn") > -1 ? '@Url.Action("savePrinter")' : '@Url.Action("saveCartridge")';
+            let form = { Id: id.replace('prn', '').replace('cart', '') }
+            document.querySelectorAll('.cart-form input,.cart-form select,.cart-form textarea').forEach(el => form[el.name] = el.value);
+
+            $.post(url, form, data => document.getElementById("console").innerHTML = data);
         }
 
         function cartDelete() {
-            $.post("@Url.Action("catalog", "exes")/catalog_delete_" + getCart() + "_cart.asp?id=" + id + "&r=" + Math.random(), "", function (data) {
+            let url = id.indexOf("prn") > -1 ? '@Url.Action("deletePrinter")' : '@Url.Action("deleteCartridge")';
+            let _id = id.replace('prn', '').replace('cart', '');
+
+            $.post(url + '/' + _id, () => {
                 $(".view .selected").remove();
                 cartClose();
             });
         }
 
         function addCompare() {
-            $.post("@Url.Action("catalog", "exes")/catalog_add_compare.asp?r=" + Math.random(), "compare=" + document.getElementById("new-compare").value + "&active=" + getCart() + "&id=" + id, function (data) {
-                var text = data;
-                $("#cart").load("@Url.Action("", "asp")/catalog_" + getCart() + "_cart.asp?id=" + id + "&r=" + Math.random(), function () {
-                    document.getElementById("console").innerHTML = text;
-                });
-            });
+            $.post('@Url.Action("createCompare")', {
+                compare: document.getElementById("new-compare").value,
+                active: getCart(),
+                id: id
+            }, cartOpenBack);
         }
 
         function delCompare(div) {
-            $.post("@Url.Action("catalog", "exes")/catalog_delete_compare.asp?r=" + Math.random(), "compare=" + div.parentNode.getAttribute("data-id") + "&active=" + getCart() + "&id=" + id, function (data) {
-                var text = data;
-                $("#cart").load("@Url.Action("", "asp")/catalog_" + getCart() + "_cart.asp?id=" + id + "&r=" + Math.random(), function () {
-                    document.getElementById("console").innerHTML = text;
-                });
-            });
+            $.post('@Url.Action("deleteCompare")', {
+                compare: div.parentNode.getAttribute("data-id"),
+                active: getCart(),
+                id: id
+            }, cartOpenBack);
         }
     </script>
 }
@@ -148,7 +137,7 @@
                         @foreach (var printer in printers)
                         {
                             <tr>
-                                <td id="prn@(printer.Id)">@printer.Caption</td>
+                                <td><a href="##prn@(printer.Id)">@printer.Caption</a></td>
                             </tr>
                         }
                     </table>
@@ -165,7 +154,7 @@
                         @foreach (var cartridge in cartridges)
                         {
                             <tr>
-                                <td id="cart@(cartridge.Id)">@cartridge.Caption</td>
+                                <td><a href="##cart@(cartridge.Id)">@cartridge.Caption</a></td>
                             </tr>
                         }
                     </table>
