@@ -32,7 +32,12 @@
 
     device.Device1C = conn.Query<Device1C>("SELECT * FROM Devices1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
 
-    <div class="cart-header">@(device.DeviceClass == "CMP" ? device.Name : device.Description)</div>
+    <div class="cart__header">
+        <div>@(device.DeviceClass == "CMP" ? device.Name : device.Description)</div>
+        <div class="cart__closeButton">
+            <i class="icon ic-clear icon_white icon_no-hover" title="Закрыть карточку" onclick="cartClose()"></i>
+        </div>
+    </div>
 
     <div class="tabsSelector">
         <div class="tabsSelector__item tabsSelector__item_selected" data-tab="info"><span>Информация</span></div>
@@ -43,6 +48,7 @@
             <div class="tabsSelector__item" data-tab="aida">Aida</div>
             <div class="tabsSelector__item" data-tab="elm">ELM</div>
         }
+        <div class="tabsSelector__item" data-tab="addons">Дополнительно</div>
     </div>
 
     <div class="tabsContainer">
@@ -229,6 +235,14 @@
                     </td>
                 </tr>
             </table>
+            <table class="cart-menu">
+                <tr>
+                    <td onclick="Devices.Cart.update('@device.DeviceNumber')">Сохранить</td>
+                    <td onclick="deviceToRepair()">Ремонт</td>
+                    <td onclick="cartDelete()">Удалить</td>
+                    <td onclick="cartCopy()">Копир.</td>
+                </tr>
+            </table>
         </div>
         <div class="tabsContainer__item" data-tab="1c">
             @if (device.Device1C == null)
@@ -293,68 +307,27 @@
             <div class="tabsContainer__item" data-tab="aida" data-tab-lazy="@Url.Action("data", "aida", new { Id = device.Name })"></div>
             <div class="tabsContainer__item" data-tab="elm" data-tab-lazy="@Url.Action("elmById", "devices", new { Id = device.Name })"></div>
         }
+        <div class="tabsContainer__item" data-tab="addons" id="addons">
+            <div class="addons">
+                <a onclick="Devices.Cart.selectAddon('@Url.Action("HistoryByDevice", "Repairs", new { Id = device.DeviceNumber })')">История ремонтов</a><br />
+
+                @if (device.DeviceClass == "CMP")
+                {
+                    <a onclick="Devices.Cart.selectAddon('@Url.Action("Autorun", "aida", new { Id = device.Name })')">Автозагрузка</a><br />
+                    <a onclick="Devices.Cart.selectAddon('@Url.Action("Programs", "aida", new { Id = device.Name })')">Операционная система и установленное ПО</a><br />
+                    <a onclick="Devices.Cart.selectAddon('@Url.Action("Devices", "aida", new { Id = device.Name })')">Оборудование</a><br />
+                }
+
+                @if ("CMP DIS PRN".Contains(device.DeviceClass))
+                {
+                    <a onclick="Devices.Cart.selectAddon('@Url.Action("DefectAct", "Devices", new { Id = device.DeviceNumber })')">Дефектный акт</a><br />
+                }
+            </div>
+            <div class="addons__body hide"></div>
+        </div>
     </div>
-
-    <div id="links" class="cart-links">
-	    <a onclick="cartHistoryRepair()">История ремонтов</a>
-	    <br />
-
-	    @if (device.DeviceClass == "CMP")
-        {
-	        <a onclick="cartAidaAutorun()">Автозагрузка</a>
-	        <br/>
-	        <a onclick="cartAidaPrograms('@device.Name')">Операционная система и установленное ПО</a>
-	        <br/>
-	        <a onclick="cartAidaDevices()">Оборудование</a><br/>
-        }
-
-	    @if ("CMP DIS PRN".Contains(device.DeviceClass))
-        {
-	        <a onclick="cartDefect()">Дефектный акт</a>
-        }
-    </div>
-
-    <div id="console"></div>
-
-    <table class="cart-menu">
-        <tr>
-            <td onclick="DeviceCart.Update('@device.DeviceNumber')">Сохранить</td>
-		    <td onclick="deviceToRepair()">Ремонт</td>
-
-		    @if (device.DeviceClass == "CMP")
-            {
-		        <td onclick="cartAida('@device.Name')">Everest</td>
-		        <td onclick="cartHistory('@device.Name')">История по имени</td>
-            }
-
-		    <td onclick="cartHistory('@device.Name')">История по инв.н.</td>
-		    <td onclick="cartDelete()">Удалить</td>
-		    <td onclick="cartCopy()">Копир.</td>
-		    <td onclick="cartClose()">Закрыть</td>
-        </tr>
-    </table>
 }
 
 <script>
-    var DeviceCart = {
-
-        Update(id) {
-            let form = { DeviceNumber: id };
-
-            document.getElementById('form').querySelectorAll('input,select,textarea').forEach(el => form[el.name] = el.value);
-
-            $.post('@Url.Action("update", "devices")', form)
-                .done(data => {
-                    document.getElementById('console').innerHTML = data.indexOf('error:') == -1
-                        ? `<div class="done">${data}</div>`
-                        : `<div class="error">${data.replace('error:', '')}</div>`;
-                    restore();
-                })
-                .fail(data => document.getElementById('console').innerHTML = `'[${data.status}] ${data.statusText}<br />${data.responseText}`);
-        }
-    };
-
-    $('#cart select').select2({
-        width: '100%'
-    });
+    $('#cart select').select2({ width: '100%' });
 </script>

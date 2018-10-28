@@ -477,31 +477,123 @@ document.addEventListener('click', ev => {
     });
 });
 
-//$(document).on('click', '.tabsSelector__item', function () {
+var Core = {
 
-//    let currentSelector = this;
-//    let tabName = currentSelector.getAttribute('data-tab');
-//    let currentContainer = document.querySelector('.tabsContainer__item[data-tab="' + tabName + '"]');
+}
 
-//    let changeContainer = () => {
-//        document.querySelector('.tabsSelector__item_selected').classList.remove('tabsSelector__item_selected');
-//        document.querySelector('.tabsContainer__item_selected').classList.remove('tabsContainer__item_selected');
-//        currentSelector.classList.add('tabsSelector__item_selected');
-//        currentContainer.classList.add('tabsContainer__item_selected');
-//    };
+var Devices = {
 
-//    if (currentContainer) {
-//        if (currentContainer.hasAttribute('data-tab-lazy')) {
-//            fetch(currentContainer.getAttribute('data-tab-lazy'))
-//                .then(res => res.text())
-//                .then(text => {
-//                    currentContainer.innerHTML = text;
-//                    changeContainer();
-//                });
-//        }
-//        else {
-//            changeContainer();
-//        }
-//    }
+    Cart: {
 
-//});
+        update(id) {
+            let form = new FormData();
+            form.append('DeviceNumber', id);
+
+            document.getElementById('form').querySelectorAll('input,select,textarea').forEach(el => form.append(el.name, el.value));
+
+            fetch(host + 'devices/update', { method: 'POST', body: form })
+                .then(res => res.text())
+                .then(text => {
+                    text.indexOf('error:') > -1 ? message(text.replace('error:', '')) : message(text, 'good');
+                    restore();
+                })
+                .catch(e => message(`'[${e.status}] ${e.statusText}<br />${e.responseText}`));
+        },
+
+        selectAddon(url) {
+            fetch(url)
+                .then(res => {
+                    if (res.ok) {
+                        res.text().then(text => {
+                            document.querySelector('.addons').classList.add('hide');
+                            let body = document.querySelector('.addons__body');
+                            body.innerHTML = text;
+                            body.classList.remove('hide');
+                        });
+                    } else {
+                        message(res.status + ' (' + res.statusText + ')')
+                    }
+                });
+        },
+
+        backToAddons() {
+            document.querySelector('.addons').classList.remove('hide');
+            document.querySelector('.addons__body').classList.add('hide');
+        }
+    },
+
+    DefectAct: {
+
+        add() {
+            let count = document.getElementById('defect_count').value;
+            if (isNaN(+count) || count === '') return alert('Количество деталей должно быть числом');
+
+            let select = document.getElementById('defect_position');
+            let type = select.value;
+            let text = type === 'unique' ? document.getElementById('unique_name').value : select.options[select.selectedIndex].innerHTML;
+            if (type === 'unique' && String(document.getElementById('unique_name').value) === '') return alert("Не введено название неисправности");
+
+            document.getElementById('defect_container').insertAdjacentHTML('beforeend', `
+            <tr>
+                <td val="${type}">${text}</td>
+                <td>${Math.round(count)}</td>
+                <td><button onclick="Devices.DefectAct.del(this)">Удалить</button></td>
+            </tr>`);
+        },
+
+        del(button) {
+            let row = button.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        },
+
+        check(select) {
+            document.getElementById('defect_unique').innerHTML = select.value === 'unique'
+                ? `Свое: <input type="text" id="unique_name" />`
+                : '';
+        },
+
+        print() {
+
+            let data = new FormData();
+
+            document.getElementById('defect-cart').querySelectorAll('input,textarea').forEach(el => data.append(el.name, el.value));
+
+            let positions = '';
+            document.getElementById('defect_container').querySelectorAll('tr').forEach(el => {
+                let cells = el.getElementsByTagName('td');
+                let type = cells[0].getAttribute('val');
+
+                positions += (type !== 'unique' ? cells[0].getAttribute('val') : cells[0].innerHTML) + '::' + cells[1].innerHTML + ';;';
+            });
+            data.append('positions', positions);
+
+            let link = document.getElementById('defect_link');
+            link.innerHTML = '<i>... идет печать ...</i>';
+
+            fetch(host + 'devices/printDefectAct', {
+                method: 'POST',
+                body: data
+            })
+                .then(res => res.text())
+                .then(text => link.innerHTML = text)
+                .catch(() => message('Произошла ошибка'));
+        }
+    }
+};
+
+document.querySelector('.messages').addEventListener('click', e => {
+    console.log(e.target);
+    if (e.target.classList.contains('messages__item')) {
+        document.querySelector('.messages').removeChild(e.target);
+    }
+})
+
+function message(text, type) {
+    type = type || 'error';
+    let div = document.createElement('div');
+    div.innerHTML = text;
+    div.classList.add('messages__item');
+    div.classList.add('messages__item_' + type);
+    document.querySelector('.messages').appendChild(div);
+    setTimeout(() => { try { document.querySelector('.messages').removeChild(div); } catch (e) { } }, 5000);
+}

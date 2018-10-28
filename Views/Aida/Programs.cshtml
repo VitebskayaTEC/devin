@@ -1,0 +1,55 @@
+﻿@model string
+
+<button onclick="Devices.Cart.backToAddons()">Вернуться</button>
+
+@using (var conn = Database.Connection())
+{
+    if (!int.TryParse(Model, out int Id))
+    {
+        Id = conn.Query<int>("SELECT ID FROM Report WHERE RHost = @Model ORDER BY RDateTime DESC", new { Model }).FirstOrDefault();
+    }
+
+    var about = conn.Query(@"SELECT IField, IValue FROM Item
+    WHERE ReportId = @Id
+        AND IPage = 'Операционная система' 
+        AND ((IGroup = 'Свойства операционной системы' AND IField = 'Название ОС')
+            OR (IGroup = 'Свойства операционной системы' AND IField = 'Версия ОС')
+            OR (IGroup = 'Лицензионная информация' AND IField = 'Ключ продукта'))", new { Id });
+
+    if (about.Count() == 0)
+    {
+        <div>Компьютер не найден в базе Aida</div>
+        return;
+    }
+
+    <b>Операционная система</b>
+    <table>
+        <tbody>
+            @foreach (var row in about)
+            {
+                <tr>
+                    <td>@row.IField</td>
+                    <td>@row.IValue</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    var model = conn.Query<string>(@"SELECT IDevice FROM Item 
+    WHERE ReportId = @Id
+        AND IPage = 'Установленные программы'
+        AND IDevice NOT LIKE '%Microsoft Visual C++%'
+        AND IDevice NOT LIKE '%.NET F%'
+        AND IDevice NOT LIKE '%vs_%'
+        AND IDevice NOT LIKE '%Update%'
+        AND IDevice NOT LIKE '%icecap_%'
+    GROUP BY IDevice", new { Id });
+
+    <div class="cart-overflow">
+        <b>Установленное ПО</b>
+        @foreach (string row in model)
+        {
+            <div>@row</div>
+        }
+    </div>
+}

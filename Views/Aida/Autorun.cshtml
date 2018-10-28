@@ -1,0 +1,40 @@
+﻿@model string
+
+<button onclick="Devices.Cart.backToAddons()">Вернуться</button>
+
+@using (var conn = Database.Connection())
+{
+    if (!int.TryParse(Model, out int Id))
+    {
+        Id = conn.Query<int>("SELECT ID FROM Report WHERE RHost = @Model ORDER BY RDateTime DESC", new { Model }).FirstOrDefault();
+    }
+
+    var model = conn.Query(@"SELECT IDevice, IField, IValue FROM Item WHERE (ReportID  = @Id AND IPage = 'Автозагрузка') ORDER BY IDevice", new { Id });
+
+    if (model.Count() == 0)
+    {
+        <div>Компьютер не найден в базе Aida</div>
+        return;
+    }
+
+    <div class="cart-overflow cart-history-box">
+		<table class="cart-history">
+		    <thead>
+		        <tr>
+		            <th width="160px" data-type="string" onclick="_sort(this)">Процесс</th>
+                    <th width="200px" data-type="string" onclick="_sort(this)">Параметр</th>
+                    <th data-type="string" onclick="_sort(this)">Значение</th>
+		        </tr>
+		    </thead>
+            <tbody>
+                @foreach (var row in model) {
+			        <tr>
+			            <td>@row.IDevice</td>
+                        <td>@row.IField</td>
+                        <td>@row.IValue</td>
+			        </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -147,14 +147,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="asp\device_1c_compare.asp" />
-    <Content Include="asp\device_aida_autorun.asp" />
-    <Content Include="asp\device_aida_devices.asp" />
-    <Content Include="asp\device_aida_programs.asp" />
-    <Content Include="asp\device_history.asp" />
     <Content Include="asp\device_history_repair.asp" />
     <Content Include="asp\device_to_repair.asp" />
-    <Content Include="asp\history.asp" />
     <Content Include="asp\repair_cart.asp" />
     <Content Include="asp\storage_all_repairs.asp" />
     <Content Include="asp\writeoff_cart.asp" />
@@ -285,6 +279,9 @@
     <Content Include="Views\Devices\HistoryById.cshtml" />
     <Content Include="Views\Devices\ElmById.cshtml" />
     <Content Include="Views\Aida\Data.cshtml" />
+    <Content Include="Views\Aida\Autorun.cshtml" />
+    <Content Include="Views\Aida\Devices.cshtml" />
+    <Content Include="Views\Aida\Programs.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

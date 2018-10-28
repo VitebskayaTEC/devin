@@ -26,7 +26,7 @@ namespace Devin.Controllers
 
         public ActionResult ElmById(string Id) => View(model: Id);
 
-        public ActionResult DefectAct() => View();
+        public ActionResult DefectAct(string Id) => View(model: Id);
 
         public ActionResult Table() => View();
 

@@ -1,0 +1,57 @@
+﻿@model string
+
+<button onclick="Devices.Cart.backToAddons()">Вернуться</button>
+
+@using (var conn = Database.Connection())
+{
+    if (!int.TryParse(Model, out int Id))
+    {
+        Id = conn.Query<int>("SELECT ID FROM Report WHERE RHost = @Model ORDER BY RDateTime DESC", new { Model }).FirstOrDefault();
+    }
+
+    var model = conn.Query(@"SELECT 
+        IPage, IDevice, IGroup, IField, IValue
+    FROM Item
+    WHERE (ReportID = @Id) AND (IPage = 'Монитор' OR IPage = 'Принтеры')
+    ORDER BY IPage, IDevice, IGroup, IField, IValue", new { Id });
+
+    if (model.Count() == 0)
+    {
+        <div>Компьютер не найден в базе Aida</div>
+        return;
+    }
+
+    string device = "";
+
+    <div class="cart-overflow cart-history-box">
+        <table class="cart-history">
+            <thead>
+                <tr>
+                    <th width="300px" data-type="string" onclick="_sort(this)">Устройство</th>
+                    <th data-type="string" onclick="_sort(this)">Информация об устройстве</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in model)
+                {
+                    if (row.IDevice == device)
+                    {
+                        @Html.Raw("<div><b>" + row.IField + "</b>: " + row.IValue + "</div>")
+                    }
+                    else
+                    {
+                        if (device != "") { @Html.Raw("</div></td></tr>") }
+
+                        device = row.IDevice;
+                        @Html.Raw("<tr>" +
+                           "<td>" + device + "</td>" +
+                           "<td>" +
+                           "<a onclick=\"this.parentNode.querySelector('.cart-info-block').classList.toggle('hide')\">Показать/скрыть</a>" +
+                           "<div class='cart-info-block hide'>" +
+                           "<div><b>" + row.IField + "</b>: " + row.IValue + "</div>")
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -279,7 +279,7 @@ a.has-icon {
     cursor: default;
     min-width: 610px;
     max-width: 1400px;
-    min-height: 500px;
+    /* min-height: 500px; */
 }
 
 #cart {
@@ -308,6 +308,38 @@ a.has-icon {
     background: #333;
     color: #E6B451;
     font: normal 15pt Century Gothic;
+}
+
+.cart__header {
+    display: table;
+    width: 100%;
+}
+
+.cart__header > div {
+    display: table-cell;
+    background: #333;
+    border-bottom: 1px solid #555;
+    font: normal 15pt Century Gothic;
+    padding: 3px;
+    text-align: center;
+    color: #E6B451;
+}
+
+.cart__header > div:first-child {
+    border-top-left-radius: 5px;
+}
+
+.cart__header > div:last-child {
+    border-top-right-radius: 5px;
+}
+
+.cart__closeButton {
+    width: 40px;
+}
+
+.cart__closeButton:hover {
+    background: #fe4848;
+    cursor: pointer;
 }
 
 .cart-table {
@@ -339,10 +371,10 @@ a.has-icon {
 }
 
 .cart-menu {
-    margin-top: 6px;
+    /* margin-top: 6px; */
     border-top: 1px solid #ddd;
     font: normal 11pt Segoe UI;
-    padding: 3px;
+    /* padding: 3px; */
 }
 
 .cart-menu td {
@@ -372,7 +404,7 @@ a.has-icon {
 }
 
 .cart-overflow {
-    min-height: 500px;
+    /*min-height: 500px;*/
     max-height: 650px;
     overflow-y: auto;
 }
@@ -505,6 +537,25 @@ label:hover {
     box-shadow: 1px 1px 8px #000;
 }
 
+.messages {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    z-index: 100;
+}
+
+    .messages__item {
+        background: #64c164;
+        padding: 10px;
+        margin: 10px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: default;
+    }
+
+    .messages__item_error {background: #fe4848;}
+    .messages__item_warning {background: #e6b451; }
+
 /* #endregion */
 /* #region Led */
 
@@ -550,6 +601,25 @@ label:hover {
 /* #endregion */
 /* #region Addons */
 
+.messages {
+position: fixed;
+bottom: 0;
+left: 0;
+z-index: 100;
+}
+
+.messages__item {
+
+}
+
+.messages__item_error {
+
+}
+
+.messages__item_warning {
+
+}
+
 .select2-container {min-width: 100px}
 .hide {display: none}
 .show {display: block}
@@ -584,7 +654,12 @@ label:hover {
 }
 
 .icon {background: url('../img/devin_icons_black.png') no-repeat}
-.icon:hover {background: url('../img/devin_icons_blue.png') no-repeat}
+.icon_white {background: url('../img/devin_icons_white.png') no-repeat}
+
+.icon:not(.icon_no-hover):hover {background: url('../img/devin_icons_blue.png') no-repeat}
+
+/*.icon.icon_no-hover {background: url('../img/devin_icons_black.png') no-repeat}
+.icon_white.icon_no-hover {background: url('../img/devin_icons_white.png') no-repeat}*/
 
 .ic-add {background-position: 0 0 !important}
 .ic-add-circle-outline {background-position: -24px 0 !important}
@@ -728,7 +803,7 @@ label:hover {
     border-collapse: collapse;
     background: #ddd;
     width: 100%;
-    table-layout: fixed;
+    /* table-layout: fixed; */
 }
 
     .tabsSelector__item {
@@ -737,6 +812,7 @@ label:hover {
         border: 1px solid #ccc;
         background: #ddd;
         text-align: center;
+        /* border-bottom: 0; */
     }
 
     .tabsSelector__item_selected {
@@ -745,7 +821,7 @@ label:hover {
     }
 
 .tabsContainer {
-    border-bottom: 1px solid #ddd;
+    /* border-bottom: 1px solid #ddd; */
     padding: 5px;
 }
 

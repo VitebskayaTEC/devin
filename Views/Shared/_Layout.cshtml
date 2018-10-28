@@ -12,7 +12,7 @@
 
 <body>
 
-    @{ string url = Request.Url.AbsoluteUri; }
+    @{ string url = Request.Url.AbsoluteUri.ToLower(); }
     <ul class="main-menu">
         <li>
             <a href="~/" style="width: 36px"><div class="icon ic-exit-to-app"></div></a>
@@ -37,6 +37,9 @@
 
     @RenderSection("html", false)
 
+    <div class="messages"></div>
+
+    <script>const host = '@Url.Action(null, "")';</script>
     @RenderSection("scripts", false)
 </body>
 

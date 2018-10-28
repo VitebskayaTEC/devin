@@ -14,6 +14,12 @@ namespace Devin.Controllers
 
         public ActionResult Data(string Id) => View(model: Id);
 
+        public ActionResult Autorun(string Id) => View(model: Id);
+
+        public ActionResult Devices(string Id) => View(model: Id);
+
+        public ActionResult Programs(string Id) => View(model: Id);
+
         public void Delete(int Id)
         {
             using (var conn = Database.Connection())
