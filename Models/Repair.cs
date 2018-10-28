@@ -8,17 +8,17 @@ namespace Devin.Models
         public int Id { get; set; }
 
 
-        public string DeviceNumber { get; set; }
+        public int DeviceId { get; set; }
 
-        public string StorageInventory { get; set; }
+        public int StorageInventory { get; set; }
 
-        public int Units { get; set; }
+        public int Number { get; set; }
 
         public DateTime Date { get; set; }
 
-        public bool IfSpis { get; set; }
+        public bool IsOff { get; set; }
 
-        public bool Virtual { get; set; }
+        public bool IsVirtual { get; set; }
 
         public string Author { get; set; }
 

@@ -3,17 +3,17 @@
     string search = Request.QueryString.Get("search");
 
     var _folders = conn.Query<Folder>(@"SELECT 
-	    f.G_ID AS Id,
-	    CASE WHEN p.G_ID IS NULL THEN 0 ELSE p.G_ID END AS FolderId,
-	    f.G_Title AS Title
-    FROM [GROUP] f
-	LEFT OUTER JOIN [GROUP] p ON f.G_Inside = p.G_Id
-    WHERE f.G_Type = 'storage'
-    ORDER BY f.G_Title").AsList();
+	    f.Id,
+	    CASE WHEN p.Id IS NULL THEN 0 ELSE p.Id END AS FolderId,
+	    f.Name
+    FROM Folders f
+	LEFT OUTER JOIN Folders p ON f.FolderId = p.Id
+    WHERE f.Type = 'storage'
+    ORDER BY f.Name").AsList();
 
     if (!string.IsNullOrEmpty(search))
     {
-        var storages = conn.Query<Storage>(string.Format("SELECT Ncard, Name, Price, Nadd, Date, Nis, Nuse, Nbreak, Uchet, G_ID FROM SKLAD WHERE (Delit > 0) AND ((Ncard LIKE '%{0}%') OR (Name LIKE '%{0}%') OR (Name LIKE '%{0}%') OR (Date LIKE '%{0}%') OR (uchet LIKE '%{0}%')) ORDER BY CAST(Ncard AS int)", search)).AsList();
+        var storages = conn.Query<Storage>(string.Format("SELECT * FROM Storages WHERE (IsDeleted <> 1) AND ((Inventory LIKE '%{0}%') OR (Name LIKE '%{0}%') OR (Date LIKE '%{0}%') OR (Account LIKE '%{0}%')) ORDER BY Inventory", search)).AsList();
 
         <div class='unit'>
             <table class='caption'>
@@ -26,7 +26,7 @@
     }
     else
     {
-        var storages = conn.Query<Storage>("SELECT Ncard, Name, Price, Nadd, Date, Nis, Nuse, Nbreak, Uchet, G_ID FROM SKLAD WHERE (Delit > 0) ORDER BY Date DESC").AsList();
+        var storages = conn.Query<Storage>("SELECT * FROM Storages WHERE (IsDeleted <> 1) ORDER BY Date DESC").AsList();
         var off = new List<Storage>();
         var solo = new List<Storage>();
         var folders = new List<Folder>();
@@ -38,7 +38,7 @@
             found = false;
             foreach (var folder in _folders)
             {
-                if (storage.G_Id == folder.Id)
+                if (storage.FolderId == folder.Id)
                 {
                     folder.Storages.Add(storage);
                     found = true;
@@ -83,7 +83,7 @@
 
         @RenderFolder(new Folder
         {
-            Title = "Списанные позиции",
+            Name = "Списанные позиции",
             Storages = off
         }, true);
 
@@ -114,7 +114,7 @@
                         <div class="icon ic-folder"></div>
                     </td>
                 }
-                <th>@folder.Title</th>
+                <th>@folder.Name</th>
             </tr>
         </table>
         <div class="items_block @(open == "open" ? "" : "hide")">
@@ -136,18 +136,18 @@
         <tbody>
             @foreach (var storage in storages)
             {
-                <tr id="@storage.Ncard" class="item">
+                <tr id="@storage.Inventory" class="item">
                     <td><input type="checkbox" class="selecter" /></td>
                     <td><div class="led @storage.Led()"></div></td>
-                    <td onclick="cartOpen(this)">@storage.Ncard</td>
+                    <td onclick="cartOpen(this)">@storage.Inventory</td>
                     <td onclick="cartOpen(this)">@storage.Name</td>
-                    <td onclick="cartOpen(this)">@storage.Price</td>
-                    <td onclick="cartOpen(this)">@storage.Nadd</td>
+                    <td onclick="cartOpen(this)">@storage.Cost</td>
+                    <td onclick="cartOpen(this)">@storage.Nall</td>
                     <td onclick="cartOpen(this)">@storage.Date.ToString("dd.MM.yyyy")</td>
-                    <td onclick="cartOpen(this)">@storage.Nis</td>
-                    <td onclick="cartOpen(this)">@storage.Nuse</td>
-                    <td onclick="cartOpen(this)">@storage.Nbreak</td>
-                    <td onclick="cartOpen(this)">@storage.Uchet</td>
+                    <td onclick="cartOpen(this)">@storage.Nstorage</td>
+                    <td onclick="cartOpen(this)">@storage.Nrepairs</td>
+                    <td onclick="cartOpen(this)">@storage.Noff</td>
+                    <td onclick="cartOpen(this)">@storage.Account</td>
                 </tr>
             }
         </tbody>

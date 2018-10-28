@@ -3,17 +3,14 @@
 	dim conn 	: set conn = server.createObject("ADODB.Connection")
 	conn.open everest
 
-	dim table
 	select case request.form("app")
 		case "device"
-			table = "DEVICE"
+            conn.execute "UPDATE Devices SET FolderId = 0 WHERE FolderId = '" & request.form("gid") & "'"
 		case "storage"
-			table = "SKLAD"
+            conn.execute "UPDATE Storages SET FolderId = 0 WHERE FolderId = '" & request.form("gid") & "'"
 		case "repair"
-			table = "writeoff"
+            conn.execute "UPDATE Writeoffs SET FolderId = 0 WHERE FolderId = '" & request.form("gid") & "'"
 	end select
-
-	conn.execute "UPDATE " & table & " SET G_ID = 0 WHERE (G_ID = '" & request.form("gid") & "')"
 
 	conn.close
 	set conn = nothing

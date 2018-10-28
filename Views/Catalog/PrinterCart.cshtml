@@ -2,21 +2,21 @@
 
 @using (var conn = Database.Connection())
 {
-    var printer = conn.Query<Printer>("SELECT N as Id, Caption, Description FROM Printer WHERE N = @Model", new { Model }).FirstOrDefault();
+    var printer = conn.Query<Printer>("SELECT * FROM Printers WHERE Id = @Model", new { Model }).FirstOrDefault();
     if (printer == null)
     {
         <div class="error">Нет данных по данному идентификатору</div>
         return;
     }
 
-    <div class="cart-header">@printer.Caption</div>
+    <div class="cart-header">@printer.Name</div>
 
     <div class="cart-overflow">
 
         <table class="cart-table cart-form">
             <tr>
                 <td>Наименование</td>
-                <td><input name="Caption" value="@printer.Caption" placeholder="Наименование принтера" /></td>
+                <td><input name="Name" value="@printer.Name" placeholder="Наименование принтера" /></td>
             </tr>
             <tr>
                 <td>Описание</td>
@@ -31,7 +31,7 @@
                 </td>
             </tr>
             @{
-                var compared = conn.Query<Cartridge>("SELECT N as Id, Caption FROM Office INNER JOIN Cartridge ON Cartridge.N = Office.Cartridge WHERE Office.Printer = @Model ORDER BY Caption", new { Model });
+                var compared = conn.Query<Cartridge>("SELECT Id, Name FROM PrintersCartridges INNER JOIN Cartridges ON Cartridges.Id = PrintersCartridges.CartridgeId WHERE PrintersCartridges.PrinterId = @Model ORDER BY Name", new { Model });
 
                 if (compared.Count() == 0)
                 {
@@ -43,7 +43,7 @@
                 foreach (var cartridge in compared)
                 {
                     <tr>
-                        <td><a href="~/catalog/##cart@(cartridge.Id)">@cartridge.Caption</a></td>
+                        <td><a href="~/catalog/##cart@(cartridge.Id)">@cartridge.Name</a></td>
                         <td width="30px" data-id="@cartridge.Id">
                             <div class="icon ic-clear" onclick="delCompare(this)"></div>
                         </td>
@@ -56,20 +56,20 @@
                     <select id="new-compare">
                         <option value="0">?</option>
                         @{
-                            var notCompared = conn.Query<Cartridge>(@"SELECT CARTRIDGE.N AS Id, CARTRIDGE.Caption
-                                FROM CARTRIDGE
-                                WHERE CARTRIDGE.N NOT IN (
-                                    SELECT CARTRIDGE.N
-                                    FROM CARTRIDGE
-                                    INNER JOIN OFFICE ON OFFICE.Cartridge = CARTRIDGE.N
-                                    INNER JOIN PRINTER ON OFFICE.Printer = PRINTER.N
-                                    WHERE (PRINTER.N = @Model)
-                                    GROUP BY CARTRIDGE.N )
-                                ORDER BY CARTRIDGE.Caption", new { Model });
+                            var notCompared = conn.Query<Cartridge>(@"SELECT Cartridges.Id, Cartridges.Name
+                                FROM Cartridges
+                                WHERE Cartridges.Id NOT IN (
+                                    SELECT Cartridges.Id
+                                    FROM Cartridges
+                                    INNER JOIN PrintersCartridges ON PrintersCartridges.CartridgeId = Cartridges.Id
+                                    INNER JOIN Printers ON PrintersCartridges.PrinterId = Printers.Id
+                                    WHERE (Printers.Id = @Model)
+                                    GROUP BY Cartridges.Id )
+                                ORDER BY Cartridges.Name", new { Model });
 
                             foreach (var cartridge in notCompared)
                             {
-                                <option value="@cartridge.Id">@cartridge.Caption</option>
+                                <option value="@cartridge.Id">@cartridge.Name</option>
                             }
                         }
                     </select>
@@ -83,12 +83,12 @@
         <br /><b>Связанные устройства:</b>
         <div class="cart-links">
             @{
-                var devices = conn.Query<Device>("SELECT number_device AS DeviceNumber, Name, Description, attribute AS Location FROM DEVICE WHERE ID_prn = @Model", new { Model });
+                var devices = conn.Query<Device>("SELECT Id, Name, Description, Location FROM Devices WHERE PrinterId = @Model", new { Model });
 
                 foreach (var device in devices)
                 {
                     <div>
-                        <a href="~/devices/##@(device.DeviceNumber)"><b>@device.Name</b> @device.Description</a>
+                        <a href="~/devices/##@(device.Id)"><b>@device.Name</b> @device.Description</a>
                         <br />
                         <small>@device.Location</small>
                     </div>

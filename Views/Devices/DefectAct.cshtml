@@ -3,19 +3,19 @@
 @using (var conn = Database.Connection())
 {
     var data = conn.Query(@"SELECT
-        Device.class_device   AS ClassDevice,
+        Devices.Type,
         Devices1C.Description AS Description1C,
         Devices1C.Mol         AS Mol1C,
-        Device.Description    AS Description,
-        Device.Inventory,
-        Device.Name,
-        Computers.name        AS ComputerName,
-        Device.install_date   AS DateInstall,
-        Device.Mol
-    FROM Device
-    LEFT OUTER JOIN Devices1C ON Device.Inventory = Devices1C.Inventory
-    LEFT OUTER JOIN Device AS Computers ON Device.number_comp = Computers.number_device
-    WHERE Device.number_device = @Model", new { Model }).FirstOrDefault();
+        Devices.Description    AS Description,
+        Devices.Inventory,
+        Devices.Name,
+        Computers.Name        AS ComputerName,
+        Devices.DateInstall,
+        Devices.Mol
+    FROM Devices
+    LEFT OUTER JOIN Devices1C ON Devices.Inventory = Devices1C.Inventory
+    LEFT OUTER JOIN Devices AS Computers ON Devices.ComputerId = Computers.Id
+    WHERE Devices.Id = @Model", new { Model }).FirstOrDefault();
 
     if (data == null)
     {
@@ -47,7 +47,7 @@
                         <td><input name="Inventory" value="@data.Inventory" /></td>
                     </tr>
                     <tr>
-                        @if (data.ClassDevice == "CMP")
+                        @if (data.Type == "CMP")
                         {
                             <td>Сетевое имя</td>
                         }
@@ -81,7 +81,7 @@
                         <td>
                             Тип:
                             <select id="defect_position" onchange="Devices.DefectAct.check(this)">
-                                @if (data.ClassDevice == "CMP")
+                                @if (data.Type == "CMP")
                                 {
                                     <option value="motherboard">Материнская плата</option>
                                     <option value="cpu">Процессор</option>

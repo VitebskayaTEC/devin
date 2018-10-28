@@ -29,17 +29,17 @@
 @using (var conn = Database.Connection())
 {
     var cartridges = AutoMapper.MapDynamic<Cartridge>(conn.Query(@"SELECT
-		c.N       AS [Id],
-        c.Caption AS [Name],
-		r.INum    AS [Repairs_Id],
-        r.Date    AS [Repairs_Date],
-        r.Units   AS [Repairs_Units]
-    FROM Remont r
-    LEFT OUTER JOIN Sklad s
-		LEFT OUTER JOIN Cartridge c ON c.N = s.ID_cart
-    ON s.Ncard = r.ID_U
-    WHERE s.class_name = 'PRN' AND Year(r.Date) = @Year
-    ORDER BY c.Caption", new { date.Year }));
+		Cartridges.Id,
+        Cartridges.Name,
+		Repairs.Id     AS Repairs_Id,
+        Repairs.Date   AS Repairs_Date,
+        Repairs.Number AS Repairs_Number
+    FROM Repairs
+    LEFT OUTER JOIN Storages
+		LEFT OUTER JOIN Cartridges ON Cartridges.Id = Storages.CartridgeId
+    ON Storages.Inventory = Repairs.StorageInventory
+    WHERE Storages.Type = 'PRN' AND Year(Repairs.Date) = @Year
+    ORDER BY Cartridges.Name", new { date.Year }));
 
     if (cartridges.Count() > 0)
     {
@@ -75,7 +75,7 @@
                         </td>
                         @for (int i = 0; i < 12; i++)
                         {
-                            int count = cartridge.Repairs.Where(r => r.Date.Month == (i + 1)).Select(r => r.Units).Sum();
+                            int count = cartridge.Repairs.Where(r => r.Date.Month == (i + 1)).Select(r => r.Number).Sum();
                             allCount += count;
                             countsByMonths[i] += count;
 
@@ -99,16 +99,16 @@
     }
 
     var devices = AutoMapper.MapDynamic<Device>(conn.Query(@"SELECT
-	    d.number_device AS [DeviceNumber],
-	    d.Description   AS [Description],
-	    d.Attribute     AS [Location],
-	    r.Inum          AS [Repairs_Id],
-	    r.Date          AS [Repairs_Date],
-	    r.Units         AS [Repairs_Units]
-    FROM Remont r
-    LEFT OUTER JOIN Device d ON d.number_device = r.ID_D
-    WHERE d.class_device = 'PRN' AND Year(r.Date) = @Year
-    ORDER BY d.Description", new { date.Year }));
+	    Devices.Id,
+	    Devices.Description,
+	    Devices.Location,
+	    Repairs.Id     AS Repairs_Id,
+	    Repairs.Date   AS Repairs_Date,
+	    Repairs.Number AS Repairs_Number
+    FROM Repairs
+    LEFT OUTER JOIN Devices ON Devices.Id = Repairs.DevicesId
+    WHERE Devices.Type = 'PRN' AND Year(Repairs.Date) = @Year
+    ORDER BY Devices.Description", new { date.Year }));
 
     if (devices.Count() > 0)
     {
@@ -143,7 +143,7 @@
 
                     <tr>
                         <td>
-                            <a href="~/devices/##@(device.DeviceNumber)">
+                            <a href="~/devices/##@(device.Id)">
                                 @device.Description
                                 <br />
                                 <small>@device.Location</small>
@@ -151,7 +151,7 @@
                         </td>
                         @for (int i = 0; i < 12; i++)
                         {
-                            int count = device.Repairs.Where(r => r.Date.Month == (i + 1)).Select(r => r.Units).Sum();
+                            int count = device.Repairs.Where(r => r.Date.Month == (i + 1)).Select(r => r.Number).Sum();
                             allCount += count;
                             countsByMonths[i] += count;
 

@@ -2,27 +2,7 @@
 
 @using (var conn = Database.Connection())
 {
-    var device = conn.Query<Device>(@"SELECT
-        Inventory
-        ,Name
-        ,Description
-        ,Mol
-        ,OS
-        ,OSKey
-        ,PlaceId
-        ,number_device   AS [DeviceNumber]
-        ,class_device    AS [DeviceClass]
-        ,number_comp     AS [ComputerId]
-        ,install_date    AS [DateInstall]
-        ,number_serial   AS [SerialNumber]
-        ,number_passport AS [PassportNumber]
-        ,attribute       AS [Location]
-        ,ID_prn          AS [PrinterId]
-        ,G_ID            AS [GroupId]
-        ,service_tag     AS [ServiceTag]
-        ,used            AS [InUse]
-    FROM Device
-    WHERE number_device = @Model", new { Model }).FirstOrDefault();
+    var device = conn.Query<Device>(@"SELECT * FROM Devices WHERE Id = @Model", new { Model }).FirstOrDefault();
 
     if (device == null)
     {
@@ -33,7 +13,7 @@
     device.Device1C = conn.Query<Device1C>("SELECT * FROM Devices1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
 
     <div class="cart__header">
-        <div>@(device.DeviceClass == "CMP" ? device.Name : device.Description)</div>
+        <div>@(device.Type == "CMP" ? device.Name : device.Description)</div>
         <div class="cart__closeButton">
             <i class="icon ic-clear icon_white icon_no-hover" title="Закрыть карточку" onclick="cartClose()"></i>
         </div>
@@ -43,7 +23,7 @@
         <div class="tabsSelector__item tabsSelector__item_selected" data-tab="info"><span>Информация</span></div>
         <div class="tabsSelector__item" data-tab="1c">1С</div>
         <div class="tabsSelector__item" data-tab="history">Логи</div>
-        @if (device.DeviceClass == "CMP")
+        @if (device.Type == "CMP")
         {
             <div class="tabsSelector__item" data-tab="aida">Aida</div>
             <div class="tabsSelector__item" data-tab="elm">ELM</div>
@@ -68,13 +48,13 @@
                 <tr>
                     <td>Тип устройства</td>
                     <td>
-                        <select name="@nameof(device.DeviceClass)">
+                        <select name="@nameof(device.Type)">
                             <option value="0">? не определен</option>
                             @{
                                 var classes = conn.Query("SELECT T_alias, T_name FROM catalog_device_types ORDER BY T_name");
                                 foreach (var cls in classes)
                                 {
-                                    <option value="@cls.T_alias" @(cls.T_alias == device.DeviceClass ? "selected" : "")>@cls.T_name</option>
+                                    <option value="@cls.T_alias" @(cls.T_alias == device.Type ? "selected" : "")>@cls.T_name</option>
                                 }
                             }
                         </select>
@@ -87,18 +67,18 @@
                         <select name="Destination">
                             <option value="0">отдельно</option>
                             @{
-                                var folders = conn.Query("SELECT G_ID, G_Title FROM [Group] WHERE G_Type = 'device' ORDER BY G_Title");
+                                var folders = conn.Query<Folder>("SELECT Id, Name FROM Folders WHERE Type = 'device' ORDER BY Name");
 
                                 foreach (var folder in folders)
                                 {
-                                    <option value="folder@(folder.G_ID)" @(folder.G_ID == device.GroupId ? "selected" : "")>[папка] @folder.G_Title</option>
+                                    <option value="folder@(folder.Id)" @(folder.Id == device.FolderId ? "selected" : "")>[папка] @folder.Name</option>
                                 }
-                                if (device.DeviceClass != "CMP")
+                                if (device.Type != "CMP")
                                 {
-                                    var computers = conn.Query("SELECT number_device, name FROM Device WHERE class_device = 'CMP' AND used = 1 AND deleted = 0 ORDER BY name");
+                                    var computers = conn.Query<Computer>("SELECT Id, Name FROM Device WHERE Type = 'CMP' AND IsOff = 0 AND IsDeleted = 0 ORDER BY Name");
                                     foreach (var computer in computers)
                                     {
-                                        <option value="computer@(computer.number_device)" @(computer.number_device == device.ComputerId ? "selected" : "")>[компьютер] @computer.name</option>
+                                        <option value="computer@(computer.Id)" @(computer.Id == device.ComputerId ? "selected" : "")>[компьютер] @computer.Name</option>
                                     }
                                 }
                             }
@@ -167,9 +147,9 @@
                 <tr>
                     <td>Последний ремонт</td>
                     <td>
-                        <input name="@nameof(device.LastRepairDate)" style="width: 100px;" value="@(device.LastRepairDate?.ToString("dd.MM.yyyy"))" />
+                        <input name="@nameof(device.DateLastRepair)" style="width: 100px;" value="@(device.DateLastRepair?.ToString("dd.MM.yyyy"))" />
                         @{
-                            var lastRepairDate = conn.Query("SELECT Max(Date) FROM Remont WHERE Id_D = @Model", new { Model }).FirstOrDefault();
+                            var lastRepairDate = conn.Query("SELECT Max(Date) FROM Repairs WHERE DeviceId = @Model", new { Model }).FirstOrDefault();
                             if (lastRepairDate == null)
                             {
                                 @: Ремонты не проводились
@@ -182,7 +162,7 @@
                     </td>
                 </tr>
 
-                @if (device.DeviceClass == "CMP")
+                @if (device.Type == "CMP")
                 {
                     <tr>
                         <td>Операционная система</td>
@@ -206,7 +186,7 @@
                     </tr>
                 }
 
-                @if (device.DeviceClass == "PRN")
+                @if (device.Type == "PRN")
                 {
                     <tr>
                         <td>Типовой принтер</td>
@@ -214,10 +194,10 @@
                             <select name="@nameof(device.PrinterId)">
                                 <option value="0">? не определен</option>
                                 @{
-                                    var printers = conn.Query("Select N, Caption From PRINTER Order by Caption");
+                                    var printers = conn.Query("Select Id, Name From Printers Order by Name");
                                     foreach (var printer in printers)
                                     {
-                                        <option value="@printer.N" @(printer.N == device.PrinterId ? "selected" : "")>@printer.Caption</option>
+                                        <option value="@printer.Id" @(printer.Id == device.PrinterId ? "selected" : "")>@printer.Name</option>
                                     }
                                 }
                             </select>
@@ -228,16 +208,16 @@
                 <tr>
                     <td>Списано</td>
                     <td>
-                        <select name="@nameof(device.InUse)">
-                            <option value="0">Да</option>
-                            <option value="1" @(device.InUse == 1 ? "selected" : "")>Нет</option>
+                        <select name="@nameof(device.IsOff)">
+                            <option value="0">Нет</option>
+                            <option value="1" @(device.IsOff ? "selected" : "")>Да</option>
                         </select>
                     </td>
                 </tr>
             </table>
             <table class="cart-menu">
                 <tr>
-                    <td onclick="Devices.Cart.update('@device.DeviceNumber')">Сохранить</td>
+                    <td onclick="Devices.Cart.update('@device.Id')">Сохранить</td>
                     <td onclick="deviceToRepair()">Ремонт</td>
                     <td onclick="cartDelete()">Удалить</td>
                     <td onclick="cartCopy()">Копир.</td>
@@ -301,26 +281,26 @@
                 </div>
             }
         </div>
-        <div class="tabsContainer__item" data-tab="history" data-tab-lazy="@Url.Action("historyById", "devices", new { Id = device.DeviceNumber })"></div>
-        @if (device.DeviceClass == "CMP")
+        <div class="tabsContainer__item" data-tab="history" data-tab-lazy="@Url.Action("historyById", "devices", new { Id = device.Id })"></div>
+        @if (device.Type == "CMP")
         {
             <div class="tabsContainer__item" data-tab="aida" data-tab-lazy="@Url.Action("data", "aida", new { Id = device.Name })"></div>
             <div class="tabsContainer__item" data-tab="elm" data-tab-lazy="@Url.Action("elmById", "devices", new { Id = device.Name })"></div>
         }
         <div class="tabsContainer__item" data-tab="addons" id="addons">
             <div class="addons">
-                <a onclick="Devices.Cart.selectAddon('@Url.Action("HistoryByDevice", "Repairs", new { Id = device.DeviceNumber })')">История ремонтов</a><br />
+                <a onclick="Devices.Cart.selectAddon('@Url.Action("HistoryByDevice", "Repairs", new { Id = device.Id })')">История ремонтов</a><br />
 
-                @if (device.DeviceClass == "CMP")
+                @if (device.Type == "CMP")
                 {
                     <a onclick="Devices.Cart.selectAddon('@Url.Action("Autorun", "aida", new { Id = device.Name })')">Автозагрузка</a><br />
                     <a onclick="Devices.Cart.selectAddon('@Url.Action("Programs", "aida", new { Id = device.Name })')">Операционная система и установленное ПО</a><br />
                     <a onclick="Devices.Cart.selectAddon('@Url.Action("Devices", "aida", new { Id = device.Name })')">Оборудование</a><br />
                 }
 
-                @if ("CMP DIS PRN".Contains(device.DeviceClass))
+                @if ("CMP DIS PRN".Contains(device.Type))
                 {
-                    <a onclick="Devices.Cart.selectAddon('@Url.Action("DefectAct", "Devices", new { Id = device.DeviceNumber })')">Дефектный акт</a><br />
+                    <a onclick="Devices.Cart.selectAddon('@Url.Action("DefectAct", "Devices", new { Id = device.Id })')">Дефектный акт</a><br />
                 }
             </div>
             <div class="addons__body hide"></div>

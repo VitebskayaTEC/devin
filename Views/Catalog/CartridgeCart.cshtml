@@ -2,36 +2,36 @@
 
 @using (var conn = Database.Connection())
 {
-    var cartridge = conn.Query<Cartridge>("SELECT N as [Id], CAST(Price AS float) as [Cost], [Type], [Color], [Caption], [Description] FROM Cartridge WHERE N = @Model", new { Model }).FirstOrDefault();
+    var cartridge = conn.Query<Cartridge>("SELECT * FROM Cartridges WHERE Id = @Model", new { Model }).FirstOrDefault();
     if (cartridge == null)
     {
         <div class="error">Нет данных по данному идентификатору</div>
         return;
     }
 
-    var storages = conn.Query<Storage>(@"SELECT Ncard, Name, Nis
-        FROM Sklad
-        WHERE ID_cart = @Model AND delit = 1 AND Nis > 0 
-        ORDER BY NCard, Name", new { Model });
+    var storages = conn.Query<Storage>(@"SELECT Inventory, Name, Nstorage
+        FROM Storages
+        WHERE CartridgeId = @Model AND IsDeleted = 0 AND Nstorage > 0 
+        ORDER BY Inventory, Name", new { Model });
 
-    float calculateCost = conn.Query<float?>(@"SELECT AVG(Price) FROM (
+    float calculateCost = conn.Query<float?>(@"SELECT AVG(Cost) FROM (
 	    SELECT 
-		    CASE Price WHEN 0 THEN @BaseCost
+		    CASE Cost WHEN 0 THEN @BaseCost
 		    ELSE
-			    CASE uchet WHEN '10.5.1' THEN Price * 1.2 
-			    ELSE Price * 2.4 END
-		    END AS Price
-	    FROM SKLAD
-	    WHERE ID_cart = @Model) AS x", new { Model, BaseCost = 24.5F }).FirstOrDefault() ?? 0;
+			    CASE Account WHEN '10.5.1' THEN Cost * 1.2 
+			    ELSE Cost * 2.4 END
+		    END AS Cost
+	    FROM Storages
+	    WHERE CartridgeId = @Model) AS x", new { Model, BaseCost = 24.5F }).FirstOrDefault() ?? 0;
 
-    <div class="cart-header">@cartridge.Caption</div>
+    <div class="cart-header">@cartridge.Name</div>
 
     <div class="cart-overflow">
 
         <table class="cart-table">
             <tr>
                 <td>Наименование</td>
-                <td><input name="Caption" value="@cartridge.Caption" placeholder="Наименование картриджа" /></td>
+                <td><input name="Name" value="@cartridge.Name" placeholder="Наименование картриджа" /></td>
             </tr>
             <tr>
                 <td>Описание</td>
@@ -81,7 +81,7 @@
                 </td>
             </tr>
             @{
-                var compared = conn.Query<Printer>("SELECT N as Id, Caption FROM Office INNER JOIN Printer ON Printer.N = Office.Printer WHERE Office.Cartridge = @Model ORDER BY Caption", new { Model });
+                var compared = conn.Query<Printer>("SELECT Id, Name FROM PrintersCartridges INNER JOIN Printers ON Printers.Id = PrintersCartridges.PrinterId WHERE PrintersCartridges.CartridgeId = @Model ORDER BY Name", new { Model });
 
                 if (compared.Count() == 0)
                 {
@@ -93,7 +93,7 @@
                 foreach (var printer in compared)
                 {
                     <tr>
-                        <td><a href="~/catalog/##prn@(printer.Id)">@printer.Caption</a></td>
+                        <td><a href="~/catalog/##prn@(printer.Id)">@printer.Name</a></td>
                         <td width="30px" data-id="@printer.Id">
                             <div class="icon ic-clear" onclick="delCompare(this)"></div>
                         </td>
@@ -106,20 +106,20 @@
                     <select id="new-compare">
                         <option value="0">?</option>
                         @{
-                            var notCompared = conn.Query<Printer>(@"SELECT PRINTER.N AS Id, PRINTER.Caption 
-                            FROM PRINTER
-                            WHERE PRINTER.N NOT IN (
-                                SELECT PRINTER.N
-                                FROM PRINTER
-                                INNER JOIN OFFICE ON OFFICE.Printer = PRINTER.N
-                                INNER JOIN CARTRIDGE ON OFFICE.Cartridge = CARTRIDGE.N
-                                WHERE (CARTRIDGE.N = @Model)
-                                GROUP BY PRINTER.N
-                            ) ORDER BY PRINTER.Caption", new { Model });
+                            var notCompared = conn.Query<Printer>(@"SELECT Printers.Id, Printers.Name 
+                            FROM Printers
+                            WHERE Printers.Id NOT IN (
+                                SELECT Printers.Id
+                                FROM Printers
+                                INNER JOIN PrintersCartridges ON PrintersCartridges.PrinterId = Printers.Id
+                                INNER JOIN Cartridges ON PrintersCartridges.CartridgeId = Cartridges.Id
+                                WHERE (Cartridges.Id = @Model)
+                                GROUP BY Printers.Id
+                            ) ORDER BY Printers.Name", new { Model });
 
                             foreach (var printer in notCompared)
                             {
-                                <option value="@printer.Id">@printer.Caption</option>
+                                <option value="@printer.Id">@printer.Name</option>
                             }
                         }
                     </select>
@@ -135,7 +135,7 @@
             @foreach (var storage in storages)
             {
                 <div>
-                    <a href="~/storages/##@(storage.Ncard)"><b>@storage.Ncard</b> @storage.Name</a> @storage.Nis шт.
+                    <a href="~/storages/##@(storage.Inventory)"><b>@storage.Inventory</b> @storage.Name</a> @storage.Nstorage шт.
                 </div>
             }
         </div>

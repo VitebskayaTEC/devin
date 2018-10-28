@@ -26,9 +26,9 @@
 	& "	@Units = REMONT.Units, " _
 	& "	@IfSpis = REMONT.IfSpis, " _
 	& "	@Virtual = REMONT.Virtual, " _
-	& "	@Ncard = SKLAD.NCard " _
+	& "	@Ncard = Storages.Ncard " _
 	& "FROM REMONT " _
-	& "	LEFT OUTER JOIN SKLAD ON SKLAD.NCard = REMONT.ID_U " _
+	& "	LEFT OUTER JOIN Storages ON Storages.Ncard = REMONT.ID_U " _
 	& "WHERE (REMONT.INum = @Inum)" _
 	& "" _
 	& "DELETE FROM REMONT WHERE (INum = @Inum) " _
@@ -36,18 +36,18 @@
 	& "" _
 	& "	IF @IfSpis = 1" _
 	& "		IF @Virtual = 1	BEGIN" _
-	& "			UPDATE SKLAD SET Nbreak = Nbreak - @Units WHERE (NCard = @Ncard);" _
+	& "			UPDATE Storages SET Noff = Noff - @Units WHERE (NCard = @Ncard);" _
 	& "			INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS) VALUES (GETDATE(), @Ncard, @User, 'јдминистратор DEVIN', 'ќбновлена позици€ [' + @Ncard + '] при удалении виртуального ремонта [repair' + CAST(@Inum AS varchar(10)) + ']: ' + CAST(@Units AS varchar(10)) + ' шт. деталей изъ€ты из списанных');" _
 	& "		END	ELSE BEGIN" _
-	& "			UPDATE SKLAD SET Nis = Nis + @Units, Nbreak = Nbreak - @Units WHERE (NCard = @Ncard);" _
+	& "			UPDATE Storages SET Nstorage = Nstorage + @Units, Noff = Noff - @Units WHERE (NCard = @Ncard);" _
 	& "			INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS) VALUES (GETDATE(), @Ncard, @User, 'јдминистратор DEVIN', 'ќбновлена позици€ [' + @Ncard + '] при удалении ремонта [repair' + CAST(@Inum AS varchar(10)) + ']: ' + CAST(@Units AS varchar(10)) + ' шт. деталей возвращены на склад из списанных');" _
 	& "		END" _
 	& "	ELSE" _
 	& "		IF @Virtual = 1 BEGIN" _
-	& "			UPDATE SKLAD SET Nuse = Nuse - @Units WHERE (NCard = @Ncard);" _
+	& "			UPDATE Storages SET Nrepairs = Nrepairs - @Units WHERE (NCard = @Ncard);" _
 	& "			INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS) VALUES (GETDATE(), @Ncard, @User, 'јдминистратор DEVIN', 'ќбновлена позици€ [' + @Ncard + '] при удалении виртуального ремонта [repair' + CAST(@Inum AS varchar(10)) + ']: ' + CAST(@Units AS varchar(10)) + ' шт. деталей изъ€ты из используемых');" _
 	& "		END ELSE BEGIN" _
-	& "			UPDATE SKLAD SET Nis = Nis + @Units, Nuse = Nuse - @Units WHERE (NCard = @Ncard);" _
+	& "			UPDATE Storages SET Nstorage = Nstorage + @Units, Nrepairs = Nrepairs - @Units WHERE (NCard = @Ncard);" _
 	& "			INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS) VALUES (GETDATE(), @Ncard, @User, 'јдминистратор DEVIN', 'ќбновлена позици€ [' + @Ncard + '] при удалении ремонта [repair' + CAST(@Inum AS varchar(10)) + ']: ' + CAST(@Units AS varchar(10)) + ' шт. деталей возвращены на склад из используемых');" _
 	& "		END  " _
 	& "" _

@@ -11,19 +11,19 @@
 	if group = "" or isnull(group)  then group = 0
 
 	' Составление sql запроса
-	sql = "SELECT SKLAD.NCard AS Count, SKLAD.Nis, SKLAD.NCard AS ID, SKLAD.NCard, SKLAD.class_name, SKLAD.Name, SKLAD.uchet, SKLAD.NCard AS V, SKLAD.Date "
-	sql = sql & "FROM SKLAD "
+	sql = "SELECT Storages.Ncard AS Count, Storages.Nstorage, Storages.Ncard AS ID, Storages.Ncard, Storages.Type, Storages.Name, Storages.Account, Storages.Ncard AS V, Storages.Date "
+	sql = sql & "FROM Storages "
 	if only then
-		sql = sql & "INNER JOIN CARTRIDGE ON SKLAD.ID_cart = CARTRIDGE.N "
-		sql = sql & "INNER JOIN OFFICE ON CARTRIDGE.N = OFFICE.Cartridge "
-		sql = sql & "INNER JOIN PRINTER ON OFFICE.Printer = PRINTER.N "
+		sql = sql & "INNER JOIN Cartridges ON Storages.CartridgeId = Cartridges.Id "
+		sql = sql & "INNER JOIN PrintersCartridges ON Cartridges.Id = PrintersCartridges.CartridgeId "
+		sql = sql & "INNER JOIN Printers ON PrintersCartridges.PrinterId = Printers.Id "
 		sql = sql & "RIGHT OUTER JOIN DEVICE ON PRINTER.N = DEVICE.ID_prn "
-		sql = sql & "WHERE (DEVICE.number_device = '" & id & "') AND (SKLAD.Nis > 0) AND (SKLAD.delit = 1) "
+		sql = sql & "WHERE (DEVICE.number_device = '" & id & "') AND (Storages.Nstorage > 0) AND (Storages.IsDeleted = 0) "
 	else
-		sql = sql & "WHERE (SKLAD.Nis > 0) AND (SKLAD.delit = 1) "
+		sql = sql & "WHERE (Storages.Nstorage > 0) AND (Storages.IsDeleted = 0) "
 	end if
-	if group <> 0 then sql = sql & "AND (SKLAD.G_Id = " & group & ") "
-	sql = sql & "ORDER BY SKLAD.class_name, SKLAD.uchet, SKLAD.Date ASC, SKLAD.name"
+	if group <> 0 then sql = sql & "AND (Storages.FolderId = " & group & ") "
+	sql = sql & "ORDER BY Storages.Type, Storages.Account, Storages.Date ASC, Storages.Name"
 
 	' Получение списка деталей
 	conn.open everest

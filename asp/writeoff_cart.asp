@@ -9,7 +9,7 @@
 
 
 	' Запрос к данным о списании
-	sql = "SELECT W_Name, W_Type, W_Date, W_Params, W_Description, G_ID, W_Last_Excel, W_Last_Date, W_Cost_Article FROM writeoff WHERE (W_ID = " & id & ")"
+	sql = "SELECT Name, Type, Date, Params, Description, FolderId, LastExcel, LastExcelDate, CostArticle FROM Writeoffs WHERE (Id = " & id & ")"
 
 	conn.open everest
 	rs.open sql, conn
@@ -35,7 +35,7 @@
 
 		' Последовательный вывод данных в таблицу
 		' Наименование
-		response.write "<tr><td>Наименование<td><input name='W_Name' value='" & writeoff(0) & "' /></tr>"
+		response.write "<tr><td>Наименование<td><input name='Name' value='" & writeoff(0) & "' /></tr>"
 
 		' Тип списания
 		response.write "<tr><td>Тип<td>"
@@ -43,7 +43,7 @@
 		if rs.eof then
 			response.write "Нет доступа к справочнику"
 		else
-			response.write "<select name='W_Type'><option value='0'>?"
+			response.write "<select name='Type'><option value='0'>?"
 			do while not rs.eof
 				if rs("O_Index") = writeoff(1) then
 					response.write "<option selected value='" & rs("O_Alias") & "'>" & rs("O_Name")
@@ -59,7 +59,7 @@
 		response.write "</tr>"
 
 		' Дата создания списания
-		response.write "<tr><td>Дата создания<td><input name='W_Date' value='" & datevalue(writeoff(2)) & "' style='width: 100px' /></tr>"
+		response.write "<tr><td>Дата создания<td><input name='Date' value='" & datevalue(writeoff(2)) & "' style='width: 100px' /></tr>"
 
 		' Параметры для экспорта в Excel, если их нет, будут взяты стандартные из справочника
 		dim params, Nparams
@@ -91,11 +91,11 @@
 		end if
 
 		' Описание списания
-		response.write "<tr><td>Описание<td><textarea name='W_Description'>" & writeoff(4) & "</textarea></tr>"
+		response.write "<tr><td>Описание<td><textarea name='Description'>" & writeoff(4) & "</textarea></tr>"
 
 		' Статьи расходов
 		if writeoff(1) <> "expl" then
-			response.write "<tr><td>Статья расходов</td><td><select name='W_Cost_Article'><option value='0'>Не выбрана</option>"
+			response.write "<tr><td>Статья расходов</td><td><select name='CostArticle'><option value='0'>Не выбрана</option>"
 			if writeoff(8) = 1 then response.write "<option value='1' selected>Эксплуатационные расходы</option>" else response.write "<option value='1'>Эксплуатационные расходы</option>"
 			if writeoff(8) = 2 then response.write "<option value='2' selected>Орг. техника</option>" else response.write "<option value='2'>Орг. техника</option>"
 			if writeoff(8) = 3 then response.write "<option value='3' selected>ПТК АСУ</option>" else response.write "<option value='3'>ПТК АСУ</option>"
@@ -103,11 +103,11 @@
 
 		' Группа
 		response.write "<tr><td>Группа<td>"
-		rs.open "SELECT G_ID AS O_Index, G_ID, G_Title FROM [GROUP] WHERE (G_Type = 'repair') ORDER BY G_Title", conn
+		rs.open "SELECT Id AS O_Index, Id, Name FROM Folders WHERE (Type = 'repair') ORDER BY Name", conn
 		if rs.eof then
 			response.write "Нет доступа к справочнику"
 		else
-			response.write "<select name='G_ID'><option value='0'>?"
+			response.write "<select name='FolderId'><option value='0'>?"
 			do while not rs.eof
 				if rs(0) = writeoff(5) then
 					response.write "<option selected value='" & rs(1) & "'>" & rs(2)

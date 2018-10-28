@@ -31,10 +31,10 @@ namespace Devin.Controllers
                 switch (mode)
                 {
                     case "printer":
-                        conn.Execute("INSERT INTO Office (Printer, Cartridge) VALUES (@Id, @Compare)", new { Id, Compare });
+                        conn.Execute("INSERT INTO PrintersCartridges (PrinterId, CartridgeId) VALUES (@Id, @Compare)", new { Id, Compare });
                         break;
                     case "cartridge":
-                        conn.Execute("INSERT INTO Office (Printer, Cartridge) VALUES (@Compare, @Id)", new { Id, Compare });
+                        conn.Execute("INSERT INTO PrintersCartridges (PrinterId, CartridgeId) VALUES (@Compare, @Id)", new { Id, Compare });
                         break;
                 }
             }
@@ -44,8 +44,8 @@ namespace Devin.Controllers
         {
             using (var conn = Database.Connection())
             {
-                conn.Execute("INSERT INTO Cartridge (Caption, Type, Color, Price) VALUES ('Новый типовой картридж', '', '', null)");
-                return conn.QueryFirst<int>("SELECT Max(N) FROM Cartridge");
+                conn.Execute("INSERT INTO Cartridges (Name, Type, Color, Cost) VALUES ('Новый типовой картридж', '', '', null)");
+                return conn.QueryFirst<int>("SELECT Max(Id) FROM Cartridges");
             }
         }
 
@@ -53,8 +53,8 @@ namespace Devin.Controllers
         {
             using (var conn = Database.Connection())
             {
-                conn.Execute("INSERT INTO Printer (Caption) VALUES ('Новый типовой принтер')");
-                return conn.QueryFirst<int>("SELECT Max(N) FROM Cartridge");
+                conn.Execute("INSERT INTO Printers (Name) VALUES ('Новый типовой принтер')");
+                return conn.QueryFirst<int>("SELECT Max(Id) FROM Name");
             }
         }
 
@@ -62,7 +62,7 @@ namespace Devin.Controllers
         {
             using (var conn = Database.Connection())
             {
-                conn.Execute("DELETE FROM Cartridge WHERE N = @Id", new { Id });
+                conn.Execute("DELETE FROM Cartridges WHERE Id = @Id", new { Id });
             }
         }
 
@@ -70,7 +70,7 @@ namespace Devin.Controllers
         {
             using (var conn = Database.Connection())
             {
-                conn.Execute("DELETE FROM Printer WHERE N = @Id", new { Id });
+                conn.Execute("DELETE FROM Printers WHERE Id = @Id", new { Id });
             }
         }
 
@@ -85,16 +85,16 @@ namespace Devin.Controllers
                 switch (mode)
                 {
                     case "printer":
-                        conn.Execute("DELETE FROM Office WHERE Printer = @Id AND Cartridge = @Compare", new { Id, Compare });
+                        conn.Execute("DELETE FROM PrintersCartridges WHERE PrinterId = @Id AND CartridgeId = @Compare", new { Id, Compare });
                         break;
                     case "cartridge":
-                        conn.Execute("DELETE FROM Office WHERE Cartridge = @Id AND Printer = @Compare", new { Id, Compare });
+                        conn.Execute("DELETE FROM PrintersCartridges WHERE CartridgeId = @Id AND PrinterId = @Compare", new { Id, Compare });
                         break;
                 }
             }
         }
 
-        public string SaveCartridge([Bind(Include = "Id,Caption,Type,Color,Description")] Cartridge cartridge)
+        public string SaveCartridge([Bind(Include = "Id,Name,Type,Color,Description")] Cartridge cartridge)
         {
             using (var conn = Database.Connection())
             {
@@ -110,16 +110,16 @@ namespace Devin.Controllers
                 }
                 
 
-                conn.Execute("UPDATE Cartridge SET Caption = @Caption, Price = @Cost, Type = @Type, Color = @Color, Description = @Description WHERE N = @Id", cartridge);
+                conn.Execute("UPDATE Cartridges SET Name = @Namen, Cost = @Cost, Type = @Type, Color = @Color, Description = @Description WHERE Id = @Id", cartridge);
                 return "Карточка успешно сохранена";
             }
         }
 
-        public string SavePrinter([Bind(Include = "Id,Caption,Description")] Printer printer)
+        public string SavePrinter([Bind(Include = "Id,Name,Description")] Printer printer)
         {
             using (var conn = Database.Connection())
             {
-                conn.Execute("UPDATE Printer SET Caption = @Caption, Description = @Description WHERE N = @Id", printer);
+                conn.Execute("UPDATE Printers SET Name = @Name, Description = @Description WHERE Id = @Id", printer);
                 return "Карточка успешно сохранена";
             }
         }

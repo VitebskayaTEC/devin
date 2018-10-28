@@ -35,13 +35,13 @@
                 <select id="moveKey">
                 @using (var conn = Database.Connection())
                 {
-                    var folders = conn.Query("SELECT G_Id, G_Title FROM [Group] WHERE G_Type = 'repair' ORDER BY G_Title");
+                    var folders = conn.Query("SELECT Id, Name FROM Folders WHERE Type = 'repair' ORDER BY Name");
                     foreach (var item in folders)
                     {
                         <option value="@item.G_Id">[папка] @item.G_Title</option>
                     }
 
-                    var writeoffs = conn.Query("SELECT W_Id, W_Name FROM [Writeoff] ORDER BY W_Name");
+                    var writeoffs = conn.Query("SELECT Id, Name FROM Writeoffs ORDER BY Name");
                     foreach (var item in writeoffs)
                     {
                         <option value="@item.W_Id">[списание] @item.W_Name</option>

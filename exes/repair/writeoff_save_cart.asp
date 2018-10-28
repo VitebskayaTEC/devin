@@ -5,7 +5,7 @@
 	dim id 		: id = replace(request.querystring("id"), "off", "")
 
 	conn.open everest
-	rs.open "SELECT W_Name, W_Type, W_Date, W_Params, W_Description, G_ID, W_Cost_Article FROM writeoff WHERE (W_ID = '" & id & "')", conn
+	rs.open "SELECT Name, Type, Date, Params, Description, FolderId, CostArticle FROM Writeoffs WHERE Id = '" & id & "'", conn
 	if rs.eof then
 		response.write "<div class='error'>Нет данных по данному ID</div>"
 	else
@@ -18,23 +18,23 @@
 		dim sql 	: sql = ""
 		dim text 	: text = ""
 
-		temp = DecodeUTF8(request.form("W_Name"))
+		temp = DecodeUTF8(request.form("Name"))
 		if temp <> writeoff(0) then
 			text = "наименование с [" & writeoff(0) & "] на [" & temp & "]"
 			sql = "W_Name = '" & temp & "'"
 		end if
 
-		temp = request.form("W_Type")
+		temp = request.form("Type")
 		if temp <> writeoff(1) or isnull(writeoff(1)) then
 			if text <> "" then
 				text = text & ", "
 				sql = sql & ", "
 			end if
 			text = text & "тип с [" & writeoff(1) & "] на [" & temp & "]"
-			sql = sql & "W_Type = '" & temp & "'"
+			sql = sql & "Type = '" & temp & "'"
 		end if
 
-		temp = request.form("W_Date")
+		temp = request.form("Date")
 		if not isdate(temp) then
 			response.write "<div class='error'>Введено некорректное значение даты. Ожидается формат дд.мм.гггг</div>"
 			response.end
@@ -45,18 +45,18 @@
 				sql = sql & ", "
 			end if
 			text = text & "дата создания с [" & datevalue(writeoff(2)) & "] на [" & datevalue(temp) & "]"
-			sql = sql & "W_Date = '" & DateToSql(temp) & "'"
+			sql = sql & "Date = '" & DateToSql(temp) & "'"
 		end if
 
 		dim key
 		temp = ""
 		dim first: first = true
 		for i = 0 to 20
-			if not isNull(request.form("params" & i)) and not isEmpty(request.form("params" & i)) then
+			if not isNull(request.form("Params" & i)) and not isEmpty(request.form("Params" & i)) then
 				if first then
-					temp = temp & DecodeUTF8(request.form("params" & i))
+					temp = temp & DecodeUTF8(request.form("Params" & i))
 				else
-					temp = temp & ";;" & DecodeUTF8(request.form("params" & i))
+					temp = temp & ";;" & DecodeUTF8(request.form("Params" & i))
 				end if
 				first = false
 			end if
@@ -67,48 +67,48 @@
 				sql = sql & ", "
 			end if
 			text = text & "параметры экспорта с [" & writeoff(3) & "] на [" & temp & "]"
-			sql = sql & "W_Params = '" & temp & "'"
+			sql = sql & "Params = '" & temp & "'"
 		end if
 
-		temp = DecodeUTF8(request.form("W_Description"))
+		temp = DecodeUTF8(request.form("Description"))
 		if temp <> writeoff(4) then
 			if text <> "" then
 				text = text & ", "
 				sql = sql & ", "
 			end if
 			text = text & "описание с [" & writeoff(4) & "] на [" & temp & "]"
-			sql = sql & "W_Description = '" & temp & "'"
+			sql = sql & "Description = '" & temp & "'"
 		end if
 
-		temp = request.form("W_Cost_Article")
+		temp = request.form("CostArticle")
 		if temp <> writeoff(6) or isNull(writeoff(6)) then
 			if text <> "" then
 				text = text & ", "
 				sql = sql & ", "
 			end if
 			text = text & "статья расходов с [" & writeoff(6) & "] на [" & temp & "]"
-			sql = sql & "W_Cost_Article = '" & temp & "'"
+			sql = sql & "CostArticle = '" & temp & "'"
 		end if
 
-		temp = request.form("G_ID")
+		temp = request.form("FolderId")
 		if isnull(writeoff(5)) then
 			if text <> "" then
 				text = text & ", "
 				sql = sql & ", "
 			end if
 			text = text & "папка с [group" & writeoff(5) & "] на [group" & temp & "]"
-			sql = sql & "G_ID = '" & temp & "'"
+			sql = sql & "FolderId = '" & temp & "'"
 		elseif cstr(temp) <> cstr(writeoff(5)) then
 			if text <> "" then
 				text = text & ", "
 				sql = sql & ", "
 			end if
 			text = text & "папка с [group" & writeoff(5) & "] на [group" & temp & "]"
-			sql = sql & "G_ID = '" & temp & "'"
+			sql = sql & "FolderId = '" & temp & "'"
 		end if
 
 		if text <> "" then
-			conn.execute "UPDATE writeoff SET " & sql & " WHERE (W_ID = '" & id & "')"
+			conn.execute "UPDATE Writeoffs SET " & sql & " WHERE Id = '" & id & "'"
 			text = "Обновлена карточка списания [off" & id & "], изменены: " & text
 			response.write log("off" & id, text) & "<div class='done'>" & text & "</div>"
 		else

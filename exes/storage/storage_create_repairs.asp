@@ -35,7 +35,7 @@
 					& "  IF @AllUnits >= @Units BEGIN" _
 					& "   INSERT INTO REMONT (ID_D, ID_U, Units, Date, IfSpis, Virtual, Author, G_ID, W_ID)" _
 					& "    VALUES (@ID_D, @ID_U, @Units, @Date, 0, 0, @User, 0, -2);" _
-					& "   UPDATE SKLAD SET Nis = Nis - @Units, Nuse = Nuse + @Units WHERE Ncard = @ID_U;" _
+					& "   UPDATE Storages SET Nstorage = Nstorage - @Units, Nrepairs = Nrepairs + @Units WHERE Ncard = @ID_U;" _
 					& "   INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS)" _
 					& "    VALUES (@Date, @ID_U, @User, 'Администратор DEVIN', 'При создании ремонта ' + CAST(@Units AS varchar(6)) + ' деталей перемещены со склада в используемые');" _
 					& "   INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS)" _
@@ -44,7 +44,7 @@
 					& " END ELSE BEGIN" _
 					& "  INSERT INTO REMONT (ID_D, ID_U, Units, Date, IfSpis, Virtual, Author, G_ID, W_ID)" _
 					& "   VALUES (@ID_D, @ID_U, @Units, @Date, 0, 1, @User, 0, -2);" _
-					& "  UPDATE SKLAD SET Nuse = Nuse + @Units WHERE Ncard = @ID_U;" _
+					& "  UPDATE Storages SET Nrepairs = Nrepairs + @Units WHERE Ncard = @ID_U;" _
 					& "  INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS)" _
 					& "   VALUES (@Date, @ID_U, @User, 'Администратор DEVIN', 'При создании виртуального ремонта ' + CAST(@Units AS varchar(6)) + ' деталей добавлены в используемые')" _
 					& "  INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS)" _
@@ -75,9 +75,9 @@
 				response.write "<div class='done'>Создано ремонтов: " & repairsCount & " из " & repairsAllCount & "</div>"
 				response.write "<a href='/devin/repair/##" & ifOne & "'>Перейти к последнему ремонту из созданных</a>"
 			else
-				conn.execute "INSERT INTO [writeoff] (W_Name, W_Type, W_Date, G_ID) VALUES ('" & DecodeUTF8(offGroup) & "', 'expl', GETDATE(), 0)"
+				conn.execute "INSERT INTO Writeoffs (Name, Type, Date, FolderId) VALUES ('" & DecodeUTF8(offGroup) & "', 'expl', GetDate(), 0)"
 				dim offID
-				rs.open "SELECT TOP (1) W_ID FROM [writeoff] ORDER BY W_ID DESC", conn
+				rs.open "SELECT Max(Id) FROM Writeoffs", conn
 					offID = rs(0)
 				rs.close
 				conn.execute "UPDATE REMONT SET W_ID = " & offID & " WHERE (W_ID = -2)"

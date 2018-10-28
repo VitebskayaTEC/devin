@@ -3,37 +3,37 @@
     string id = Request.QueryString.Get("id");
     string search = Request.QueryString.Get("search");
     string where = string.IsNullOrEmpty(search)
-        ? "" : $"WHERE d.name LIKE '%{search}%' OR d.description LIKE '%{search}%' OR d.number_device LIKE '%{search}%' OR s.Name LIKE '%{search}%' OR s.Ncard LIKE '%{search}%'";
+        ? "" : $"WHERE Devices.name LIKE '%{search}%' OR Devices.description LIKE '%{search}%' OR Devices.number_device LIKE '%{search}%' OR Storages.Name LIKE '%{search}%' OR Storages.Ncard LIKE '%{search}%'";
 
     var raws = conn.Query($@"SELECT
-        r.INum    AS [Id]
-        ,f.G_ID   AS [FolderId]
-        ,w.W_ID   AS [WriteoffId]
-        ,r.Id_D   AS [DeviceNumber]
-        ,r.Id_U   AS [StorageInventory]
-        ,r.Units
-        ,r.Date
-        ,r.IfSpis
-        ,r.Virtual
+        Repairs.Id
+        ,Folders.Id   AS FolderId
+        ,Writeoffs.Id AS WriteoffId
+        ,Repairs.DeviceId
+        ,Repairs.StorageInventory
+        ,Repairs.Number
+        ,Repairs.Date
+        ,Repairs.IsOff
+        ,Repairs.IsVirtual
 
-        ,d.Inventory    AS [Device_Inventory]
-        ,d.name         AS [Device_Name]
-        ,d.Description  AS [Device_Description]
-        ,d.class_device AS [Device_DeviceClass]
+        ,Devices.Inventory   AS [Device_Inventory]
+        ,Devices.Name        AS [Device_Name]
+        ,Devices.Description AS [Device_Description]
+        ,Devices.Type        AS [Device_Type]
 
-        ,s.Name   AS [Storage_Name]
-        ,s.Nadd   AS [Storage_Nadd]
-        ,s.Nis    AS [Storage_Nis]
-        ,s.Nuse   AS [Storage_Nuse]
-        ,s.Nbreak AS [Storage_Nbreak]
-        ,s.Price  AS [Storage_Price]
-    FROM REMONT r
-    LEFT OUTER JOIN DEVICE d   ON r.ID_D = d.number_device
-    LEFT OUTER JOIN SKLAD s    ON r.ID_U = s.NCard
-    LEFT OUTER JOIN [GROUP] f  ON r.G_ID = f.G_ID
-    LEFT OUTER JOIN writeoff w ON r.W_ID = w.W_ID
+        ,Storages.Name     AS Storage_Name
+        ,Storages.Nall     AS Storage_Nall
+        ,Storages.Nstorage AS Storage_Nstorage
+        ,Storages.Nrepairs AS Storage_Nrepairs
+        ,Storages.Noff     AS Storage_Noff
+        ,Storages.Cost     AS Storage_Cost
+    FROM Repairs
+    LEFT OUTER JOIN Devices   ON Repairs.DeviceId         = Devices.Id
+    LEFT OUTER JOIN Storages  ON Repairs.StorageInventory = Storages.Inventory
+    LEFT OUTER JOIN Folders   ON Repairs.G_ID             = Folders.Id
+    LEFT OUTER JOIN Writeoffs ON Repairs.W_ID             = Writeoffs.Id
     {where}
-    ORDER BY f.G_ID, w.W_ID, r.Date DESC").AsList();
+    ORDER BY Folders.Id, Writeoffs.Id, Repairs.Date DESC").AsList();
 
     var _repairs = new List<Repair>();
 
@@ -44,28 +44,28 @@
             Id = raw.Id ?? 0,
             FolderId = raw.FolderId ?? 0,
             WriteoffId = raw.WriteoffId ?? 0,
-            DeviceNumber = raw.DeviceNumber,
+            DeviceId = raw.DeviceNumber,
             StorageInventory = raw.StorageInventory,
-            Units = raw.Units ?? 0,
+            Number = raw.Number ?? 0,
             Date = raw.Date,
-            IfSpis = raw.IfSpis == 1,
-            Virtual = raw.Virtual == 1,
+            IsOff = raw.IsOff == 1,
+            IsVirtual = raw.IsVirtual == 1,
             Author = raw.Author,
             Device = new Device
             {
                 Inventory = raw.Inventory_Inventory,
                 Name = raw.Device_Name,
                 Description = raw.Device_Description,
-                DeviceClass = raw.Device_DeviceClass
+                Type = raw.Device_DeviceClass
             },
             Storage = new Storage
             {
                 Name = raw.Storage_Name,
-                Nadd = raw.Storage_Nadd ?? 0,
-                Nis = raw.Storage_Nis ?? 0,
-                Nuse = raw.Storage_Nuse ?? 0,
-                Nbreak = raw.Storage_Nbreak ?? 0,
-                Price = raw.Storage_Price ?? 0,
+                Nall = raw.Storage_Nall ?? 0,
+                Nstorage = raw.Storage_Nstorage ?? 0,
+                Nrepairs = raw.Storage_Nrepairs ?? 0,
+                Noff = raw.Storage_Noff ?? 0,
+                Cost = Convert.ToSingle(raw.Storage_Cost ?? 0),
             }
         });
     }
@@ -84,24 +84,24 @@
     else
     {
         var _writeoffs = conn.Query<Writeoff>(@"SELECT
-            w.W_ID    AS [Id]
-            ,w.W_Name AS [Name]
-            ,w.W_Date AS [Date]
-            ,c.O_Name AS [Type]
-            ,f.G_ID   AS [FolderId]
-        FROM writeoff w
-        LEFT OUTER JOIN catalog_writeoffs c ON w.W_Type = c.O_Alias
-        LEFT OUTER JOIN [GROUP] f ON w.G_ID = f.G_ID
-        ORDER BY w.W_Date DESC").AsList();
+            Writeoffs.Id
+            ,Writeoffs.Name
+            ,Writeoffs.Date
+            ,c.O_Name    AS [Type]
+            ,Folders.Id  AS [FolderId]
+        FROM Writeoffs
+        LEFT OUTER JOIN catalog_writeoffs c ON Writeoffs.Type = c.O_Alias
+        LEFT OUTER JOIN Folders ON Writeoffs.FolderId = Folders.Id
+        ORDER BY Writeoffs.Date DESC").AsList();
 
         var _folders = conn.Query<Folder>(@"SELECT
-            f.G_ID AS Id,
-            CASE WHEN p.G_ID IS NULL THEN 0 ELSE p.G_ID END AS FolderId,
-            f.G_Title AS Title
-        FROM [GROUP] f
-        LEFT OUTER JOIN [GROUP] p ON f.G_Inside = p.G_Id
-        WHERE f.G_Type = 'repair'
-        ORDER BY f.G_Title").AsList();
+            f.Id,
+            CASE WHEN p.Id IS NULL THEN 0 ELSE p.Id END AS FolderId,
+            f.Name
+        FROM Folders f
+        LEFT OUTER JOIN Folders p ON f.FolderId = p.Id
+        WHERE f.Type = 'repair'
+        ORDER BY f.Name").AsList();
 
         var repairs = new List<Repair>();
         var writeoffs = new List<Writeoff>();
@@ -201,7 +201,7 @@
                 <td width='24px' menu='group' onmousedown='_menu(this)'>
                     <div class='icon ic-folder'></div>
                 </td>
-                <th>@folder.Title</th>
+                <th>@folder.Name</th>
             </tr>
         </table>
         <div class="items_block @(open == "open" ? "" : "hide")">
@@ -260,10 +260,10 @@
                     <td>
                         <div class="led @repair.Storage.Led()"></div> @repair.Storage.Name
                     </td>
-                    <td>@repair.Units</td>
-                    <td>@((repair.Units * repair.Storage.Price).ToString("0.00")) р.</td>
-                    <td><input type="checkbox" disabled @(repair.IfSpis ? "checked" : "") /></td>
-			        <td><input type="checkbox" disabled @(repair.IfSpis ? "checked" : "") /></td>
+                    <td>@repair.Number</td>
+                    <td>@((repair.Number * repair.Storage.Cost).ToString("0.00")) р.</td>
+                    <td><input type="checkbox" disabled @(repair.IsOff ? "checked" : "") /></td>
+			        <td><input type="checkbox" disabled @(repair.IsVirtual ? "checked" : "") /></td>
                 </tr>
             }
         </tbody>

@@ -37,41 +37,41 @@ namespace Devin.Controllers
         public ActionResult WorkPlaces() => View();
 
 
-        public string Update([Bind(Include = "DeviceNumber,Name,Inventory,DeviceClass,Description,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,InUse")] Device device)
+        public string Update([Bind(Include = "Id,Name,Inventory,Type,Description,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,IsOff")] Device device)
         {
             // Валидация 
             if (!DateTime.TryParse(Request.Form.Get("DateInstall"), out DateTime d)) return "error:Дата установки введена в неверном формате"; else device.DateInstall = d;
 
-            if (DateTime.TryParse(Request.Form.Get("LastRepairDate"), out d)) device.LastRepairDate = d;
-            else device.LastRepairDate = null;
+            if (DateTime.TryParse(Request.Form.Get("DateLastRepair"), out d)) device.DateLastRepair = d;
+            else device.DateLastRepair = null;
 
 
             using (var conn = Database.Connection())
             {
                 // Логирование изменений
                 var old = conn.QueryFirst<Device>(@"SELECT
-                    d.Inventory
-                    ,d.Name
-                    ,d.Description
-                    ,d.Mol
-                    ,d.OS
-                    ,d.OSKey
-                    ,d.PlaceId
-                    ,d.number_device   AS [DeviceNumber]
-                    ,d.class_device    AS [DeviceClass]
-                    ,c.number_device   AS [ComputerId]
-                    ,d.install_date    AS [DateInstall]
-                    ,d.number_serial   AS [SerialNumber]
-                    ,d.number_passport AS [PassportNumber]
-                    ,d.attribute       AS [Location]
-                    ,d.ID_prn          AS [PrinterId]
-                    ,g.G_ID            AS [GroupId]
-                    ,d.service_tag     AS [ServiceTag]
-                    ,d.used            AS [InUse]
-                FROM Device d
-                LEFT OUTER JOIN Device  c ON c.number_device = d.number_comp
-                LEFT OUTER JOIN [Group] g ON g.G_ID          = d.G_ID
-                WHERE d.number_device = @DeviceNumber", new { device.DeviceNumber });
+                    Devices.Id
+                    ,Devices.Inventory
+                    ,Devices.Name
+                    ,Devices.Description
+                    ,Devices.Mol
+                    ,Devices.OS
+                    ,Devices.OSKey
+                    ,Devices.PlaceId
+                    ,Devices.Type
+                    ,Devices.DateInstall
+                    ,Devices.SerialNumber
+                    ,Devices.PassportNumber
+                    ,Devices.Location
+                    ,Devices.PrinterId
+                    ,Devices.ServiceTag
+                    ,Devices.IsOff
+                    ,Computers.Id AS ComputerId
+                    ,Folders.Id   AS FoldersId
+                FROM Devices
+                LEFT OUTER JOIN Devices AS Computers ON Computers.Id = Devices.ComputerId
+                LEFT OUTER JOIN Folders ON Folders.Id = Devices.FolderId
+                WHERE Devices.Id = @Id", new { device.Id });
 
                 List<string> changes = new List<string>();
 
@@ -83,9 +83,9 @@ namespace Devin.Controllers
                 {
                     changes.Add($"наименование [{old.Name} => {device.Name}]");
                 }
-                if (device.DeviceClass != old.DeviceClass)
+                if (device.Type != old.Type)
                 {
-                    changes.Add($"класс [{old.DeviceClass} => {device.DeviceClass}]");
+                    changes.Add($"класс [{old.Type} => {device.Type}]");
                 }
                 if (device.Description != old.Description)
                 {
@@ -123,17 +123,17 @@ namespace Devin.Controllers
                 {
                     changes.Add($"типовой принтер [{old.PrinterId} => {device.PrinterId}]");
                 }
-                if (device.InUse != old.InUse)
+                if (device.IsOff != old.IsOff)
                 {
-                    changes.Add($"списан [{old.InUse} => {device.InUse}]");
+                    changes.Add($"списан [{old.IsOff} => {device.IsOff}]");
                 }
                 if (device.DateInstall != old.DateInstall)
                 {
                     changes.Add($"дата установки [{old.DateInstall} => {device.DateInstall}]");
                 }
-                if (device.LastRepairDate != old.LastRepairDate)
+                if (device.DateLastRepair != old.DateLastRepair)
                 {
-                    changes.Add($"дата последнего ремонта [{old.LastRepairDate} => {device.LastRepairDate}]");
+                    changes.Add($"дата последнего ремонта [{old.DateLastRepair} => {device.DateLastRepair}]");
                 }
                 if (device.Mol != old.Mol)
                 {
@@ -142,12 +142,12 @@ namespace Devin.Controllers
 
                 string destination = Request.Form.Get("Destination");
                 device.ComputerId = old.ComputerId;
-                device.GroupId = old.GroupId;
+                device.FolderId = old.FolderId;
 
-                string oldDestination = old.ComputerId != null 
+                string oldDestination = old.ComputerId != 0 
                     ? ("(компьютер) " + old.ComputerId) 
-                    : (old.GroupId != 0 
-                        ? ("(папка) " + old.GroupId)
+                    : (old.FolderId != 0 
+                        ? ("(папка) " + old.FolderId)
                         : "отдельно");
 
                 if (destination.Contains("computer"))
@@ -155,8 +155,8 @@ namespace Devin.Controllers
                     destination = destination.Replace("computer", "");
                     if (oldDestination != ("(компьютер) " + destination))
                     {
-                        device.ComputerId = destination;
-                        device.GroupId = 0;
+                        device.ComputerId = int.Parse(destination);
+                        device.FolderId = 0;
                         changes.Add($"расположение [{oldDestination} => (компьютер) {destination}]");
                     }
                 }
@@ -165,8 +165,8 @@ namespace Devin.Controllers
                     int i = int.Parse(destination.Replace("folder", ""));
                     if (oldDestination != ("(папка) " + i))
                     {
-                        device.ComputerId = null;
-                        device.GroupId = i;
+                        device.ComputerId = 0;
+                        device.FolderId = i;
                         changes.Add($"расположение [{oldDestination} => (папка) {i}]");
                     }
                 }
@@ -174,8 +174,8 @@ namespace Devin.Controllers
                 {
                     if (oldDestination != "отдельно")
                     {
-                        device.GroupId = 0;
-                        device.ComputerId = null;
+                        device.FolderId = 0;
+                        device.ComputerId = 0;
                         changes.Add($"расположение [{oldDestination} => отдельно]");
                     }                    
                 }
@@ -183,32 +183,31 @@ namespace Devin.Controllers
                 if (changes.Count > 0)
                 {
                     // Сохранение в базе
-                    conn.Execute(@"UPDATE Device SET
-                        Inventory        = @Inventory
-                        ,Name            = @Name
-                        ,Description     = @Description
-                        ,OS              = @OS
-                        ,OSKey           = @OSKey
-                        ,PlaceId         = @PlaceId
-                        ,class_device    = @DeviceClass
-                        ,number_comp     = @ComputerId
-                        ,install_date    = @DateInstall
-                        ,number_serial   = @SerialNumber
-                        ,number_passport = @PassportNumber
-                        ,attribute       = @Location
-                        ,ID_prn          = @PrinterId
-                        ,G_ID            = @GroupId
-                        ,service_tag     = @ServiceTag
-                        ,used            = @InUse
-                        ,Mol             = @Mol
-                    FROM Device
-                    WHERE number_device = @DeviceNumber", device);
+                    conn.Execute(@"UPDATE Devices SET
+                        Inventory       = @Inventory
+                        ,Name           = @Name
+                        ,Description    = @Description
+                        ,OS             = @OS
+                        ,OSKey          = @OSKey
+                        ,PlaceId        = @PlaceId
+                        ,Type           = @Type
+                        ,ComputerId     = @ComputerId
+                        ,DateInstall    = @DateInstall
+                        ,SerialNumber   = @SerialNumber
+                        ,PassportNumber = @PassportNumber
+                        ,Location       = @Location
+                        ,PrinterId      = @PrinterId
+                        ,GroupId        = @GroupId
+                        ,ServiceTag     = @ServiceTag
+                        ,IsOff          = @IsOff
+                        ,Mol            = @Mol
+                    WHERE Id = @Id", device);
 
                     conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
                     {
                         Date = DateTime.Now,
                         Source = "devices",
-                        Id = device.DeviceNumber,
+                        Id = device.Id.ToString(),
                         Text = "Позиция изменена. Изменения: " + string.Join(",\n", changes.ToArray()),
                         Username = User.Identity.Name
                     });
@@ -326,13 +325,13 @@ namespace Devin.Controllers
 
             using (var conn = Database.Connection())
             {
-                string Id = conn.Query<string>("SELECT number_device FROM Device WHERE Name = @Name", new { Name }).FirstOrDefault();
-                if (Id == null) return "error:Компьютер с именем \"" + Name + "\" не найден в базе.";
+                int Id = conn.Query<int>("SELECT Id FROM Devices WHERE Name = @Name", new { Name }).FirstOrDefault();
+                if (Id == 0) return "error:Компьютер с именем \"" + Name + "\" не найден в базе.";
                 return PrintRecordCart(Id);
             }
         }
 
-        public string PrintRecordCart(string Id)
+        public string PrintRecordCart(int Id)
         {
             string template = Server.MapPath(Url.Action("exl", "content") + "/ReportCart.xlsx");
             string output = Server.MapPath(Url.Action("excels", "content") + "/ReportCart.xlsx");
@@ -349,20 +348,20 @@ namespace Devin.Controllers
             List<Device> devices;
             using (var conn = Database.Connection())
             {
-                cabinet = conn.QueryFirst<string>(@"SELECT Location FROM Device LEFT OUTER JOIN WorkPlaces ON WorkPlaces.Id = Device.PlaceId WHERE number_device = @Id", new { Id });
+                cabinet = conn.QueryFirst<string>(@"SELECT Location FROM Devices LEFT OUTER JOIN WorkPlaces ON WorkPlaces.Id = Devices.PlaceId WHERE Id = @Id", new { Id });
 
                 devices = conn.Query<Device>(@"SELECT
-	                Device.Inventory,
-	                Device.Name,
-	                Device.Description,
+	                Devices.Inventory,
+	                Devices.Name,
+	                Devices.Description,
 	                Devices1C.Description AS Description1C,
-	                Device.number_serial AS SerialNumber,
-	                CASE WHEN Devices1C.Mol IS NULL THEN Device.Mol ELSE Devices1C.Mol END AS Mol,
-	                Device.install_date AS DateInstall
-                FROM Device
-                LEFT OUTER JOIN Devices1C ON Devices1C.Inventory = Device.Inventory
-                WHERE number_device = @Id OR number_comp = @Id
-                ORDER BY Device.Inventory, Description1C", new { Id }).AsList();
+	                Devices.SerialNumber,
+	                CASE WHEN Devices1C.Mol IS NULL THEN Devices.Mol ELSE Devices1C.Mol END AS Mol,
+	                Devices.DateInstall
+                FROM Devices
+                LEFT OUTER JOIN Devices1C ON Devices1C.Inventory = Devices.Inventory
+                WHERE Devices.Id = @Id OR Devices.ComputerId = @Id
+                ORDER BY Devices.Inventory, Description1C", new { Id }).AsList();
             }
 
             string now = DateTime.Now.ToString("dd.MM.yyyy");

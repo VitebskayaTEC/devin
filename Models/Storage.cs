@@ -4,55 +4,53 @@ namespace Devin.Models
 {
     public class Storage
     {
-        public int INum { get; set; }
-
         public string Name { get; set; }
 
         [Slapper.AutoMapper.Id]
-        public string Ncard { get; set; }
+        public int Inventory { get; set; }
 
-        public string Class_Name { get; set; }
+        public string Type { get; set; }
 
-        public float Price { get; set; }
+        public float Cost { get; set; }
 
-        public int Nadd { get; set; }
+        public int Nall { get; set; }
 
-        public int Nis { get; set; }
+        public int Nstorage { get; set; }
 
-        public int Nuse { get; set; }
+        public int Nrepairs { get; set; }
 
-        public int Nbreak { get; set; }
+        public int Noff { get; set; }
 
         public DateTime Date { get; set; }
 
-        public int Delit { get; set; }
+        public bool IsDeleted { get; set; }
 
-        public string Uchet { get; set; }
+        public string Account { get; set; }
 
-        public int Id_Cart { get; set; }
+        public int CartridgeId { get; set; }
 
-        public int G_Id { get; set; }
+        public int FolderId { get; set; }
 
-        public bool IsOff() => (Nadd == Nbreak) && (Nis + Nuse == 0);
+        public bool IsOff() => (Nall == Noff) && (Nstorage + Nrepairs == 0);
 
         public string Led()
         {
-            if (Nadd != (Nis + Nuse + Nbreak)) return "warning";
-            else if (Nadd == Nbreak) return "off";
-            else if (Nis == 0 || Nuse > 0) return "onwork";
+            if (Nall != (Nstorage + Nrepairs + Noff)) return "warning";
+            else if (Nall == Noff) return "off";
+            else if (Nstorage == 0 || Nrepairs > 0) return "onwork";
             else return "on";
         }
 
         public float RealCost()
         {
-            var realCost = Price;
+            var realCost = Cost;
 
-            if (Price == 0)
+            if (Cost == 0)
             {
                 realCost = 24.5F;
             }
 
-            if (Uchet == "10.5.1")
+            if (Account == "10.5.1")
             {
                 realCost = realCost * 1.2F;
             }

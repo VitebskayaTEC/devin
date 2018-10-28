@@ -11,35 +11,35 @@
 
 	'Получаем список всех ремонтов
 	sql = "SELECT " _
-	& "REMONT.ID_D, " _
-	& "DEVICE.inventory, " _
-	& "DEVICE.name, " _
-	& "DEVICE.description, " _
-	& "DEVICE.install_date, " _
-	& "DEVICE.MOL, " _
-	& "DEVICE.attribute, " _
-	& "DEVICE.used, " _
-	& "PRINTER.Caption, " _
-	& "REMONT.ID_U, " _
-	& "SKLAD.Name AS Expr1, " _
-	& "SKLAD.NCard, " _
-	& "SKLAD.Price, " _
-	& "SKLAD.uchet, " _
-	& "CARTRIDGE.Caption AS Expr2, " _
-	& "REMONT.Units, " _
-	& "REMONT.Date, " _
-	& "REMONT.IfSpis, " _
-	& "REMONT.Virtual, " _
-	& "REMONT.Author, " _
-	& "REMONT.W_ID, " _
-	& "REMONT.G_ID " _
-	& "FROM CARTRIDGE " _
-	& "RIGHT OUTER JOIN SKLAD ON CARTRIDGE.N = SKLAD.ID_cart " _
-	& "RIGHT OUTER JOIN REMONT ON SKLAD.NCard = REMONT.ID_U " _
-	& "LEFT OUTER JOIN DEVICE ON REMONT.ID_D = DEVICE.number_device " _
-	& "LEFT OUTER JOIN PRINTER ON DEVICE.ID_prn = PRINTER.N " _
-	& "LEFT OUTER JOIN DEVICE AS DEVICE_1 ON DEVICE.number_comp = DEVICE_1.number_device " _
-	& "WHERE (REMONT.INum = " & id & ")"
+	& "Repairs.DeviceId, " _
+	& "Devices.Inventory, " _
+	& "Devices.Name, " _
+	& "Devices.Description, " _
+	& "Devices.DateInstall, " _
+	& "Devices.Mol, " _
+	& "Devices.Location, " _
+	& "Devices.IsOff, " _
+	& "Printers.Name, " _
+	& "Repairs.StorageInventory, " _
+	& "Storages.Name AS Expr1, " _
+	& "Storages.Inventory, " _
+	& "Storages.Cost, " _
+	& "Storages.Account, " _
+	& "Cartridges.Name AS Expr2, " _
+	& "Repairs.Number, " _
+	& "Repairs.Date, " _
+	& "Repairs.IsOff, " _
+	& "Repairs.IsVirtual, " _
+	& "Repairs.Author, " _
+	& "Repairs.WriteoffId, " _
+	& "Repairs.FolderId " _
+	& "FROM Cartridges " _
+	& "RIGHT OUTER JOIN Storages ON Cartridges.Id = Storages.CartridgeId " _
+	& "RIGHT OUTER JOIN Repairs ON Storages.Inventory = Repairs.StorageInventory " _
+	& "LEFT OUTER JOIN Devices ON Repairs.DeviceId = Devices.Id " _
+	& "LEFT OUTER JOIN Printers ON DEVICE.PrinterId = Printers.Id " _
+	& "LEFT OUTER JOIN Devices AS Computers ON DEVICE.ComputerId = Computers.Id " _
+	& "WHERE (Repairs.Id = " & id & ")"
 	rs.open sql, conn
 	'response.write sql
 
@@ -70,15 +70,15 @@
 		if instr(id, "PRN") > 0 then response.write "<tr><td>Типовой картридж<td>" & repair(14) & "</tr>"
 
 		response.write "<tr><th colspan='2'>Инфо</tr>" _
-		& "<tr><td>Кол-во деталей исп.<td><input name='units' type='number' style='width: 100px' value='" & repair(15) & "' /></tr>" _
-		& "<tr><td>Дата ремонта<td><input name='date' value='" & datevalue(repair(16)) & "' style='width: 100px' /></tr>" _
-		& "<tr><td>Списан<td><select name='ifspis'>" _
+		& "<tr><td>Кол-во деталей исп.<td><input name='Number' type='number' style='width: 100px' value='" & repair(15) & "' /></tr>" _
+		& "<tr><td>Дата ремонта<td><input name='Date' value='" & datevalue(repair(16)) & "' style='width: 100px' /></tr>" _
+		& "<tr><td>Списан<td><select name='IsOff'>" _
 		& "<option value='0'>Нет" _
 		& "<option value='1' "
 		if repair(17) = "1" then response.write " selected"
 		response.write ">Да" _
 		& "</select></tr>" _
-		& "<tr><td>Виртуальный<td><select name='virtual'>" _
+		& "<tr><td>Виртуальный<td><select name='IsVirtual'>" _
 		& "<option value='0'>Нет" _
 		& "<option value='1' "
 		if repair(18) = "1" then response.write " selected"

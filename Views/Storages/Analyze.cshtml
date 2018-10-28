@@ -79,19 +79,19 @@
     int minBaseValue = 23;
 
     string sql = @"SELECT
-        CARTRIDGE.N       AS Cartridge,
-        CARTRIDGE.Type    AS [Type],
-        CARTRIDGE.Caption AS Caption,
-        SKLAD.Nis         AS [Count],
-        SKLAD.Uchet       AS Account,
-        SKLAD.Price       AS Price,
-        CARTRIDGE.Price   AS DefPrice,
-        SKLAD.ID_cart     AS ID,
-        CARTRIDGE.Type    AS AltType,
-        CARTRIDGE.Color   AS Color
-    FROM CARTRIDGE
-    INNER JOIN Sklad ON CARTRIDGE.N = SKLAD.ID_cart
-    ORDER BY [Type], Caption";
+        Cartridges.Id     AS Cartridge,
+        Cartridges.Type    AS [Type],
+        Cartridges.Name AS Caption,
+        Storages.Nstorage         AS [Count],
+        Storages.Account       AS Account,
+        Storages.Cost       AS Price,
+        CAST(Cartridges.Cost as float) AS DefPrice,
+        Storages.CartridgeId     AS ID,
+        Cartridges.Type    AS AltType,
+        Cartridges.Color   AS Color
+    FROM Cartridges
+    INNER JOIN Storages ON Cartridges.Id = Storages.CartridgeId
+    ORDER BY Cartridges.Type, Cartridges.Name";
 
     var cartridge = new Cartridge { Id = 0 };
 
@@ -99,14 +99,14 @@
 
     foreach (var row in rs)
     {
-        double cost;
+        float cost;
         if (row.Price == 0)
         {
-            cost = minBaseValue * 1.2;
+            cost = minBaseValue * 1.2F;
         }
         else
         {
-            double fixCost = row.Account == "10.5.1" ? 1.2 : 2.4;
+            float fixCost = row.Account == "10.5.1" ? 1.2F : 2.4F;
             cost = row.Price * fixCost;
         }
 
@@ -116,7 +116,7 @@
 
             if (cartridge.DefPrice != 0 && cartridge.Cost < cost)
             {
-                cartridge.Cost = (float)cost;
+                cartridge.Cost = cost;
             }
         }
         else
@@ -124,36 +124,37 @@
             cartridges.Add(cartridge = new Cartridge
             {
                 Id = row.Cartridge,
-                Caption = row.Caption,
+                Name = row.Caption,
                 InStorage = row.Count,
                 Count = 0,
                 Type = row.Type,
-                Color = row.Color,
-                DefPrice = float.TryParse(row.DefPrice, out float f) ? f : 0
+                Color = row.Color
             });
 
-            cartridge.Cost = float.TryParse(row.DefPrice, out f) ? f : (float)cost;
+            cartridge.DefPrice = Convert.ToSingle(row.DefPrice);
+
+            cartridge.Cost = Convert.ToSingle(row.DefPrice == 0 ? cost : (row.DefPrice ?? 0));
         }
     }
 
     sql = @"SELECT
-        DEVICE.number_device AS ID_P,
-        SKLAD.ID_cart        AS ID_C,
-        COMPUTERS.name       AS Computer,
-        DEVICE.description   AS Device,
-        PRINTER.Caption      AS Printer,
-        REMONT.Date          AS Date,
-        REMONT.Units         AS N,
-        CARTRIDGE.Caption    AS Cartridge,
-        SKLAD.Price          AS Price,
-        SKLAD.Uchet          AS Account
-    FROM REMONT
-        INNER JOIN DEVICE              ON REMONT.ID_D        = DEVICE.number_device
-        INNER JOIN DEVICE AS COMPUTERS ON DEVICE.number_comp = COMPUTERS.number_device
-        INNER JOIN SKLAD               ON REMONT.ID_U        = SKLAD.NCard
-        INNER JOIN PRINTER             ON DEVICE.ID_prn      = PRINTER.N
-        INNER JOIN CARTRIDGE           ON SKLAD.ID_cart      = CARTRIDGE.N
-    WHERE (REMONT.ID_D LIKE '%PRN%') AND (REMONT.Virtual = 0)
+        Devices.Id           AS ID_P,
+        Storages.CartridgeId AS ID_C,
+        Computers.Name       AS Computer,
+        Devices.Description  AS Device,
+        Printers.Name        AS Printer,
+        Repairs.Date         AS Date,
+        Repairs.Number       AS N,
+        Cartridges.Name      AS Cartridge,
+        Storages.Cost        AS Price,
+        Storages.Account     AS Account
+    FROM Repairs
+        INNER JOIN Devices              ON Repairs.DeviceId         = Devices.Id
+        INNER JOIN Devices AS Computers ON Devices.ComputerId       = Computers.Id
+        INNER JOIN Storages             ON Repairs.StorageInventory = Storages.Inventory
+        INNER JOIN Printers             ON Devices.PrinterId        = Printers.Id
+        INNER JOIN Cartridges           ON Storages.CartridgeId     = Cartridges.Id
+    WHERE Devices.Type = 'PRN' AND Repairs.IsVirtual = 0
     ORDER BY ID_P, ID_C, Date";
 
     var repairs = conn.Query(sql).AsList();
@@ -249,7 +250,7 @@
                         int forecast = 0;
                         <tr>
                             <td>@c.Type</td>
-                            <td>@c.Caption</td>
+                            <td>@c.Name</td>
                             <td>@c.Cost.ToString("0.00")</td>
                             <td>@c.InStorage</td>
                             <td>
@@ -282,7 +283,7 @@
                                 }
                             </td>
                             <td>
-                                <input color="@c.Color" name="@c.Caption" type="number" min="0" onblur="this.value = Math.round(this.value);" value="@forecast" />
+                                <input color="@c.Color" name="@c.Name" type="number" min="0" onblur="this.value = Math.round(this.value);" value="@forecast" />
                             </td>
                         </tr>
                     }

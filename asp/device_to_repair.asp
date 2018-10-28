@@ -3,7 +3,7 @@
 	dim id : id = request.querystring("id")
 	dim conn : set conn = Server.CreateObject("ADODB.Connection")
 	dim rs : set rs = Server.CreateObject("ADODB.Recordset")
-	dim sql : sql = "SELECT TOP (1) class_device, ID_prn, name, description, attribute, mol FROM DEVICE WHERE (number_device = '" & id & "')"
+	dim sql : sql = "SELECT TOP (1) Type, PrinterId, Name, Description, Location, Mol FROM Devices WHERE Id = '" & id & "'"
 	dim class_device, idprn
 	conn.open everest
 	rs.open sql, conn
@@ -11,13 +11,13 @@
 		response.write "Произошла ошибка. Устройство с заданным ID больше не существует или его ID был изменен."
 		response.end
 	else
-		class_device = trim(rs("class_device"))
-		idprn = rs("ID_prn")
-		response.write "<div class='cart-header'>Создание записи о ремонте => " & trim(rs("name")) & "</div>"
+		class_device = trim(rs("Type"))
+		idprn = rs("PrinterId")
+		response.write "<div class='cart-header'>Создание записи о ремонте => " & trim(rs("Name")) & "</div>"
 		response.write "<table class='cart-table'>"
-		response.write "<tr><td>Описание:<td>" & trim(rs("description")) & "</tr>"
-		response.write "<tr><td>Расположение:<td>" & trim(rs("attribute")) & "</tr>"
-		response.write "<tr><td>МОЛ:<td>" & trim(rs("mol")) & "</tr>"
+		response.write "<tr><td>Описание:<td>" & trim(rs("Description")) & "</tr>"
+		response.write "<tr><td>Расположение:<td>" & trim(rs("Location")) & "</tr>"
+		response.write "<tr><td>МОЛ:<td>" & trim(rs("Mol")) & "</tr>"
 		response.write "</table>"
 	end if
 	rs.close
@@ -25,7 +25,7 @@
 	<div>Запчасть:
 		<select id='group' onchange='filterClassName(this)'>
 		<%
-		rs.open "SELECT G_Id, G_Title FROM [GROUP] WHERE G_Type = 'storage'", conn
+		rs.open "SELECT Id, Name FROM Folders WHERE Type = 'storage'", conn
 		if not rs.eof then
 			do while not rs.eof
 				response.write "<option value='" & rs(0) & "'>" & rs(1) & "</option>"

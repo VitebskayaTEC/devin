@@ -19,17 +19,13 @@ namespace Devin.Controllers
             using (var conn = Database.Connection())
             {
                 var writeoff = conn.QueryFirst<Writeoff>(@"SELECT 
-                    w.W_Id           AS [Id],
-                    w.W_Params       AS [Params], 
-                    w.W_Type         AS [Type], 
-                    w.W_Name         AS [Name], 
-                    w.W_Date         AS [Date], 
+                    Writeoffs.*,
                     c.O_Excel        AS [DefExcel],
                     c.O_Template     AS [Template],
-                    w.W_Cost_Article AS [Cost_Article]
-                FROM writeoff w
-                LEFT OUTER JOIN catalog_writeoffs c ON w.W_Type = c.O_Alias 
-                WHERE (W_ID = @Id)", new { Id });
+                    w.CostArticle
+                FROM Writeoffs
+                LEFT OUTER JOIN catalog_writeoffs c ON Writeoffs.Type = c.O_Alias 
+                WHERE (Writeoffs.Id = @Id)", new { Id });
 
                 string template = Server.MapPath("/devin/content/exl/") + writeoff.Type + ".xls";
                 string output = writeoff.Name + " " + DateTime.Now.ToLongDateString() + ".xls";
@@ -63,16 +59,16 @@ namespace Devin.Controllers
                         try
                         {
                             repairs = conn.Query<Repair>(@"SELECT 
-                                SKLAD.NCard      AS [StorageInventory],
-                                SKLAD.Name       AS [StorageName],
-                                REMONT.Units     AS [StorageCount],
-                                SKLAD.Price      AS [StoragePrice],
-                                DEVICE.inventory AS [DeviceInventory],
-                                SKLAD.uchet      AS [StorageList]
-                            FROM REMONT 
-                            LEFT OUTER JOIN SKLAD  ON REMONT.ID_U = SKLAD.NCard 
-                            LEFT OUTER JOIN DEVICE ON REMONT.ID_D = DEVICE.number_device 
-                            WHERE (REMONT.W_ID = @Id)", new { Id });
+                                Storages.Inventory AS [StorageInventory],
+                                Storages.Name      AS [StorageName],
+                                Repairs.Number     AS [StorageCount],
+                                Storages.Cost      AS [StoragePrice],
+                                Devices.Inventory  AS [DeviceInventory],
+                                Storages.Account   AS [StorageList]
+                            FROM Repairs 
+                            LEFT OUTER JOIN Storages  ON Repairs.StorageInventory = Storages.Inventory 
+                            LEFT OUTER JOIN DEVICE    ON Repairs.DeviceId         = Devices.Id 
+                            WHERE (Repairs.WriteoffId = @Id)", new { Id });
                         }
                         catch (Exception)
                         {
@@ -130,27 +126,16 @@ namespace Devin.Controllers
                         sheet.GetRow(27).GetCell(39).SetCellValue(writeoff.Date.ToString("yyyy") + " г.");
 
                         var rs = conn.QueryFirst(@"SELECT 
-                            TOP (1) ID_D AS [DeviceNumber], 
-                            COUNT(INum) AS [RepairsCount] 
-                        FROM REMONT WHERE (W_ID = @Id) GROUP BY ID_D", new { Id });
+                            TOP (1) DeviceId AS [DeviceNumber], 
+                            COUNT(Id) AS [RepairsCount] 
+                        FROM Repairs WHERE (WriteoffId = @Id) GROUP BY DeviceId", new { Id });
 
                         if (rs == null) return "В ремонтах не найден идентификатор основного средства, либо списание не содержит ремонтов";
 
-                        string DeviceNumber = (string)rs.DeviceNumber;
+                        int DeviceId = (int)rs.DeviceNumber;
                         int RepairsCount = (int)rs.RepairsCount;
 
-                        Device device = conn.QueryFirst<Device>(@"SELECT TOP (1)
-                            number_device    AS [DeviceNumber],
-                            inventory        AS [Inventory], 
-                            description      AS [Description], 
-                            number_serial    AS [SerialNumber], 
-                            MOL              AS [Mol],
-                            PassportGold     AS [Gold], 
-                            PassportSilver   AS [Silver], 
-                            PassportPlatinum AS [Platinum],
-                            PassportMPG      AS [MPG]
-                        FROM DEVICE WHERE (number_device = @DeviceNumber)", new { DeviceNumber });
-
+                        Device device = conn.QueryFirst<Device>(@"SELECT * FROM Devices WHERE (Id = @Id)", new { DeviceId });
                         if (device == null) return "Устройство не найдено";
 
                         var metals = conn.Query<Device1C>("SELECT Description, Gold, Silver, Platinum, Palladium, Mpg, SubDivision FROM Devices1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
@@ -185,7 +170,7 @@ namespace Devin.Controllers
                         sheet.GetRow(33).GetCell(16).SetCellValue(RepairsCount);
                         sheet.GetRow(52).GetCell(39).SetCellValue(device.Mol);
 
-                        switch (writeoff.Cost_Article)
+                        switch (writeoff.CostArticle)
                         {
                             case 3: book.GetSheetAt(2).GetRow(14).GetCell(2).SetCellValue("ПТК АСУ"); break;
                             case 2: book.GetSheetAt(2).GetRow(14).GetCell(2).SetCellValue("Орг. техника"); break;
@@ -193,13 +178,13 @@ namespace Devin.Controllers
                         }
 
                         repairs = conn.Query<Repair>(@"SELECT 
-                            REMONT.Units AS [StorageCount], 
-                            SKLAD.Name   AS [StorageName], 
-                            SKLAD.Price  AS [StoragePrice],
-                            SKLAD.NCard  AS [StorageInventory]
-                        FROM REMONT 
-                        LEFT OUTER JOIN SKLAD ON REMONT.ID_U = SKLAD.NCard 
-                        WHERE (REMONT.W_ID = @Id)", new { Id });
+                            Repairs.Number     AS [StorageCount], 
+                            Storages.Name      AS [StorageName], 
+                            Storages.Cost      AS [StoragePrice],
+                            Storages.Inventory AS [StorageInventory]
+                        FROM Repairs 
+                        LEFT OUTER JOIN Storages ON Repairs.StorageInventory = Storages.Inventory 
+                        WHERE (Repairs.WriteoffId = @Id)", new { Id });
 
                         
                         foreach (Repair r in repairs)

@@ -6,7 +6,7 @@
 	dim wid: wid = replace(request.form("id"), "off", "")
 	dim gid: gid = replace(request.form("in"), "rg",  "")
 
-	conn.execute "UPDATE [writeoff] SET G_ID = '" & gid & "' WHERE (W_ID = '" & wid & "')"
+	conn.execute "UPDATE Writeoffs SET FolderId = '" & gid & "' WHERE Id = '" & wid & "'"
 
 	conn.close
 	set conn = nothing

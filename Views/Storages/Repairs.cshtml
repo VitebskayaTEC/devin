@@ -7,7 +7,7 @@
         return;
     }
 
-    string sql = "SELECT Ncard, Name, Nis FROM SKLAD WHERE Ncard = '" + string.Join("' OR Ncard = '", formData.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries)) + "' AND (Nis > 0) ORDER BY NCard";
+    string sql = "SELECT Inventory, Name, Nstorage FROM Storages WHERE Inventory = '" + string.Join("' OR Inventory = '", formData.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries)) + "' AND (Nstorage > 0) ORDER BY Inventory";
 
     var storages = conn.Query<Storage>(sql);
     if (storages.Count() == 0)
@@ -27,25 +27,25 @@
             <option value="0">? Не выбрано</option>
             @{
                 var computers = AutoMapper.MapDynamic<Computer>(conn.Query(@"SELECT
-                    DP.Name,
-                    DP.Number_device AS DeviceNumber,
-                    D.Number_device AS Devices_DeviceNumber,
-                    D.Name AS Devices_Name,
+                    Computers.Name,
+                    Computers.Id,
+                    D.Id          AS Devices_Id,
+                    D.Name        AS Devices_Name,
                     D.Description AS Devices_Description
-                FROM DEVICE AS D
-                LEFT OUTER JOIN DEVICE AS DP ON (D.number_comp = DP.number_device AND DP.deleted <> 1)
-                WHERE (D.deleted <> 1 AND D.used = 1 AND (D.class_device <> 'CMP' OR (D.class_device = 'CMP' AND D.number_device NOT IN (
-                    SELECT number_comp FROM DEVICE WHERE number_comp IS NOT NULL AND number_comp <> '' AND number_comp <> '?' GROUP BY number_comp
+                FROM Devices
+                LEFT OUTER JOIN Devices AS Computers ON (Devices.ComputerId = Computers.Id AND Computers.IsDeleted <> 1)
+                WHERE (D.IsDeleted <> 1 AND Devices.IsOff <> 1 AND (Devices.Type <> 'CMP' OR (Devices.Type = 'CMP' AND Devices.Id NOT IN (
+                    SELECT ComputerId FROM Devices WHERE ComputerId IS NOT NULL AND AND ComputerId <> '0' GROUP BY ComputerId
                 ))))
-                ORDER BY DP.name, D.name"));
+                ORDER BY Computers.Name, Devices.Name"));
 
                 foreach (var computer in computers)
                 {
                     <optgroup label="@computer.Name">
-                        <option value="@computer.DeviceNumber">[компьютер] @computer.Name</option>
+                        <option value="@computer.Id">[компьютер] @computer.Name</option>
                         @foreach (var device in computer.Devices)
                         {
-                            <option value="@device.DeviceNumber">@device.Description</option>
+                            <option value="@device.Id">@device.Description</option>
                         }
                     </optgroup>
                 }
@@ -66,9 +66,9 @@
             <tbody id="repairs-positions">
                 @foreach (var storage in storages)
                 {
-                    <tr class="pos" & storages(i, 0) & "">
+                    <tr class="pos@(storage.Inventory)">
                         <td>
-                            @storage.Ncard [<span>@storage.Nis </span> шт. доступно]
+                            @storage.Inventory [<span>@storage.Nstorage </span> шт. доступно]
                             <a onclick="removePosition(this)">Удалить</a>
                             <a onclick="separatePosition(this)" class="pos-separate">Разделить</a>
                             <br />@storage.Name

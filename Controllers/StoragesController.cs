@@ -7,7 +7,6 @@ using NPOI.SS.Util;
 using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Web.Mvc;
@@ -49,11 +48,11 @@ namespace Devin.Controllers
                     model.Excels.Add(new Storage
                     {
                         Name = row.GetCell(10).StringCellValue,
-                        Ncard = row.GetCell(11).NumericCellValue.ToString(),
-                        Price = (float)row.GetCell(12).NumericCellValue,
+                        Inventory = (int)row.GetCell(11).NumericCellValue,
+                        Cost = (float)row.GetCell(12).NumericCellValue,
                         Date =  d,
-                        Nadd = (int)row.GetCell(28).NumericCellValue,
-                        Uchet = row.GetCell(32).StringCellValue
+                        Nall = (int)row.GetCell(28).NumericCellValue,
+                        Account = row.GetCell(32).StringCellValue
                     });
 
                     if (!title.EndsWith(row.GetCell(32).StringCellValue)) title += " " + row.GetCell(32).StringCellValue;
@@ -62,7 +61,7 @@ namespace Devin.Controllers
 
             using (var conn = Database.Connection())
             {
-                model.Storages = conn.Query<Storage>("SELECT * FROM Sklad ORDER BY Ncard").AsList();
+                model.Storages = conn.Query<Storage>("SELECT * FROM Storages ORDER BY Inventory").AsList();
             }
 
             ViewBag.Title = title;
@@ -70,17 +69,17 @@ namespace Devin.Controllers
         }
 
 
-        public string Create(string Id)
+        public string Create(int Id)
         {
             using (var conn = Database.Connection())
             {
-                conn.Execute("INSERT INTO Sklad (Ncard, Name, Nadd, Nis, Nuse, Nbreak, Date, Id_Cart, delit) VALUES (@Id, '', 1, 1, 0, 0, @Date, 0, 1)", new { Id, DateTime.Now.Date });
+                conn.Execute("INSERT INTO Storages (Inventory, Name, Nall, Nstorage, Nrepairs, Noff, Date, CartridgeId, IsDeleted) VALUES (@Id, '', 1, 1, 0, 0, @Date, 0, 0)", new { Id, DateTime.Now.Date });
 
                 conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
                 {
                     Date = DateTime.Now,
                     Source = "storages",
-                    Id = Id,
+                    Id = Id.ToString(),
                     Text = "Создана позиция. Инвертарный номер [" + Id + "]",
                     Username = User.Identity.Name
                 });
@@ -89,67 +88,67 @@ namespace Devin.Controllers
             }
         }
 
-        public string Update(string Id, [Bind(Include = "Ncard,Name,Nadd,Nis,Nuse,Nbreak,Id_Cart,Class_Name,Uchet,G_Id")] Storage storage)
+        public string Update(int Id, [Bind(Include = "Inventory,Name,Nall,Nstorage,Nrepairs,Noff,CartridgeId,Type,Account,FolderId")] Storage storage)
         {
             // Валидация 
             if (!DateTime.TryParse(Request.Form.Get("Date"), out DateTime d)) return "error:Дата прихода введена в неверном формате"; else storage.Date = d;
-            if (!float.TryParse(Request.Form.Get("Price"), out float f)) return "error:Стоимость введена в неверном формате"; else storage.Price = f;
-            if (storage.Price < 0) return "error:Стоимость не может быть отрицательной";
-            if (storage.Nadd < 0) return "error:Количество прихода не может быть отрицательным";
+            if (!float.TryParse(Request.Form.Get("Cost"), out float f)) return "error:Стоимость введена в неверном формате"; else storage.Cost = f;
+            if (storage.Cost < 0) return "error:Стоимость не может быть отрицательной";
+            if (storage.Nall < 0) return "error:Количество прихода не может быть отрицательным";
 
             using (var conn = Database.Connection())
             {
                 string newNcard = "";
 
-                if (storage.Ncard != Id)
+                if (storage.Inventory != Id)
                 {
-                    if (conn.Query("SELECT Ncard FROM Sklad WHERE Ncard = @Ncard", new { storage.Ncard }).Count() != 0) return "error:Введенный инвертарный номер не является уникальным";
+                    if (conn.Query("SELECT Inventory FROM Storages WHERE Inventory = @Ncard", new { storage.Inventory }).Count() != 0) return "error:Введенный инвертарный номер не является уникальным";
 
                     // Обновление всех логов по инвертарному, чтобы не потерять их, когда поменяется инвентарный номер позиции
-                    conn.Execute("UPDATE Activity SET Id = @Id WHERE Source = 'storages' AND Id = @OldId", new { Id = storage.Ncard, OldId = Id });
-                    newNcard = "<div class='hide' id>" + storage.Ncard + "</div>";
+                    conn.Execute("UPDATE Activity SET Id = @Id WHERE Source = 'storages' AND Id = @OldId", new { Id = storage.Inventory, OldId = Id });
+                    newNcard = "<div class='hide' id>" + storage.Inventory + "</div>";
                 }
 
                 // Логирование изменений
-                var _old = conn.Query<Storage>("SELECT Ncard, Name, Class_Name, Price, Nadd, Nis, Nuse, Nbreak, Date, Uchet, Id_Cart, G_Id, Delit FROM Sklad WHERE Ncard = @Id", new { Id }).FirstOrDefault() ?? new Storage();
+                var _old = conn.Query<Storage>("SELECT * FROM Storages WHERE Ncard = @Id", new { Id }).FirstOrDefault() ?? new Storage();
 
                 var changes = new List<string>();
-                if (_old.Ncard != storage.Ncard) changes.Add($"инвентарный номер [{ _old.Ncard} => {storage.Ncard}]");
+                if (_old.Inventory != storage.Inventory) changes.Add($"инвентарный номер [{ _old.Inventory} => {storage.Inventory}]");
                 if ((_old.Name ?? "") != (storage.Name ?? "")) changes.Add($"наименование [\"{ _old.Name}\" => \"{storage.Name}\"]");
-                if (_old.Nadd != storage.Nadd) changes.Add($"кол-во прихода [{ _old.Nadd} => {storage.Nadd}]");
-                if (_old.Nis != storage.Nis) changes.Add($"кол-во на складе [{ _old.Nis} => {storage.Nis}]");
-                if (_old.Nuse != storage.Nuse) changes.Add($"кол-во используемых [{ _old.Nuse} => {storage.Nuse}]");
-                if (_old.Nbreak != storage.Nbreak) changes.Add($"кол-во списанных [{ _old.Nbreak} => {storage.Nbreak}]");
-                if (_old.Id_Cart != storage.Id_Cart) changes.Add($"типовой картридж [{ _old.Id_Cart} => {storage.Id_Cart}]");
-                if (_old.Class_Name != storage.Class_Name) changes.Add($"тип позиции [{ _old.Class_Name} => {storage.Class_Name}]");
-                if (_old.Uchet != storage.Uchet) changes.Add($"счет учета [{ _old.Uchet} => {storage.Uchet}]");
-                if (_old.G_Id != storage.G_Id) changes.Add($"папка [{ _old.G_Id} => {storage.G_Id}]");
+                if (_old.Nall != storage.Nall) changes.Add($"кол-во прихода [{ _old.Nall} => {storage.Nall}]");
+                if (_old.Nstorage != storage.Nstorage) changes.Add($"кол-во на складе [{ _old.Nstorage} => {storage.Nstorage}]");
+                if (_old.Nrepairs != storage.Nrepairs) changes.Add($"кол-во используемых [{ _old.Nrepairs} => {storage.Nrepairs}]");
+                if (_old.Noff != storage.Noff) changes.Add($"кол-во списанных [{ _old.Noff} => {storage.Noff}]");
+                if (_old.CartridgeId != storage.CartridgeId) changes.Add($"типовой картридж [{ _old.CartridgeId} => {storage.CartridgeId}]");
+                if (_old.Type != storage.Type) changes.Add($"тип позиции [{ _old.Type} => {storage.Type}]");
+                if (_old.Account != storage.Account) changes.Add($"счет учета [{ _old.Account} => {storage.Account}]");
+                if (_old.FolderId != storage.FolderId) changes.Add($"папка [{ _old.FolderId} => {storage.FolderId}]");
                 if (_old.Date != storage.Date) changes.Add($"дата прихода [{ _old.Date} => {storage.Date}]");
-                if (_old.Price != storage.Price) changes.Add($"стоимость [{ _old.Price} => {storage.Price}]");
+                if (_old.Cost != storage.Cost) changes.Add($"стоимость [{ _old.Cost} => {storage.Cost}]");
 
                 if (changes.Count > 0)
                 {
                     // Сохранение в базе
-                    conn.Execute(@"UPDATE Sklad SET
-                        Ncard      = @Ncard,
-                        Name       = @Name,
-                        Class_Name = @Class_Name,
-                        Price      = @Price,
-                        Nadd       = @Nadd,
-                        Nis        = @Nis,
-                        Nuse       = @Nuse,
-                        Nbreak     = @Nbreak,
-                        Date       = @Date,
-                        Uchet      = @Uchet,
-                        Id_Cart    = @Id_Cart,
-                        G_Id       = @G_Id
-                    WHERE Ncard = '" + Id + "'", storage);
+                    conn.Execute(@"UPDATE Storages SET
+                        Inventory   = @Inventory,
+                        Name        = @Name,
+                        Type        = @Type,
+                        Cost        = @Cost,
+                        Nall        = @Nall,
+                        Nstorage    = @Nstorage,
+                        Nrepairs    = @Nrepairs,
+                        Noff        = @Noff,
+                        Date        = @Date,
+                        Account     = @Account,
+                        CartridgeId = @CartridgeId,
+                        FolderId    = @FolderId
+                    WHERE Inventory = '" + Id + "'", storage);
 
                     conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
                     {
                         Date = DateTime.Now,
                         Source = "storages",
-                        Id = storage.Ncard,
+                        Id = storage.Inventory.ToString(),
                         Text = "Позиция изменена. Изменения: " + string.Join(",\n", changes.ToArray()),
                         Username = User.Identity.Name
                     });
@@ -163,32 +162,32 @@ namespace Devin.Controllers
             }
         }
 
-        public void Delete(string Id)
+        public void Delete(int Id)
         {
             using (var conn = Database.Connection())
             {
-                conn.Execute("DELETE FROM Sklad WHERE Ncard = @Id", new { Id });
+                conn.Execute("DELETE FROM Storages WHERE Inventory = @Id", new { Id });
 
                 conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
                 {
                     Date = DateTime.Now,
                     Source = "storages",
-                    Id = Id,
+                    Id = Id.ToString(),
                     Text = "Позиция удалена",
                     Username = User.Identity.Name
                 });
             }
         }
 
-        public void AddExcelToStorage([Bind(Include = "Ncard,Name,Date,Uchet,Nadd,Price")] Storage storage)
+        public void AddExcelToStorage([Bind(Include = "Inventory,Name,Date,Account,Nall,Cost")] Storage storage)
         {
             string name = storage.Name.ToLower();
 
             // Картриджи
-            if (name.Contains("картридж") || name.Contains("тонер") || name.Contains("чернильница") || name.Contains("катридж")) storage.Class_Name = "PRN";
+            if (name.Contains("картридж") || name.Contains("тонер") || name.Contains("чернильница") || name.Contains("катридж")) storage.Type = "PRN";
 
             // Мониторы
-            else if (name.Contains("монитор")) storage.Class_Name = "DIS";
+            else if (name.Contains("монитор")) storage.Type = "DIS";
 
             // Комплектующие
             else if (name.Contains("блок") 
@@ -202,29 +201,38 @@ namespace Devin.Controllers
                 || name.Contains("процессор ")
                 || name.Contains("видеокарта")
                 || name.Contains("видеоплата")
-                || name.Contains("привод")) storage.Class_Name = "CMP";
+                || name.Contains("привод")) storage.Type = "CMP";
 
             // Периферия
-            else if (name.Contains("клави") || name.Contains("мыш")) storage.Class_Name = "INP";
+            else if (name.Contains("клави") || name.Contains("мыш")) storage.Type = "INP";
 
             // Коммутаторы
-            else if (name.Contains("коммутатор")) storage.Class_Name = "SWT";
+            else if (name.Contains("коммутатор")) storage.Type = "SWT";
 
             // Периферия
-            else if (name.Contains("батарея") || name.Contains("ибп") || name.Contains("элемент питания")) storage.Class_Name = "UPS";
+            else if (name.Contains("батарея") || name.Contains("ибп") || name.Contains("элемент питания")) storage.Type = "UPS";
 
             // Другое
-            else storage.Class_Name = "RR";
+            else storage.Type = "RR";
 
             using (var conn = Database.Connection())
             {
-                conn.Execute("INSERT INTO Sklad (Ncard, Name, Date, Uchet, Nadd, Nis, Nuse, Nbreak, delit, class_name, Price) VALUES (@Ncard, @Name, @Date, @Uchet, @Nadd, @Nadd, 0, 0, 1, @Class_Name, @Price)", storage);
+                conn.Execute("INSERT INTO Storages (Inventory, Name, Date, Account, Nall, Nstorage, Nrepairs, Noff, IsDeleted, Type, Cost) VALUES (@Inventory, @Name, @Date, @Account, @Nall, @Nall, 0, 0, 1, @Type, @Cost)", storage);
             }
         }
 
         public string Labels()
         {
-            string sql = "SELECT SKLAD.Nis, SKLAD.Ncard, CARTRIDGE.Caption, SKLAD.Date, SKLAD.Name FROM SKLAD LEFT OUTER JOIN CARTRIDGE ON SKLAD.ID_cart = CARTRIDGE.N WHERE Ncard = '" + (Request.Form.Get("select") ?? "1").Replace(";", "' OR Ncard = '") + "' ORDER BY Date DESC";
+            string sql = @"SELECT 
+                Storages.Nstorage,
+                Storages.Inventory,
+                Cartridges.Name AS Cartridges_Name,
+                Storages.Date,
+                Storages.Name
+            FROM Storages
+            LEFT OUTER JOIN Cartridges ON Storages.CartridgeId = Cartridges.Id
+            WHERE Inventory = '" + (Request.Form.Get("select") ?? "1").Replace(";", "' OR Inventory = '") + "'" +
+            "ORDER BY Date DESC";
 
             using (var conn = Database.Connection())
             {
@@ -244,7 +252,7 @@ namespace Devin.Controllers
 
                 for (int i = 0; i < model.Count; i++)
                 {
-                    for (int j = 0; j < model[i].Nis; j++)
+                    for (int j = 0; j < model[i].Nstorage; j++)
                     {
                         if (isLeft)
                         {
@@ -252,8 +260,8 @@ namespace Devin.Controllers
                             sheet.GetRow(rowCount * 3 - 2).GetCell(0).SetCellValue("Тип:");
                             sheet.GetRow(rowCount * 3 - 1).GetCell(0).SetCellValue("Приход:");
 
-                            sheet.GetRow(rowCount * 3 - 3).GetCell(1).SetCellValue(model[i].Ncard);
-                            sheet.GetRow(rowCount * 3 - 2).GetCell(1).SetCellValue(model[i].Caption ?? model[i].Name);
+                            sheet.GetRow(rowCount * 3 - 3).GetCell(1).SetCellValue(model[i].Inventory);
+                            sheet.GetRow(rowCount * 3 - 2).GetCell(1).SetCellValue(model[i].Cartridges_Name ?? model[i].Name);
                             sheet.GetRow(rowCount * 3 - 1).GetCell(1).SetCellValue(model[i].Date.ToString("dd.MM.yyyy"));
 
                             isLeft = false;
@@ -264,8 +272,8 @@ namespace Devin.Controllers
                             sheet.GetRow(rowCount * 3 - 2).GetCell(2).SetCellValue("Тип:");
                             sheet.GetRow(rowCount * 3 - 1).GetCell(2).SetCellValue("Приход:");
 
-                            sheet.GetRow(rowCount * 3 - 3).GetCell(3).SetCellValue(model[i].Ncard);
-                            sheet.GetRow(rowCount * 3 - 2).GetCell(3).SetCellValue(model[i].Caption ?? model[i].Name);
+                            sheet.GetRow(rowCount * 3 - 3).GetCell(3).SetCellValue(model[i].Inventory);
+                            sheet.GetRow(rowCount * 3 - 2).GetCell(3).SetCellValue(model[i].Cartridges_Name ?? model[i].Name);
                             sheet.GetRow(rowCount * 3 - 1).GetCell(3).SetCellValue(model[i].Date.ToString("dd.MM.yyyy"));
 
 

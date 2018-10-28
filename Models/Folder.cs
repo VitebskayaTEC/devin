@@ -8,7 +8,7 @@ namespace Devin.Models
 
         public int FolderId { get; set; }
 
-        public string Title { get; set; }
+        public string Name { get; set; }
 
         public List<Folder> SubFolders { get; set; } = new List<Folder>();
 

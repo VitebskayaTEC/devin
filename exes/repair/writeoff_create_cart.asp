@@ -4,9 +4,9 @@
 	dim rs : set rs = server.createobject("ADODB.Recordset")
 
 	conn.open everest
-	conn.execute "INSERT INTO writeoff (W_Name, W_Type, G_ID, W_Date, W_Description) VALUES ('Новое списание', '0', 0, '" & DateToSql(date) & "', '')"
+	conn.execute "INSERT INTO Writeoffs (Name, Type, FolderId, Date, Description) VALUES ('Новое списание', '0', 0, '" & DateToSql(date) & "', '')"
 
-	rs.open "SELECT MAX(W_ID) FROM writeoff", conn
+	rs.open "SELECT MAX(Id) FROM Writeoffs", conn
 		dim id : id = "off" & rs(0)
 	rs.close
 

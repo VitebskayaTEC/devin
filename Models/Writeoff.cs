@@ -7,7 +7,7 @@ namespace Devin.Models
     {
         public int Id { get; set; }
 
-        public int Cost_Article { get; set; }
+        public int CostArticle { get; set; }
 
         public DateTime Date { get; set; }
 
@@ -30,7 +30,7 @@ namespace Devin.Models
             float cost = 0;
             foreach (var repair in Repairs)
             {
-                cost += repair.Units * repair.Storage.Price;
+                cost += repair.Number * repair.Storage.Cost;
             }
             return cost;
         }

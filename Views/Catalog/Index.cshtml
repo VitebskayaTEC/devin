@@ -121,8 +121,8 @@
 
 @using (var conn = Database.Connection())
 {
-    var printers = conn.Query<Printer>("SELECT N as Id, Caption FROM PRINTER ORDER BY Caption");
-    var cartridges = conn.Query<Cartridge>("SELECT N as Id, Caption FROM CARTRIDGE ORDER BY Caption");
+    var printers = conn.Query<Printer>("SELECT Id, Name FROM Printers ORDER BY Name");
+    var cartridges = conn.Query<Cartridge>("SELECT Id, Name FROM Cartridges ORDER BY Name");
 
     <table>
         <tr>
@@ -137,7 +137,7 @@
                         @foreach (var printer in printers)
                         {
                             <tr>
-                                <td><a href="##prn@(printer.Id)">@printer.Caption</a></td>
+                                <td><a href="##prn@(printer.Id)">@printer.Name</a></td>
                             </tr>
                         }
                     </table>
@@ -154,7 +154,7 @@
                         @foreach (var cartridge in cartridges)
                         {
                             <tr>
-                                <td><a href="##cart@(cartridge.Id)">@cartridge.Caption</a></td>
+                                <td><a href="##cart@(cartridge.Id)">@cartridge.Name</a></td>
                             </tr>
                         }
                     </table>

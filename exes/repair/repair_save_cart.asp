@@ -7,7 +7,7 @@
 	dim text : text = ""
 
 	conn.open everest
-	rs.open "SELECT TOP (1) REMONT.Units, REMONT.IfSpis, REMONT.Virtual, SKLAD.NCard, REMONT.Date FROM REMONT LEFT OUTER JOIN SKLAD ON SKLAD.NCard = REMONT.ID_U WHERE (REMONT.INum = '" & id & "')", conn
+	rs.open "SELECT TOP (1) REMONT.Units, REMONT.IfSpis, REMONT.Virtual, Storages.Ncard, REMONT.Date FROM REMONT LEFT OUTER JOIN Storages ON Storages.Ncard = REMONT.ID_U WHERE (REMONT.INum = '" & id & "')", conn
 	dim repair(4), i
 	for i = 0 to 4
 		repair(i) = rs(i)
@@ -20,11 +20,11 @@
 		if text <> "" then text = text & ", "
 		if ifspis = "1" then
 			text = text & "ремонт отмечен как списанный"
-			if not isnull(repair(3)) then sql = sql & "UPDATE SKLAD SET Nbreak = Nbreak + " & repair(0) & ", Nuse = Nuse - " & repair(0) & " WHERE (NCard = '" & repair(3) & "') " & chr(13)
+			if not isnull(repair(3)) then sql = sql & "UPDATE Storages SET Noff = Noff + " & repair(0) & ", Nrepairs = Nrepairs - " & repair(0) & " WHERE (Ncard = '" & repair(3) & "') " & chr(13)
 
 		else
 			text = text & "ремонт отмечен как активный"
-			if not isnull(repair(3)) then sql = sql & "UPDATE SKLAD SET Nbreak = Nbreak - " & repair(0) & ", Nuse = Nuse + " & repair(0) & " WHERE (NCard = '" & repair(3) & "') " & chr(13)
+			if not isnull(repair(3)) then sql = sql & "UPDATE Storages SET Noff = Noff - " & repair(0) & ", Nrepairs = Nrepairs + " & repair(0) & " WHERE (Ncard = '" & repair(3) & "') " & chr(13)
 
 		end if
 	end if
@@ -34,10 +34,10 @@
 
 		if text <> "" then text = text & ", "
 		if virtual = "1" then
-			if not isnull(repair(3)) then sql = sql & "UPDATE SKLAD SET Nis = Nis + " & repair(0) & " WHERE (NCard = '" & repair(3) & "') " & chr(13)
+			if not isnull(repair(3)) then sql = sql & "UPDATE Storages SET Nstorage = Nstorage + " & repair(0) & " WHERE (NCard = '" & repair(3) & "') " & chr(13)
 			text = text & "ремонт отмечен как виртуальный"
 		else
-			if not isnull(repair(3)) then sql = sql & "UPDATE SKLAD SET Nis = Nis - " & repair(0) & " WHERE (NCard = '" & repair(3) & "') " & chr(13)
+			if not isnull(repair(3)) then sql = sql & "UPDATE Storages SET Nstorage = Nstorage - " & repair(0) & " WHERE (NCard = '" & repair(3) & "') " & chr(13)
 			text = text & "ремонт отмечен как не виртуальный"
 		end if
 
@@ -59,15 +59,15 @@
 			if not isnull(repair(3)) then
 				if ifspis = "1" then
 					if virtual = "1" then
-						sql = sql & "UPDATE SKLAD SET Nbreak = Nbreak - " & repair(0) & " + " & units & " WHERE (NCard = '" & repair(3) & "')" & chr(13)
+						sql = sql & "UPDATE Storages SET Noff = Noff - " & repair(0) & " + " & units & " WHERE (Ncard = '" & repair(3) & "')" & chr(13)
 					else
-						sql = sql & "UPDATE SKLAD SET Nis = Nis - " & units & " + " & repair(0) & ", Nbreak = Nbreak - " & repair(0) & " + " & units & " WHERE (NCard = '" & repair(3) & "')" & chr(13)
+						sql = sql & "UPDATE Storages SET Nstorage = Nstorage - " & units & " + " & repair(0) & ", Noff = Noff - " & repair(0) & " + " & units & " WHERE (Ncard = '" & repair(3) & "')" & chr(13)
 					end if
 				else
 					if virtual = "1" then
-						sql = sql & "UPDATE SKLAD SET Nuse = Nuse - " & repair(0) & " + " & units & " WHERE (NCard = '" & repair(3) & "')" & chr(13)
+						sql = sql & "UPDATE Storages SET Nrepairs = Nrepairs - " & repair(0) & " + " & units & " WHERE (Ncard = '" & repair(3) & "')" & chr(13)
 					else
-						sql = sql & "UPDATE SKLAD SET Nis = Nis - " & units & " + " & repair(0) & ", Nuse = Nuse - " & repair(0) & " + " & units & " WHERE (NCard = '" & repair(3) & "')" & chr(13)
+						sql = sql & "UPDATE Storages SET Nstorage = Nstorage - " & units & " + " & repair(0) & ", Nrepairs = Nrepairs - " & repair(0) & " + " & units & " WHERE (Ncard = '" & repair(3) & "')" & chr(13)
 					end if
 				end if
 			end if

@@ -5,16 +5,11 @@ namespace Devin.Models
 {
     public class Cartridge
     {
-        // N
         [Slapper.AutoMapper.Id]
         public int Id { get; set; }
 
-        // Caption
         public string Name { get; set; }
 
-        public string Caption { get; set; }
-
-        // Price
         public float Cost { get; set; }
 
         public string Type { get; set; }

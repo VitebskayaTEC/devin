@@ -50,20 +50,20 @@
 
                 foreach (var excel in Model.Excels)
                 {
-                    if (storage.Ncard == excel.Ncard)
+                    if (storage.Inventory == excel.Inventory)
                     {
-                        className = storage.Nis + storage.Nuse == excel.Nadd ? "compare_good" : "compare_bad";
+                        className = storage.Nstorage + storage.Nrepairs == excel.Nall ? "compare_good" : "compare_bad";
 
                         <tr class="@className">
-                            <td>@storage.Ncard</td>
+                            <td>@storage.Inventory</td>
                             <td>@storage.Name</td>
                             <td>@storage.Date.ToString("d MMMM yyyy")</td>
-                            <td>@storage.Uchet</td>
-                            <td>@storage.Nis</td>
-                            <td>@storage.Nuse</td>
-                            <td>@excel.Nadd</td>
+                            <td>@storage.Account</td>
+                            <td>@storage.Nstorage</td>
+                            <td>@storage.Nrepairs</td>
+                            <td>@excel.Nall</td>
                             <td>
-                                <button onclick="Storage.openCart('@storage.Ncard')">Карточка</button>
+                                <button onclick="Storage.openCart('@storage.Inventory')">Карточка</button>
                             </td>
                         </tr>
 
@@ -72,7 +72,7 @@
                     }
                 }
 
-                if (!hasExcel && (storage.Nis > 0 || storage.Nuse > 0) && (storage.Delit != 0))
+                if (!hasExcel && (storage.Nstorage > 0 || storage.Nrepairs > 0) && (!storage.IsDeleted))
                 {
                     storages.Add(storage);
                 }
@@ -83,7 +83,7 @@
 
                 foreach (var storage in Model.Storages)
                 {
-                    if (storage.Ncard == excel.Ncard)
+                    if (storage.Inventory == excel.Inventory)
                     {
                         isFound = true;
                         break;
@@ -93,33 +93,33 @@
                 if (!isFound)
                 {
                     <tr class="compare_not_found">
-                        <td name="Ncard">@excel.Ncard</td>
+                        <td name="Ncard">@excel.Inventory</td>
                         <td name="Name">@excel.Name</td>
                         <td>@excel.Date.ToString("d MMMM yyyy")</td>
-                        <td name="Uchet">@excel.Uchet</td>
+                        <td name="Uchet">@excel.Account</td>
                         <td insert="Nis">не найдено на складе</td>
                         <td insert="Nuse">не найдено на складе</td>
-                        <td name="Nadd">@excel.Nadd</td>
+                        <td name="Nadd">@excel.Nall</td>
                         <td>
                             <button onclick="Storage.addExcelToStorage(this)">Добавить на складе</button>
                         </td>
                         <td class="hide" name="Date">@excel.Date.ToString("dd.MM.yyyy")</td>
-                        <td class="hide" name="Price">@excel.Price</td>
+                        <td class="hide" name="Price">@excel.Cost</td>
                     </tr>
                 }
             }
             @foreach (var storage in storages)
             {
                 <tr class="compare_only_storage">
-                    <td>@storage.Ncard</td>
+                    <td>@storage.Inventory</td>
                     <td>@storage.Name</td>
                     <td>@storage.Date.ToString("d MMMM yyyy")</td>
-                    <td>@storage.Uchet</td>
-                    <td>@storage.Nis</td>
-                    <td>@storage.Nuse</td>
+                    <td>@storage.Account</td>
+                    <td>@storage.Nstorage</td>
+                    <td>@storage.Nrepairs</td>
                     <td>не найдено в 1С</td>
                     <td>
-                        <button onclick="Storage.openCart('@storage.Ncard')">Карточка</button>
+                        <button onclick="Storage.openCart('@storage.Inventory')">Карточка</button>
                     </td>
                 </tr>
             }

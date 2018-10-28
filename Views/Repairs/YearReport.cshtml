@@ -23,25 +23,25 @@
 @using (var conn = Database.Connection())
 {
     var writeoffs = AutoMapper.MapDynamic<Writeoff>(conn.Query(@"SELECT
-        w.W_Id              AS Id,
-        w.W_Date            AS [Date],
-        w.W_Name            AS [Name],
-        r.Inum              AS Repairs_Id,
-        r.Units             AS Repairs_Units,
-        (r.Units * s.Price) AS Repairs_StoragePrice,
-        r.Date              AS Repairs_Date,
-        r.Author            AS Repairs_Author,
-        d.number_device     AS Repairs_Device_DeviceNumber,
-        d.name              AS Repairs_Device_Name,
-        d.description       AS Repairs_Device_Description,
-        s.Ncard             AS Repairs_Storage_Ncard,
-        s.Name              AS Repairs_Storage_Name
-    FROM Writeoff w
-    LEFT OUTER JOIN Remont r ON w.W_ID = r.W_ID
-    LEFT OUTER JOIN Device d ON r.Id_D = d.number_device
-    LEFT OUTER JOIN Sklad s  ON r.Id_U = s.Ncard
-    WHERE Year(w.W_Date) = Year(GetDate()) AND r.IfSpis = 1
-    ORDER BY [Date], Id, Repairs_Date, Repairs_Device_DeviceNumber"));
+        Writeoffs.Id ,
+        Writeoffs.Date,
+        Writeoffs.Name,
+        Repairs.Id                       AS Repairs_Id,
+        Repairs.Number                   AS Repairs_Units,
+        (Repairs.Number * Storages.Cost) AS Repairs_StoragePrice,
+        Repairs.Date                     AS Repairs_Date,
+        Repairs.Author                   AS Repairs_Author,
+        Devices.Id                       AS Repairs_Device_Id,
+        Devices.Name                     AS Repairs_Device_Name,
+        Devices.Description              AS Repairs_Device_Description,
+        Storages.Inventory               AS Repairs_Storage_Inventory,
+        Storages.Name                    AS Repairs_Storage_Name
+    FROM Writeoffs
+    LEFT OUTER JOIN Repairs  ON Writeoffs.Id             = Repairs.WriteoffId
+    LEFT OUTER JOIN Devices  ON Repairs.DeviceId         = Devices.Id
+    LEFT OUTER JOIN Storages ON Repairs.StorageInventory = Storages.Inventory
+    WHERE Year(Writeoffs.Date) = Year(GetDate()) AND Repairs.IsOff = 1
+    ORDER BY [Date], Id, Repairs_Date, Repairs_Device_Id"));
 
     if (writeoffs.Count() == 0)
     {
@@ -60,7 +60,7 @@
                 <tr>
                     <td width="80px">@writeoff.Date.ToString("dd.MM.yyyy")</td>
                     <th width="800px">@writeoff.Name</th>
-                    <td width="140px">Кол-во: @writeoff.Repairs.Select(x => x.Units).Sum()</td>
+                    <td width="140px">Кол-во: @writeoff.Repairs.Select(x => x.Number).Sum()</td>
                     <td>Стоимость: @writeoff.Repairs.Select(x => x.StoragePrice).Sum().ToString("0.00") р.</td>
                 </tr>
             </table>
@@ -82,7 +82,7 @@
                             <tr>
                                 <td><b>@repair.Device.Name</b> @repair.Device.Description</td>
                                 <td>@repair.Storage.Name</td>
-                                <td>@repair.Units</td>
+                                <td>@repair.Number</td>
                                 <td>@repair.StoragePrice.ToString("0.00") р.</td>
                                 <td>@repair.Date.ToString("dd.MM.yyyy")</td>
                                 <td>@repair.Author</td>

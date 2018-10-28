@@ -14,7 +14,7 @@
 	dim conn : set conn = server.createobject("ADODB.Connection")
 	conn.open everest
 
-	conn.execute "UPDATE SKLAD SET G_ID = '" & request.form("gid") & "' WHERE (" & sql & ")"
+	conn.execute "UPDATE Storages SET FolderId = '" & request.form("gid") & "' WHERE (" & sql & ")"
 
 	conn.close
 	set conn = nothing

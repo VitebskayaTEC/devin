@@ -53,19 +53,19 @@
 @{ 
     string devicesSQL = @"SELECT
 	    Devices.Inventory
-	    ,Devices.class_device AS DeviceClass
-	    ,Devices.number_device AS DeviceNumber
+	    ,Devices.Type
+	    ,Devices.Id
 	    ,Devices.Description
 	    ,Devices.Mol
-	    ,Devices.Attribute AS Location
+	    ,Devices.Location
 	    ,CASE 
 		    WHEN Computers.Name IS NULL THEN 
-			    CASE WHEN Devices.class_device = 'CMP' THEN Devices.name ELSE NULL END
+			    CASE WHEN Devices.Type = 'CMP' THEN Devices.Name ELSE NULL END
 		    ELSE Computers.Name
 	    END AS NetworkName
-    FROM Device AS Devices
-	    LEFT OUTER JOIN Device AS Computers ON Devices.number_comp = Computers.number_device
-    WHERE (Devices.deleted IS NULL OR Devices.deleted = 0) AND (Devices.used = 1)
+    FROM Devices
+	    LEFT OUTER JOIN Devices AS Computers ON Devices.ComputerId = Computers.Id
+    WHERE (Devices.IsDeleted IS NULL OR Devices.IsDeleted <> 1) AND (Devices.IsOff <> 1)
     ORDER BY Devices.Inventory";
 
     string devices1cSQL = @"SELECT 
@@ -122,11 +122,11 @@
                     bool found = false;
                     <tr>
                         <td class="right-border">@device.Inventory</td>
-                        <td onmouseup="go('/devin/devices/##@device.DeviceNumber')">@types[device.DeviceClass]</td>
-                        <td onmouseup="go('/devin/devices/##@device.DeviceNumber')">@device.Description</td>
-                        <td onmouseup="go('/devin/devices/##@device.DeviceNumber')">@device.Mol</td>
-                        <td onmouseup="go('/devin/devices/##@device.DeviceNumber')">@device.Location</td>
-                        <td onmouseup="go('/devin/devices/##@device.DeviceNumber')" class="right-border">@device.NetworkName</td>
+                        <td onmouseup="go('/devin/devices/##@device.Id')">@types[device.Type]</td>
+                        <td onmouseup="go('/devin/devices/##@device.Id')">@device.Description</td>
+                        <td onmouseup="go('/devin/devices/##@device.Id')">@device.Mol</td>
+                        <td onmouseup="go('/devin/devices/##@device.Id')">@device.Location</td>
+                        <td onmouseup="go('/devin/devices/##@device.Id')" class="right-border">@device.NetworkName</td>
                         @foreach (var device1c in devices1c)
                         {
                             if (device1c.Inventory == device.Inventory)

@@ -6,15 +6,15 @@ namespace Devin.Models
     public class Device
     {
         [Slapper.AutoMapper.Id]
-        public string DeviceNumber { get; set; }
+        public int Id { get; set; }
 
         public string Inventory { get; set; }
 
-        public string DeviceClass { get; set; }
+        public string Type { get; set; }
         
         public string Name { get; set; }
 
-        public string ComputerId { get; set; }
+        public int ComputerId { get; set; }
 
         public string Description { get; set; }
 
@@ -22,7 +22,7 @@ namespace Devin.Models
 
         public DateTime DateInstall { get; set; }
 
-        public DateTime? LastRepairDate { get; set; }
+        public DateTime? DateLastRepair { get; set; }
 
         public string Mol { get; set; }
 
@@ -38,17 +38,11 @@ namespace Devin.Models
 
         public int PrinterId { get; set; }
 
-        public int Checked1C { get; set; }
+        public int FolderId { get; set; }
 
-        public int CheckedAida { get; set; }
+        public bool IsOff { get; set; }
 
-        public int UUID { get; set; }
-
-        public int GroupId { get; set; }
-
-        public int InUse { get; set; }
-
-        public int Deleted { get; set; }
+        public bool IsDeleted { get; set; }
 
         public string ServiceTag { get; set; }
 
@@ -64,8 +58,8 @@ namespace Devin.Models
 
         public int PlaceId { get; set; }
 
+        public string NetworkName { get; set; }
 
-        public virtual string NetworkName { get; set; }
 
         public Printer Printer { get; set; }
 

@@ -7,8 +7,8 @@
 	dim sql:  sql  = "SELECT " _
 		& "REMONT.INum, REMONT.Units, REMONT.ID_U " _
 		& "FROM REMONT " _
-		& "INNER JOIN [writeoff] ON REMONT.W_ID = writeoff.W_ID " _
-		& "WHERE (writeoff.W_ID = '" & id & "') AND (REMONT.IfSpis = 0)"
+		& "INNER JOIN Writeoffs ON REMONT.W_ID = Writeoffs.Id " _
+		& "WHERE (Writeoffs.Id = '" & id & "') AND (REMONT.IfSpis = 0)"
 
 	conn.open everest
 	rs.open   sql, conn
@@ -22,7 +22,7 @@
 			& "SET @Ncard = '" & rs(2) & "';" _
 			& "SET @User = '" & user & "';" _
 			& "SET @Date = GETDATE();" _
-			& "UPDATE SKLAD SET Nbreak = Nbreak + @Units, Nuse = Nuse - @Units WHERE (NCard = @Ncard);" _
+			& "UPDATE Storages SET Noff = Noff + @Units, Nrepairs = Nrepairs - @Units WHERE (Ncard = @Ncard);" _
 			& "UPDATE REMONT SET IfSpis = 1 WHERE (INum = CAST(@Inum AS int));" _
 			& "INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS) VALUES (@Date, @Ncard, @User, 'Администратор DEVIN', 'Обновлена позиция [' + @Ncard + '] при переводе ремонта [repair' + @Inum + '] в списанные: ' + CAST(@Units AS varchar(10)) + ' шт. деталей перемещены из используемых в списанные');" _
 			& "INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS) VALUES (@Date, 'repair' + @INum, @User, 'Администратор DEVIN', 'Ремонт [repair' + @Inum + '] помечен как списанный');" _

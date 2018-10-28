@@ -19,13 +19,13 @@
 		<%
 			dim conn : set conn = server.createobject("ADODB.Connection")
 			dim rs : set rs = server.createobject("ADODB.Recordset")
-			dim sql : sql = "SELECT REMONT.Date, REMONT.Author, SKLAD.Name, REMONT.Units FROM REMONT INNER JOIN SKLAD ON REMONT.ID_U = SKLAD.NCard WHERE (REMONT.ID_D = '" & request.querystring("id") & "') ORDER BY REMONT.Date DESC"
+			dim sql : sql = "SELECT Repairs.Date, Repairs.Author, Storages.Name, Repairs.Number FROM Repairs INNER JOIN Storages ON Repairs.StorageInventory = Storages.Inventory WHERE (Repairs.DeviceId = '" & request.querystring("id") & "') ORDER BY Repairs.Date DESC"
 
 			conn.open everest
 			rs.open sql, conn
 				if not rs.eof then
 					do while not rs.eof
-						response.write "<tr><td>" & rs("Date") & "<td>" & trim(rs("Author")) & "<td>" & trim(rs("Name")) & "<td>" & trim(rs("Units")) & "</tr>"
+						response.write "<tr><td>" & rs("Date") & "<td>" & trim(rs("Author")) & "<td>" & trim(rs("Name")) & "<td>" & trim(rs("Number")) & "</tr>"
 						rs.movenext
 					loop
 				else

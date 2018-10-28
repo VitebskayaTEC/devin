@@ -18,19 +18,18 @@
 @{
     var Fields = new Dictionary<string, string>
     {
-        {"inventory", "Инв. номер"},
-        {"class_device", "Тип"},
-        {"name", "Наименование"},
-        {"description", "Описание"},
-        {"install_date", "Дата установки"},
-        {"MOL", "МОЛ"},
-        {"number_serial", "Серийный номер"},
-        {"number_passport", "Паспортный номер"},
-        {"attribute", "Расположение"},
+        {"Inventory", "Инв. номер"},
+        {"Type", "Тип"},
+        {"Name", "Наименование"},
+        {"Description", "Описание"},
+        {"DateInstall", "Дата установки"},
+        {"Mol", "МОЛ"},
+        {"SerialNumber", "Серийный номер"},
+        {"PassportNumber", "Паспортный номер"},
+        {"Location", "Расположение"},
         {"OS", "ОС"},
-        {"OSKEY", "Ключ ОС"},
-        {"PRKEY", "Ключ софта"},
-        {"service_tag", "Сервис-тег"},
+        {"OSKey", "Ключ ОС"},
+        {"ServiceTag", "Сервис-тег"},
         {"PassportGold", "Золото по паспорту"},
         {"PassportSilver", "Серебро по паспорту"},
         {"PassportPlatinum", "Платина по паспорту"},
@@ -47,7 +46,7 @@
 
     string type = Request.QueryString.Get("type") ?? "";
     string fields = Request.QueryString.Get("fields") ?? "";
-    string used = Request.QueryString.Get("used") ?? "1";
+    string used = Request.QueryString.Get("used") ?? "0";
 
     string sql = "SELECT ";
     if (fields != "")
@@ -71,11 +70,11 @@
         }
     }
 
-    sql += " FROM Device WHERE used = '" + used + "'";
+    sql += " FROM Device WHERE IsOff = '" + used + "'";
 
     if (type != "")
     {
-        sql += " AND class_device = '" + type + "'";
+        sql += " AND Type = '" + type + "'";
     }
 }
 
@@ -99,7 +98,7 @@
                 </select>
             </td>
             <td>
-                <label><input type="checkbox" id="used" @(used == "1" ? "" : "checked")>Показывать списанные</label>
+                <label><input type="checkbox" id="used" @(used == "1" ? "checked" : "")>Показывать списанные</label>
             </td>
             <td>
                 <button onclick="reload()">Обновить</button>

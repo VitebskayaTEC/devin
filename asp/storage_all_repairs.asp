@@ -22,11 +22,11 @@
 	for each ncard in split(formData, ";")
 		if ncard <> "" then
 			if sql <> "" then sql = sql & " OR "
-			sql = sql & "NCard = '" & ncard & "'"
+			sql = sql & "Inventory = '" & ncard & "'"
 		end if
 	next
 	dim storages(1000, 2), i, Nstorages
-	rs.open "SELECT NCard, Name, Nis FROM SKLAD WHERE (" & sql & ") AND (Nis > 0) ORDER BY NCard", conn
+	rs.open "SELECT Inventory, Name, Nstorage FROM Storages WHERE (" & sql & ") AND (Nstorage > 0) ORDER BY Inventory", conn
 	if rs.eof then
 		drop("Нет элементов для оформления ремонтов")
 	else
@@ -45,7 +45,7 @@
 
 	' Загрузить список данных по устройствам
 	response.write "<div class='hide' id='computers-first'><select class='computers' onchange='changeDevice(this)'><optgroup label='Не выбрано'><option value='0'>?"
-	rs.open "SELECT DP.name, DP.number_device, D.number_device, D.name, CASE WHEN LEN(D.description) < 50 THEN D.description ELSE(CAST(D.description AS nvarchar(47)) + '...') END FROM DEVICE AS D LEFT OUTER JOIN DEVICE AS DP ON (D.number_comp = DP.number_device AND DP.deleted <> 1) WHERE (D.deleted <> 1 AND D.used = 1 AND (D.class_device <> 'CMP' OR (D.class_device = 'CMP' AND D.number_device NOT IN (SELECT number_comp FROM DEVICE WHERE number_comp IS NOT NULL AND number_comp <> '' AND number_comp <> '?' GROUP BY number_comp)))) ORDER BY DP.name, D.name"
+	rs.open "SELECT DP.Name, DP.DeviceId, D.DeviceId, D.Name, CASE WHEN LEN(D.Description) < 50 THEN D.Description ELSE(CAST(D.Description AS nvarchar(47)) + '...') END FROM Devices AS D LEFT OUTER JOIN Devices AS DP ON (D.ComputerId = DP.Id AND DP.IsDeleted <> 1) WHERE (D.IsDeleted <> 1 AND D.IsOff = 0 AND (D.Type <> 'CMP' OR (D.Type = 'CMP' AND D.Id NOT IN (SELECT ComputerId FROM Devises WHERE ComputerId IS NOT NULL AND ComputerId <> 0 GROUP BY ComputerId)))) ORDER BY DP.Name, D.Name"
 	dim activeID, prevID
 	prevID = ""
 	do while not rs.eof

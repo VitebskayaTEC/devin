@@ -39,7 +39,7 @@
 			& "SET @User = '" & user & "';" _
 			& "SET @Date = GETDATE();" _
 			& "" _
-			& "UPDATE SKLAD SET Nbreak = Nbreak - @Units, Nuse = Nuse + @Units WHERE (NCard = @Ncard);" _
+			& "UPDATE Storages SET Noff = Noff - @Units, Nrepairs = Nrepairs + @Units WHERE (Ncard = @Ncard);" _
 			& "UPDATE REMONT SET IfSpis = 0 WHERE (INum = CAST(@Inum AS int));" _
 			& "INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS) VALUES (@Date, @Ncard, @User, 'Администратор DEVIN', 'Обновлена позиция [' + @Ncard + '] при переводе ремонта [repair' + @Inum + '] в активное состояние: ' + CAST(@Units AS varchar(10)) + ' шт. деталей перемещены из списанных в используемые');" _
 			& "INSERT INTO ELMEVENTS (EDATE, CNAME, CUSER, EVGR, EVENTS) VALUES (@Date, 'repair' + @INum, @User, 'Администратор DEVIN', 'Ремонт [repair' + @Inum + '] помечен как активный');" _
