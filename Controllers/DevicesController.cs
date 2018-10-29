@@ -26,6 +26,8 @@ namespace Devin.Controllers
 
         public ActionResult ElmById(string Id) => View(model: Id);
 
+        public ActionResult HistoryRepairsById(int Id) => View(model: Id);
+
         public ActionResult DefectAct(string Id) => View(model: Id);
 
         public ActionResult Table() => View();
@@ -37,8 +39,10 @@ namespace Devin.Controllers
         public ActionResult WorkPlaces() => View();
 
 
-        public string Update([Bind(Include = "Id,Name,Inventory,Type,Description,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,IsOff")] Device device)
+        public string Update(int Id, [Bind(Include = "Name,Inventory,Type,Description,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,IsOff")] Device device)
         {
+            device.Id = Id;
+
             // Валидация 
             if (!DateTime.TryParse(Request.Form.Get("DateInstall"), out DateTime d)) return "error:Дата установки введена в неверном формате"; else device.DateInstall = d;
 
@@ -197,7 +201,7 @@ namespace Devin.Controllers
                         ,PassportNumber = @PassportNumber
                         ,Location       = @Location
                         ,PrinterId      = @PrinterId
-                        ,GroupId        = @GroupId
+                        ,FolderId       = @FolderId
                         ,ServiceTag     = @ServiceTag
                         ,IsOff          = @IsOff
                         ,Mol            = @Mol
@@ -218,6 +222,134 @@ namespace Devin.Controllers
                 {
                     return "Изменений не было";
                 }
+            }
+        }
+
+        public JsonResult Copy(int Id)
+        {
+            using (var conn = Database.Connection())
+            {
+                Device device = conn.QueryFirst<Device>("SELECT * FROM Devices WHERE Id = @Id", new { Id });
+                device.Name += " (копия)";
+                conn.Execute(@"INSERT INTO Devices (
+                    [Inventory], [Type], [Name], [NetworkName], [Description1C][Description], [DateInstall], [DateLastRepair], [Mol], [SerialNumber], [PassportNumber], [Location], [OS], [OSKey], [PrinterId], [FolderId], [IsOff], [IsDeleted], [ServiceTag], [PassportGold], [PassportSilver], [PassportPlatinum], [PassportMPG], [PlaceId], [ComputerId]
+                ) VALUES (
+                    @Inventory, @Type, @Name, @NetworkName, @Description1C, @Description, @DateInstall, @DateLastRepair, @Mol, @SerialNumber, @PassportNumber, @Location, @OS, @OSKey, @PrinterId, @FolderId, @IsOff, @IsDeleted, @ServiceTag, @PassportGold, @PassportSilver, @PassportPlatinum, @PassportMPG, @PlaceId, @ComputerId
+                )", device);
+
+                int id = conn.QueryFirst<int>("SELECT Max(Id) FROM Devices");
+
+                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
+                {
+                    Date = DateTime.Now,
+                    Source = "devices",
+                    Id = id.ToString(),
+                    Text = "Позиция скопирована из #" + Id,
+                    Username = User.Identity.Name
+                });
+
+                return Json(new { Id = id, Good = "Карточка устройства успешно скопирована" });
+            }
+        }
+
+        public JsonResult Create()
+        {
+            using (var conn = Database.Connection())
+            {
+                conn.Execute("INSERT INTO Devices (Inventory, ComputerId, FolderId, Name, Description, DateInstall, IsOff, IsDeleted) VALUES (@Inventory, @ComputerId, @FolderId, @Name, @Description, @DateInstall, @IsOff, @IsDeleted)", new Device {
+                    Inventory = "000000",
+                    ComputerId = 0,
+                    FolderId = 0, 
+                    Name = "Новое устройство",
+                    Description = "",
+                    DateInstall = DateTime.Now,
+                    IsDeleted = false,
+                    IsOff = false
+                });
+
+                int id = conn.QueryFirst<int>("SELECT Max(Id) FROM Devices");
+
+                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
+                {
+                    Date = DateTime.Now,
+                    Source = "devices",
+                    Id = id.ToString(),
+                    Text = "Создано новое устройство",
+                    Username = User.Identity.Name
+                });
+
+                return Json(new { Id = id, Good = "Создано новое устройство" });
+            }
+
+        }
+
+        public JsonResult Delete(int Id)
+        {
+            using (var conn = Database.Connection())
+            {
+                conn.Execute("UPDATE Devices SET IsDeleted = 1 WHERE Id = @Id", new { Id });
+
+                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
+                {
+                    Date = DateTime.Now,
+                    Source = "devices",
+                    Id = Id.ToString(),
+                    Text = "Устройство удалено",
+                    Username = User.Identity.Name
+                });
+
+                return Json(new { Good = "Устройство удалено" });
+            }
+        }
+
+        public void MoveSelected(string Devices, string Key)
+        {
+            string[] devices = Devices.Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
+
+            using (var conn = Database.Connection())
+            {
+                foreach (string device in devices)
+                {
+                    int Id = int.TryParse(device, out int i) ? i : 0;
+                    string message = "";
+                    if (Id != 0)
+                    {
+                        if (Key == "0")
+                        {
+                            conn.Execute("UPDATE Devices SET ComputerId = 0, FolderId = 0 WHERE Id = @Id", new { Id });
+                            message = "Устройство размещено отдельно";
+                        }
+                        else if (Key.Contains("cmp"))
+                        {
+                            int key = int.TryParse(Key.Replace("cmp", ""), out i) ? i : 0;
+                            conn.Execute("UPDATE Devices SET ComputerId = @Key, FolderId = 0 WHERE Id = @Id", new { Id, Key = key });
+                            message = "Устройство перемещено в компьютер #" + key;
+                        }
+                        else
+                        {
+                            int key = int.TryParse(Key.Replace("g", ""), out i) ? i : 0;
+                            conn.Execute("UPDATE Devices SET ComputerId = 0, FolderId = @Key0 WHERE Id = @Id", new { Id, Key = key });
+                            message = "Устройство перемещено в папку #" + key;
+                        }
+                    }
+
+                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
+                    {
+                        Date = DateTime.Now,
+                        Source = "devices",
+                        Id = Id.ToString(),
+                        Text = message,
+                        Username = User.Identity.Name
+                    });
+                }
+            }
+        }
+
+        public void Move(int Id, int Key)
+        {
+            using (var conn = Database.Connection())
+            {
+                conn.Execute("UPDATE Devices SET FolderId = @Key WHERE Id = @Id", new { Id, Key });
             }
         }
 

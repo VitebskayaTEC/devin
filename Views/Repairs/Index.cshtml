@@ -66,7 +66,7 @@
         <a href="~/storages/analyze">Закупка картриджей</a>
         <a href="~/repairs/yearReport">Годовой отчет по ремонтам</a>
         <a href="~/repairs/cartridgesUsage">Годовой отчет по картриджам</a>
-        <div onclick="groupCreate()">Создать группу</div>
+        <div onclick="Folder.create()">Создать группу</div>
         <div onclick="writeoffCreate()">Создать списание</div>
         <div onclick="writeoffSetup()">Шаблоны списаний</div>
     </div>
@@ -82,11 +82,11 @@
     </ul>
 
     <ul class="context-menu" id="group">
-        <li onclick="groupEdit()">Переименовать</li>
-        <li onclick="groupBeforeMove()">Переместить</li>
-        <li onclick="groupCreateInner()">Создать вложенную группу</li>
-        <li onclick="groupErase()">Очистить</li>
-        <li onclick="groupDelete()">Удалить</li>
+        <li onclick="Folder.update()">Переименовать</li>
+        <li onclick="Folder.beforeMove()">Переместить</li>
+        <li onclick="Folder.createInner()">Создать вложенную группу</li>
+        <li onclick="Folder.clear()">Очистить</li>
+        <li onclick="Folder.del()">Удалить</li>
     </ul>
 
     <ul class="context-menu" id="modal">

@@ -1,0 +1,58 @@
+﻿@model int
+
+@using (var conn = Database.Connection())
+{
+    var device = conn.Query<Device>(@"SELECT * FROM Device WHERE Id = @Model", new { Model }).FirstOrDefault();
+    if (device == null)
+    {
+        <div>Устройство не найдено</div>
+        return;
+    }
+
+    <table class="cart-table">
+        <tbody>
+            <tr>
+                <td>Инвентарный номер</td>
+                <td>@device.Inventory</td>
+            </tr>
+            <tr>
+                <td>Наименование</td>
+                <td>@device.Name</td>
+            </tr>
+            <tr>
+                <td>Описание</td>
+                <td>@device.Description</td>
+            </tr>
+            <tr>
+                <td>Расположение</td>
+                <td>@device.Location</td>
+            </tr>
+            <tr>
+                <td>М.О.Л.</td>
+                <td>@device.Mol</td>
+            </tr>
+            <tr>
+                <td>Дата установки</td>
+                <td>@device.DateInstall.ToString("dd.MM.yyyy")</td>
+            </tr>
+            @if (device.Type == "PRN")
+            {
+                device.Printer = conn.Query<Printer>("SELECT * FROM Printers WHERE Id = @PrinterId", new { device.PrinterId }).FirstOrDefault();
+                if (device.Printer == null)
+                {
+                    <tr>
+                        <td>Типовой принтер</td>
+                        <td>не установлен</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td>Типовой принтер</td>
+                        <td>@device.Printer.Name</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}

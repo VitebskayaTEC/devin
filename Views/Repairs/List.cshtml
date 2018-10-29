@@ -3,72 +3,29 @@
     string id = Request.QueryString.Get("id");
     string search = Request.QueryString.Get("search");
     string where = string.IsNullOrEmpty(search)
-        ? "" : $"WHERE Devices.name LIKE '%{search}%' OR Devices.description LIKE '%{search}%' OR Devices.number_device LIKE '%{search}%' OR Storages.Name LIKE '%{search}%' OR Storages.Ncard LIKE '%{search}%'";
+        ? "" : $"WHERE Devices.Name LIKE '%{search}%' OR Devices.Description LIKE '%{search}%' OR Devices.Inventory LIKE '%{search}%' OR Storages.Name LIKE '%{search}%' OR Storages.Ncard Inventory '%{search}%'";
 
-    var raws = conn.Query($@"SELECT
-        Repairs.Id
-        ,Folders.Id   AS FolderId
-        ,Writeoffs.Id AS WriteoffId
-        ,Repairs.DeviceId
-        ,Repairs.StorageInventory
-        ,Repairs.Number
-        ,Repairs.Date
-        ,Repairs.IsOff
-        ,Repairs.IsVirtual
+    var _repairs = AutoMapper.MapDynamic<Repair>(conn.Query($@"SELECT
+        Repairs.*
 
-        ,Devices.Inventory   AS [Device_Inventory]
-        ,Devices.Name        AS [Device_Name]
-        ,Devices.Description AS [Device_Description]
-        ,Devices.Type        AS [Device_Type]
+        ,Devices.Id          AS Device_Id
+        ,Devices.Inventory   AS Device_Inventory
+        ,Devices.Name        AS Device_Name
+        ,Devices.Description AS Device_Description
+        ,Devices.Type        AS Device_Type
 
-        ,Storages.Name     AS Storage_Name
-        ,Storages.Nall     AS Storage_Nall
-        ,Storages.Nstorage AS Storage_Nstorage
-        ,Storages.Nrepairs AS Storage_Nrepairs
-        ,Storages.Noff     AS Storage_Noff
-        ,Storages.Cost     AS Storage_Cost
+        ,Storages.Inventory AS Storage_Inventory
+        ,Storages.Name      AS Storage_Name
+        ,Storages.Nall      AS Storage_Nall
+        ,Storages.Nstorage  AS Storage_Nstorage
+        ,Storages.Nrepairs  AS Storage_Nrepairs
+        ,Storages.Noff      AS Storage_Noff
+        ,Storages.Cost      AS Storage_Cost
     FROM Repairs
     LEFT OUTER JOIN Devices   ON Repairs.DeviceId         = Devices.Id
     LEFT OUTER JOIN Storages  ON Repairs.StorageInventory = Storages.Inventory
-    LEFT OUTER JOIN Folders   ON Repairs.G_ID             = Folders.Id
-    LEFT OUTER JOIN Writeoffs ON Repairs.W_ID             = Writeoffs.Id
     {where}
-    ORDER BY Folders.Id, Writeoffs.Id, Repairs.Date DESC").AsList();
-
-    var _repairs = new List<Repair>();
-
-    foreach (var raw in raws)
-    {
-        _repairs.Add(new Repair
-        {
-            Id = raw.Id ?? 0,
-            FolderId = raw.FolderId ?? 0,
-            WriteoffId = raw.WriteoffId ?? 0,
-            DeviceId = raw.DeviceNumber,
-            StorageInventory = raw.StorageInventory,
-            Number = raw.Number ?? 0,
-            Date = raw.Date,
-            IsOff = raw.IsOff == 1,
-            IsVirtual = raw.IsVirtual == 1,
-            Author = raw.Author,
-            Device = new Device
-            {
-                Inventory = raw.Inventory_Inventory,
-                Name = raw.Device_Name,
-                Description = raw.Device_Description,
-                Type = raw.Device_DeviceClass
-            },
-            Storage = new Storage
-            {
-                Name = raw.Storage_Name,
-                Nall = raw.Storage_Nall ?? 0,
-                Nstorage = raw.Storage_Nstorage ?? 0,
-                Nrepairs = raw.Storage_Nrepairs ?? 0,
-                Noff = raw.Storage_Noff ?? 0,
-                Cost = Convert.ToSingle(raw.Storage_Cost ?? 0),
-            }
-        });
-    }
+    ORDER BY Repairs.FolderId, Repairs.WriteoffId, Repairs.Date DESC")).AsList();
 
     if (!string.IsNullOrEmpty(search))
     {
@@ -255,7 +212,7 @@
                 <tr id="@repair.Id" class="item">
                     <td><input type="checkbox" class="selecter" /></td>
                     <td>
-                        <b>@repair.Device.Name</b> @repair.Device.Description
+                        <b>@(repair.Device?.Name)</b> @(repair.Device?.Description)
                     </td>
                     <td>
                         <div class="led @repair.Storage.Led()"></div> @repair.Storage.Name

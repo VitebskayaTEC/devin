@@ -5,7 +5,6 @@ function toggle(node) {
 		: $unit.find('.title-wrapper:first-child').attr('id');
 	if ($unit.hasClass('open')) {
 		$unit
-			//.animate({ marginTop: '1px', marginBottom: '1px' }, 150)
 			.children('.items_block')
 			.slideToggle(150, function() {
 				$unit.removeClass('open');
@@ -13,7 +12,6 @@ function toggle(node) {
 		setCookie(id, '', { expires: 9999999999 });
 	} else {
 		$unit
-			//.animate({ marginTop: '10px', marginBottom: '10px' }, 150)
 			.addClass('open')
 			.children('.items_block')
 			.slideToggle(150);
@@ -50,152 +48,12 @@ function cartHistoryRepair() {
 		);
 }
 
-function cartHistory(_id) {
-	$('#cart').html("<b class='load'>загрузка...</b>").fadeIn(100).css({ maxWidth: 600 });
-	$.get('/devin/asp/device_history.asp', { id: _id, r: Math.random() }, data => document.getElementById('cart').innerHTML = data);
-}
-
-function cartAida(name) {
-	$('#cart')
-		.html("<b class='load'>загрузка...</b>")
-        .load('/devin/aida/cart/' + name)
-		.fadeIn(100).css({ maxWidth: 600 });
-}
-
-function cartAidaDevices() {
-	$('#cart')
-		.load(
-			'/devin/asp/device_aida_devices.asp?id=' +
-				id +
-				'&r=' +
-				Math.random()
-		)
-		.fadeIn(100).css({ maxWidth: 600 });
-}
-
-function cartAidaAutorun() {
-	$('#cart')
-		.load(
-			'/devin/asp/device_aida_autorun.asp?id=' +
-				id +
-				'&r=' +
-				Math.random()
-		)
-		.fadeIn(100).css({ maxWidth: 600 });
-}
-
-function cartAidaPrograms(name) {
-	$.get('/devin/asp/device_aida_programs.asp', { 
-			name: name,
-			r: Math.random()
-		}, function (data) {
-			$('#cart').html(data).fadeIn(100).css({ maxWidth: 600 });
-		});
-}
-
-function cartDefect() {
-	$('#cart').load('/devin/devices/DefectAct?id=' + id + '&r=' + Math.random())
-		.fadeIn(100).css({ maxWidth: 600 });
-}
-
-function cartCreate() {
-	$.get('/devin/exes/device/device_create.asp?r=' + Math.random(), function(data) {
-		if (data.indexOf('error') < 0) {
-			id = data;
-			reload({});
-			$('#cart').load('/devin/asp/device_cart.asp?id=' + id + '&r=' + Math.random()).fadeIn(100).css({ maxWidth: 600 });
-		}
-	});
-}
-
-function cartSave() {
-	$.post(
-		'/devin/exes/device/device_save_cart.asp?id=' + id,
-		//'/devin.net/devices/api/devicesave.ashx?id=' + id,
-		$('#cart-form').serialize(),
-		function(data) {
-			if (data.indexOf('error: ') == -1) {
-				reload({});
-				document.getElementById('console').innerHTML =
-					"<div class='done'>" + data + '</div>';
-			} else {
-				document.getElementById('console').innerHTML =
-					"<div class='error'>" + data + '</div>';
-			}
-		}
-	);
-}
-
-function cartCopy() {
-	$.get(
-		'/devin/exes/device/device_copy.asp?id=' + id + '&r=' + Math.random(),
-		function(data) {
-			if (data.indexOf('error') < 0) {
-				id = data;
-				reload({});
-				$('#cart')
-					.load(
-						'/devin/asp/device_cart.asp?id=' +
-							id +
-							'&r=' +
-							Math.random()
-					)
-					.fadeIn(100).css({ maxWidth: 600 });
-			}
-		}
-	);
-}
-
-function cartDelete() {
-	$.get('/devin/exes/device/device_delete.asp?id=' + id, function() {
-		reload({});
-		$('#cart').fadeOut(100, function() {
-			document.getElementById('cart').innerHTML = '';
-		}).css({ maxWidth: 600 });
-	});
-}
-
 function history() {
 	$('#cart')
 		.html("<b class='load'>загрузка...</b>")
 		.fadeIn(100).css({ maxWidth: 600 })
 		.load('/devin/asp/history.ashx?r=' + Math.random());
 	$('.view .selected').removeClass('selected');
-}
-
-var state = {
-	key: 0,
-	direction: 0,
-	search: '',
-	queryString: function() {
-		return (
-			'search=' +
-			encodeURIComponent(document.getElementById('search').value) +
-			'&key=' +
-			this.key +
-			'&direction=' +
-			this.direction +
-			'&r=' +
-			Math.random()
-		);
-	}
-};
-
-function reload(obj) {
-	$.extend(state, obj);
-	$('#view').load('/devin/devices/list?' + state.queryString(), function() {
-		$('#' + id).addClass('selected');
-		$('.main th:eq(' + state.key + ')').addClass(
-			state.direction == 0 ? 'sort_up' : 'sort_down'
-		);
-		selectionPanel();
-	});
-}
-
-function sort(node) {
-	if (state.key == node.cellIndex)
-		reload(state.direction == 0 ? { direction: 1 } : { direction: 0 });
-	else reload({ key: node.cellIndex, direction: 0 });
 }
 
 $('input.def').on('keyup', function(e) {
@@ -334,19 +192,6 @@ function _find() {
 	}
 }
 
-function moveSelectedDevices() {
-	$.post(
-		'/devin/exes/device/device_move_all_selected.asp?r=' + Math.random(),
-		selectionToForm('devices', ';;') +
-			'&key=' +
-			document.getElementById('moveKey').value,
-		function(data) {
-			removeAllSelection();
-			reload({});
-		}
-	);
-}
-
 function computerOpen() {
 	cartOpen(document.getElementById(menuId).querySelector('.title'));
 }
@@ -359,19 +204,14 @@ function computerDelete() {
 }
 
 function computerMove() {
-	$.post(
-		'/devin/exes/device/device_move_computer.asp?r=' + Math.random(),
-		'id=' +
-			menuId +
-			'&key=' +
-			$('#modal select:first-child')
-				.val()
-				.replace('dg', ''),
-		function() {
-			reload({});
-		}
-	);
-	$('#modal').fadeOut(100);
+    let form = new FormData();
+        form.append('Key', $('#modal select:first-child').val().replace('dg', ''));
+
+    fetch(host + 'devices/move/' + menuId, { method: 'POST', body: form })
+        .then(() => {
+            restore();
+            $('#modal').fadeOut(100);
+        });
 }
 
 function computerAida() {

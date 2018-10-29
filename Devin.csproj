@@ -121,6 +121,7 @@
     <Compile Include="Controllers\AidaController.cs" />
     <Compile Include="Controllers\CatalogController.cs" />
     <Compile Include="Controllers\DevicesController.cs" />
+    <Compile Include="Controllers\FoldersController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\RepairsController.cs" />
     <Compile Include="Controllers\StoragesController.cs" />
@@ -147,7 +148,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="asp\device_history_repair.asp" />
     <Content Include="asp\device_to_repair.asp" />
     <Content Include="asp\repair_cart.asp" />
     <Content Include="asp\storage_all_repairs.asp" />
@@ -189,18 +189,7 @@
     <Content Include="Content\lib\select2.min.js" />
     <Content Include="core\core.inc" />
     <Content Include="core\upload.asp" />
-    <Content Include="exes\core\core_create_group.asp" />
-    <Content Include="exes\core\core_create_group_inner.asp" />
-    <Content Include="exes\core\core_delete_group.asp" />
-    <Content Include="exes\core\core_edit_group.asp" />
-    <Content Include="exes\core\core_erase_group.asp" />
-    <Content Include="exes\core\core_move_group.asp" />
-    <Content Include="exes\device\device_copy.asp" />
-    <Content Include="exes\device\device_create.asp" />
     <Content Include="exes\device\device_create_repair.asp" />
-    <Content Include="exes\device\device_delete.asp" />
-    <Content Include="exes\device\device_move_all_selected.asp" />
-    <Content Include="exes\device\device_move_computer.asp" />
     <Content Include="exes\device\device_repair_data.asp" />
     <Content Include="exes\repair\repair_delete_all.asp" />
     <Content Include="exes\repair\repair_delete_all_selected.asp" />
@@ -233,9 +222,10 @@
     </Content>
     <Content Include="Views\Home\Index.cshtml" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <Content Include="asp\history.ashx" />
+    <Folder Include="Views\Folders\" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="Content\exl\analyze.xls" />
     <Content Include="Content\exl\defect.xls" />
     <Content Include="Content\exl\expl.backup.xls" />
@@ -283,6 +273,10 @@
     <Content Include="Views\Aida\Devices.cshtml" />
     <Content Include="Views\Aida\Programs.cshtml" />
     <Content Include="README.md" />
+    <Content Include="Views\Devices\HistoryRepairsById.cshtml" />
+    <Content Include="Views\Repairs\Cart.cshtml" />
+    <Content Include="Views\Repairs\Device.cshtml" />
+    <Content Include="Views\Repairs\Storage.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

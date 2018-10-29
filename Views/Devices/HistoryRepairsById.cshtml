@@ -1,0 +1,30 @@
+﻿@model int
+
+@using (var conn = Database.Connection())
+{
+    var logs = conn.Query(@"SELECT Repairs.Date, Repairs.Author, Storages.Name, Repairs.Number FROM Repairs INNER JOIN Storages ON Repairs.StorageInventory = Storages.Inventory WHERE Repairs.DeviceId = @Model ORDER BY Repairs.Date DESC", new { Model });
+
+    <button onclick="Devices.Cart.backToAddons()">Вернуться</button>
+
+    <div class="cartHistory">
+        <table class="cartHistory__table">
+            <thead>
+                <tr>
+                    <th class="cartHistory__date">Дата</th>
+                    <th>Пользователь</th>
+                    <th>Позиция со склада (кол-во)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in logs)
+                {
+                    <tr>
+                        <td>@log.Date.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>@log.Author</td>
+                        <td>@log.Name (@log.Number шт.)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

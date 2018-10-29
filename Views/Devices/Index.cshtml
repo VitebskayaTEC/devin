@@ -90,9 +90,7 @@
 
     <div class="context-menu" id="main">
         <div onclick="cartCreate()">Создать карточку устройства</div>
-        <div onclick="groupCreate()">Создать группу</div>
-        <hr />
-        <div onclick="history()">История всех событий DEVIN</div>
+        <div onclick="Folder.create()">Создать группу</div>
         <hr />
         <a href="@Url.Action("analyze", "storages")">Анализ расхода картриджей</a>
         <hr />
@@ -107,16 +105,16 @@
         <li onclick="computerOpen()">Открыть карточку</li>
         <li onclick="Device.PrintReportCart()">Карточка учета техники</li>
         <li onclick="computerAida()">Отчет из AIDA</li>
-        <li onclick="groupBeforeMove()">Переместить</li>
+        <li onclick="Folder.beforeMove()">Переместить</li>
         <li onclick="computerDelete()">Удалить</li>
     </ul>
 
     <ul class="context-menu" id="group">
-        <li onclick="groupEdit()">Переименовать
-        <li onclick="groupBeforeMove()">Переместить</li>
-        <li onclick="groupCreateInner()">Создать вложенную группу</li>
-        <li onclick="groupErase()">Очистить</li>
-        <li onclick="groupDelete()">Удалить</li>
+        <li onclick="Folder.update()">Переименовать
+        <li onclick="Folder.beforeMove()">Переместить</li>
+        <li onclick="Folder.createInner()">Создать вложенную группу</li>
+        <li onclick="Folder.clear()">Очистить</li>
+        <li onclick="Folder.del()">Удалить</li>
     </ul>
 
     <ul class="context-menu" id="modal">

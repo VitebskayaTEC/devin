@@ -61,5 +61,7 @@ namespace Devin.Models
 
             return realCost;
         }
+
+        public Cartridge Cartridge { get; set; }
     }
 }

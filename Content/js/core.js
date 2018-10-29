@@ -133,95 +133,24 @@ function _modal(target, source, handler) {
 
 
 /** Функционал групп */
-function _group() {
-	var _in;
-	$("tr.item,div.group").each(function() {
-		_in = this.getAttribute('in');
-		if (_in.slice(2) != '0') {
-			if ($(this).hasClass('item')) {
-				$("#" + _in).children(".items_block").children("table").find("tbody").append(this);
-			} else {
-				$(this).insertBefore($("#" + _in).children(".items_block").children("table").first());
-			}
-		}
-	});
-	$(".hide_first").removeClass("hide_first");
-}
+let pageName = '';
+if (document.location.pathname.indexOf('devices') > -1) pageName = 'devices';
+else if (document.location.pathname.indexOf('storages') > -1) pageName = 'storages';
+else if (document.location.pathname.indexOf('repairs') > -1) pageName = 'repairs';
+else if (document.location.pathname.indexOf('catalog') > -1) pageName = 'catalog';
+else if (document.location.pathname.indexOf('aida') > -1) pageName = 'aida';
 
-var path = document.location.pathname.split("/"),
-	url = path[path.length - 2];
 
-function groupCreate() {
-	var title = prompt("Название группы: ", "Новая группа (" + (new Date).toLocaleString() + ")");
-	if (title != null) {
-		$.post("/devin/exes/core/core_create_group.asp?r=" + Math.random(), "app=" + url + "&title=" + encodeURIComponent(title), restore);
-	}
-}
 
-function groupCreateInner() {
-	var title = prompt("Название группы: ", "Новая группа (" + (new Date).toLocaleString() + ")");
-	if (title != null) {
-		$.post("/devin/exes/core/core_create_group_inner.asp?r=" + Math.random(), "app=" + url + "&in=" + menuId.slice(2) + "&title=" + encodeURIComponent(title), restore);
-	}
-}
-
-function groupBeforeMove() {
-	var obj = $("#" + menuId).closest(".unit"); // Получаем ссылку на группу, относительн которой будет спозиционировано меню
-	var exceptions = []; // Массив возможных вариантов для перемещени данной группы
-
-	// Составляем список исключений
-	exceptions.push(menuId); // Сама перемещаемая группа
-	exceptions.push($(obj).parent().closest(".group").attr("id")); // Группа, в которой аходится перемещаемая (на 1 уровне вложенности)
-    $(obj).find(".group").each(function () { exceptions.push(this.id); }); // Все группы, вложенные в перемещаемую
-
-	// Составляем список доступных вариантов для перемещения
-	var select = "<option value='0'>Расположить отдельно";
-	$("div.group").each(function() {
-		var exception = false;
-		for (var i = 0; i < exceptions.length; i++)
-			if (this.id == exceptions[i]) exception = true;
-		if (!exception) {
-			select += "<option value='" + this.id + "'>" + $(this).children(".caption").find("th").html();
-		}
-	});
-
-	_modal(obj, "<select>" + select + "</select>", function() {
-		if (menuId.indexOf("off") > -1)
-			writeoffMove();
-		else if (menuId.indexOf("-") > -1)
-			computerMove();
-		else
-			groupMove();
-	});
-}
-
-function groupMove() {
-	$.post("/devin/exes/core/core_move_group.asp?r=" + Math.random(), "gid=" + menuId.slice(2) + "&in=" + $("#modal select:first-child").val().slice(2), restore);
-	$("#modal").fadeOut(100);
-}
-
-function groupEdit() {
-	var title = prompt("Название группы: ", $("#" + menuId).find("th").first().text());
-	if (title != null) {
-		$.post("/devin/exes/core/core_edit_group.asp?r=" + Math.random(), "gid=" + menuId.slice(2) + "&title=" + encodeURIComponent(title), function() {
-			//restore();
-			$("#" + menuId).find("th").first().html(title);
-		});
-	}
-}
-
-function groupErase() {
-	$.post("/devin/exes/core/core_erase_group.asp?r=" + Math.random(), "app=" + url + "&gid=" + menuId.slice(2), restore);
-}
-
-function groupDelete() {
-	$.post("/devin/exes/core/core_delete_group.asp?r=" + Math.random(), "app=" + url + "&gid=" + menuId.slice(2), restore);
-}
-
-var restore = () => $.get('./list', data => {
-    document.getElementById('view').innerHTML = data;
-    document.getElementById(id).classList.add('selected');
-});
+function restore() {
+    fetch(host + pageName + '/list')
+        .then(res => res.text())
+        .then(text => {
+            document.getElementById('view').innerHTML = text;
+            let el = document.getElementById(id);
+            if (el) el.classList.add('selected');
+        });
+};
 
 
 /* Drag-n-drop функционал */
@@ -477,27 +406,155 @@ document.addEventListener('click', ev => {
     });
 });
 
-var Core = {
 
-}
+
+var Folder = {
+
+    _fetch(url, data, callback) {
+        data = data || {};
+        let form = new FormData();
+        Object.keys(data).forEach(key => form.append(key, data[key]));
+        fetch(url, { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    restore();
+                    if (callback) callback(json);
+                }
+            });
+    },
+
+    create() {
+        let name = prompt("Название группы: ", "Новая группа (" + (new Date).toLocaleString() + ")");
+        if (!name) return;
+
+        Folder._fetch(host + 'folders/create', { Type: pageName, Name: name });
+    },
+
+    createInner() {
+        let name = prompt("Название группы: ", "Новая группа (" + (new Date).toLocaleString() + ")");
+        if (!name) return;
+        
+        Folder._fetch(host + 'folders/createInner', {
+            Type: pageName,
+            Name: name,
+            FolderId: menuId.slice(2)
+        });
+    },
+
+    beforeMove() {
+        var obj = $("#" + menuId).closest(".unit"); // Получаем ссылку на группу, относительн которой будет спозиционировано меню
+        var exceptions = []; // Массив возможных вариантов для перемещени данной группы
+
+        // Составляем список исключений
+        exceptions.push(menuId); // Сама перемещаемая группа
+        exceptions.push($(obj).parent().closest(".group").attr("id")); // Группа, в которой аходится перемещаемая (на 1 уровне вложенности)
+        $(obj).find(".group").each(function () { exceptions.push(this.id); }); // Все группы, вложенные в перемещаемую
+
+        // Составляем список доступных вариантов для перемещения
+        var select = "<option value='0'>Расположить отдельно";
+        $("div.group").each(function() {
+            var exception = false;
+            for (var i = 0; i < exceptions.length; i++)
+    	        if (this.id == exceptions[i]) exception = true;
+            if (!exception) {
+    	        select += "<option value='" + this.id + "'>" + $(this).children(".caption").find("th").html();
+            }
+        });
+
+        _modal(obj, "<select>" + select + "</select>", function() {
+	        if (menuId.indexOf("off") > -1)
+		        writeoffMove();
+	        else if (menuId.indexOf("-") > -1)
+		        computerMove();
+	        else
+		        Folder.move();
+        });
+    },
+
+    move() {
+        Folder._fetch(host + 'folders/move', {
+            FolderId: document.getElementById('modal').querySelector('select').value.replace(/\D+/g, ''),
+            Id: menuId.slice(2)
+        });
+        $("#modal").fadeOut(100);
+    },
+
+    update() {
+	    let name = prompt("Название группы: ", $("#" + menuId).find("th").first().text());
+        if (!name) return;
+        
+        Folder._fetch(host + 'folders/update', { Name: name, Id: menuId.slice(2) }, () => $("#" + menuId).find("th").first().html(title));
+    },
+
+    clear() {
+        Folder._fetch(host + 'folders/clear', { Type: pageName, Id: menuId.slice(2) });
+    },
+
+    del() {
+        Folder._fetch(host + 'folders/delete', { Type: pageName, Id: menuId.slice(2) });
+    }
+};
 
 var Devices = {
 
     Cart: {
 
-        update(id) {
+        create() {
+            fetch(host + 'devices/create', { method: 'POST' })
+                .then(res => res.json())
+                .then(json => {
+                    id = json.Id;
+                    cartOpenBack();
+                    restore();
+                    if (json.Good) message(json.Good, 'good');
+                });
+        },
+
+        update(Id) {
             let form = new FormData();
-            form.append('DeviceNumber', id);
 
             document.getElementById('form').querySelectorAll('input,select,textarea').forEach(el => form.append(el.name, el.value));
 
-            fetch(host + 'devices/update', { method: 'POST', body: form })
+            fetch(host + 'devices/update/' + Id, { method: 'POST', body: form })
                 .then(res => res.text())
                 .then(text => {
                     text.indexOf('error:') > -1 ? message(text.replace('error:', '')) : message(text, 'good');
                     restore();
                 })
                 .catch(e => message(`'[${e.status}] ${e.statusText}<br />${e.responseText}`));
+        },
+
+        copy() {
+            fetch(host + 'devices/copy/' + id, { method: 'POST' })
+                .then(res => res.json())
+                .then(json => {
+                    id = json.Id;
+                    cartOpenBack();
+                    restore();
+                    if (json.Good) message(json.Good, 'good');
+                });
+        },
+
+        del() {
+            fetch(host + 'devices/delete/' + id, { method: 'POST' })
+                .then(res => res.json())
+                .then(json => {
+                    restore();
+                    if (json.Good) message(json.Good, 'good');
+                });
+        },
+
+        moveSelected() {
+            let form = new FormData();
+                form.append('Key', document.getElementById('moveKey').value);
+                form.append('Devices', selectionToForm('devices', ';;'));
+            fetch(host + 'devices/moveSelected', { method: 'POST', body: form })
+                .then(() => {
+                    removeAllSelection();
+                    restore();
+                });
         },
 
         selectAddon(url) {
@@ -586,7 +643,7 @@ document.querySelector('.messages').addEventListener('click', e => {
     if (e.target.classList.contains('messages__item')) {
         document.querySelector('.messages').removeChild(e.target);
     }
-})
+});
 
 function message(text, type) {
     type = type || 'error';

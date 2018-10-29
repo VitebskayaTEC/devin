@@ -31,20 +31,23 @@ function cartOpenBack() {
 }
 
 function cartSave() {
-	$.post("/devin/exes/repair/" + (id.indexOf("off") < 0 ? "repair" : "writeoff") + "_save_cart.asp?id=" + id + "&r=" + Math.random(), $("#form").serialize(), function(data) {
-		if (data.indexOf("error") < 0) {
-			$("#cart").load("/devin/asp/" + (id.indexOf("off") < 0 ? "repair_cart.asp" : "writeoff_cart.asp") + "?id=" + id.replace("off", "") + "&r=" + Math.random(), function() {
-				document.getElementById("console").innerHTML = data;
-			})
-		} else {
-			document.getElementById("console").innerHTML = data;
-		}
+    $.post(host + (id.indexOf("off") < 0 ? "repairs" : "writeoffs") + "/update/" + id, $("#form").serialize(), function (data) {
+        if (data.Good) {
+            message(data.Good, 'good');
+            $("#cart").load(host + (id.indexOf("off") < 0 ? "repairs" : "writeoffs") + "/cart/" + id.replace("off", ""), function () {
+                document.getElementById("console").innerHTML = data;
+            });
+        }
+        if (data.Error) {
+            message(data.Error);
+        }
 	});
 }
 
 function cartDelete() {
-	if (confirm("Данный объект будет удален. Продолжить?"))
-	$.get("/devin/exes/repair/" + (id.indexOf("off") < 0 ? "repair" : "writeoff") + "_delete_cart.asp?id=" + id + "&r=" + Math.random(), function() {
+    if (!confirm("Данный объект будет удален. Продолжить?")) return;
+
+	$.get(host + (id.indexOf("off") < 0 ? "repairs" : "writeoffs") + "/delete/" + id, function() {
 		$("#cart").fadeOut(150);
 		if (document.getElementById(id)) {
 			if (id.indexOf("off") < 0) {
@@ -64,12 +67,12 @@ function writeoffSetup() {
 }
 
 function writeoffCreate() {
-	$.get("/devin/exes/repair/writeoff_create_cart.asp?r=" + Math.random(), function(data) {
-		if (data.indexOf("error") < 0) {
-			id = data;
-			cartOpenBack();
-		}
-	})
+    $.get("/devin/exes/repair/writeoff_create_cart.asp?r=" + Math.random(), function (data) {
+        if (data.indexOf("error") < 0) {
+            id = data;
+            cartOpenBack();
+        }
+    });
 }
 
 function writeoffExport() {
@@ -116,11 +119,11 @@ function writeoffOpen() {
 
 // Экспорт списания в Excel без открытия карточки
 function writeoffPrint() {
-	$.get("/devin/writeoffs/print/" + menuId.replace("off", "")).done(data => {
-		document.getElementById("excelExportsLink").innerHTML = data;
-		$(".panel:not(#excelExports").fadeOut(100);
-		$("#excelExports").fadeIn(100);
-	})
+    $.get("/devin/writeoffs/print/" + menuId.replace("off", "")).done(data => {
+        document.getElementById("excelExportsLink").innerHTML = data;
+        $(".panel:not(#excelExports").fadeOut(100);
+        $("#excelExports").fadeIn(100);
+    });
 }
 
 // Списывание всех ремонтов в списании

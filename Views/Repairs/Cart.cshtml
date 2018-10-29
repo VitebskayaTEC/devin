@@ -1,0 +1,134 @@
+﻿@model int
+
+@using (var conn = Database.Connection())
+{
+    var repair = conn.Query<Repair>(@"SELECT * FROM Repairs WHERE Id = @Model", new { Model }).FirstOrDefault();
+
+    if (repair == null)
+    {
+        <div class="error">Нет данных по данному идентификатору</div>
+        return;
+    }
+
+    <div class="cart__header">
+        <div>Ремонт #@repair.Id</div>
+        <div class="cart__closeButton">
+            <i class="icon ic-clear icon_white icon_no-hover" title="Закрыть карточку" onclick="cartClose()"></i>
+        </div>
+    </div>
+
+    <div class="tabsSelector">
+        <div class="tabsSelector__item tabsSelector__item_selected" data-tab="info">Информация</div>
+        <div class="tabsSelector__item" data-tab="device">Объект</div>
+        <div class="tabsSelector__item" data-tab="storage">Позиция</div>
+        <div class="tabsSelector__item" data-tab="history">Логи</div>
+    </div>
+
+    <div class="tabsContainer">
+        <div class="tabsContainer__item tabsContainer__item_selected" data-tab="info">
+            <table class="cart-table" id="form">
+
+                <tr>
+                    <td width="200px">Объект ремонта</td>
+                    <td>
+                        <select name="@nameof(repair.DeviceId)" v_select>
+                            @{ 
+                                var devices = conn.Query<Device>("SELECT Id, Type, Name, Description FROM Devices ORDER BY Type, Name");
+                                foreach (var device in devices)
+                                {
+                                    <option value="@device.Id" @(device.Id == repair.DeviceId ? "selected" : "")>@device.Name @device.Description</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Позиция со склада</td>
+                    <td>
+                        <select name="@nameof(repair.DeviceId)" v_select>
+                            @{ 
+                                var storages = conn.Query<Storage>("SELECT Inventory, Name FROM Storages ORDER BY Inventory");
+                                foreach (var storage in storages)
+                                {
+                                    <option value="@storage.Inventory" @(storage.Inventory == repair.StorageInventory ? "selected" : "")>@storage.Name</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Кол-во единиц исп.</td>
+                    <td><input name="@nameof(repair.Number)" value="@repair.Number" /></td>
+                </tr>
+
+                <tr>
+                    <td>Создал ремонт</td>
+                    <td>@repair.Author</td>
+                </tr>
+
+                <tr>
+                    <td>Дата проведения</td>
+                    <td><input name="@nameof(repair.Date)" value="@repair.Date.ToString("dd.MM.yyyy HH:mm")" /></td>
+                </tr>
+
+                <tr>
+                    <td>Списан</td>
+                    <td>
+                        <select name="@nameof(repair.IsOff)">
+                            <option value="0">Нет</option>
+                            <option value="1" @(repair.IsOff ? "selected" : "")>Да</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Виртуальный</td>
+                    <td>
+                        <select name="@nameof(repair.IsVirtual)">
+                            <option value="0">Нет</option>
+                            <option value="1" @(repair.IsVirtual ? "selected" : "")>Да</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Расположение</td>
+                    <td>
+                        <select name="Destination">
+                            <option value="0">Не распределен</option>
+                            @{
+                                var writeoffs = conn.Query<Writeoff>("SELECT Id, Name FROM Writeoffs ORDER BY Name");
+                                foreach (var writeoff in writeoffs)
+                                {
+                                    <option value="@writeoff.Id" @(writeoff.Id == repair.WriteoffId ? "selected" : "")>@writeoff.Name</option>
+                                }
+                                var folders = conn.Query<Folder>("SELECT Id, Name FROM Folders WHERE Type = 'repair' ORDER BY Name");
+                                foreach (var folder in folders)
+                                {
+                                    <option value="@folder.Id" @(folder.Id == repair.FolderId ? "selected" : "")>@folder.Name</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                </tr>
+
+                
+            </table>
+            <table class="cart-menu">
+                <tr>
+                    <td onclick="Repairs.Cart.update('@repair.Id')">Сохранить</td>
+                    <td onclick="Repairs.Cart.del('@repair.Id')">Удалить</td>
+                </tr>
+            </table>
+        </div>
+        <div class="tabsContainer__item" data-tab="device" data-tab-lazy="@Url.Action("device", "repairs", new { Id = repair.DeviceId })"></div>
+        <div class="tabsContainer__item" data-tab="storage" data-tab-lazy="@Url.Action("storage", "repairs", new { Id = repair.StorageInventory })"></div>
+        <div class="tabsContainer__item" data-tab="logs" data-tab-lazy="@Url.Action("history", "repairs", new { Id = repair.Id })"></div>
+    </div>
+}
+
+<script>
+    $('#cart v_select').select2({ width: '100%' });
+</script>

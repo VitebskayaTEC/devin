@@ -79,16 +79,16 @@
     int minBaseValue = 23;
 
     string sql = @"SELECT
-        Cartridges.Id     AS Cartridge,
-        Cartridges.Type    AS [Type],
-        Cartridges.Name AS Caption,
-        Storages.Nstorage         AS [Count],
-        Storages.Account       AS Account,
-        Storages.Cost       AS Price,
+        Cartridges.Id                  AS Cartridge,
+        Cartridges.Type                AS [Type],
+        Cartridges.Name                AS Caption,
+        Storages.Nstorage              AS [Count],
+        Storages.Account               AS Account,
+        Storages.Cost                  AS Price,
         CAST(Cartridges.Cost as float) AS DefPrice,
-        Storages.CartridgeId     AS ID,
-        Cartridges.Type    AS AltType,
-        Cartridges.Color   AS Color
+        Storages.CartridgeId           AS ID,
+        Cartridges.Type                AS AltType,
+        Cartridges.Color               AS Color
     FROM Cartridges
     INNER JOIN Storages ON Cartridges.Id = Storages.CartridgeId
     ORDER BY Cartridges.Type, Cartridges.Name";
@@ -107,7 +107,7 @@
         else
         {
             float fixCost = row.Account == "10.5.1" ? 1.2F : 2.4F;
-            cost = row.Price * fixCost;
+            cost = Convert.ToSingle(row.Price * fixCost);
         }
 
         if (cartridge.Id == row.Cartridge)
@@ -160,7 +160,7 @@
     var repairs = conn.Query(sql).AsList();
 
     var buffer = new List<dynamic>();
-    string activePrinter = "";
+    int activePrinter = 0;
     int activeCartridge = 0;
 
     <div class="unit" id="analyzeRepairs">
@@ -188,7 +188,7 @@
                     {
                         if (row.ID_P != activePrinter || row.ID_C != activeCartridge)
                         {
-                            if (activePrinter != "")
+                            if (activePrinter != 0)
                             {
                                 <tr>
                                     <th colspan="8">

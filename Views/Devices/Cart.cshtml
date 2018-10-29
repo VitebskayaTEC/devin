@@ -75,7 +75,7 @@
                                 }
                                 if (device.Type != "CMP")
                                 {
-                                    var computers = conn.Query<Computer>("SELECT Id, Name FROM Device WHERE Type = 'CMP' AND IsOff = 0 AND IsDeleted = 0 ORDER BY Name");
+                                    var computers = conn.Query<Computer>("SELECT Id, Name FROM Devices WHERE Type = 'CMP' AND IsOff = 0 AND IsDeleted = 0 ORDER BY Name");
                                     foreach (var computer in computers)
                                     {
                                         <option value="computer@(computer.Id)" @(computer.Id == device.ComputerId ? "selected" : "")>[компьютер] @computer.Name</option>
@@ -289,7 +289,7 @@
         }
         <div class="tabsContainer__item" data-tab="addons" id="addons">
             <div class="addons">
-                <a onclick="Devices.Cart.selectAddon('@Url.Action("HistoryByDevice", "Repairs", new { Id = device.Id })')">История ремонтов</a><br />
+                <a onclick="Devices.Cart.selectAddon('@Url.Action("HistoryRepairsById", "Devices", new { Id = device.Id })')">История ремонтов</a><br />
 
                 @if (device.Type == "CMP")
                 {

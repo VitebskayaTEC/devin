@@ -1,0 +1,54 @@
+﻿@model string
+
+@using (var conn = Database.Connection())
+{
+    var storage = conn.Query<Storage>(@"SELECT * FROM Storages WHERE Inventory = @Model", new { Model }).FirstOrDefault();
+    if (storage == null)
+    {
+        <div>Позиция не найдено</div>
+        return;
+    }
+
+    <table class="cart-table">
+        <tbody>
+            <tr>
+                <td>Инвентарный номер</td>
+                <td>@storage.Inventory</td>
+            </tr>
+            <tr>
+                <td>Наименование</td>
+                <td>@storage.Name</td>
+            </tr>
+            <tr>
+                <td>Стоимость</td>
+                <td>@storage.Cost.ToString("0.00")</td>
+            </tr>
+            <tr>
+                <td>Счет учета</td>
+                <td>@storage.Account</td>
+            </tr>
+            <tr>
+                <td>Дата прихода</td>
+                <td>@storage.Date.ToString("dd.MM.yyyy")</td>
+            </tr>
+            @if (storage.Type == "PRN")
+            {
+                storage.Cartridge = conn.Query<Cartridge>("SELECT * FROM Cartridges WHERE Id = @CartridgeId", new { storage.CartridgeId }).FirstOrDefault();
+                if (storage.Cartridge == null)
+                {
+                    <tr>
+                        <td>Типовой картридж</td>
+                        <td>не установлен</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td>Типовой картридж</td>
+                        <td>@storage.Cartridge.Name</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
