@@ -275,10 +275,10 @@ function cartOpenByHash() {
 }
 
 function cartClose() {
-	$("#cart").fadeOut(150, function() { document.getElementById("cart").innerHTML = ""; });
-	$(".view .selected").removeClass("selected");
-	id = "";
-	setHash("null");
+    document.getElementById('cart').classList.remove('cart_visible');
+    document.getElementById('view').querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+	id = '';
+	setHash(null);
 }
 
 
@@ -542,7 +542,10 @@ var Devices = {
                 .then(res => res.json())
                 .then(json => {
                     restore();
-                    if (json.Good) message(json.Good, 'good');
+                    if (json.Good) {
+                        message(json.Good, 'good');
+                        cartClose();
+                    }
                 });
         },
 
@@ -637,6 +640,84 @@ var Devices = {
         }
     }
 };
+
+
+var Repairs = {
+
+    Device: {
+
+        create() {
+            fetch(host + 'repairs/createFromDevice/' + id)
+                .then(res => res.text())
+                .then(text => {
+                    let cart = document.getElementById('cart');
+                    cart.innerHTML = text;
+                    cart.classList.add('cart_visible');
+                    Repairs.Device.load();
+
+                    document.getElementById('repairForm').addEventListener('change', Repairs.Device.load);
+                    document.getElementById('repairData').addEventListener('change', e => {
+                        let input = e.target;
+                        if (input.type === 'checkbox') {
+                            let number = input.parentNode.parentNode.querySelector('input[type="number"]');
+                            if (input.checked) {
+                                number.setAttribute('data-max', number.getAttribute('max'));
+                                number.removeAttribute('max');
+                            } else {
+                                number.setAttribute('max', number.getAttribute('data-max'));
+                                number.removeAttribute('data-max');
+                                if (number.value > +number.getAttribute('max')) number.value = +number.getAttribute('max');
+                            }
+                        }
+                        else if (input.type === 'number') {
+                            if (input.value > 0) {
+                                input.parentNode.parentNode.classList.add('repair__row_checked');
+                            }
+                            else {
+                                input.parentNode.parentNode.classList.remove('repair__row_checked');
+                            }
+                        }
+                    });
+                });
+        },
+
+        load() {
+            let form = new FormData();
+            form.append('Id', id);
+            document.getElementById('repairForm').querySelectorAll('input,select,textarea').forEach(el => form.append(el.name, el.value));
+            fetch(host + 'repairs/createFromDeviceData', { method: 'POST', body: form })
+                .then(res => res.text())
+                .then(text => document.getElementById('repairData').innerHTML = text);
+        },
+
+        end(withWriteoff) {
+
+            let form = new FormData();
+            document.getElementById('repairData').querySelectorAll('.repair__row_checked').forEach(el => {
+                let inventory = el.getAttribute('data-inventory');
+                let number = el.querySelector('input[type="number"]').value;
+                let virtual = el.querySelector('input[type="checkbox"]').checked ? "true" : "false";
+                form.append(inventory, number + ":" + virtual);
+            });
+
+            if (withWriteoff) {
+                form.append('writeoff', prompt('Введите наименование нового списания', 'Списание: ' + (new Date).toLocaleString()));
+            }
+
+            fetch(host + 'repairs/endCreateFromDevice', { method: 'POST', body: form })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.Good) message(json.Good, 'good');
+                    if (json.Error) message(json.Error);
+                    if (json.Warning) message(json.Warning, 'warning');
+                });
+        },
+
+        back() {
+            cartOpenBack();
+        }
+    },
+}
 
 document.querySelector('.messages').addEventListener('click', e => {
     console.log(e.target);

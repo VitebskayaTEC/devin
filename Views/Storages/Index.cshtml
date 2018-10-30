@@ -152,7 +152,22 @@
     <div id="selected" class="panel">
         <div>Выбрано позиций: <b></b></div>
         <div><a onclick="allStoragesToRepair()">Оформить ремонты</a></div>
-        <div><div id="move_select"></div><a onclick="storagesToGroup()">Переместить в группу</a></div>
+        <div>
+            <div id="move_select">
+                <select>
+                    <option value="0">Разместить отдельно</option>
+                    @using (var conn = Database.Connection())
+                    {
+                        var folders = conn.Query<Folder>("SELECT * FROM Folders WHERE Type = 'storage' ORDER BY Name");
+                        foreach (var folder in folders)
+                        {
+                            <option value="@folder.Id">@folder.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <a onclick="storagesToGroup()">Переместить в группу</a>
+        </div>
         <div><a onclick="excelExports()">Распечатать бирки</a></div>
         <div><a onclick="removeAllSelection()">Сбросить выбор</a></div>
     </div>

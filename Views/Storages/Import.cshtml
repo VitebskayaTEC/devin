@@ -164,7 +164,7 @@
             },
 
             openCart(ncard) {
-                $("#cart").load("@Url.Action("", "asp")/storage_cart.asp?id=" + ncard + "&r=" + Math.random()).fadeIn(150);
+                $("#cart").load("@Url.Action("cart", "storages")/" + ncard).fadeIn(150);
                 $(".selected").removeClass("selected");
                 $("#" + ncard).addClass("selected");
             }

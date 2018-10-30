@@ -2,7 +2,7 @@
 
 @using (var conn = Database.Connection())
 {
-    var device = conn.Query<Device>(@"SELECT * FROM Device WHERE Id = @Model", new { Model }).FirstOrDefault();
+    var device = conn.Query<Device>(@"SELECT * FROM Devices WHERE Id = @Model", new { Model }).FirstOrDefault();
     if (device == null)
     {
         <div>Устройство не найдено</div>

@@ -2,7 +2,7 @@
 
 @using (var conn = Database.Connection())
 {
-    var storage = conn.Query<Storage>("SELECT * FROM Storages WHERE Ncard = @Model", new { Model }).FirstOrDefault();
+    var storage = conn.Query<Storage>("SELECT * FROM Storages WHERE Inventory = @Model", new { Model }).FirstOrDefault();
 
     if (storage == null)
     {
@@ -11,8 +11,13 @@
     }
 
     string sql = "";
-
-    <div class="cart-header">@(string.IsNullOrEmpty(storage.Name) ? "Имя не задано" : storage.Name) @(storage.IsDeleted ? " (удален)" : "")</div>
+    
+    <div class="cart__header">
+        <div>@(string.IsNullOrEmpty(storage.Name) ? "Имя не задано" : storage.Name) @(storage.IsDeleted ? " (удален)" : "")</div>
+        <div class="cart__closeButton">
+            <i class="icon ic-clear icon_white icon_no-hover" title="Закрыть карточку" onclick="cartClose()"></i>
+        </div>
+    </div>
 
     <div class="">
         <table class="cart-table cart-form">
@@ -20,7 +25,7 @@
             <tr>
                 <td>Инвентарный №</td>
                 <td>
-                    <input name="@nameof(storage.Ncard)" value="@storage.Ncard" style="width: 100px" />
+                    <input name="@nameof(storage.Inventory)" value="@storage.Inventory" style="width: 100px" />
                 </td>
             </tr>
             <tr>
@@ -35,11 +40,11 @@
                     <select name="@nameof(storage.Type)">
                         <option value="">не определен</option>
                         @{
-                            sql = "SELECT T_alias AS [Key], T_storages AS Text FROM catalog_device_types";
+                            sql = "SELECT Id, StorageText FROM TypesDevices";
                             var types = conn.Query(sql);
                             foreach (var row in types)
                             {
-                                <option value="@row.Key" @(row.Key == storage.Type ? "selected" : "")>@row.Text</option>
+                                <option value="@row.Id" @(row.Id == storage.Type ? "selected" : "")>@row.StorageText</option>
                             }
                         }
                     </select>
@@ -50,11 +55,11 @@
                 <td>
                     <select name="@nameof(storage.Account)">
                         @{
-                            sql = "SELECT uchet AS [Key], uchet AS Text FROM SKLAD GROUP BY uchet ORDER BY Text";
+                            sql = "SELECT Account FROM Storages GROUP BY Account ORDER BY Account";
                             var accounts = conn.Query(sql);
                             foreach (var row in accounts)
                             {
-                                <option value="@row.Key" @(row.Key == storage.Account ? "selected" : "")>@row.Text</option>
+                                <option value="@row.Account" @(row.Account == storage.Account ? "selected" : "")>@row.Account</option>
                             }
                         }
                     </select>
@@ -125,14 +130,9 @@
             </tr>
         </table>
     </div>
-
-    <div id="console"></div>
-
-    <table class="cart-menu">
-        <tr>
-            <td onclick="cartSave()">Сохранить</td>
-            <td onclick="cartDelete()">Удалить</td>
-            <td onclick="cartClose()">Закрыть</td>
-        </tr>
-    </table>
+    
+    <div class="cart__menu">
+        <button class="cart__button" onclick="cartSave()">Сохранить</button>
+        <button class="cart__button" onclick="cartDelete()">Удалить</button>
+    </div>
 }

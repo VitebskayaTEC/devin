@@ -49,10 +49,10 @@
                 <td>
                     <select name="Type">
                         @{ 
-                            var types = conn.Query("SELECT C_alias as [Key], C_name AS [Text] FROM catalog_cartridge_types WHERE C_type = 'type' ORDER BY C_Type, C_Name");
+                            var types = conn.Query("SELECT Id, Name FROM TypesCartridges WHERE Type = 'type' ORDER BY Name");
                             foreach (var type in types)
                             {
-                                <option value="@type.Key" @(type.Key == cartridge.Type ? "selected" : "")>@type.Text</option>
+                                <option value="@type.Id" @(type.Id == cartridge.Type ? "selected" : "")>@type.Name</option>
                             }
                         }
                     </select>
@@ -63,10 +63,10 @@
                 <td>
                     <select name="Color">
                         @{
-                            var colors = conn.Query("SELECT C_alias as [Key], C_name AS [Text] FROM catalog_cartridge_types WHERE C_type = 'color' ORDER BY C_Type, C_Name");
+                            var colors = conn.Query("SELECT Id, Name FROM TypesCartridges WHERE Type = 'color' ORDER BY Name");
                             foreach (var color in colors)
                             {
-                                <option value="@color.Key" @(color.Key == cartridge.Color ? "selected" : "")>@color.Text</option>
+                                <option value="@color.Id" @(color.Id == cartridge.Color ? "selected" : "")>@color.Name</option>
                             }
                         }
                     </select>

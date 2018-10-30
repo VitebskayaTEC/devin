@@ -29,12 +29,12 @@
                 var computers = AutoMapper.MapDynamic<Computer>(conn.Query(@"SELECT
                     Computers.Name,
                     Computers.Id,
-                    D.Id          AS Devices_Id,
-                    D.Name        AS Devices_Name,
-                    D.Description AS Devices_Description
+                    Devices.Id          AS Devices_Id,
+                    Devices.Name        AS Devices_Name,
+                    Devices.Description AS Devices_Description
                 FROM Devices
                 LEFT OUTER JOIN Devices AS Computers ON (Devices.ComputerId = Computers.Id AND Computers.IsDeleted <> 1)
-                WHERE (D.IsDeleted <> 1 AND Devices.IsOff <> 1 AND (Devices.Type <> 'CMP' OR (Devices.Type = 'CMP' AND Devices.Id NOT IN (
+                WHERE (Devices.IsDeleted <> 1 AND Devices.IsOff <> 1 AND (Devices.Type <> 'CMP' OR (Devices.Type = 'CMP' AND Devices.Id NOT IN (
                     SELECT ComputerId FROM Devices WHERE ComputerId IS NOT NULL AND AND ComputerId <> '0' GROUP BY ComputerId
                 ))))
                 ORDER BY Computers.Name, Devices.Name"));

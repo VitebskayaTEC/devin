@@ -38,8 +38,10 @@ namespace Devin.Controllers
 
         public ActionResult WorkPlaces() => View();
 
+        public ActionResult Repair(int Id) => View(model: Id);
 
-        public string Update(int Id, [Bind(Include = "Name,Inventory,Type,Description,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,IsOff")] Device device)
+
+        public string Update(int Id, [Bind(Include = "Name,Inventory,Type,Description,PublicName,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,IsOff")] Device device)
         {
             device.Id = Id;
 
@@ -53,29 +55,7 @@ namespace Devin.Controllers
             using (var conn = Database.Connection())
             {
                 // Логирование изменений
-                var old = conn.QueryFirst<Device>(@"SELECT
-                    Devices.Id
-                    ,Devices.Inventory
-                    ,Devices.Name
-                    ,Devices.Description
-                    ,Devices.Mol
-                    ,Devices.OS
-                    ,Devices.OSKey
-                    ,Devices.PlaceId
-                    ,Devices.Type
-                    ,Devices.DateInstall
-                    ,Devices.SerialNumber
-                    ,Devices.PassportNumber
-                    ,Devices.Location
-                    ,Devices.PrinterId
-                    ,Devices.ServiceTag
-                    ,Devices.IsOff
-                    ,Computers.Id AS ComputerId
-                    ,Folders.Id   AS FoldersId
-                FROM Devices
-                LEFT OUTER JOIN Devices AS Computers ON Computers.Id = Devices.ComputerId
-                LEFT OUTER JOIN Folders ON Folders.Id = Devices.FolderId
-                WHERE Devices.Id = @Id", new { device.Id });
+                var old = conn.QueryFirst<Device>(@"SELECT * FROM Devices WHERE Id = @Id", new { device.Id });
 
                 List<string> changes = new List<string>();
 
@@ -143,6 +123,10 @@ namespace Devin.Controllers
                 {
                     changes.Add($"дата последнего ремонта [{old.Mol} => {device.Mol}]");
                 }
+                if (device.PublicName != old.PublicName)
+                {
+                    changes.Add($"имя для печати [{old.PublicName} => {device.PublicName}]");
+                }
 
                 string destination = Request.Form.Get("Destination");
                 device.ComputerId = old.ComputerId;
@@ -205,6 +189,8 @@ namespace Devin.Controllers
                         ,ServiceTag     = @ServiceTag
                         ,IsOff          = @IsOff
                         ,Mol            = @Mol
+                        ,DateLastRepair = @DateLastRepair
+                        ,PublicName     = @PublicName
                     WHERE Id = @Id", device);
 
                     conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
@@ -232,9 +218,9 @@ namespace Devin.Controllers
                 Device device = conn.QueryFirst<Device>("SELECT * FROM Devices WHERE Id = @Id", new { Id });
                 device.Name += " (копия)";
                 conn.Execute(@"INSERT INTO Devices (
-                    [Inventory], [Type], [Name], [NetworkName], [Description1C][Description], [DateInstall], [DateLastRepair], [Mol], [SerialNumber], [PassportNumber], [Location], [OS], [OSKey], [PrinterId], [FolderId], [IsOff], [IsDeleted], [ServiceTag], [PassportGold], [PassportSilver], [PassportPlatinum], [PassportMPG], [PlaceId], [ComputerId]
+                    [Inventory], [Type], [Name], [NetworkName], [Description], [DateInstall], [DateLastRepair], [Mol], [SerialNumber], [PassportNumber], [Location], [OS], [OSKey], [PrinterId], [FolderId], [IsOff], [IsDeleted], [ServiceTag], [PlaceId], [ComputerId]
                 ) VALUES (
-                    @Inventory, @Type, @Name, @NetworkName, @Description1C, @Description, @DateInstall, @DateLastRepair, @Mol, @SerialNumber, @PassportNumber, @Location, @OS, @OSKey, @PrinterId, @FolderId, @IsOff, @IsDeleted, @ServiceTag, @PassportGold, @PassportSilver, @PassportPlatinum, @PassportMPG, @PlaceId, @ComputerId
+                    @Inventory, @Type, @Name, @NetworkName, @Description, @DateInstall, @DateLastRepair, @Mol, @SerialNumber, @PassportNumber, @Location, @OS, @OSKey, @PrinterId, @FolderId, @IsOff, @IsDeleted, @ServiceTag, @PlaceId, @ComputerId
                 )", device);
 
                 int id = conn.QueryFirst<int>("SELECT Max(Id) FROM Devices");
@@ -262,7 +248,7 @@ namespace Devin.Controllers
                     FolderId = 0, 
                     Name = "Новое устройство",
                     Description = "",
-                    DateInstall = DateTime.Now,
+                    DateInstall = DateTime.Now.Date,
                     IsDeleted = false,
                     IsOff = false
                 });

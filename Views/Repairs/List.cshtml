@@ -44,21 +44,21 @@
             Writeoffs.Id
             ,Writeoffs.Name
             ,Writeoffs.Date
-            ,c.O_Name    AS [Type]
-            ,Folders.Id  AS [FolderId]
+            ,TypesWriteoffs.Name AS [Type]
+            ,Folders.Id          AS [FolderId]
         FROM Writeoffs
-        LEFT OUTER JOIN catalog_writeoffs c ON Writeoffs.Type = c.O_Alias
+        LEFT OUTER JOIN TypesWriteoffs ON Writeoffs.Type = TypesWriteoffs.Id
         LEFT OUTER JOIN Folders ON Writeoffs.FolderId = Folders.Id
         ORDER BY Writeoffs.Date DESC").AsList();
 
         var _folders = conn.Query<Folder>(@"SELECT
-            f.Id,
-            CASE WHEN p.Id IS NULL THEN 0 ELSE p.Id END AS FolderId,
-            f.Name
-        FROM Folders f
-        LEFT OUTER JOIN Folders p ON f.FolderId = p.Id
-        WHERE f.Type = 'repair'
-        ORDER BY f.Name").AsList();
+            Folders.Id,
+            CASE WHEN Parents.Id IS NULL THEN 0 ELSE Parents.Id END AS FolderId,
+            Folders.Name
+        FROM Folders
+        LEFT OUTER JOIN Folders AS Parents ON Folders.FolderId = Parents.Id
+        WHERE Folders.Type = 'repair'
+        ORDER BY Folders.Name").AsList();
 
         var repairs = new List<Repair>();
         var writeoffs = new List<Writeoff>();

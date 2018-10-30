@@ -13,7 +13,7 @@
     device.Device1C = conn.Query<Device1C>("SELECT * FROM Devices1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
 
     <div class="cart__header">
-        <div>@(device.Type == "CMP" ? device.Name : device.Description)</div>
+        <div>@(device.Name ?? "<имя не задано>")</div>
         <div class="cart__closeButton">
             <i class="icon ic-clear icon_white icon_no-hover" title="Закрыть карточку" onclick="cartClose()"></i>
         </div>
@@ -51,10 +51,10 @@
                         <select name="@nameof(device.Type)">
                             <option value="0">? не определен</option>
                             @{
-                                var classes = conn.Query("SELECT T_alias, T_name FROM catalog_device_types ORDER BY T_name");
+                                var classes = conn.Query("SELECT Id, DeviceText FROM TypesDevices ORDER BY DeviceText");
                                 foreach (var cls in classes)
                                 {
-                                    <option value="@cls.T_alias" @(cls.T_alias == device.Type ? "selected" : "")>@cls.T_name</option>
+                                    <option value="@cls.Id" @(cls.Id == device.Type ? "selected" : "")>@cls.DeviceText</option>
                                 }
                             }
                         </select>
@@ -84,6 +84,11 @@
                             }
                         </select>
                     </td>
+                </tr>
+
+                <tr>
+                    <td>Имя для печати</td>
+                    <td><input name="@nameof(device.PublicName)" value="@device.PublicName" /></td>
                 </tr>
 
                 <tr>
@@ -170,10 +175,10 @@
                             <select name="@nameof(device.OS)">
                                 <option value="0">? не выбрана</option>
                                 @{
-                                    var systems = conn.Query("Select T_alias, T_name From catalog_os Order by T_name");
+                                    var systems = conn.Query("SELECT Id, Name FROM TypesSystems");
                                     foreach (var sys in systems)
                                     {
-                                        <option value="@sys.T_alias" @(sys.T_alias == device.OS ? "selected" : "")>@sys.T_name</option>
+                                        <option value="@sys.Id" @(sys.Id == device.OS ? "selected" : "")>@sys.Name</option>
                                     }
                                 }
                             </select>
@@ -194,7 +199,7 @@
                             <select name="@nameof(device.PrinterId)">
                                 <option value="0">? не определен</option>
                                 @{
-                                    var printers = conn.Query("Select Id, Name From Printers Order by Name");
+                                    var printers = conn.Query("SELECT Id, Name FROM Printers ORDER BY Name");
                                     foreach (var printer in printers)
                                     {
                                         <option value="@printer.Id" @(printer.Id == device.PrinterId ? "selected" : "")>@printer.Name</option>
@@ -215,14 +220,12 @@
                     </td>
                 </tr>
             </table>
-            <table class="cart-menu">
-                <tr>
-                    <td onclick="Devices.Cart.update('@device.Id')">Сохранить</td>
-                    <td onclick="deviceToRepair()">Ремонт</td>
-                    <td onclick="cartDelete()">Удалить</td>
-                    <td onclick="cartCopy()">Копир.</td>
-                </tr>
-            </table>
+            <div class="cart__menu">
+                <button class="cart__button" onclick="Devices.Cart.update('@device.Id')">Сохранить</button>
+                <button class="cart__button" onclick="Repairs.Device.create()">Ремонт</button>
+                <button class="cart__button" onclick="Devices.Cart.del()">Удалить</button>
+                <button class="cart__button" onclick="Devices.Cart.copy()">Копир.</button>
+            </div>
         </div>
         <div class="tabsContainer__item" data-tab="1c">
             @if (device.Device1C == null)
@@ -289,25 +292,21 @@
         }
         <div class="tabsContainer__item" data-tab="addons" id="addons">
             <div class="addons">
-                <a onclick="Devices.Cart.selectAddon('@Url.Action("HistoryRepairsById", "Devices", new { Id = device.Id })')">История ремонтов</a><br />
+                <button class="cart__button" onclick="Devices.Cart.selectAddon('@Url.Action("HistoryRepairsById", "Devices", new { Id = device.Id })')">История ремонтов</button><br />
 
                 @if (device.Type == "CMP")
                 {
-                    <a onclick="Devices.Cart.selectAddon('@Url.Action("Autorun", "aida", new { Id = device.Name })')">Автозагрузка</a><br />
-                    <a onclick="Devices.Cart.selectAddon('@Url.Action("Programs", "aida", new { Id = device.Name })')">Операционная система и установленное ПО</a><br />
-                    <a onclick="Devices.Cart.selectAddon('@Url.Action("Devices", "aida", new { Id = device.Name })')">Оборудование</a><br />
+                    <button class="cart__button" onclick="Devices.Cart.selectAddon('@Url.Action("Autorun", "aida", new { Id = device.Name })')">Автозагрузка</button><br />
+                    <button class="cart__button" onclick="Devices.Cart.selectAddon('@Url.Action("Programs", "aida", new { Id = device.Name })')">Операционная система и установленное ПО</button><br />
+                    <button class="cart__button" onclick="Devices.Cart.selectAddon('@Url.Action("Devices", "aida", new { Id = device.Name })')">Оборудование</button><br />
                 }
 
-                @if ("CMP DIS PRN".Contains(device.Type))
+                @if ("CMP DIS PRN".Contains(device.Type ?? "NOT"))
                 {
-                    <a onclick="Devices.Cart.selectAddon('@Url.Action("DefectAct", "Devices", new { Id = device.Id })')">Дефектный акт</a><br />
+                    <button class="cart__button" onclick="Devices.Cart.selectAddon('@Url.Action("DefectAct", "Devices", new { Id = device.Id })')">Дефектный акт</button><br />
                 }
             </div>
             <div class="addons__body hide"></div>
         </div>
     </div>
 }
-
-<script>
-    $('#cart select').select2({ width: '100%' });
-</script>

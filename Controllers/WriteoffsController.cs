@@ -252,5 +252,111 @@ namespace Devin.Controllers
                 return "<a href='/devin/content/excels/" + output + "'>" + output + "</a>";
             }
         }
+
+        public ActionResult Cart(int Id) => View(model: Id);
+
+        public JsonResult Create()
+        {
+            using (var conn = Database.Connection())
+            {
+                conn.Execute("INSERT INTO Writeoffs (Name, Date, Type, FolderId, CostArticle) VALUES ('Новое списание', GetDate(), 'expl', 0, 0)");
+                int Id = conn.QueryFirst<int>("SELECT Max(Id) FROM Writeoffs");
+                conn.Execute("UPDATE Writeoffs SET Name = Name + @Text WHERE Id = @Id", new { Id, Text = " #" + Id });
+                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'writeoffs', @Id, @Text, @Username)", new Activity
+                {
+                    Id = Id.ToString(),
+                    Text = "Создано списание",
+                    Username = User.Identity.Name
+                });
+
+                return Json(new { Id, Good = "Создано новое списание" });
+            }
+        }
+
+        public JsonResult Update(int Id, [Bind(Include = "Name,Type,Description,CostArticle,FolderId")] Writeoff writeoff, string[] Params, string Date)
+        {
+            writeoff.Params = string.Join(";;", Params);
+            if (!DateTime.TryParse(Date, out DateTime d))
+            {
+                return Json(new { Error = "Дата введена в неверном формате. Ожидается формат \"дд.ММ.гггг чч:мм\"" });
+            }
+            else writeoff.Date = d;
+
+            using (var conn = Database.Connection())
+            {
+                var old = conn.QueryFirst<Writeoff>("SELECT * FROM Writeoffs WHERE Id = @Id", new { Id });
+
+                List<string> changes = new List<string>();
+                if (writeoff.Name != old.Name) changes.Add("наименование [\"" + old.Name + "\" => \"" + writeoff.Name + "\"]");
+                if (writeoff.Type != old.Type) changes.Add("тип [\"" + old.Type + "\" => \"" + writeoff.Type + "\"]");
+                if (writeoff.Description != old.Description) changes.Add("описание [\"" + old.Description + "\" => \"" + writeoff.Description + "\"]");
+                if (writeoff.CostArticle != old.CostArticle) changes.Add("статья расходов [\"" + old.CostArticle + "\" => \"" + writeoff.CostArticle + "\"]");
+                if (writeoff.FolderId != old.FolderId) changes.Add("папка [\"" + old.FolderId + "\" => \"" + writeoff.FolderId + "\"]");
+                if (writeoff.Params != old.Params) changes.Add("параметры экспорта [\"" + old.Params + "\" => \"" + writeoff.Params + "\"]");
+                if (writeoff.Date != old.Date) changes.Add("дата создания [\"" + old.Date + "\" => \"" + writeoff.Date + "\"]");
+
+                if (changes.Count > 0)
+                {
+                    // Сохранение в базе
+                    conn.Execute(@"UPDATE Writeoffs SET
+                        Name        = @Name,
+                        Type        = @Type,
+                        Description = @Description,
+                        CostArticle = @CostArticle,
+                        FolderId    = @FolderId,
+                        Params      = @Params,
+                        Date        = @Date
+                    WHERE Id = @Id", writeoff);
+
+                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'writeoffs', @Id, @Text, @Username)", new Activity
+                    {
+                        Id = Id.ToString(),
+                        Text = "Списание обновлено. Изменения: " + string.Join(",\n", changes.ToArray()),
+                        Username = User.Identity.Name
+                    });
+
+                    return Json(new { Good = "Списание обновлено!<br />Изменены поля:<br />" + string.Join(",<br />", changes.ToArray()) });
+                }
+                else
+                {
+                    return Json(new { Warning = "Изменений не было" });
+                }
+            }
+        }
+
+        public JsonResult Move(string Id, string FolderId)
+        {
+            int id = int.TryParse(Id.Replace("off", ""), out int i) ? i : 0;
+            int folderId = int.TryParse(Id.Replace("rg", ""), out i) ? i : 0;
+            
+            using (var conn = Database.Connection())
+            {
+                conn.Execute("UPDATE Writeoffs SET FolderId = @FolderId WHERE Id = @Id", new
+                {
+                    Id = id,
+                    FolderId = folderId
+                });
+            }
+
+            return Json(new { Good = "Списание перемещено" });
+        }
+
+        public JsonResult Delete(string Id)
+        {
+            int id = int.TryParse(Id.Replace("off", ""), out int i) ? i : 0;
+
+            using (var conn = Database.Connection())
+            {
+                conn.Execute("DELETE FROM Writeoffs WHERE Id = @Id", new { Id = id });
+                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'writeoffs', @Id, @Text, @Username)", new Activity
+                {
+                    Id = id.ToString(),
+                    Text = "Списание удалено без отмены вложенных ремонтов",
+                    Username = User.Identity.Name
+                });
+            }
+
+            return Json(new { Good = "Списание удалено без отмены вложенных ремонтов" });
+        }
     }
 }

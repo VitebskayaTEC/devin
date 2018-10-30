@@ -40,18 +40,18 @@
 
 
         function cartOpenBack() {
-
-            $.get('@Url.Action("cart")/' + id).done(data => $('#cart')
-                .html(data)
-                .fadeIn(100)
-                .css({ maxWidth: 600 })
-            );
-
-            $('.view .selected').removeClass('selected');
-            try { $('#' + id).addClass('selected'); } catch (e) {}
+            fetch('@Url.Action("cart")/' + id)
+                .then(res => res.text())
+                .then(text => {
+                    let cart = document.getElementById('cart');
+                    cart.innerHTML = text;
+                    cart.classList.add('cart_visible');
+                    document.getElementById('view').querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+                    document.getElementById(id).classList.add('selected');
+                });
         }
 
-        let Device = {
+        var Device = {
             PrintReportCart() {
                 fetch('@Url.Action("PrintRecordCart", "Devices")/' + menuId).then(res => res.text()).then(text => {
                     let a = document.createElement('a');
@@ -68,7 +68,10 @@
 
     <div id='selected' class='panel'>
         <div>Выбрано элементов: <b></b></div>
-        <div><div id='move_select'><select id='moveKey'></select></div><a onclick='moveSelectedDevices()'>Переместить</a></div>
+        <div>
+            <select id='moveKey'></select>
+            <a onclick='moveSelectedDevices()'>Переместить</a>
+        </div>
         <div><a onclick='removeAllSelection()'>Сбросить выбор</a></div>
     </div>
 
@@ -89,7 +92,7 @@
     </div>
 
     <div class="context-menu" id="main">
-        <div onclick="cartCreate()">Создать карточку устройства</div>
+        <div onclick="Devices.Cart.create()">Создать карточку устройства</div>
         <div onclick="Folder.create()">Создать группу</div>
         <hr />
         <a href="@Url.Action("analyze", "storages")">Анализ расхода картриджей</a>

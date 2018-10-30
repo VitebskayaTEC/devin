@@ -102,7 +102,7 @@ namespace Devin.Controllers
 
                 if (storage.Inventory != Id)
                 {
-                    if (conn.Query("SELECT Inventory FROM Storages WHERE Inventory = @Ncard", new { storage.Inventory }).Count() != 0) return "error:Введенный инвертарный номер не является уникальным";
+                    if (conn.Query("SELECT Inventory FROM Storages WHERE Inventory = @Inventory", new { storage.Inventory }).Count() != 0) return "error:Введенный инвертарный номер не является уникальным";
 
                     // Обновление всех логов по инвертарному, чтобы не потерять их, когда поменяется инвентарный номер позиции
                     conn.Execute("UPDATE Activity SET Id = @Id WHERE Source = 'storages' AND Id = @OldId", new { Id = storage.Inventory, OldId = Id });
@@ -110,7 +110,7 @@ namespace Devin.Controllers
                 }
 
                 // Логирование изменений
-                var _old = conn.Query<Storage>("SELECT * FROM Storages WHERE Ncard = @Id", new { Id }).FirstOrDefault() ?? new Storage();
+                var _old = conn.Query<Storage>("SELECT * FROM Storages WHERE Inventory = @Id", new { Id }).FirstOrDefault() ?? new Storage();
 
                 var changes = new List<string>();
                 if (_old.Inventory != storage.Inventory) changes.Add($"инвентарный номер [{ _old.Inventory} => {storage.Inventory}]");
@@ -176,6 +176,30 @@ namespace Devin.Controllers
                     Text = "Позиция удалена",
                     Username = User.Identity.Name
                 });
+            }
+        }
+
+        public JsonResult Move(string select, int gid)
+        {
+            string[] Storages = select.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+
+            using (var conn = Database.Connection())
+            {
+                foreach (string storage in Storages)
+                {
+                    conn.Execute("UPDATE Storages SET FolderId = @FolderId WHERE Id = @Id", new { FolderId = gid, Id = int.TryParse(storage, out int i) ? i : 0 });
+                }
+
+                string name = conn.Query<string>("SELECT Name FROM Folders WHERE Id = @FolderId", new { FolderId = gid }).FirstOrDefault();
+                if (string.IsNullOrEmpty(name))
+                {
+                    return Json(new { Good = "Выбранные позиции размещены отдельно" });
+                }
+                else
+                {
+                    
+                    return Json(new { Good = "Выбранные позиции перемещены в папку \"" + name + "\"" });
+                }
             }
         }
 

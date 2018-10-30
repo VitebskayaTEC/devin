@@ -31,9 +31,6 @@ function cartBack() {
 	cartOpenBack();
 }
 
-function deviceToRepair() {
-	$('#cart').fadeIn(100).load('/devin/asp/device_to_repair.asp?id=' + id + '&r=' + Math.random()).css({ width: 1000, maxWidth: 1000 });
-}
 
 function cartHistoryRepair() {
 	$('#cart')

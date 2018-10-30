@@ -14,6 +14,8 @@ namespace Devin.Models
         
         public string Name { get; set; }
 
+        public string PublicName { get; set; }
+
         public int ComputerId { get; set; }
 
         public string Description { get; set; }

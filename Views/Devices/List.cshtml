@@ -37,13 +37,13 @@
     var __devices = conn.Query<Device>(sql).AsList();
     var _devices = new List<Device>();
     var _folders = conn.Query<Folder>(@"SELECT 
-	    f.Id,
-	    CASE WHEN p.Id IS NULL THEN 0 ELSE p.Id END AS FolderId,
-	    f.Name
-    FROM Folders f
-	LEFT OUTER JOIN Folders p ON f.FolderId = p.Id
-    WHERE f.Type = 'device'
-    ORDER BY f.Name").AsList();
+	    Folders.Id,
+	    CASE WHEN Parents.Id IS NULL THEN 0 ELSE Parents.Id END AS FolderId,
+	    Folders.Name
+    FROM Folders
+	LEFT OUTER JOIN Folders AS Parents ON Folders.FolderId = Parents.Id
+    WHERE Folders.Type = 'device'
+    ORDER BY Folders.Name").AsList();
 
     if (!string.IsNullOrEmpty(search))
     {

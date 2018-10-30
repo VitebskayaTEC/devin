@@ -231,3 +231,72 @@ GO
 
 --UPDATE Devices SET IsOff = CASE WHEN IsOff = 1 THEN 0 ELSE 1 END;
 --GO
+
+--sp_rename 'catalog_device_types', 'TypesDevices'
+--GO
+
+--sp_rename 'TypesDevices.T_alias', 'Id', 'COLUMN'
+--GO
+
+--sp_rename 'TypesDevices.T_name', 'DeviceText', 'COLUMN'
+--GO
+
+--sp_rename 'TypesDevices.T_storages', 'StorageText', 'COLUMN'
+--GO
+
+--sp_rename 'TypesDevices.T_icon', 'Icon', 'COLUMN'
+--GO
+
+--ALTER TABLE TypesDevices
+--	DROP COLUMN T_ID
+--GO
+
+--sp_rename 'catalog_os', 'TypesSystems'
+--GO
+
+--ALTER TABLE TypesSystems
+--	DROP COLUMN T_ID
+--GO
+
+--sp_rename 'TypesSystems.T_alias', 'Id', 'COLUMN'
+--GO
+
+--sp_rename 'TypesSystems.T_name', 'Name', 'COLUMN'
+--GO
+
+--sp_rename 'catalog_cartridge_types', 'TypesCartridges'
+--GO
+
+--sp_rename 'TypesCartridges.C_alias', 'Id', 'COLUMN'
+--GO
+
+--sp_rename 'TypesCartridges.C_name', 'Name', 'COLUMN'
+--GO
+
+--sp_rename 'TypesCartridges.C_type', 'Type', 'COLUMN'
+--GO
+
+--sp_rename 'catalog_writeoffs', 'TypesWriteoffs'
+--GO
+
+--sp_rename 'TypesWriteoffs.O_Alias', 'Id', 'COLUMN'
+--GO
+
+--sp_rename 'TypesWriteoffs.O_Name', 'Name', 'COLUMN'
+--GO
+
+--sp_rename 'TypesWriteoffs.O_Data', 'Captions', 'COLUMN'
+--GO
+
+--sp_rename 'TypesWriteoffs.O_Count', 'FieldsCount', 'COLUMN'
+--GO
+
+--sp_rename 'TypesWriteoffs.O_Excel', 'Template', 'COLUMN'
+--GO
+
+--sp_rename 'TypesWriteoffs.O_Template', 'DefaultData', 'COLUMN'
+--GO
+
+--ALTER TABLE TypesWriteoffs
+--	DROP COLUMN O_ID
+--GO

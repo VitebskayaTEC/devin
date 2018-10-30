@@ -1,0 +1,54 @@
+﻿@using (var conn = Database.Connection())
+{
+    int Id = int.TryParse(Request.QueryString.Get("Id"), out int i) ? i : 0;
+    int FolderId = int.TryParse(Request.Form.Get("Folder"), out i) ? i : 0;
+    bool OnlyCompared = Request.Form.Get("OnlyCompared") == "true";
+
+    string where = FolderId != -1 ? " AND FolderId = @FolderId " : " ";
+
+    List<Storage> Storages;
+
+    if (OnlyCompared)
+    {
+        Storages = conn.Query<Storage>(@"SELECT Storages.*
+            FROM Devices
+	            LEFT OUTER JOIN PrintersCartridges
+		            LEFT OUTER JOIN Storages ON PrintersCartridges.CartridgeId = Storages.CartridgeId
+	            ON PrintersCartridges.PrinterId = Devices.PrinterId
+            WHERE Devices.Id = @Id AND Storages.Nstorage > 0 AND Storages.IsDeleted = 0" 
+            + where + "ORDER BY Storages.Inventory", new { Id }).AsList();
+    }
+    else
+    {
+        string sql = "SELECT * FROM Storages WHERE Nstorage > 0 AND IsDeleted = 0" + where + "ORDER BY Storages.Inventory";
+
+        Storages = conn.Query<Storage>(sql, new { FolderId }).AsList();
+    }
+
+    if (Storages.Count == 0)
+    {
+        <div>Доступных позиций нет</div>
+    }
+    else
+    {
+        <table class="repairs__table">
+            <tbody>
+                @foreach (var storage in Storages)
+                {
+                    <tr data-inventory="@storage.Inventory">
+                        <td width="88px">
+                            <input class="cart__field" type="number" min="0" max="@storage.Nstorage" onblur="this.value = Math.round(this.value)" />
+                        </td>
+                        <td width="82px">@storage.Inventory</td>
+                        <td>@storage.Name</td>
+                        <td width="100px">@storage.Nstorage</td>
+                        <td width="80px">@storage.Account</td>
+                        <td width="50px">
+                            <input type="checkbox" name="IsVirtual" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}

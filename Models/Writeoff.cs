@@ -11,11 +11,17 @@ namespace Devin.Models
 
         public DateTime Date { get; set; }
 
+        public DateTime LastExcelDate { get; set; }
+
+        public string LastExcel { get; set; }
+
         public string Params { get; set; }
 
         public string Type { get; set; }
 
         public string Name { get; set; }
+
+        public string Description { get; set; }
 
         public string DefExcel { get; set; }
 
@@ -24,6 +30,8 @@ namespace Devin.Models
         public int FolderId { get; set; }
 
         public List<Repair> Repairs { get; set; } = new List<Repair>();
+
+        public string[] Parameters => Params.Split(new string[] { ";;" }, StringSplitOptions.None);
 
         public float AllCost()
         {

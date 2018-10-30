@@ -265,34 +265,35 @@ a.has-icon {
 /* #endregion */
 /* #region Element's cart  */
 
-.cart-new {
-    display: none;
-    position: fixed;
-    top: 44px;
-    right: 15px;
-    background: #eee;
-    border: 1px solid #666;
-    border-radius: 5px;
-    box-shadow: 2px 2px 13px 2px #666;
-    color: #000;
-    font: normal 12pt Segoe UI;
-    cursor: default;
-    min-width: 610px;
-    max-width: 1400px;
-    /* min-height: 500px; */
-}
-
-#cart {
-    max-width: 610px;
-}
-
 .cart {
     position: fixed;
     top: 44px;
     right: 15px;
-    width: 700px;
-    height: 800px;
-    text-align: center;
+    min-width: 650px;
+    max-width: 1200px;
+    background: #eee;
+    color: #000;
+    border: 1px solid #666;
+    border-radius: 5px;
+    box-shadow: 2px 2px 13px 2px #666;
+    font: normal 12pt Segoe UI;
+    cursor: default;
+    opacity: 0;
+    transition: opacity linear .15s;
+}
+
+.cart.cart_visible {
+	opacity: 1;
+    transition: opacity linear .2s;
+}
+
+@keyframes fadeInOpacity {
+	0% { opacity: 0; }
+	100% { opacity: 1; }
+}
+@keyframes fadeOutOpacity {
+	0% { opacity: 1; }
+	100% { opacity: 0; }
 }
 
 .cart>iframe {
@@ -340,6 +341,45 @@ a.has-icon {
 .cart__closeButton:hover {
     background: #fe4848;
     cursor: pointer;
+}
+
+.cart__menu {
+    padding: 5px;
+}
+
+.cart__button {
+    padding: 5px;
+    background: #fff;
+    border: 1px solid #999;
+    cursor: pointer;
+    margin-top: 4px;
+}
+
+.cart__button + .cart__button {
+    margin-left: 5px;
+}
+
+.cart__button:hover {
+    background: #eee;
+}
+
+.cart__field {
+    font: normal 11pt Segoe UI;
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    padding: 3px 4px;
+    margin-top: 4px;
+}
+
+textarea.cart__field {
+    resize: none;
+    height: 70px;
+}
+
+.cart__field_autoWidth {
+    width: inherit;
 }
 
 .cart-table {
@@ -601,11 +641,7 @@ label:hover {
 /* #endregion */
 /* #region Addons */
 
-.messages {
-position: fixed;
-bottom: 0;
-left: 0;
-z-index: 100;
+.messages {    position: fixed;    bottom: 0;    left: 0;    z-index: 100;
 }
 
 .messages__item {
@@ -859,5 +895,33 @@ label:hover {
 
     .cartHistory__date {
         width: 110px;
-        
     }
+
+
+.repairs {
+    width: 1200px;
+    padding: 10px;
+}
+
+.repairs__form {
+}
+
+.repairs__table th {
+    font-size: 12px;
+    font-weight: 500;
+    text-align: left;
+}
+
+.repairs__table td {
+    font-size: 13px;
+}
+
+.repairs__body {
+    height: 600px;
+    overflow-y: auto;
+}
+
+.repair__row_checked {
+    background: #ddd;
+    border-bottom: 1px solid #ccc;
+}

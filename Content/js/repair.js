@@ -22,80 +22,43 @@ function cartOpen(node) {
 	setHash(id);
 }
 
-function cartOpenBack() {
-	$("#cart")
-		.load("/devin/asp/" + (id.indexOf("off") < 0 ? "repair_cart.asp" : "writeoff_cart.asp") + "?id=" + id.replace("off", "") + "&r=" + Math.random())
-		.fadeIn(150);
-	$(".view .selected").removeClass("selected");
-	$("#" + id).addClass("selected");
-}
-
-function cartSave() {
-    $.post(host + (id.indexOf("off") < 0 ? "repairs" : "writeoffs") + "/update/" + id, $("#form").serialize(), function (data) {
-        if (data.Good) {
-            message(data.Good, 'good');
-            $("#cart").load(host + (id.indexOf("off") < 0 ? "repairs" : "writeoffs") + "/cart/" + id.replace("off", ""), function () {
-                document.getElementById("console").innerHTML = data;
-            });
-        }
-        if (data.Error) {
-            message(data.Error);
-        }
-	});
-}
-
 function cartDelete() {
     if (!confirm("Данный объект будет удален. Продолжить?")) return;
 
-	$.get(host + (id.indexOf("off") < 0 ? "repairs" : "writeoffs") + "/delete/" + id, function() {
-		$("#cart").fadeOut(150);
-		if (document.getElementById(id)) {
-			if (id.indexOf("off") < 0) {
-				document.getElementById(id).parentNode.removeChild(document.getElementById(id));
-			} else {
-				$("#" + id).closest(".unit").remove();
-			}
-		}
-	});
-}
-
-function writeoffSetup() {
-	$("#cart").load("/devin/asp/writeoff_setup_cart.asp?r=" + Math.random()).fadeIn(150);
-	$(".view .selected").removeClass("selected");
-	id = "setup";
-	setHash("setup");
+    fetch(host + (id.indexOf('off') < 0 ? 'repairs' : 'writeoffs') + '/delete/' + id, { method: 'POST' })
+        .then(res => res.json())
+        .then(json => {
+            if (json.Good) {
+                message(json.Good, 'good');
+                document.getElementById('cart').classList.remove('show');
+                restore();
+            }
+        });
 }
 
 function writeoffCreate() {
-    $.get("/devin/exes/repair/writeoff_create_cart.asp?r=" + Math.random(), function (data) {
-        if (data.indexOf("error") < 0) {
-            id = data;
-            cartOpenBack();
-        }
-    });
+    fetch(host + 'writeoffs/create', { method: 'POST' })
+        .then(res => res.json())
+        .then(json => {
+            if (json.Good) {
+                message(json.Good, 'good');
+                id = json.Id;
+                restore();
+                cartOpenBack();
+            }
+        });
 }
 
-function writeoffExport() {
-	$.get("/devin/writeoffs/print/" + id.replace("off", "")).done(data => $("#console").html(data));
-}
-
-function onSelectedRepairs() {
-	$.post("/devin/exes/repair/repair_on_all_selected.asp?r=" + Math.random(), selectionToForm("repairs", ";;"), restore);
-}
-
-function offSelectedRepairs() {
-	$.post("/devin/exes/repair/repair_off_all_selected.asp?r=" + Math.random(), selectionToForm("repairs", ";;"), restore);
-}
-
-function moveSelectedRepairs() {
-	$.post("/devin/exes/repair/repair_move_all_selected.asp?r=" + Math.random(), selectionToForm("repairs", ";;") + "&key=" + document.getElementById("moveKey").value, function (data) {
-		removeAllSelection();
-		restore();
-	});
-}
 
 function deleteSelectedRepairs() {
-	$.post("/devin/exes/repair/repair_delete_all_selected.asp?r=" + Math.random(), selectionToForm("repairs", ";;"), restore);
+    fetch(host + 'repairs/deleteSelected', { method: 'POST', body: selectionToForm("repairs", ";;") })
+        .then(res => res.json())
+        .then(json => {
+            if (json.Good) {
+                message(json.Good, 'good');
+                restore();
+            }
+        });
 }
 
 function search(input) {
@@ -108,7 +71,14 @@ function search(input) {
 
 // Составление списка доступных для перемещения в них данного списания групп. Аналогична такой же функции для групп, но другой коллбэк
 function writeoffMove() {
-	$.post("/devin/exes/repair/writeoff_move_group.asp?r=" + Math.random(), "id=" + menuId + "&in=" + $("#modal select:first-child").val(), restore);
+    fetch(host + 'writeoff/move/' + menuId + '?FolderId=' + $("#modal select:first-child").val())
+        .then(res => res.json())
+        .then(json => {
+            if (json.Good) {
+                message(json.Good, 'good');
+                restore();
+            }
+        });
 	$("#modal").fadeOut(100);
 }
 
@@ -117,33 +87,122 @@ function writeoffOpen() {
 	cartOpen(document.getElementById(menuId).querySelector(".title"));
 }
 
-// Экспорт списания в Excel без открытия карточки
+// Удаление всех ремонтов в списании
+function deleteMenuRepairs() {
+    if (!confirm("Все ремонты в выбранном списании будут отменены, использованные позиции будут возвращены на склад. Продолжить?")) return;
+    fetch(host + 'repairs/deleteAll/' + menuId.replace('off', ''), { method: 'POST' })
+        .then(res => res.json())
+        .then(json => {
+            if (json.Good) {
+                message(json.Good, 'good');
+                restore();
+            }
+        });
+}
+
+
+function writeoffDelete() {
+    if (!confirm("Данное списание будет удалено (без удаления вложенных ремонтов). Продолжить?")) return;
+    fetch(host + 'writeoffs/delete/' + id, { method: 'POST' })
+        .then(res => res.json())
+        .then(json => {
+            if (json.Good) {
+                message(json.Good, 'good');
+                restore();
+            }
+        });
+}
+
+function cartOpenBack() {
+    fetch(host + (id.indexOf("off") < 0 ? "repairs" : "writeoffs") + '/cart/' + id.replace('off', ''))
+        .then(res => res.text())
+        .then(text => {
+            let cart = document.getElementById('cart');
+            cart.classList.add('show');
+            cart.innerHTML = text;
+            document.getElementById('view').querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+            document.getElementById(id).classList.add('selected');
+        });
+}
+
+
+function cartSave() {
+
+    let form = new FormData();
+    document.getElementById('form').querySelectorAll('input,select,textarea').forEach(el => form.append(el.name, el.value))
+
+    fetch(host + (id.indexOf("off") < 0 ? "repairs" : "writeoffs") + "/update/" + id, { method: 'POST', body: form })
+    then(res => res.json())
+        .then(json => {
+            if (json.Good) {
+                message(json.Good, 'good');
+                restore();
+                cartOpenBack();
+            }
+            if (json.Warning) message(json.Warning, 'warning');
+            if (json.Error) message(json.Error);
+        });
+}
+
 function writeoffPrint() {
-    $.get("/devin/writeoffs/print/" + menuId.replace("off", "")).done(data => {
+    $.get(host + 'writeoffs/print/' + menuId.replace("off", "")).done(data => {
         document.getElementById("excelExportsLink").innerHTML = data;
         $(".panel:not(#excelExports").fadeOut(100);
         $("#excelExports").fadeIn(100);
     });
 }
 
-// Списывание всех ремонтов в списании
+function writeoffExport() {
+    $.get(host + 'writeoffs/print/' + id.replace("off", "")).done(data => $("#console").html(data));
+}
+
+function moveSelectedRepairs() {
+    $.post(host + 'repairs/move', selectionToForm('repairs', ';;') + '&key=' + document.getElementById('moveKey').value, function (data) {
+        removeAllSelection();
+        restore();
+    });
+}
+
 function offMenuRepairs() {
-	$.post("/devin/exes/repair/repair_off_all.asp?r=" + Math.random(), "id=" + menuId.replace("off", ""), restore);
+    fetch(host + 'repairs/off/' + menuId.replace("off", ""), { method: 'POST' })
+        .then(res => res.json())
+        .then(json => {
+            if (json.Good) {
+                message(json.Good, 'good');
+                restore();
+            }
+        });
 }
 
-// Отмена списывания всех ремонтов в списании
 function onMenuRepairs() {
-	$.post("/devin/exes/repair/repair_on_all.asp?r=" + Math.random(), "id=" + menuId.replace("off", ""), restore);
+    fetch(host + 'repairs/on/' + menuId.replace("off", ""), { method: 'POST' })
+        .then(res => res.json())
+        .then(json => {
+            if (json.Good) {
+                message(json.Good, 'good');
+                restore();
+            }
+        });
 }
 
-// Удаление всех ремонтов в списании
-function deleteMenuRepairs() {
-	if (confirm("Все ремонты в выбранном списании будут отменены, использованные позиции будут возвращены на склад. Продолжить?"))
-	$.post("/devin/exes/repair/repair_delete_all.asp?r=" + Math.random(), "id=" + menuId.replace("off", ""), restore);
+function offSelectedRepairs() {
+    fetch(host + 'repairs/offSelected', { method: 'POST', body: selectionToForm("repairs", ";;") })
+        .then(res => res.json())
+        .then(json => {
+            if (json.Good) {
+                message(json.Good, 'good');
+                restore();
+            }
+        });
 }
 
-// Удаление списания с сохранением ремонтов
-function writeoffDelete() {
-	if (confirm("Данное списание будет удалено (без удаления вложенных ремонтов). Продолжить?"))
-	$.get("/devin/exes/repair/writeoff_delete_cart.asp?id=" + menuId + "&r=" + Math.random(), restore);
+function onSelectedRepairs() {
+    fetch(host + 'repairs/onSelected', { method: 'POST', body: selectionToForm("repairs", ";;") })
+        .then(res => res.json())
+        .then(json => {
+            if (json.Good) {
+                message(json.Good, 'good');
+                restore();
+            }
+        });
 }

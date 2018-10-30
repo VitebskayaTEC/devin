@@ -1,0 +1,61 @@
+﻿@model int
+
+@using (var conn = Database.Connection())
+{
+    var device = conn.Query<Device>(@"SELECT * FROM Devices WHERE Id = @Model", new { Model }).FirstOrDefault();
+    if (device == null)
+    {
+        <div class="error">Нет данных по данному идентификатору</div>
+        return;
+    }
+
+    var folders = conn.Query<Folder>("SELECT Id, Name FROM Folders WHERE Type = 'storage' ORDER BY Name");
+
+    <div class="cart__header">
+        <div>Создание ремонта: @device.Name @device.PublicName</div>
+        <div class="cart__closeButton">
+            <i class="icon ic-clear icon_white icon_no-hover" title="Закрыть карточку" onclick="cartClose()"></i>
+        </div>
+    </div>
+
+    <div class="repairs">
+        <div id="repairForm" class="repairs__form">
+            Тип:
+            <select class="cart__field cart__field_autoWidth" name="Folder">
+                <option value="-1">Все типы</option>
+                <option value="0">Не распределенные</option>
+                @foreach (var folder in folders)
+                {
+                    <option value="@folder.Id">@folder.Name</option>
+                }
+            </select>
+            Только доступные:
+            <select class="cart__field cart__field_autoWidth" name="OnlyCompared">
+                <option value="false">Нет</option>
+                <option value="true">Да</option>
+            </select>
+            <div>
+                <input class="cart__field" placeholder="Поиск по вариантам" />
+            </div>
+        </div>
+        <table class="repairs__table">
+            <thead>
+                <tr>
+                    <th width="88px">Кол-во уст.</th>
+                    <th width="82px">Инв. номер</th>
+                    <th>Наименование</th>
+                    <th width="100px">На складе, шт.</th>
+                    <th width="80px">Счет учета</th>
+                    <th width="50px">Вирт.</th>
+                </tr>
+            </thead>
+        </table>
+        <div id="repairData" class="repairs__body"></div>
+    </div>
+
+    <div class="cart__menu">
+        <button class="cart__button" onclick="Repairs.Device.end()">Подтвердить</button>
+        <button class="cart__button" onclick="Repairs.Device.end(true)">Подтвердить и сгруппировать в списание</button>
+        <button class="cart__button" onclick="Repairs.Device.back()">Отмена</button>
+    </div>
+}

@@ -116,19 +116,13 @@
 
                 
             </table>
-            <table class="cart-menu">
-                <tr>
-                    <td onclick="Repairs.Cart.update('@repair.Id')">Сохранить</td>
-                    <td onclick="Repairs.Cart.del('@repair.Id')">Удалить</td>
-                </tr>
-            </table>
+            <div class="cart__menu">
+                <button class="cart__button" onclick="Repairs.Cart.update('@repair.Id')">Сохранить</button>
+                <button class="cart__button" onclick="Repairs.Cart.del('@repair.Id')">Удалить</button>
+            </div>
         </div>
         <div class="tabsContainer__item" data-tab="device" data-tab-lazy="@Url.Action("device", "repairs", new { Id = repair.DeviceId })"></div>
         <div class="tabsContainer__item" data-tab="storage" data-tab-lazy="@Url.Action("storage", "repairs", new { Id = repair.StorageInventory })"></div>
-        <div class="tabsContainer__item" data-tab="logs" data-tab-lazy="@Url.Action("history", "repairs", new { Id = repair.Id })"></div>
+        <div class="tabsContainer__item" data-tab="history" data-tab-lazy="@Url.Action("history", "repairs", new { Id = repair.Id })"></div>
     </div>
 }
-
-<script>
-    $('#cart v_select').select2({ width: '100%' });
-</script>

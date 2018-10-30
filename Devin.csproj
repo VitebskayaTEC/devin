@@ -149,10 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="asp\device_to_repair.asp" />
-    <Content Include="asp\repair_cart.asp" />
     <Content Include="asp\storage_all_repairs.asp" />
-    <Content Include="asp\writeoff_cart.asp" />
-    <Content Include="asp\writeoff_setup_cart.asp" />
     <Content Include="Content\css\table.css" />
     <Content Include="Content\excels\TextFile1.txt" />
     <Content Include="Content\img\devin_icons_white.png" />
@@ -191,22 +188,6 @@
     <Content Include="core\upload.asp" />
     <Content Include="exes\device\device_create_repair.asp" />
     <Content Include="exes\device\device_repair_data.asp" />
-    <Content Include="exes\repair\repair_delete_all.asp" />
-    <Content Include="exes\repair\repair_delete_all_selected.asp" />
-    <Content Include="exes\repair\repair_delete_cart.asp" />
-    <Content Include="exes\repair\repair_move_all_selected.asp" />
-    <Content Include="exes\repair\repair_move_all_selected_group.asp" />
-    <Content Include="exes\repair\repair_move_selected.asp" />
-    <Content Include="exes\repair\repair_off_all.asp" />
-    <Content Include="exes\repair\repair_off_all_selected.asp" />
-    <Content Include="exes\repair\repair_on_all.asp" />
-    <Content Include="exes\repair\repair_on_all_selected.asp" />
-    <Content Include="exes\repair\repair_save_cart.asp" />
-    <Content Include="exes\repair\writeoff_create_cart.asp" />
-    <Content Include="exes\repair\writeoff_delete_cart.asp" />
-    <Content Include="exes\repair\writeoff_move_group.asp" />
-    <Content Include="exes\repair\writeoff_save_cart.asp" />
-    <Content Include="exes\storage\storages_to_group.asp" />
     <Content Include="exes\storage\storage_create_repairs.asp" />
     <Content Include="Global.asax" />
     <Content Include="Migration.sql" />
@@ -277,6 +258,9 @@
     <Content Include="Views\Repairs\Cart.cshtml" />
     <Content Include="Views\Repairs\Device.cshtml" />
     <Content Include="Views\Repairs\Storage.cshtml" />
+    <Content Include="Views\Writeoffs\Cart.cshtml" />
+    <Content Include="Views\Repairs\CreateFromDevice.cshtml" />
+    <Content Include="Views\Repairs\CreateFromDeviceData.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
