@@ -363,6 +363,7 @@ function selectionToForm(name, separate) {
 	return text;
 }
 
+
 function closeExportsPanel() {
 	$('#excelExports').slideUp(100);
 	document.getElementById("excelExportsLink").innerHTML = "";
@@ -641,10 +642,26 @@ var Devices = {
     }
 };
 
-
 var Repairs = {
 
     Device: {
+
+        interval: 0,
+        searchQuery: '',
+
+        search(s) {
+            document.getElementById('repairsData').querySelectorAll('.repairs__row').forEach(el => {
+                if (s === '') {
+                    el.classList.remove('repairs__row_hided');
+                }
+                else {
+                    let text = '';
+                    el.querySelectorAll('td').forEach(cell => text += cell.innerHTML.toLowerCase());
+                    if (text.indexOf(s) > -1) el.classList.remove('repairs__row_hided');
+                    else el.classList.add('repairs__row_hided');
+                }
+            });
+        },
 
         create() {
             fetch(host + 'repairs/createFromDevice/' + id)
@@ -653,10 +670,18 @@ var Repairs = {
                     let cart = document.getElementById('cart');
                     cart.innerHTML = text;
                     cart.classList.add('cart_visible');
-                    Repairs.Device.load();
+                    this.load();
 
-                    document.getElementById('repairForm').addEventListener('change', Repairs.Device.load);
-                    document.getElementById('repairData').addEventListener('change', e => {
+                    this.interval = setInterval(() => {
+                        let s = document.getElementById('repairsSearch').value.toLowerCase();
+                        if (s !== this.searchQuery) {
+                            this.searchQuery = s;
+                            this.search(s);
+                        }
+                    }, 50);
+
+                    document.getElementById('repairsForm').addEventListener('change', this.load);
+                    document.getElementById('repairsData').addEventListener('change', e => {
                         let input = e.target;
                         if (input.type === 'checkbox') {
                             let number = input.parentNode.parentNode.querySelector('input[type="number"]');
@@ -671,10 +696,10 @@ var Repairs = {
                         }
                         else if (input.type === 'number') {
                             if (input.value > 0) {
-                                input.parentNode.parentNode.classList.add('repair__row_checked');
+                                input.parentNode.parentNode.classList.add('repairs__row_checked');
                             }
                             else {
-                                input.parentNode.parentNode.classList.remove('repair__row_checked');
+                                input.parentNode.parentNode.classList.remove('repairs__row_checked');
                             }
                         }
                     });
@@ -684,40 +709,258 @@ var Repairs = {
         load() {
             let form = new FormData();
             form.append('Id', id);
-            document.getElementById('repairForm').querySelectorAll('input,select,textarea').forEach(el => form.append(el.name, el.value));
+            document.getElementById('repairsForm').querySelectorAll('input,select,textarea').forEach(el => form.append(el.name, el.value));
             fetch(host + 'repairs/createFromDeviceData', { method: 'POST', body: form })
                 .then(res => res.text())
-                .then(text => document.getElementById('repairData').innerHTML = text);
+                .then(text => {
+                    document.getElementById('repairsData').innerHTML = text;
+                    setTimeout(() => this.search(this.searchQuery), 100);
+                });
         },
 
         end(withWriteoff) {
 
             let form = new FormData();
-            document.getElementById('repairData').querySelectorAll('.repair__row_checked').forEach(el => {
-                let inventory = el.getAttribute('data-inventory');
+            form.append('Id', id);
+            document.getElementById('repairsData').querySelectorAll('.repairs__row_checked').forEach(el => {
+                let inventory = el.getAttribute('data-id');
                 let number = el.querySelector('input[type="number"]').value;
-                let virtual = el.querySelector('input[type="checkbox"]').checked ? "true" : "false";
-                form.append(inventory, number + ":" + virtual);
+                let virtual = el.querySelector('input[type="checkbox"]').checked;
+                form.append('Repairs[]', inventory + ':' + number + ':' + virtual);
             });
 
             if (withWriteoff) {
-                form.append('writeoff', prompt('Введите наименование нового списания', 'Списание: ' + (new Date).toLocaleString()));
+                form.append('Writeoff', prompt('Введите наименование нового списания', 'Списание: ' + (new Date).toLocaleString()));
             }
 
             fetch(host + 'repairs/endCreateFromDevice', { method: 'POST', body: form })
                 .then(res => res.json())
                 .then(json => {
-                    if (json.Good) message(json.Good, 'good');
                     if (json.Error) message(json.Error);
                     if (json.Warning) message(json.Warning, 'warning');
+                    if (json.Good) {
+                        message(json.Good, 'good');
+                        if (json.WriteoffId !== 0) {
+                            message('<a href="' + host + 'repairs/##' + json.WriteoffId + '">Перейти к созданному списанию</a>', 'good');
+                        }
+                        this.load();
+                    }
                 });
         },
 
         back() {
+            clearInterval(this.interval);
             cartOpenBack();
         }
     },
-}
+
+    Cart: {
+
+        update(Id) {
+            let form = new FormData();
+            document.getElementById('form').querySelectorAll('input,select,textarea').forEach(el => form.append(el.name, el.value))
+
+            fetch(host + 'repairs/update/' + Id, { method: 'POST', body: form })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.Good) {
+                        message(json.Good, 'good');
+                        restore();
+                        cartOpenBack();
+                    }
+                    if (json.Warning) message(json.Warning, 'warning');
+                    if (json.Error) message(json.Error);
+                });
+        },
+
+        del(Id) {
+            if (!confirm("Данный объект будет удален. Продолжить?")) return;
+
+            fetch(host + 'repairs/delete/' + Id, { method: 'POST' })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.Good) {
+                        message(json.Good, 'good');
+                        cartClose()
+                        restore();
+                    }
+                });
+        },
+    },
+
+    off() {
+        fetch(host + 'repairs/off/' + menuId.replace("off", ""), { method: 'POST' })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    restore();
+                }
+            });
+    },
+
+    on() {
+        fetch(host + 'repairs/on/' + menuId.replace("off", ""), { method: 'POST' })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    restore();
+                }
+            });
+    },
+
+    clear() {
+        if (!confirm("Все ремонты в выбранном списании будут отменены, использованные позиции будут возвращены на склад. Продолжить?")) return;
+        fetch(host + 'repairs/deleteAll/' + menuId.replace('off', ''), { method: 'POST' })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Error) message(json.Error);
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    restore();
+                }
+            });
+    },
+
+    move() {
+        let form = new FormData();
+        form.append('Key', document.getElementById('moveKey').value);
+        form.append('Repairs', selected.join(';;'));
+        fetch(host + 'repairs/move', { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Error) message(json.Error);
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    removeAllSelection();
+                    restore();
+                }
+            });
+    },
+
+    offSelected() {
+        let form = new FormData();
+        form.append('Repairs', selected.join(';;'));
+        fetch(host + 'repairs/offSelected', { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Error) message(json.Error);
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    removeAllSelection();
+                    restore();
+                }
+            });
+    },
+
+    onSelected() {
+        let form = new FormData();
+        form.append('Repairs', selected.join(';;'));
+        fetch(host + 'repairs/onSelected', { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Error) message(json.Error);
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    removeAllSelection();
+                    restore();
+                }
+            });
+    },
+
+    delSelected() {
+        let form = new FormData();
+        form.append('Repairs', selected.join(';;'));
+        fetch(host + 'repairs/deleteSelected', { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Error) message(json.Error);
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    restore();
+                }
+            });
+    }
+};
+
+var Writeoffs = {
+
+    cart() {
+        document.location.hash = '##' + menuId;
+    },
+
+    create() {
+        fetch(host + 'writeoffs/create', { method: 'POST' })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    id = json.Id;
+                    restore();
+                    cartOpenBack();
+                }
+            });
+    },
+
+    update(Id) {
+        let form = new FormData();
+        document.getElementById('form').querySelectorAll('input,select,textarea').forEach(el => form.append(el.name, el.value))
+
+        fetch(host + 'writeoffs/update/' + Id, { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    restore();
+                    cartOpenBack();
+                }
+                if (json.Warning) message(json.Warning, 'warning');
+                if (json.Error) message(json.Error);
+            });
+    },
+
+    export(Id) {
+        fetch(host + 'writeoffs/print/' + (Id || menuId.replace("off", "")))
+            .then(res => res.json())
+            .then(json => {
+                if (json.Error) message(json.Error);
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    let a = document.createElement('a');
+                    document.body.appendChild(a);
+                    a.href = json.Link;
+                    a.click();
+                }
+            });
+    },
+
+    del(Id) {
+        if (!confirm("Данный объект будет удален. Продолжить?")) return;
+
+        fetch(host + 'writeoffs/delete/' + (Id || menuId.replace('off', '')), { method: 'POST' })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    cartClose()
+                    restore();
+                }
+            });
+    },
+
+    move() {
+        fetch(host + 'writeoff/move/' + menuId + '?FolderId=' + $("#modal select:first-child").val())
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    restore();
+                }
+            });
+        $("#modal").fadeOut(100);
+    }
+};
 
 document.querySelector('.messages').addEventListener('click', e => {
     console.log(e.target);

@@ -1,17 +1,18 @@
 ﻿@model int
-
 @using (var conn = Database.Connection())
 {
     var computer = conn.Query<AidaComputer>("SELECT * FROM Report WHERE ID = @Model", new { Model }).FirstOrDefault();
 
-    <div class="cart-header">@computer.RHost</div>
+    <div class="cart__header">
+        <div>@computer.RHost</div>
+        <div class="cart__closeButton" title="Закрыть карточку" onclick="cartClose()">
+            <i class="icon ic-clear icon_white icon_no-hover"></i>
+        </div>
+    </div>
 
-    @Html.Action("Data", "Aida", new { Id = computer.RHost });;
+    @Html.Action("Data", "Aida", new { Id = computer.RHost }); ;
 }
-
-<table class="cart-menu">
-    <tr>
-        <td onclick="reportDelete()">Удалить из базы</td>
-        <td onclick="cartClose()">Закрыть</td>
-    </tr>
-</table>
+<div class="cart__menu">
+    <button class="cart__button" onclick="reportDelete()">Удалить из базы</button>
+    <button class="cart__button" onclick="cartClose()">Закрыть</button>
+</div>

@@ -148,7 +148,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="asp\device_to_repair.asp" />
     <Content Include="asp\storage_all_repairs.asp" />
     <Content Include="Content\css\table.css" />
     <Content Include="Content\excels\TextFile1.txt" />
@@ -165,7 +164,6 @@
     <Content Include="Content\img\white_carbonfiber.png" />
     <Content Include="Content\js\core.js" />
     <Content Include="Content\js\device.js" />
-    <Content Include="Content\js\repair.js" />
     <Content Include="Content\js\storage.js" />
     <Content Include="Content\lib\images\ui-bg_glass_40_ffc73d_1x400.png" />
     <Content Include="Content\lib\images\ui-icons_222222_256x240.png" />
@@ -186,8 +184,6 @@
     <Content Include="Content\lib\select2.min.js" />
     <Content Include="core\core.inc" />
     <Content Include="core\upload.asp" />
-    <Content Include="exes\device\device_create_repair.asp" />
-    <Content Include="exes\device\device_repair_data.asp" />
     <Content Include="exes\storage\storage_create_repairs.asp" />
     <Content Include="Global.asax" />
     <Content Include="Migration.sql" />
@@ -261,6 +257,8 @@
     <Content Include="Views\Writeoffs\Cart.cshtml" />
     <Content Include="Views\Repairs\CreateFromDevice.cshtml" />
     <Content Include="Views\Repairs\CreateFromDeviceData.cshtml" />
+    <Content Include="Views\Repairs\History.cshtml" />
+    <Content Include="Views\Storages\History.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

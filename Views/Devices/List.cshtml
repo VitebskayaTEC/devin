@@ -218,7 +218,7 @@
         </table>
         <div class="items_block @(open == "open" ? "" : "hide")">
             <div class="title-wrapper" id="@computer.Id">
-                <div class="title">Компьютер @computer.Name - открыть карточку</div>
+                <a class="view__link title" href="##@(computer.Id)">Компьютер @computer.Name - открыть карточку</a>
             </div>
             @RenderDevices(computer.Devices)
         </div>
@@ -235,11 +235,11 @@
             {
                 <tr id="@device.Id" class="item">
                     <td><input type="checkbox" class="selecter" /></td>
-                    <td><div class="led @(device.IsOff ? "off" : "on")"></div></td>
-                    <td>@device.Name</td>
-                    <td>@device.Inventory</td>
-                    <td>@device.Mol</td>
-                    <td>@device.Description</td>
+                    <td><a class="view__link" href="##@(device.Id)"><div class="led @(device.IsOff ? "off" : "on")"></div></a></td>
+                    <td><a class="view__link" href="##@(device.Id)">@device.Name</a></td>
+                    <td><a class="view__link" href="##@(device.Id)">@device.Inventory</a></td>
+                    <td><a class="view__link" href="##@(device.Id)">@device.Mol</a></td>
+                    <td><a class="view__link" href="##@(device.Id)">@device.Description</a></td>
                 </tr>
             }
         </tbody>

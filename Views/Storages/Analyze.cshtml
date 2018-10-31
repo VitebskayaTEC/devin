@@ -149,11 +149,11 @@
         Storages.Cost        AS Price,
         Storages.Account     AS Account
     FROM Repairs
-        INNER JOIN Devices              ON Repairs.DeviceId         = Devices.Id
-        INNER JOIN Devices AS Computers ON Devices.ComputerId       = Computers.Id
-        INNER JOIN Storages             ON Repairs.StorageInventory = Storages.Inventory
-        INNER JOIN Printers             ON Devices.PrinterId        = Printers.Id
-        INNER JOIN Cartridges           ON Storages.CartridgeId     = Cartridges.Id
+        INNER JOIN Devices              ON Repairs.DeviceId     = Devices.Id
+        INNER JOIN Devices AS Computers ON Devices.ComputerId   = Computers.Id
+        INNER JOIN Storages             ON Repairs.StorageId    = Storages.Id
+        INNER JOIN Printers             ON Devices.PrinterId    = Printers.Id
+        INNER JOIN Cartridges           ON Storages.CartridgeId = Cartridges.Id
     WHERE Devices.Type = 'PRN' AND Repairs.IsVirtual = 0
     ORDER BY ID_P, ID_C, Date";
 

@@ -34,12 +34,13 @@
         Devices.Id                       AS Repairs_Device_Id,
         Devices.Name                     AS Repairs_Device_Name,
         Devices.Description              AS Repairs_Device_Description,
+        Storages.Id                      AS Repairs_Storage_Id,
         Storages.Inventory               AS Repairs_Storage_Inventory,
         Storages.Name                    AS Repairs_Storage_Name
     FROM Writeoffs
-    LEFT OUTER JOIN Repairs  ON Writeoffs.Id             = Repairs.WriteoffId
-    LEFT OUTER JOIN Devices  ON Repairs.DeviceId         = Devices.Id
-    LEFT OUTER JOIN Storages ON Repairs.StorageInventory = Storages.Inventory
+    LEFT OUTER JOIN Repairs  ON Writeoffs.Id      = Repairs.WriteoffId
+    LEFT OUTER JOIN Devices  ON Repairs.DeviceId  = Devices.Id
+    LEFT OUTER JOIN Storages ON Repairs.StorageId = Storages.Id
     WHERE Year(Writeoffs.Date) = Year(GetDate()) AND Repairs.IsOff = 1
     ORDER BY [Date], Id, Repairs_Date, Repairs_Device_Id"));
 

@@ -19,7 +19,7 @@
     </div>
 
     <div class="repairs">
-        <div id="repairForm" class="repairs__form">
+        <div id="repairsForm" class="repairs__form">
             Тип:
             <select class="cart__field cart__field_autoWidth" name="Folder">
                 <option value="-1">Все типы</option>
@@ -35,13 +35,13 @@
                 <option value="true">Да</option>
             </select>
             <div>
-                <input class="cart__field" placeholder="Поиск по вариантам" />
+                <input class="cart__field" id="repairsSearch" placeholder="Поиск по вариантам" />
             </div>
         </div>
         <table class="repairs__table">
             <thead>
                 <tr>
-                    <th width="88px">Кол-во уст.</th>
+                    <th width="80px">Кол-во уст.</th>
                     <th width="82px">Инв. номер</th>
                     <th>Наименование</th>
                     <th width="100px">На складе, шт.</th>
@@ -50,7 +50,7 @@
                 </tr>
             </thead>
         </table>
-        <div id="repairData" class="repairs__body"></div>
+        <div id="repairsData" class="repairs__body"></div>
     </div>
 
     <div class="cart__menu">

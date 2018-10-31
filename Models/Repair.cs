@@ -7,10 +7,9 @@ namespace Devin.Models
         [Slapper.AutoMapper.Id]
         public int Id { get; set; }
 
-
         public int DeviceId { get; set; }
 
-        public int StorageInventory { get; set; }
+        public int StorageId { get; set; }
 
         public int Number { get; set; }
 
@@ -26,18 +25,7 @@ namespace Devin.Models
 
         public int FolderId { get; set; }
 
-
-        public string DeviceInventory { get; set; }
-
-
-        public string StorageName { get; set; }
-
         public float StoragePrice { get; set; }
-
-        public string StorageList { get; set; }
-
-        public int StorageCount { get; set; }
-
 
         public Device Device { get; set; }
 

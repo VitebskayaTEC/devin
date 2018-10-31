@@ -32,11 +32,7 @@
 
         $('.view')
             .on('mousedown', '.unit:not(#solo) .caption th,.unit:not(#solo) .caption td:not(:first-child)', function () { toggle(this) })
-            .on('mousedown', '.items tbody td:not(:first-child), .title', function () { cartOpen(this); })
-            .on('mousedown', '.main th', function () { sort(this) })
             .on('mousedown', '.items th', function () { _sort(this) })
-        $('#cart')
-            .on('submit', 'form', function () { event.preventDefault() })
 
 
         function cartOpenBack() {
@@ -107,7 +103,6 @@
     <ul class="context-menu" id="computer">
         <li onclick="computerOpen()">Открыть карточку</li>
         <li onclick="Device.PrintReportCart()">Карточка учета техники</li>
-        <li onclick="computerAida()">Отчет из AIDA</li>
         <li onclick="Folder.beforeMove()">Переместить</li>
         <li onclick="computerDelete()">Удалить</li>
     </ul>

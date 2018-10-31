@@ -9,7 +9,7 @@
         return;
     }
 
-    var storages = conn.Query<Storage>(@"SELECT Inventory, Name, Nstorage
+    var storages = conn.Query<Storage>(@"SELECT Id, Inventory, Name, Nstorage
         FROM Storages
         WHERE CartridgeId = @Model AND IsDeleted = 0 AND Nstorage > 0 
         ORDER BY Inventory, Name", new { Model });
@@ -135,7 +135,7 @@
             @foreach (var storage in storages)
             {
                 <div>
-                    <a href="~/storages/##@(storage.Inventory)"><b>@storage.Inventory</b> @storage.Name</a> @storage.Nstorage шт.
+                    <a href="~/storages/##@(storage.Id)"><b>@storage.Inventory</b> @storage.Name</a> @storage.Nstorage шт.
                 </div>
             }
         </div>

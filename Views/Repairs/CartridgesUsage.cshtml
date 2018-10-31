@@ -37,7 +37,7 @@
     FROM Repairs
     LEFT OUTER JOIN Storages
 		LEFT OUTER JOIN Cartridges ON Cartridges.Id = Storages.CartridgeId
-    ON Storages.Inventory = Repairs.StorageInventory
+    ON Storages.Id = Repairs.StorageId
     WHERE Storages.Type = 'PRN' AND Year(Repairs.Date) = @Year
     ORDER BY Cartridges.Name", new { date.Year }));
 

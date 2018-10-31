@@ -15,7 +15,6 @@
             <thead>
                 <tr>
                     <th width="120px">Дата</th>
-                    @*<th>Пользователь</th>*@
                     <th width="140px">Событие</th>
                     <th>Описание</th>
                 </tr>
@@ -25,7 +24,6 @@
                 {
                     <tr>
                         <td>@log.Date.ToString("dd.MM.yyyy HH:mm")</td>
-                        @*<td>@log.Username</td>*@
                         <td>@log.Id</td>
                         <td>@log.Text.Replace(",", ", ")</td>
                     </tr>

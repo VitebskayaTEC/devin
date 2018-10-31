@@ -12,8 +12,8 @@
 
     <div class="cart__header">
         <div>Ремонт #@repair.Id</div>
-        <div class="cart__closeButton">
-            <i class="icon ic-clear icon_white icon_no-hover" title="Закрыть карточку" onclick="cartClose()"></i>
+        <div class="cart__closeButton" title="Закрыть карточку" onclick="cartClose()">
+            <i class="icon ic-clear icon_white icon_no-hover"></i>
         </div>
     </div>
 
@@ -46,12 +46,12 @@
                 <tr>
                     <td>Позиция со склада</td>
                     <td>
-                        <select name="@nameof(repair.DeviceId)" v_select>
+                        <select name="@nameof(repair.StorageId)" v_select>
                             @{ 
-                                var storages = conn.Query<Storage>("SELECT Inventory, Name FROM Storages ORDER BY Inventory");
+                                var storages = conn.Query<Storage>("SELECT Id, Name FROM Storages ORDER BY Inventory");
                                 foreach (var storage in storages)
                                 {
-                                    <option value="@storage.Inventory" @(storage.Inventory == repair.StorageInventory ? "selected" : "")>@storage.Name</option>
+                                    <option value="@storage.Id" @(storage.Id == repair.StorageId ? "selected" : "")>@storage.Name</option>
                                 }
                             }
                         </select>
@@ -60,7 +60,7 @@
 
                 <tr>
                     <td>Кол-во единиц исп.</td>
-                    <td><input name="@nameof(repair.Number)" value="@repair.Number" /></td>
+                    <td><input name="@nameof(repair.Number)" value="@repair.Number" type="number" min="0" onblur="this.value = Math.round(this.value)"/></td>
                 </tr>
 
                 <tr>
@@ -70,15 +70,15 @@
 
                 <tr>
                     <td>Дата проведения</td>
-                    <td><input name="@nameof(repair.Date)" value="@repair.Date.ToString("dd.MM.yyyy HH:mm")" /></td>
+                    <td><input name="@nameof(repair.Date)" value="@repair.Date.ToString("dd.MM.yyyy HH:mm:ss")" /></td>
                 </tr>
 
                 <tr>
                     <td>Списан</td>
                     <td>
                         <select name="@nameof(repair.IsOff)">
-                            <option value="0">Нет</option>
-                            <option value="1" @(repair.IsOff ? "selected" : "")>Да</option>
+                            <option value="false">Нет</option>
+                            <option value="true" @(repair.IsOff ? "selected" : "")>Да</option>
                         </select>
                     </td>
                 </tr>
@@ -87,8 +87,8 @@
                     <td>Виртуальный</td>
                     <td>
                         <select name="@nameof(repair.IsVirtual)">
-                            <option value="0">Нет</option>
-                            <option value="1" @(repair.IsVirtual ? "selected" : "")>Да</option>
+                            <option value="false">Нет</option>
+                            <option value="true" @(repair.IsVirtual ? "selected" : "")>Да</option>
                         </select>
                     </td>
                 </tr>
@@ -99,30 +99,29 @@
                         <select name="Destination">
                             <option value="0">Не распределен</option>
                             @{
-                                var writeoffs = conn.Query<Writeoff>("SELECT Id, Name FROM Writeoffs ORDER BY Name");
+                                var writeoffs = conn.Query<Writeoff>("SELECT Id, Name FROM Writeoffs ORDER BY Date DESC");
                                 foreach (var writeoff in writeoffs)
                                 {
-                                    <option value="@writeoff.Id" @(writeoff.Id == repair.WriteoffId ? "selected" : "")>@writeoff.Name</option>
+                                    <option value="off@(writeoff.Id)" @(writeoff.Id == repair.WriteoffId ? "selected" : "")>[списание] @writeoff.Name</option>
                                 }
                                 var folders = conn.Query<Folder>("SELECT Id, Name FROM Folders WHERE Type = 'repair' ORDER BY Name");
                                 foreach (var folder in folders)
                                 {
-                                    <option value="@folder.Id" @(folder.Id == repair.FolderId ? "selected" : "")>@folder.Name</option>
+                                    <option value="folder@(folder.Id)" @(folder.Id == repair.FolderId ? "selected" : "")>[папка] @folder.Name</option>
                                 }
                             }
                         </select>
                     </td>
                 </tr>
 
-                
             </table>
             <div class="cart__menu">
-                <button class="cart__button" onclick="Repairs.Cart.update('@repair.Id')">Сохранить</button>
-                <button class="cart__button" onclick="Repairs.Cart.del('@repair.Id')">Удалить</button>
+                <button class="cart__button" onclick="Repairs.Cart.update(@repair.Id)">Сохранить</button>
+                <button class="cart__button" onclick="Repairs.Cart.del(@repair.Id)">Удалить</button>
             </div>
         </div>
         <div class="tabsContainer__item" data-tab="device" data-tab-lazy="@Url.Action("device", "repairs", new { Id = repair.DeviceId })"></div>
-        <div class="tabsContainer__item" data-tab="storage" data-tab-lazy="@Url.Action("storage", "repairs", new { Id = repair.StorageInventory })"></div>
+        <div class="tabsContainer__item" data-tab="storage" data-tab-lazy="@Url.Action("storage", "repairs", new { Id = repair.StorageId })"></div>
         <div class="tabsContainer__item" data-tab="history" data-tab-lazy="@Url.Action("history", "repairs", new { Id = repair.Id })"></div>
     </div>
 }

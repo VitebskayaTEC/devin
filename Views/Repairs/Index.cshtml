@@ -21,10 +21,42 @@
 
 @section scripts {
     <script src="~/content/lib/jquery-1.12.4.min.js"></script>
-    <script src="~/content/lib/jquery-ui.min.js"></script>
-    <script src="~/content/lib/select2.min.js"></script>
     <script src="~/content/js/core.js"></script>
-    <script src="~/content/js/repair.js"></script>
+    <script>
+        function cartOpenBack() {
+            fetch(host + (id.indexOf("off") < 0 ? "repairs" : "writeoffs") + '/cart/' + id.replace('off', ''))
+                .then(res => res.text())
+                .then(text => {
+                    let cart = document.getElementById('cart');
+                    cart.classList.add('cart_visible');
+                    cart.innerHTML = text;
+                    document.getElementById('view').querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+                    document.getElementById(id).classList.add('selected');
+                });
+        }
+
+        $(".view")
+            .on("mousedown", ".unit:not(#solo) .caption th,.unit:not(#solo) .caption td:not(:first-child)", function () { toggle(this) })
+            .on("mousedown", ".items thead th", function () { _sort(this) });
+
+        function toggle(node) {
+            var $unit = $(node).closest('.unit');
+            var id = $unit.attr("id") ? $unit.attr("id") : $unit.find(".title-wrapper:first-child").attr("id");
+            if ($unit.hasClass("open")) {
+                $unit.children(".items_block").slideToggle(150, function () { $unit.removeClass("open"); });
+                setCookie(id, "close", { expires: 9999999999 });
+            } else {
+                $unit.addClass("open").children(".items_block").slideToggle(150);
+                setCookie(id, "open", { expires: 9999999999 });
+            }
+        }
+
+        function cartOpen(node) {
+            id = node.parentNode.id;
+            cartOpenBack();
+            setHash(id);
+        }
+    </script>
 }
 
 @section html {
@@ -32,34 +64,29 @@
         <div>Выбрано элементов: <b></b></div>
         <div>
             <div id="move_select">
-                <select id="moveKey">
-                @using (var conn = Database.Connection())
-                {
-                    var folders = conn.Query("SELECT Id, Name FROM Folders WHERE Type = 'repair' ORDER BY Name");
-                    foreach (var item in folders)
+                <select id="moveKey" class="cart__field cart__field_autoWidth">
+                    <option value="0">Не распределенные</option>
+                    @using (var conn = Database.Connection())
                     {
-                        <option value="@item.G_Id">[папка] @item.G_Title</option>
+                        var writeoffs = conn.Query<Writeoff>("SELECT Id, Name FROM Writeoffs ORDER BY Date DESC");
+                        foreach (var item in writeoffs)
+                        {
+                            <option value="@item.Id">[списание] @item.Name</option>
+                        }
+                        var folders = conn.Query<Folder>("SELECT Id, Name FROM Folders WHERE Type = 'repair' ORDER BY Name");
+                        foreach (var item in folders)
+                        {
+                            <option value="@item.Id">[папка] @item.Name</option>
+                        }
                     }
-
-                    var writeoffs = conn.Query("SELECT Id, Name FROM Writeoffs ORDER BY Name");
-                    foreach (var item in writeoffs)
-                    {
-                        <option value="@item.W_Id">[списание] @item.W_Name</option>
-                    }
-                }
                 </select>
             </div>
-            <a onclick="moveSelectedRepairs()">Переместить</a>
+            <a onclick="Repairs.move()">Переместить</a>
         </div>
-        <div><a onclick="offSelectedRepairs()">Отметить все ремонты как списанные</a></div>
-        <div><a onclick="onSelectedRepairs()">Отметить все ремонты как активные</a></div>
-        <div><a onclick="deleteSelectedRepairs()">Отменить все ремонты</a></div>
+        <div><a onclick="Repairs.offSelected()">Отметить все ремонты как списанные</a></div>
+        <div><a onclick="Repairs.onSelected()">Отметить все ремонты как активные</a></div>
+        <div><a onclick="Repairs.delSelected()">Отменить все ремонты</a></div>
         <div><a onclick="removeAllSelection()">Сбросить выбор</a></div>
-    </div>
-
-    <div id="excelExports" class="panel" onclick="closeExportsPanel()">
-        <div id="excelExportsLink"></div>
-        <div><a>Закрыть</a></div>
     </div>
 
     <div class="context-menu" id="main">
@@ -67,18 +94,17 @@
         <a href="~/repairs/yearReport">Годовой отчет по ремонтам</a>
         <a href="~/repairs/cartridgesUsage">Годовой отчет по картриджам</a>
         <div onclick="Folder.create()">Создать группу</div>
-        <div onclick="writeoffCreate()">Создать списание</div>
-        <div onclick="writeoffSetup()">Шаблоны списаний</div>
+        <div onclick="Writeoffs.create()">Создать списание</div>
     </div>
 
     <ul class="context-menu" id="writeoff">
-        <li onclick="writeoffOpen()">Открыть карточку</li>
-        <li onclick="writeoffPrint()">Печать</li>
-        <li onclick="groupBeforeMove()">Переместить</li>
-        <li onclick="offMenuRepairs()">Отметить все ремонты как списаные</li>
-        <li onclick="onMenuRepairs()">Отметить все ремонты как активные</li>
-        <li onclick="deleteMenuRepairs()">Отменить все ремонты</li>
-        <li onclick="writeoffDelete()">Удалить списание</li>
+        <li onclick="Writeoffs.cart()">Открыть карточку</li>
+        <li onclick="Writeoffs.export()">Печать</li>
+        <li onclick="Folder.beforeMove()">Переместить</li>
+        <li onclick="Repairs.off()">Отметить все ремонты как списаные</li>
+        <li onclick="Repairs.on()">Отметить все ремонты как активные</li>
+        <li onclick="Repairs.clear()">Отменить все ремонты</li>
+        <li onclick="Writeoffs.del()">Удалить списание</li>
     </ul>
 
     <ul class="context-menu" id="group">

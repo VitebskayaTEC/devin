@@ -27,7 +27,9 @@ namespace Devin.Controllers
 
         public ActionResult CreateFromDeviceData(int Id) => View(model: Id);
 
-        public JsonResult Update(int Id, [Bind(Include = "DeviceId,StorageInventory,Number,IsOff,IsVirtual")] Repair repair)
+        public ActionResult History(int Id) => View(model: Id);
+
+        public JsonResult Update(int Id, [Bind(Include = "Id,DeviceId,StorageId,Number,IsOff,IsVirtual")] Repair repair, string Destination)
         {
             using (var conn = Database.Connection())
             {
@@ -39,6 +41,22 @@ namespace Devin.Controllers
                 else
                 {
                     return Json(new { Error = "Дата проведения введена неправильно. Ожидается формат <b>дд.ММ.гггг чч:мм</b>" });
+                }
+
+                if (Destination.Contains("off"))
+                {
+                    repair.FolderId = 0;
+                    repair.WriteoffId = int.TryParse(Destination.Replace("off", ""), out int i) ? i : 0;
+                }
+                else if (Destination.Contains("folder"))
+                {
+                    repair.FolderId = int.TryParse(Destination.Replace("folder", ""), out int i) ? i : 0;
+                    repair.WriteoffId = 0;
+                }
+                else
+                {
+                    repair.FolderId = 0;
+                    repair.WriteoffId = 0;
                 }
 
                 if (old.DeviceId != repair.DeviceId)
@@ -61,22 +79,22 @@ namespace Devin.Controllers
                     });
                 }
 
-                if (old.StorageInventory != repair.StorageInventory)
+                if (old.StorageId != repair.StorageId)
                 {
                     conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
                     {
                         Date = DateTime.Now,
                         Source = "storages",
-                        Id = old.StorageInventory.ToString(),
-                        Text = "Ремонт устройства #" + old.DeviceId + " перемещен на другую позицию: #" + repair.StorageInventory,
+                        Id = old.StorageId.ToString(),
+                        Text = "Ремонт устройства [device" + old.DeviceId + "] перемещен на другую позицию: [storage" + repair.StorageId + "]",
                         Username = User.Identity.Name
                     });
                     conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
                     {
                         Date = DateTime.Now,
                         Source = "storages",
-                        Id = repair.StorageInventory.ToString(),
-                        Text = "Ремонт устройства #" + old.DeviceId + " перемещен c другой позиции: #" + old.StorageInventory,
+                        Id = repair.StorageId.ToString(),
+                        Text = "Ремонт устройства [device" + old.DeviceId + "] перемещен c другой позиции: [storage" + old.StorageId + "]",
                         Username = User.Identity.Name
                     });
 
@@ -105,6 +123,57 @@ namespace Devin.Controllers
                     }
 
                     // Создание изменений склада по новым данным
+                    if (old.IsOff)
+                    {
+                        if (old.IsVirtual)
+                        {
+                            conn.Execute("UPDATE Storages SET Noff = Noff + @Number WHERE Inventory = @StorageInventory", new { repair.StorageId, old.Number });
+                        }
+                        else
+                        {
+                            conn.Execute("UPDATE Storages SET Nstorage = Nstorage - @Number, Noff = Noff + @Number WHERE Inventory = @StorageInventory", new { repair.StorageId, old.Number });
+                        }
+                    }
+                    else
+                    {
+                        if (old.IsVirtual)
+                        {
+                            conn.Execute("UPDATE Storages SET Nrepairs = Nrepairs + @Number WHERE Inventory = @StorageInventory", new { repair.StorageId, old.Number });
+                        }
+                        else
+                        {
+                            conn.Execute("UPDATE Storages SET Nstorage = Nstorage - @Number, Nrepairs = Nrepairs + @Number WHERE Inventory = @StorageInventory", new { repair.StorageId, old.Number });
+                        }
+                    }
+                }
+
+                if (old.Number != repair.Number)
+                {
+                    int Inventory = repair.StorageId;
+                    if (old.IsOff)
+                    {
+                        if (old.IsVirtual)
+                        {
+                            conn.Execute("UPDATE Storages SET Noff = Noff - @Number WHERE Inventory = @Inventory", new { old.Number, Inventory });
+                        }
+                        else
+                        {
+                            conn.Execute("UPDATE Storages SET Nstorage = Nstorage + @Number, Noff = Noff - @Number WHERE Inventory = @Inventory", new { old.Number, Inventory });
+                        }
+                    }
+                    else
+                    {
+                        if (old.IsVirtual)
+                        {
+                            conn.Execute("UPDATE Storages SET Nrepairs = Nrepairs - @Number WHERE Inventory = @Inventory", new { old.Number, Inventory });
+                        }
+                        else
+                        {
+                            conn.Execute("UPDATE Storages SET Nstorage = Nstorage + @Number, Nrepairs = Nrepairs - @Number WHERE Inventory = @Inventory", new { old.Number, Inventory });
+                        }
+                    }
+
+                    // Создание изменений склада по новым данным
                     if (repair.IsOff)
                     {
                         if (repair.IsVirtual)
@@ -129,72 +198,39 @@ namespace Devin.Controllers
                     }
                 }
 
-                // Полная отмена изменений склада от ремонта
-                if (old.IsOff)
-                {
-                    if (old.IsVirtual)
-                    {
-                        conn.Execute("UPDATE Storages SET Noff = Noff - @Number WHERE Inventory = @StorageInventory", old);
-                    }
-                    else
-                    {
-                        conn.Execute("UPDATE Storages SET Nstorage = Nstorage + @Number, Noff = Noff - @Number WHERE Inventory = @StorageInventory", old);
-                    }
-                }
-                else
-                {
-                    if (old.IsVirtual)
-                    {
-                        conn.Execute("UPDATE Storages SET Nrepairs = Nrepairs - @Number WHERE Inventory = @StorageInventory", old);
-                    }
-                    else
-                    {
-                        conn.Execute("UPDATE Storages SET Nstorage = Nstorage + @Number, Nrepairs = Nrepairs - @Number WHERE Inventory = @StorageInventory", old);
-                    }
-                }
+                string oldDestination = old.WriteoffId != 0 
+                    ? ("off" + old.WriteoffId) 
+                    : (old.FolderId != 0 
+                        ? ("folder" + old.FolderId) 
+                        : "отдельно");
 
-                // Создание изменений склада по новым данным
-                if (repair.IsOff)
-                {
-                    if (repair.IsVirtual)
-                    {
-                        conn.Execute("UPDATE Storages SET Noff = Noff + @Number WHERE Inventory = @StorageInventory", repair);
-                    }
-                    else
-                    {
-                        conn.Execute("UPDATE Storages SET Nstorage = Nstorage - @Number, Noff = Noff + @Number WHERE Inventory = @StorageInventory", repair);
-                    }
-                }
-                else
-                {
-                    if (repair.IsVirtual)
-                    {
-                        conn.Execute("UPDATE Storages SET Nrepairs = Nrepairs + @Number WHERE Inventory = @StorageInventory", repair);
-                    }
-                    else
-                    {
-                        conn.Execute("UPDATE Storages SET Nstorage = Nstorage - @Number, Nrepairs = Nrepairs + @Number WHERE Inventory = @StorageInventory", repair);
-                    }
-                }
+                string newDestination = repair.WriteoffId != 0
+                    ? ("off" + repair.WriteoffId)
+                    : (repair.FolderId != 0
+                        ? ("folder" + repair.FolderId)
+                        : "отдельно");
 
                 List<string> changes = new List<string>();
                 if (old.DeviceId != repair.DeviceId) changes.Add("объект ремонта [" + old.DeviceId + " => " + repair.DeviceId + "]");
-                if (old.StorageInventory != repair.StorageInventory) changes.Add("исп. позиция [" + old.StorageInventory + " => " + repair.StorageInventory + "]");
+                if (old.StorageId != repair.StorageId) changes.Add("исп. позиция [" + old.StorageId + " => " + repair.StorageId + "]");
                 if (old.Date != repair.Date) changes.Add("дата проведения [" + old.Date + " => " + repair.Date + "]");
                 if (old.Number != repair.Number) changes.Add("кол-во исп. [" + old.Number + " => " + repair.Number + "]");
                 if (old.IsOff != repair.IsOff) changes.Add("списан [" + old.IsOff + " => " + repair.IsOff + "]");
                 if (old.IsVirtual != repair.IsVirtual) changes.Add("виртуальный [" + old.IsVirtual + " => " + repair.IsVirtual + "]");
+                if (oldDestination != newDestination) changes.Add("расположение [" + oldDestination + " => " + newDestination + "]");
 
                 if (changes.Count > 0)
                 {
                     // Сохранение в базе
                     conn.Execute(@"UPDATE Repairs SET 
                         DeviceId          = @DeviceId
-                        ,StorageInventory = @StorageInventory
+                        ,StorageId        = @StorageId
                         ,Date             = @Date
                         ,Number           = @Number
                         ,IsOff            = @IsOff
                         ,IsVirtual        = @IsVirtual
+                        ,WriteoffId       = @WriteoffId
+                        ,FolderId         = @FolderId
                     WHERE Id = @Id", repair);
 
                     conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
@@ -224,30 +260,30 @@ namespace Devin.Controllers
                 {
                     if (repair.IsVirtual)
                     {
-                        conn.Execute("UPDATE Storages SET Noff = Noff - @Number WHERE Inventory = @StorageInventory", repair);
+                        conn.Execute("UPDATE Storages SET Noff = Noff - @Number WHERE Id = @StorageId", repair);
                     }
                     else
                     {
-                        conn.Execute("UPDATE Storages SET Nstorage = Nstorage + @Number, Noff = Noff - @Number WHERE Inventory = @StorageInventory", repair);
+                        conn.Execute("UPDATE Storages SET Nstorage = Nstorage + @Number, Noff = Noff - @Number WHERE Id = @StorageId", repair);
                     }
                 }
                 else
                 {
                     if (repair.IsVirtual)
                     {
-                        conn.Execute("UPDATE Storages SET Nrepairs = Nrepairs - @Number WHERE Inventory = @StorageInventory", repair);
+                        conn.Execute("UPDATE Storages SET Nrepairs = Nrepairs - @Number WHERE Id = @StorageId", repair);
                     }
                     else
                     {
-                        conn.Execute("UPDATE Storages SET Nstorage = Nstorage + @Number, Nrepairs = Nrepairs - @Number WHERE Inventory = @StorageInventory", repair);
+                        conn.Execute("UPDATE Storages SET Nstorage = Nstorage + @Number, Nrepairs = Nrepairs - @Number WHERE Id = @StorageId", repair);
                     }
                 }
                 conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
                 {
                     Date = DateTime.Now,
                     Source = "storages",
-                    Id = repair.StorageInventory.ToString(),
-                    Text = "Отменен ремонт #" + Id + ". Исп. кол-во возвращено",
+                    Id = repair.StorageId.ToString(),
+                    Text = "Отменен ремонт [repair" + Id + "]. Исп. кол-во возвращено",
                     Username = User.Identity.Name
                 });
                 conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
@@ -278,22 +314,22 @@ namespace Devin.Controllers
             return Json(new { Good = "Все ремонты из списания отменены" });
         }
 
-        public JsonResult Move(string repairs, string key)
+        public JsonResult Move(string Repairs, string Key)
         {
             using (var conn = Database.Connection())
             {
-                int WriteoffId = int.TryParse(key.Replace("w", ""), out int i) ? i : 0;
-                int FolderId = int.TryParse(key.Replace("g", ""), out i) ? i : 0;
+                int WriteoffId = int.TryParse(Key.Replace("w", ""), out int i) ? i : 0;
+                int FolderId = int.TryParse(Key.Replace("g", ""), out i) ? i : 0;
 
-                string[] Repairs = repairs.Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (var repair in Repairs)
+                string[] repairs = Repairs.Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var repair in repairs)
                 {
                     int Id = int.TryParse(repair, out i) ? i : 0;
                     
                     if (Id != 0)
                     {
                         conn.Execute("UPDATE Repairs SET WriteoffId = @WriteoffId, FolderId = @FolderId WHERE Id = @Id", new { WriteoffId, FolderId, Id });
-                        string text = key == "0" 
+                        string text = Key == "0" 
                             ? "Ремонт [repair" + Id + "] размещен отдельно" 
                             : WriteoffId != 0 
                                 ? "Ремонт [repair" + Id + "] перемещен в списание [off" + WriteoffId + "]"
@@ -302,7 +338,7 @@ namespace Devin.Controllers
                         conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
                         {
                             Date = DateTime.Now,
-                            Source = "storages",
+                            Source = "repairs",
                             Id = Id.ToString(),
                             Text = text,
                             Username = User.Identity.Name
@@ -322,42 +358,51 @@ namespace Devin.Controllers
 
                 foreach (var repair in repairs)
                 {
-                    conn.Execute(@"
-                        UPDATE Storages SET Noff = Noff + @Number, Nrepairs = Nrepairs - @Number WHERE StorageInventory = @StorageInventory;
-                        UPDATE Repairs SET IsOff = 1 WHERE Id = @Id;
-                        INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageInventory, 'Обновлена позиция [' + @StorageInventory + '] при переводе ремонта [repair' + CAST(@Id AS varchar(10)) + '] в списанные: ' + CAST(@Number AS varchar(10)) + ' шт. деталей перемещены из используемых в списанные', @Author);
-                        INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'repairs', @Id, 'Ремонт [repair' + CAST(@Id AS varchar(10)) + '] помечен как списанный', @Author);", repair);
+                    conn.Execute("UPDATE Storages SET Noff = Noff + @Number, Nrepairs = Nrepairs - @Number WHERE Inventory = @StorageInventory", repair);
+                    conn.Execute("UPDATE Repairs SET IsOff = 1 WHERE Id = @Id", repair);
+                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageInventory, @Text, @Name)", new
+                    {
+                        repair.StorageId,
+                        Text = "Обновлена позиция [storage" + repair.StorageId + "] при переводе ремонта [repair" + repair.Id + "] в списанный: " + repair.Number + " шт. деталей перемещены из используемых в списанные",
+                        User.Identity.Name
+                    });
+                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'repairs', @Id, @Text, @Name)", new
+                    {
+                        repair.Id,
+                        Text = "Ремонт помечен как списанный",
+                        User.Identity.Name
+                    });
                 }
             }
 
             return Json(new { Good = "Все ремонты отмечены как списанные, позиции возвращены на склад" });
         }
 
-        public JsonResult OffSelected(string repairs)
+        public JsonResult OffSelected(string Repairs)
         {
-            string[] Repairs = repairs.Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] repairs = Repairs.Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
             using (var conn = Database.Connection())
             {
-                foreach (string r in Repairs)
+                foreach (string r in repairs)
                 {
                     int Id = int.TryParse(r, out int i) ? i : 0;
                     if (Id != 0)
                     {
-                        var repair = conn.Query<Repair>("SELECT Id, Number, StorageInventory, Author = @Author FROM Repairs WHERE Id = @Id AND IsOff <> 1", new { Id, Author = User.Identity.Name }).FirstOrDefault();
+                        var repair = conn.Query<Repair>("SELECT Id, Number, StorageId, Author = @Author FROM Repairs WHERE Id = @Id AND IsOff <> 1", new { Id, Author = User.Identity.Name }).FirstOrDefault();
                         if (repair != null)
                         {
-                            conn.Execute("UPDATE Storages SET Noff = Noff + @Number, Nrepairs = Nrepairs - @Number WHERE Inventory = @StorageInventory", repair);
+                            conn.Execute("UPDATE Storages SET Noff = Noff + @Number, Nrepairs = Nrepairs - @Number WHERE Id = @StorageId", repair);
                             conn.Execute("UPDATE Repairs SET IsOff = 1 WHERE Id = @Id", repair);
-                            conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageInventory, @Text, @Author)", new {
-                                repair.StorageInventory,
+                            conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageId, @Text, @Author)", new {
+                                repair.StorageId,
                                 repair.Author,
-                                Text = "Обновлена позиция [" + repair.StorageInventory + "] при переводе ремонта [repair" + repair.Id + "] в списанные: " + repair.Number + " шт. деталей перемещены из используемых в списанные"
+                                Text = "Обновлена позиция при переводе ремонта [repair" + repair.Id + "] в списанные: " + repair.Number + " шт. деталей перемещены из используемых в списанные"
                             });
                             conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageInventory, @Text, @Author)", new
                             {
-                                repair.StorageInventory,
+                                repair.StorageId,
                                 repair.Author,
-                                Text = "Ремонт [repair" + repair.Id + "] помечен как списанный"
+                                Text = "Ремонт помечен как списанный"
                             });
                         }
                     }
@@ -371,47 +416,56 @@ namespace Devin.Controllers
         {
             using (var conn = Database.Connection())
             {
-                var repairs = conn.Query<Repair>("SELECT Id, Number, StorageInventory, Author = @Author FROM Repairs WHERE WriteoffId = @Id AND IsOff <> 0", new { Id, Author = User.Identity.Name });
+                var repairs = conn.Query<Repair>("SELECT Id, Number, StorageId, Author = @Author FROM Repairs WHERE WriteoffId = @Id AND IsOff <> 0", new { Id, Author = User.Identity.Name });
 
                 foreach (var repair in repairs)
                 {
-                    conn.Execute(@"
-                        UPDATE Storages SET Noff = Noff - @Number, Nrepairs = Nrepairs + @Number WHERE StorageInventory = @StorageInventory;
-                        UPDATE Repairs SET IsOff = 0 WHERE Id = @Id;
-                        INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageInventory, 'Обновлена позиция [' + @StorageInventory + '] при переводе ремонта [repair' + CAST(@Id AS varchar(10)) + '] в списанные: ' + CAST(@Number AS varchar(10)) + ' шт. деталей перемещены из списанных в используемые', @Author);
-                        INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'repairs', @Id, 'Ремонт [repair' + CAST(@Id AS varchar(10)) + '] помечен как активный', @Author);", repair);
+                    conn.Execute("UPDATE Storages SET Noff = Noff - @Number, Nrepairs = Nrepairs + @Number WHERE Id = @StorageId", repair);
+                    conn.Execute("UPDATE Repairs SET IsOff = 0 WHERE Id = @Id", repair);
+                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageId, @Text, @Name)", new
+                    {
+                        repair.StorageId,
+                        Text = "Обновлена позиция при переводе ремонта [repair" + repair.Id + "] в активное состояние: " + repair.Number + " шт. деталей перемещены из списанных в используемые",
+                        User.Identity.Name
+                    });
+                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'repairs', @Id, @Text, @Name)", new
+                    {
+                        repair.Id,
+                        Text = "Ремонт переведен в активное состояние",
+                        User.Identity.Name
+                    });
                 }
             }
 
             return Json(new { Good = "Все ремонты отмечены как активные, позиции забраны со склада" });
         }
 
-        public JsonResult OnSelected(string repairs)
+        public JsonResult OnSelected(string Repairs)
         {
-            string[] Repairs = repairs.Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] repairs = Repairs.Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
             using (var conn = Database.Connection())
             {
-                foreach (string r in Repairs)
+                foreach (string r in repairs)
                 {
                     int Id = int.TryParse(r, out int i) ? i : 0;
                     if (Id != 0)
                     {
-                        var repair = conn.Query<Repair>("SELECT Id, Number, StorageInventory, Author = @Author FROM Repairs WHERE Id = @Id AND IsOff <> 0", new { Id, Author = User.Identity.Name }).FirstOrDefault();
+                        var repair = conn.Query<Repair>("SELECT Id, Number, StorageId, Author = @Author FROM Repairs WHERE Id = @Id AND IsOff <> 0", new { Id, Author = User.Identity.Name }).FirstOrDefault();
                         if (repair != null)
                         {
-                            conn.Execute("UPDATE Storages SET Noff = Noff - @Number, Nrepairs = Nrepairs + @Number WHERE Inventory = @StorageInventory", repair);
+                            conn.Execute("UPDATE Storages SET Noff = Noff - @Number, Nrepairs = Nrepairs + @Number WHERE Id = @StorageId", repair);
                             conn.Execute("UPDATE Repairs SET IsOff = 0 WHERE Id = @Id", repair);
-                            conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageInventory, @Text, @Author)", new
+                            conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageId, @Text, @Author)", new
                             {
-                                repair.StorageInventory,
+                                repair.StorageId,
                                 repair.Author,
-                                Text = "Обновлена позиция [" + repair.StorageInventory + "] при переводе ремонта [repair" + repair.Id + "] в активное состояние: " + repair.Number + " шт. деталей из списанных в используемые"
+                                Text = "Обновлена позиция при переводе ремонта [repair" + repair.Id + "] в активное состояние: " + repair.Number + " шт. деталей из списанных в используемые"
                             });
-                            conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageInventory, @Text, @Author)", new
+                            conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'repairs', @StorageInventory, @Text, @Author)", new
                             {
-                                repair.StorageInventory,
+                                repair.StorageId,
                                 repair.Author,
-                                Text = "Ремонт [repair" + repair.Id + "] помечен как активный"
+                                Text = "Ремонт помечен как активный"
                             });
                         }
                     }
@@ -419,6 +473,65 @@ namespace Devin.Controllers
             }
 
             return Json(new { Good = "Все ремонты отмечены как активные, позиции забраны со склада" });
+        }
+
+        public JsonResult EndCreateFromDevice(int Id, string[] Repairs, string Writeoff)
+        {
+            List<Repair> repairs = new List<Repair>();
+            foreach (string s in Repairs)
+            {
+                string[] sub = s.Split(':');
+                var r = new Repair
+                {
+                    StorageId = int.TryParse(sub[0], out int i) ? i : 0,
+                    Number = int.TryParse(sub[1], out i) ? i : 0,
+                    IsVirtual = sub[2] == "true",
+                    DeviceId = Id,
+                    FolderId = 0,
+                    Author = User.Identity.Name,
+                    Date = DateTime.Now,
+                    IsOff = false
+                };
+                if (r.StorageId != 0 && r.Number != 0) repairs.Add(r);
+            }
+
+            using (var conn = Database.Connection())
+            {
+                int WriteoffId = 0;
+                if (!string.IsNullOrEmpty(Writeoff))
+                {
+                    conn.Execute("INSERT INTO Writeoffs (Name, Type, Date, FolderId, CostArticle) VALUES (@Writeoff, 'mat', GetDate(), 0, 0)", new { Writeoff });
+                    WriteoffId = conn.QueryFirst<int>("SELECT Max(Id) FROM Writeoffs");
+                    foreach (var repair in repairs) repair.WriteoffId = WriteoffId;
+                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'writeoffs', @WriteoffId, @Text, @Name)", new
+                    {
+                        WriteoffId,
+                        User.Identity.Name,
+                        Text = "Автоматически создано списание при ремонте устройства [device" + Id + "]"
+                    });
+                }
+
+                foreach (var repair in repairs)
+                {
+                    conn.Execute("INSERT INTO Repairs (DeviceId, StorageId, Number, Date, IsOff, IsVirtual, Author) VALUES (@DeviceId, @StorageId, @Number, @Date, @IsOff, @IsVirtual, @Author)", repair);
+                    conn.Execute("UPDATE Storages SET " + (repair.IsVirtual ? "" : "Nstorage = Nstorage - @Number,") + "Nrepairs = Nrepairs + @Number WHERE Id = @StorageId", repair);
+
+                    repair.Id = conn.QueryFirst<int>("SELECT Max(Id) FROM Repairs");
+
+                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'repairs', @Id, @Text, @Name)", new
+                    {
+                        repair.Id,
+                        User.Identity.Name,
+                        Text = "Ремонт: использована позиция с инвентарным № [storage" + repair.StorageId + "] в количестве " + repair.Number + " шт." + (repair.IsVirtual ? " (виртуальный)" : "")
+                    });
+                }
+
+                return Json(new
+                {
+                    Good = "Ремонты успешно созданы",
+                    WriteoffId
+                });
+            }
         }
     }
 }

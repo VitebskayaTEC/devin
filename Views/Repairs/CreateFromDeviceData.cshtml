@@ -35,8 +35,8 @@
             <tbody>
                 @foreach (var storage in Storages)
                 {
-                    <tr data-inventory="@storage.Inventory">
-                        <td width="88px">
+                    <tr data-id="@storage.Id" class="repairs__row">
+                        <td width="80px">
                             <input class="cart__field" type="number" min="0" max="@storage.Nstorage" onblur="this.value = Math.round(this.value)" />
                         </td>
                         <td width="82px">@storage.Inventory</td>

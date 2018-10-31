@@ -21,7 +21,7 @@ namespace Devin.Controllers
 
         public ActionResult Analyze() => View();
 
-        public ActionResult Cart(string Id) => View(model: Id);
+        public ActionResult Cart(int Id) => View(model: Id);
 
         public ActionResult Repairs() => View();
 
@@ -68,8 +68,10 @@ namespace Devin.Controllers
             return View(model);
         }
 
+        public ActionResult History(int Id) => View(model: Id);
 
-        public string Create(int Id)
+
+        public JsonResult Create(int Id)
         {
             using (var conn = Database.Connection())
             {
@@ -84,7 +86,7 @@ namespace Devin.Controllers
                     Username = User.Identity.Name
                 });
 
-                return Id.ToString();
+                return Json(new { Good = "Создана новая позиция", Id });
             }
         }
 

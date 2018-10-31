@@ -5,7 +5,7 @@
     string where = string.IsNullOrEmpty(search)
         ? "" : $"WHERE Devices.Name LIKE '%{search}%' OR Devices.Description LIKE '%{search}%' OR Devices.Inventory LIKE '%{search}%' OR Storages.Name LIKE '%{search}%' OR Storages.Ncard Inventory '%{search}%'";
 
-    var _repairs = AutoMapper.MapDynamic<Repair>(conn.Query($@"SELECT
+    var raw = conn.Query($@"SELECT
         Repairs.*
 
         ,Devices.Id          AS Device_Id
@@ -14,6 +14,7 @@
         ,Devices.Description AS Device_Description
         ,Devices.Type        AS Device_Type
 
+        ,Storages.Id        AS Storage_Id
         ,Storages.Inventory AS Storage_Inventory
         ,Storages.Name      AS Storage_Name
         ,Storages.Nall      AS Storage_Nall
@@ -22,10 +23,48 @@
         ,Storages.Noff      AS Storage_Noff
         ,Storages.Cost      AS Storage_Cost
     FROM Repairs
-    LEFT OUTER JOIN Devices   ON Repairs.DeviceId         = Devices.Id
-    LEFT OUTER JOIN Storages  ON Repairs.StorageInventory = Storages.Inventory
+    LEFT OUTER JOIN Devices   ON Repairs.DeviceId  = Devices.Id
+    LEFT OUTER JOIN Storages  ON Repairs.StorageId = Storages.Id
     {where}
-    ORDER BY Repairs.FolderId, Repairs.WriteoffId, Repairs.Date DESC")).AsList();
+    ORDER BY Repairs.FolderId, Repairs.WriteoffId, Repairs.Date DESC");
+
+    var _repairs = new List<Repair>();
+
+    foreach (var row in raw)
+    {
+        _repairs.Add(new Repair
+        {
+            Id = row.Id,
+            DeviceId = Convert.ToInt32(row.DeviceId),
+            StorageId = Convert.ToInt32(row.StorageId),
+            Date = row.Date,
+            Author = row.Author,
+            FolderId = Convert.ToInt32(row.FolderId),
+            WriteoffId = Convert.ToInt32(row.WriteoffId),
+            IsOff = row.IsOff,
+            IsVirtual = row.IsVirtual,
+            Number = Convert.ToInt32(row.Number),
+            Device = new Device
+            {
+                Id = Convert.ToInt32(row.Device_Id),
+                Inventory = row.Device_Inventory,
+                Name = row.Device_Name,
+                Description = row.Device_Description,
+                Type = row.Device_Type
+            },
+            Storage = new Storage
+            {
+                Id = Convert.ToInt32(row.Storage_Id),
+                Inventory = Convert.ToInt32(row.Storage_Inventory),
+                Name = row.Storage_Name,
+                Nall = Convert.ToInt32(row.Storage_Nall),
+                Nstorage = Convert.ToInt32(row.Storage_Nstorage),
+                Nrepairs = Convert.ToInt32(row.Storage_Nrepairs),
+                Noff = Convert.ToInt32(row.Storage_Noff),
+                Cost = Convert.ToSingle(row.Storage_Cost)
+            }
+        });
+    }
 
     if (!string.IsNullOrEmpty(search))
     {
@@ -184,7 +223,7 @@
             <table class="caption">
                 <tr>
                     <td width="30px">
-                        <div class="icon ic-info-outline" menu='computer' onmousedown='_menu(this)'></div>
+                        <div class="icon ic-info-outline" menu="writeoff" onmousedown="_menu(this)"></div>
                     </td>
                     <th>@writeoff.Name</th>
                     <td width="250px">@writeoff.Type</td>
@@ -194,7 +233,7 @@
             </table>
             <div class="items_block @(open == "open" ? "" : "hide")">
                 <div class='title-wrapper' id='@id'>
-                    <div class='title'>Открыть карточку списания</div>
+                    <a class="title view__link" href="##off@(writeoff.Id)">Открыть карточку списания</a>
                 </div>
                 @RenderItems(writeoff.Repairs)
             </div>
@@ -212,15 +251,23 @@
                 <tr id="@repair.Id" class="item">
                     <td><input type="checkbox" class="selecter" /></td>
                     <td>
-                        <b>@(repair.Device?.Name)</b> @(repair.Device?.Description)
+                        <a class="view__link" href="##@(repair.Id)"><b>@(repair.Device?.Name)</b> @(repair.Device?.Description)</a>
                     </td>
                     <td>
-                        <div class="led @repair.Storage.Led()"></div> @repair.Storage.Name
+                        <a class="view__link" href="##@(repair.Id)"><div class="led @repair.Storage.Led()"></div> @repair.Storage.Name</a>
                     </td>
-                    <td>@repair.Number</td>
-                    <td>@((repair.Number * repair.Storage.Cost).ToString("0.00")) р.</td>
-                    <td><input type="checkbox" disabled @(repair.IsOff ? "checked" : "") /></td>
-			        <td><input type="checkbox" disabled @(repair.IsVirtual ? "checked" : "") /></td>
+                    <td>
+                        <a class="view__link" href="##@(repair.Id)">@repair.Number</a>
+                    </td>
+                    <td>
+                        <a class="view__link" href="##@(repair.Id)">@((repair.Number * repair.Storage.Cost).ToString("0.00")) р.</a>
+                    </td>
+                    <td>
+                        <a class="view__link" href="##@(repair.Id)"><input type="checkbox" disabled @(repair.IsOff ? "checked" : "") /></a>
+                    </td>
+			        <td>
+                        <a class="view__link" href="##@(repair.Id)"><input type="checkbox" disabled @(repair.IsVirtual ? "checked" : "") /></a>
+                    </td>
                 </tr>
             }
         </tbody>

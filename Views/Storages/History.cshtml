@@ -2,9 +2,7 @@
 
 @using (var conn = Database.Connection())
 {
-    var logs = conn.Query(@"SELECT Repairs.Date, Repairs.Author, Storages.Name, Repairs.Number FROM Repairs INNER JOIN Storages ON Repairs.StorageId = Storages.Id WHERE Repairs.DeviceId = @Model ORDER BY Repairs.Date DESC", new { Model });
-
-    <button onclick="Devices.Cart.backToAddons()">Вернуться</button>
+    var logs = conn.Query<Activity>(@"SELECT * FROM Activity WHERE Source = 'storages' AND Id = @Model ORDER BY Date DESC", new { Model });
 
     <div class="cartHistory">
         <table class="cartHistory__table">
@@ -12,7 +10,7 @@
                 <tr>
                     <th class="cartHistory__date">Дата</th>
                     <th>Пользователь</th>
-                    <th>Позиция со склада (кол-во)</th>
+                    <th>Событие</th>
                 </tr>
             </thead>
             <tbody>
@@ -20,8 +18,8 @@
                 {
                     <tr>
                         <td>@log.Date.ToString("dd.MM.yyyy HH:mm")</td>
-                        <td>@log.Author</td>
-                        <td>@log.Name (@log.Number шт.)</td>
+                        <td>@log.Username</td>
+                        <td>@Html.Raw(log.Text.Replace("\n", "<br />"))</td>
                     </tr>
                 }
             </tbody>

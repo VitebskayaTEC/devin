@@ -58,6 +58,6 @@
 }
 
 #selected {
-	left: 950px;
-	top: 0;
+    top: 0;
+    right: 10px;
 }

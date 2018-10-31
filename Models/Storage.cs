@@ -4,9 +4,11 @@ namespace Devin.Models
 {
     public class Storage
     {
+        [Slapper.AutoMapper.Id]
+        public int Id { get; set; }
+
         public string Name { get; set; }
 
-        [Slapper.AutoMapper.Id]
         public int Inventory { get; set; }
 
         public string Type { get; set; }

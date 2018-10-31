@@ -15,12 +15,12 @@
 
     <div class="cart__header">
         <div>@writeoff.Name</div>
-        <div class="cart__closeButton">
-            <i class="icon ic-clear icon_white icon_no-hover" title="Закрыть карточку" onclick="cartClose()"></i>
+        <div class="cart__closeButton" title="Закрыть карточку" onclick="cartClose()">
+            <i class="icon ic-clear icon_white icon_no-hover"></i>
         </div>
     </div>
 
-    <div>
+    <div class="cart__body" id="form">
         <table class="cart__form">
             <tr>
                 <td>Наименование</td>
@@ -129,8 +129,8 @@
     </div>
 
     <div class="cart__menu">
-        <button class="cart__button" onclick="cartSave()">Сохранить</button>
-        <button class="cart__button" onclick="writeoffExport()">Печать</button>
-        <button class="cart__button" onclick="cartDelete()">Удалить</button>
+        <button class="cart__button" onclick="Writeoffs.update(@writeoff.Id)">Сохранить</button>
+        <button class="cart__button" onclick="Writeoffs.export(@writeoff.Id)">Печать</button>
+        <button class="cart__button" onclick="Writeoffs.del(@writeoff.Id)">Удалить</button>
     </div>
 }

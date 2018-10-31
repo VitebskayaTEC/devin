@@ -46,10 +46,15 @@
         }, 50);
 
         function cartOpenBack() {
-            $.get('@Url.Action("cart")/' + id, data => {
-                document.getElementById('cart').innerHTML = data;
-                $('#cart').fadeIn(100);
-            });
+            fetch(host + 'storages/cart/' + id)
+                .then(res => res.text())
+                .then(text => {
+                    let cart = document.getElementById('cart');
+                    cart.classList.add('cart_visible');
+                    cart.innerHTML = text;
+                    document.getElementById('view').querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+                    document.getElementById(id).classList.add('selected');
+                });
         }
 
 

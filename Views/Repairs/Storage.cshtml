@@ -1,8 +1,7 @@
 ﻿@model string
-
 @using (var conn = Database.Connection())
 {
-    var storage = conn.Query<Storage>(@"SELECT * FROM Storages WHERE Inventory = @Model", new { Model }).FirstOrDefault();
+    var storage = conn.Query<Storage>(@"SELECT * FROM Storages WHERE Id = @Model", new { Model }).FirstOrDefault();
     if (storage == null)
     {
         <div>Позиция не найдено</div>
@@ -49,6 +48,16 @@
                     </tr>
                 }
             }
+            <tr>
+                <td colspan="2">
+                    <br />Всего <b>@storage.Nall</b>, из них 
+                    <b>@storage.Nstorage</b> на складе, 
+                    <b>@storage.Nrepairs</b> в ремонтах, 
+                    <b>@storage.Noff</b> списано
+                </td>
+            </tr>
         </tbody>
     </table>
+
+    <a href="~/storages/##@(storage.Id)">Карточка позиции</a>
 }

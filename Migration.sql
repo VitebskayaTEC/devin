@@ -91,7 +91,7 @@ GO
 --GO
 
 --CREATE TABLE Storages (
---	Ncard int NOT NULL,
+--	Ncard nvarchar(max) NOT NULL,
 --	Name nvarchar(max) NULL,
 --	Type nvarchar(max) NULL,
 --	Cost float NULL,
@@ -156,7 +156,7 @@ GO
 --FROM REMONT INNER JOIN DEVICE ON DEVICE.Number = REMONT.ID_D
 --GO
 
---UPDATE Activity SET Activity.Id = Device.Id
+--UPDATE Activity SET Activity.Id = Device.Id, Activity.Text = REPLACE(Text, DEVICE.Number, 'device' + DEVICE.Id)
 --FROM Activity INNER JOIN DEVICE ON DEVICE.Number = Activity.Id
 --GO
 
@@ -299,4 +299,20 @@ GO
 
 --ALTER TABLE TypesWriteoffs
 --	DROP COLUMN O_ID
+--GO
+
+--ALTER TABLE Storages
+--	ADD Id int IDENTITY(1, 1) NOT NULL
+--GO
+
+--UPDATE Repairs SET Repairs.StorageInventory = Storages.Id
+--FROM Repairs INNER JOIN Storages ON Storages.Inventory = Repairs.StorageInventory
+--GO
+
+--UPDATE Activity SET Activity.Id = Storages.Id, Activity.Text = REPLACE(Activity.Text, 'storage' + Cast(Storages.Inventory as nvarchar), 'storage' + Cast(Storages.Id as nvarchar))
+--FROM Activity INNER JOIN Storages ON Storages.Inventory = Activity.Id
+--WHERE Activity.Source = 'storages'
+--GO
+
+--sp_rename 'Repairs.StorageInventory', 'StorageId', 'COLUMN'
 --GO

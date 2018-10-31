@@ -2,6 +2,7 @@
 using Devin.Models;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
+using Slapper;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -34,7 +35,7 @@ namespace Devin.Controllers
 
                 IWorkbook book;
                 ISheet sheet;
-                IEnumerable<Repair> repairs;
+                
                 int step = 0;
 
                 if (string.IsNullOrEmpty(writeoff.Params)) return "В списании не были заданы параметры";
@@ -56,19 +57,24 @@ namespace Devin.Controllers
                         sheet = book.GetSheetAt(0);
                         sheet.GetRow(13).GetCell(0).SetCellValue("      Комиссия,  назначенная приказом №108 от 28.08.2012г. произвела подсчет и списание товарно-материальных ценностей, израсходованных в " + months[writeoff.Date.Month - 1] + " " + writeoff.Date.Year + " г. Были использованы  следующие материалы:");
 
+                        IEnumerable<Repair> repairs;
+
                         try
                         {
-                            repairs = conn.Query<Repair>(@"SELECT 
-                                Storages.Inventory AS [StorageInventory],
-                                Storages.Name      AS [StorageName],
-                                Repairs.Number     AS [StorageCount],
-                                Storages.Cost      AS [StoragePrice],
-                                Devices.Inventory  AS [DeviceInventory],
-                                Storages.Account   AS [StorageList]
+                            repairs = AutoMapper.MapDynamic<Repair>(conn.Query(@"SELECT
+                                Repairs.Id,
+                                Repairs.Number,
+                                Storages.Id        AS Storage_Id,
+                                Storages.Inventory AS Storage_Inventory,
+                                Storages.Name      AS Storage_Name,
+                                Storages.Cost      AS Storage_Cost,
+                                Storages.Account   AS Storage_Account,
+                                Devices.Id         AS Device_Id,
+                                Devices.Inventory  AS Device_Inventory
                             FROM Repairs 
-                            LEFT OUTER JOIN Storages  ON Repairs.StorageInventory = Storages.Inventory 
-                            LEFT OUTER JOIN DEVICE    ON Repairs.DeviceId         = Devices.Id 
-                            WHERE (Repairs.WriteoffId = @Id)", new { Id });
+                            LEFT OUTER JOIN Storages  ON Repairs.StorageId = Storages.Id
+                            LEFT OUTER JOIN Devices   ON Repairs.DeviceId  = Devices.Id 
+                            WHERE (Repairs.WriteoffId = @Id)", new { Id }));
                         }
                         catch (Exception)
                         {
@@ -79,28 +85,28 @@ namespace Devin.Controllers
 
                         foreach (Repair r in repairs)
                         {
-                            if (r.DeviceInventory.Contains("***") || r.DeviceInventory.Contains("xxx"))
+                            if (r.Device.Inventory.Contains("***") || r.Device.Inventory.Contains("xxx"))
                             {
-                                r.DeviceInventory = "Эксплуатационные нужды";
+                                r.Device.Inventory = "Эксплуатационные нужды";
                             }
                             else
                             {
-                                r.DeviceInventory = "Установлен в: инв. № " + r.DeviceInventory;
+                                r.Device.Inventory = "Установлен в: инв. № " + r.Device.Inventory;
                             }
 
                             IRow row = sheet.CopyRow(20, 21 + step);
                             row.GetCell(0).SetCellValue(step + 1);
-                            row.GetCell(1).SetCellValue(r.StorageInventory);
-                            row.GetCell(2).SetCellValue(r.StorageName + "; счет " + r.StorageList);
+                            row.GetCell(1).SetCellValue(r.Storage.Inventory);
+                            row.GetCell(2).SetCellValue(r.Storage.Name + "; счет " + r.Storage.Account);
                             row.GetCell(3).SetCellValue("шт.");
-                            row.GetCell(4).SetCellValue(r.StorageCount);
-                            row.GetCell(5).SetCellValue(r.StoragePrice.ToString("0.00"));
-                            row.GetCell(6).SetCellValue((r.StoragePrice * r.StorageCount).ToString("0.00"));
-                            row.GetCell(7).SetCellValue(r.DeviceInventory);
+                            row.GetCell(4).SetCellValue(r.Number);
+                            row.GetCell(5).SetCellValue(r.Storage.Cost.ToString("0.00"));
+                            row.GetCell(6).SetCellValue((r.Storage.Cost * r.Number).ToString("0.00"));
+                            row.GetCell(7).SetCellValue(r.Device.Inventory);
                             row.Height = -1;
 
                             step++;
-                            sum += r.StoragePrice * r.StorageCount;
+                            sum += r.Storage.Cost * r.Number;
                         }
 
                         sheet.GetRow(20).ZeroHeight = true;
@@ -177,24 +183,24 @@ namespace Devin.Controllers
                             default: book.GetSheetAt(2).GetRow(14).GetCell(2).SetCellValue("Эксплуатационные расходы"); break;
                         }
 
-                        repairs = conn.Query<Repair>(@"SELECT 
-                            Repairs.Number     AS [StorageCount], 
-                            Storages.Name      AS [StorageName], 
-                            Storages.Cost      AS [StoragePrice],
-                            Storages.Inventory AS [StorageInventory]
+                        var storages = conn.Query<Storage>(@"SELECT 
+                            Repairs.Number     AS Nall, 
+                            Storages.Name, 
+                            Storages.Cost,
+                            Storages.Inventory
                         FROM Repairs 
-                        LEFT OUTER JOIN Storages ON Repairs.StorageInventory = Storages.Inventory 
+                        LEFT OUTER JOIN Storages ON Repairs.StorageId = Storages.Id
                         WHERE (Repairs.WriteoffId = @Id)", new { Id });
 
                         
-                        foreach (Repair r in repairs)
+                        foreach (var storage in storages)
                         {
-                            sheet.GetRow(122 + step).GetCell(25).SetCellValue(r.StorageCount);
+                            sheet.GetRow(122 + step).GetCell(25).SetCellValue(storage.Nall);
                             sheet.GetRow(122 + step).GetCell(28).SetCellValue("шт.");
-                            sheet.GetRow(122 + step).GetCell(32).SetCellValue(r.StorageName);
+                            sheet.GetRow(122 + step).GetCell(32).SetCellValue(storage.Name);
                             sheet.GetRow(122 + step).GetCell(51).SetCellValue("текущий ремонт");
-                            sheet.GetRow(122 + step).GetCell(57).SetCellValue(r.StoragePrice.ToString("0.00"));
-                            sheet.GetRow(122 + step).GetCell(63).SetCellValue(r.StorageInventory);
+                            sheet.GetRow(122 + step).GetCell(57).SetCellValue(storage.Cost.ToString("0.00"));
+                            sheet.GetRow(122 + step).GetCell(63).SetCellValue(storage.Inventory);
                             step++;
                         }
 
@@ -273,7 +279,7 @@ namespace Devin.Controllers
             }
         }
 
-        public JsonResult Update(int Id, [Bind(Include = "Name,Type,Description,CostArticle,FolderId")] Writeoff writeoff, string[] Params, string Date)
+        public JsonResult Update(int Id, [Bind(Include = "Id,Name,Type,Description,CostArticle,FolderId")] Writeoff writeoff, string[] Params, string Date)
         {
             writeoff.Params = string.Join(";;", Params);
             if (!DateTime.TryParse(Date, out DateTime d))
@@ -289,9 +295,9 @@ namespace Devin.Controllers
                 List<string> changes = new List<string>();
                 if (writeoff.Name != old.Name) changes.Add("наименование [\"" + old.Name + "\" => \"" + writeoff.Name + "\"]");
                 if (writeoff.Type != old.Type) changes.Add("тип [\"" + old.Type + "\" => \"" + writeoff.Type + "\"]");
-                if (writeoff.Description != old.Description) changes.Add("описание [\"" + old.Description + "\" => \"" + writeoff.Description + "\"]");
+                if ((writeoff.Description ?? "") != (old.Description ?? "")) changes.Add("описание [\"" + old.Description + "\" => \"" + writeoff.Description + "\"]");
                 if (writeoff.CostArticle != old.CostArticle) changes.Add("статья расходов [\"" + old.CostArticle + "\" => \"" + writeoff.CostArticle + "\"]");
-                if (writeoff.FolderId != old.FolderId) changes.Add("папка [\"" + old.FolderId + "\" => \"" + writeoff.FolderId + "\"]");
+                if (writeoff.FolderId != old.FolderId) changes.Add("папка [\"" + (old.FolderId == 0 ? "отдельно" : ("folder" + old.FolderId)) + "\" => \"" + (writeoff.FolderId == 0 ? "отдельно" : ("folder" + writeoff.FolderId)) + "\"]");
                 if (writeoff.Params != old.Params) changes.Add("параметры экспорта [\"" + old.Params + "\" => \"" + writeoff.Params + "\"]");
                 if (writeoff.Date != old.Date) changes.Add("дата создания [\"" + old.Date + "\" => \"" + writeoff.Date + "\"]");
 

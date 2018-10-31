@@ -41,10 +41,8 @@ namespace Devin.Controllers
         public ActionResult Repair(int Id) => View(model: Id);
 
 
-        public string Update(int Id, [Bind(Include = "Name,Inventory,Type,Description,PublicName,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,IsOff")] Device device)
+        public string Update(int Id, [Bind(Include = "Id,Name,Inventory,Type,Description,PublicName,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,IsOff")] Device device)
         {
-            device.Id = Id;
-
             // Валидация 
             if (!DateTime.TryParse(Request.Form.Get("DateInstall"), out DateTime d)) return "error:Дата установки введена в неверном формате"; else device.DateInstall = d;
 
