@@ -163,25 +163,7 @@
     <Content Include="Content\img\favicon.ico" />
     <Content Include="Content\img\white_carbonfiber.png" />
     <Content Include="Content\js\core.js" />
-    <Content Include="Content\js\device.js" />
-    <Content Include="Content\js\storage.js" />
-    <Content Include="Content\lib\images\ui-bg_glass_40_ffc73d_1x400.png" />
-    <Content Include="Content\lib\images\ui-icons_222222_256x240.png" />
-    <Content Include="Content\lib\images\ui-icons_444444_256x240.png" />
-    <Content Include="Content\lib\images\ui-icons_4b8e0b_256x240.png" />
-    <Content Include="Content\lib\images\ui-icons_555555_256x240.png" />
-    <Content Include="Content\lib\images\ui-icons_777620_256x240.png" />
-    <Content Include="Content\lib\images\ui-icons_777777_256x240.png" />
-    <Content Include="Content\lib\images\ui-icons_a83300_256x240.png" />
-    <Content Include="Content\lib\images\ui-icons_cc0000_256x240.png" />
-    <Content Include="Content\lib\images\ui-icons_cccccc_256x240.png" />
-    <Content Include="Content\lib\images\ui-icons_ffffff_256x240.png" />
-    <Content Include="Content\lib\jquery-1.12.4.min.js" />
     <Content Include="Content\lib\jquery-3.3.1.min.js" />
-    <Content Include="Content\lib\jquery-ui.min.css" />
-    <Content Include="Content\lib\jquery-ui.min.js" />
-    <Content Include="Content\lib\select2.min.css" />
-    <Content Include="Content\lib\select2.min.js" />
     <Content Include="core\core.inc" />
     <Content Include="core\upload.asp" />
     <Content Include="exes\storage\storage_create_repairs.asp" />
@@ -259,6 +241,7 @@
     <Content Include="Views\Repairs\CreateFromDeviceData.cshtml" />
     <Content Include="Views\Repairs\History.cshtml" />
     <Content Include="Views\Storages\History.cshtml" />
+    <Content Include="Views\Writeoffs\History.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

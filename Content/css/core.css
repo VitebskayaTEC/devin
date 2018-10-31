@@ -105,6 +105,7 @@ a.has-icon {
     color: #000;
     text-decoration: none;
     display: block;
+    padding: 3px;
 }
 
 .selected .view__link {
@@ -220,7 +221,7 @@ a.has-icon {
 }
 
 .items td {
-    padding: 3px;
+    /* padding: 3px; */
     font: normal 10pt Calibri, serif;
 }
 

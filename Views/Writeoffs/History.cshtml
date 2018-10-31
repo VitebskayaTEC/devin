@@ -1,8 +1,8 @@
-﻿@model int
+﻿@model string
 
 @using (var conn = Database.Connection())
 {
-    var logs = conn.Query<Activity>(@"SELECT * FROM Activity WHERE Source = 'storages' AND Id = @Id ORDER BY Date DESC", new { Id = Model.ToString() });
+    var logs = conn.Query<Activity>(@"SELECT * FROM Activity WHERE Source = 'writeoffs' AND Id = @Id ORDER BY Date DESC", new { Id = Model });
 
     <div class="cartHistory">
         <table class="cartHistory__table">

@@ -14,17 +14,15 @@
 }
 
 @section styles {
-    <link rel="stylesheet" href="~/content/lib/jquery-ui.min.css" />
-    <link rel="stylesheet" href="~/content/lib/select2.min.css" />
     <link rel="stylesheet" href="~/content/css/repair.css" />
 }
 
 @section scripts {
-    <script src="~/content/lib/jquery-1.12.4.min.js"></script>
+    <script src="~/content/lib/jquery-3.3.1.min.js"></script>
     <script src="~/content/js/core.js"></script>
     <script>
         function cartOpenBack() {
-            fetch(host + (id.indexOf("off") < 0 ? "repairs" : "writeoffs") + '/cart/' + id.replace('off', ''))
+            fetch(host + (id.indexOf('off') < 0 ? 'repairs' : 'writeoffs') + '/cart/' + id.replace('off', ''))
                 .then(res => res.text())
                 .then(text => {
                     let cart = document.getElementById('cart');

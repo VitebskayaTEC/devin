@@ -31,7 +31,7 @@ namespace Devin.Models
 
         public List<Repair> Repairs { get; set; } = new List<Repair>();
 
-        public string[] Parameters => Params.Split(new string[] { ";;" }, StringSplitOptions.None);
+        public string[] Parameters => (Params ?? "").Split(new string[] { ";;" }, StringSplitOptions.None);
 
         public float AllCost()
         {

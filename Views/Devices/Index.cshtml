@@ -14,17 +14,12 @@
 }
 
 @section styles {
-    <link rel="stylesheet" href="~/content/lib/jquery-ui.min.css" />
-    <link rel="stylesheet" href="~/content/lib/select2.min.css" />
     <link rel="stylesheet" href="~/content/css/device.css" />
 }
 
 @section scripts {
-    <script src="~/content/lib/jquery-1.12.4.min.js"></script>
-    <script src="~/content/lib/jquery-ui.min.js"></script>
-    <script src="~/content/lib/select2.min.js"></script>
+    <script src="~/content/lib/jquery-3.3.1.min.js"></script>
     <script src="~/content/js/core.js"></script>
-    <script src="~/content/js/device.js?v=2"></script>
     <script>
         var sortKey = '@Request.QueryString.Get("key")',
             sortDesc = '@Request.QueryString.Get("desc")',
@@ -56,6 +51,55 @@
                 });
             }
         };
+
+        function computerOpen() {
+            cartOpen(document.getElementById(menuId).querySelector('.title'));
+        }
+
+        function computerDelete() {
+            if (confirm('Данный компьютер будет удален. Продолжить?')) {
+                id = menuId;
+                cartDelete();
+            }
+        }
+
+        function computerMove() {
+            let form = new FormData();
+            form.append('Key', $('#modal select:first-child').val().replace('dg', ''));
+
+            fetch(host + 'devices/move/' + menuId, { method: 'POST', body: form })
+                .then(() => {
+                    restore();
+                    $('#modal').fadeOut(100);
+                });
+        }
+
+        function toggle(node) {
+            var $unit = $(node).closest('.unit');
+            var id = $unit.attr('id')
+                ? $unit.attr('id')
+                : $unit.find('.title-wrapper:first-child').attr('id');
+            if ($unit.hasClass('open')) {
+                $unit
+                    .children('.items_block')
+                    .slideToggle(150, function () {
+                        $unit.removeClass('open');
+                    });
+                setCookie(id, '', { expires: 9999999999 });
+            } else {
+                $unit
+                    .addClass('open')
+                    .children('.items_block')
+                    .slideToggle(150);
+                setCookie(id, 'open', { expires: 9999999999 });
+            }
+        }
+
+        function cartOpen(node) {
+            id = node.parentNode.id;
+            cartOpenBack();
+            setHash(id);
+        }
 
     </script>
 }

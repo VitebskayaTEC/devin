@@ -1,5 +1,4 @@
 ﻿@model int
-
 @using (var conn = Database.Connection())
 {
     var writeoff = conn.Query<Writeoff>("SELECT * FROM Writeoffs WHERE Id = @Model", new { Model }).FirstOrDefault();
@@ -20,112 +19,120 @@
         </div>
     </div>
 
-    <div class="cart__body" id="form">
-        <table class="cart__form">
-            <tr>
-                <td>Наименование</td>
-                <td>
-                    <input class="cart__field" name="@nameof(writeoff.Name)" value="@writeoff.Name" />
-                </td>
-            </tr>
-            <tr>
-                <td>Тип устройства</td>
-                <td>
-                    <select class="cart__field" name="@nameof(writeoff.Type)">
-                        <option value="0">не определен</option>
-                        @{
-                            var types = conn.Query("SELECT Id, Name, Captions, DefaultData FROM TypesWriteoffs ORDER BY Name");
-                            foreach (var row in types)
-                            {
-                                if (row.Id == writeoff.Type)
+    <div class="tabsSelector">
+        <div class="tabsSelector__item tabsSelector__item_selected" data-tab="info">Информация</div>
+        <div class="tabsSelector__item" data-tab="history">Логи</div>
+    </div>
+
+    <div class="tabsContainer">
+        <div class="tabsContainer__item tabsContainer__item_selected" data-tab="info">
+            <table id="form">
+                <tr>
+                    <td>Наименование</td>
+                    <td>
+                        <input class="cart__field" name="@nameof(writeoff.Name)" value="@writeoff.Name" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Тип устройства</td>
+                    <td>
+                        <select class="cart__field" name="@nameof(writeoff.Type)">
+                            <option value="0">не определен</option>
+                            @{
+                                var types = conn.Query("SELECT Id, Name, Captions, DefaultData FROM TypesWriteoffs ORDER BY Name");
+                                foreach (var row in types)
                                 {
-                                    Captions = row.Captions;
-                                    DefaultData = row.DefaultData;
-                                    <option value="@row.Id" selected>@row.Name</option>
-                                }
-                                else
-                                {
-                                    <option value="@row.Id">@row.Name</option>
+                                    if (row.Id == writeoff.Type)
+                                    {
+                                        Captions = row.Captions;
+                                        DefaultData = row.DefaultData;
+                                        <option value="@row.Id" selected>@row.Name</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@row.Id">@row.Name</option>
+                                    }
                                 }
                             }
-                        }
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>Дата создания</td>
-                <td><input class="cart__field" name="@nameof(writeoff.Date)" type="text" value="@writeoff.Date.ToString("dd.MM.yyyy")" style="width: 100px" /></td>
-            </tr>
-            @{
-                string[] captions = Captions.Split(new string[] { ";;" }, StringSplitOptions.None);
-                string[] defaults = DefaultData.Split(new string[] { ";;" }, StringSplitOptions.None);
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Дата создания</td>
+                    <td><input class="cart__field" name="@nameof(writeoff.Date)" type="text" value="@writeoff.Date.ToString("dd.MM.yyyy")" style="width: 100px" /></td>
+                </tr>
+                @{
+                    string[] captions = Captions.Split(new string[] { ";;" }, StringSplitOptions.None);
+                    string[] defaults = DefaultData.Split(new string[] { ";;" }, StringSplitOptions.None);
 
-                if (captions.Length > 0)
-                {
-                    for (int i = 0; i < captions.Length; i++)
+                    if (captions.Length > 0)
                     {
-                        string value = writeoff.Parameters.Length > i ? writeoff.Parameters[i] : defaults.Length > i ? defaults[i] : "";
+                        for (int i = 0; i < captions.Length; i++)
+                        {
+                            string value = writeoff.Parameters.Length > i ? writeoff.Parameters[i] : defaults.Length > i ? defaults[i] : "";
 
+                            <tr>
+                                <td>@captions[i]</td>
+                                <td>
+                                    <input class="cart__field" name="@(nameof(writeoff.Params))[]" value="@value" />
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
                         <tr>
-                            <td>@captions[i]</td>
-                            <td>
-                                <input class="cart__field" name="@(nameof(writeoff.Params))[]" value="@value" />
-                            </td>
+                            <td>Параметры экспорта</td>
+                            <td>В справочнике не определены поля для параметров</td>
                         </tr>
                     }
                 }
-                else
+                <tr>
+                    <td>Описание</td>
+                    <td>
+                        <textarea class="cart__field" name="@nameof(writeoff.Description)">@writeoff.Description</textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Статья расходов</td>
+                    <td>
+                        <select class="cart__field" name="@nameof(writeoff.CostArticle)">
+                            <option value="0">Не выбрана</option>
+                            <option value="1" @(writeoff.CostArticle == 1 ? "selected" : "")>Эксплуатационные расходы</option>
+                            <option value="2" @(writeoff.CostArticle == 2 ? "selected" : "")>Орг. техника</option>
+                            <option value="3" @(writeoff.CostArticle == 3 ? "selected" : "")>ПТК АСУ</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Папка</td>
+                    <td>
+                        <select class="cart__field" name="@nameof(writeoff.FolderId)" v_select>
+                            <option value="0">Отдельно</option>
+                            @{
+                                var folders = conn.Query<Folder>("SELECT Id, Name FROM Folders WHERE Type = 'repair' ORDER BY Name");
+                                foreach (var row in folders)
+                                {
+                                    <option value="@row.Id" @(row.Id == writeoff.FolderId ? "selected" : "")>@row.Name</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                </tr>
+                @if (!string.IsNullOrEmpty(writeoff.LastExcel))
                 {
                     <tr>
-                        <td>Параметры экспорта</td>
-                        <td>В справочнике не определены поля для параметров</td>
+                        <td>Ссылка на распечатку</td>
+                        <td><a href="~/content/excels/@(writeoff.LastExcel)">@writeoff.LastExcel</a></td>
+                    </tr>
+                    <tr>
+                        <td>Последняя печать</td>
+                        <td>@writeoff.LastExcelDate</td>
                     </tr>
                 }
-            }
-            <tr>
-                <td>Описание</td>
-                <td>
-                    <textarea class="cart__field" name="@nameof(writeoff.Description)">@writeoff.Description</textarea>
-                </td>
-            </tr>
-            <tr>
-                <td>Статья расходов</td>
-                <td>
-                    <select class="cart__field" name="@nameof(writeoff.CostArticle)">
-                        <option value="0">Не выбрана</option>
-                        <option value="1" @(writeoff.CostArticle == 1 ? "selected" : "")>Эксплуатационные расходы</option>
-                        <option value="2" @(writeoff.CostArticle == 2 ? "selected" : "")>Орг. техника</option>
-                        <option value="3" @(writeoff.CostArticle == 3 ? "selected" : "")>ПТК АСУ</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>Папка</td>
-                <td>
-                    <select class="cart__field" name="@nameof(writeoff.FolderId)" v_select>
-                        <option value="0">Отдельно</option>
-                        @{
-                            var folders = conn.Query<Folder>("SELECT Id, Name FROM Folders WHERE Type = 'repair' ORDER BY Name");
-                            foreach (var row in folders)
-                            {
-                                <option value="@row.Id" @(row.Id == writeoff.FolderId ? "selected" : "")>@row.Name</option>
-                            }
-                        }
-                    </select>
-                </td>
-            </tr>
-            @if (!string.IsNullOrEmpty(writeoff.LastExcel))
-            {
-                <tr>
-                    <td>Ссылка на распечатку</td>
-                    <td><a href="~/content/excels/@(writeoff.LastExcel)">@writeoff.LastExcel</a></td>
-                </tr>
-                <tr>
-                    <td>Последняя печать</td>
-                    <td>@writeoff.LastExcelDate</td>
-                </tr>
-            }
-        </table>
+            </table>
+        </div>
+        <div class="tabsContainer__item" data-tab="history" data-tab-lazy="@Url.Action("history", "repairs", new { Id = writeoff.Id })"></div>
     </div>
 
     <div class="cart__menu">

@@ -48,7 +48,7 @@ namespace Devin.Controllers
                     model.Excels.Add(new Storage
                     {
                         Name = row.GetCell(10).StringCellValue,
-                        Inventory = (int)row.GetCell(11).NumericCellValue,
+                        Inventory = row.GetCell(11).StringCellValue,
                         Cost = (float)row.GetCell(12).NumericCellValue,
                         Date =  d,
                         Nall = (int)row.GetCell(28).NumericCellValue,
@@ -71,18 +71,17 @@ namespace Devin.Controllers
         public ActionResult History(int Id) => View(model: Id);
 
 
-        public JsonResult Create(int Id)
+        public JsonResult Create()
         {
             using (var conn = Database.Connection())
             {
-                conn.Execute("INSERT INTO Storages (Inventory, Name, Nall, Nstorage, Nrepairs, Noff, Date, CartridgeId, IsDeleted) VALUES (@Id, '', 1, 1, 0, 0, @Date, 0, 0)", new { Id, DateTime.Now.Date });
+                conn.Execute("INSERT INTO Storages (Inventory, Name, Nall, Nstorage, Nrepairs, Noff, Date, CartridgeId, IsDeleted) VALUES ('', '', 1, 1, 0, 0, @Date, 0, 0)", new { DateTime.Now.Date });
+                int Id = conn.QueryFirst<int>("SELECT Max(Id) FROM Storages");
 
-                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
+                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @Id, @Text, @Username)", new Activity
                 {
-                    Date = DateTime.Now,
-                    Source = "storages",
                     Id = Id.ToString(),
-                    Text = "Создана позиция. Инвертарный номер [" + Id + "]",
+                    Text = "Создана новая позиция",
                     Username = User.Identity.Name
                 });
 
@@ -90,43 +89,32 @@ namespace Devin.Controllers
             }
         }
 
-        public string Update(int Id, [Bind(Include = "Inventory,Name,Nall,Nstorage,Nrepairs,Noff,CartridgeId,Type,Account,FolderId")] Storage storage)
+        public JsonResult Update(int Id, [Bind(Include = "Id,Inventory,Name,Nall,Nstorage,Nrepairs,Noff,CartridgeId,Type,Account,FolderId")] Storage storage)
         {
             // Валидация 
-            if (!DateTime.TryParse(Request.Form.Get("Date"), out DateTime d)) return "error:Дата прихода введена в неверном формате"; else storage.Date = d;
-            if (!float.TryParse(Request.Form.Get("Cost"), out float f)) return "error:Стоимость введена в неверном формате"; else storage.Cost = f;
-            if (storage.Cost < 0) return "error:Стоимость не может быть отрицательной";
-            if (storage.Nall < 0) return "error:Количество прихода не может быть отрицательным";
+            if (!DateTime.TryParse(Request.Form.Get("Date"), out DateTime d)) return Json(new { Error = "Дата прихода введена в неверном формате" }); else storage.Date = d;
+            if (!float.TryParse(Request.Form.Get("Cost"), out float f)) return Json(new { Error = "Стоимость введена в неверном формате" }); else storage.Cost = f;
+            if (storage.Cost < 0) return Json(new { Error = "Стоимость не может быть отрицательной" });
+            if (storage.Nall < 0) return Json(new { Error = "Количество прихода не может быть отрицательным" });
 
             using (var conn = Database.Connection())
             {
-                string newNcard = "";
-
-                if (storage.Inventory != Id)
-                {
-                    if (conn.Query("SELECT Inventory FROM Storages WHERE Inventory = @Inventory", new { storage.Inventory }).Count() != 0) return "error:Введенный инвертарный номер не является уникальным";
-
-                    // Обновление всех логов по инвертарному, чтобы не потерять их, когда поменяется инвентарный номер позиции
-                    conn.Execute("UPDATE Activity SET Id = @Id WHERE Source = 'storages' AND Id = @OldId", new { Id = storage.Inventory, OldId = Id });
-                    newNcard = "<div class='hide' id>" + storage.Inventory + "</div>";
-                }
-
                 // Логирование изменений
-                var _old = conn.Query<Storage>("SELECT * FROM Storages WHERE Inventory = @Id", new { Id }).FirstOrDefault() ?? new Storage();
+                var old = conn.Query<Storage>("SELECT * FROM Storages WHERE Id = @Id", new { Id }).FirstOrDefault() ?? new Storage();
 
                 var changes = new List<string>();
-                if (_old.Inventory != storage.Inventory) changes.Add($"инвентарный номер [{ _old.Inventory} => {storage.Inventory}]");
-                if ((_old.Name ?? "") != (storage.Name ?? "")) changes.Add($"наименование [\"{ _old.Name}\" => \"{storage.Name}\"]");
-                if (_old.Nall != storage.Nall) changes.Add($"кол-во прихода [{ _old.Nall} => {storage.Nall}]");
-                if (_old.Nstorage != storage.Nstorage) changes.Add($"кол-во на складе [{ _old.Nstorage} => {storage.Nstorage}]");
-                if (_old.Nrepairs != storage.Nrepairs) changes.Add($"кол-во используемых [{ _old.Nrepairs} => {storage.Nrepairs}]");
-                if (_old.Noff != storage.Noff) changes.Add($"кол-во списанных [{ _old.Noff} => {storage.Noff}]");
-                if (_old.CartridgeId != storage.CartridgeId) changes.Add($"типовой картридж [{ _old.CartridgeId} => {storage.CartridgeId}]");
-                if (_old.Type != storage.Type) changes.Add($"тип позиции [{ _old.Type} => {storage.Type}]");
-                if (_old.Account != storage.Account) changes.Add($"счет учета [{ _old.Account} => {storage.Account}]");
-                if (_old.FolderId != storage.FolderId) changes.Add($"папка [{ _old.FolderId} => {storage.FolderId}]");
-                if (_old.Date != storage.Date) changes.Add($"дата прихода [{ _old.Date} => {storage.Date}]");
-                if (_old.Cost != storage.Cost) changes.Add($"стоимость [{ _old.Cost} => {storage.Cost}]");
+                if (old.Inventory != storage.Inventory) changes.Add($"инвентарный номер [{ old.Inventory} => {storage.Inventory}]");
+                if ((old.Name ?? "") != (storage.Name ?? "")) changes.Add($"наименование [\"{ old.Name}\" => \"{storage.Name}\"]");
+                if (old.Nall != storage.Nall) changes.Add($"кол-во прихода [{ old.Nall} => {storage.Nall}]");
+                if (old.Nstorage != storage.Nstorage) changes.Add($"кол-во на складе [{ old.Nstorage} => {storage.Nstorage}]");
+                if (old.Nrepairs != storage.Nrepairs) changes.Add($"кол-во используемых [{ old.Nrepairs} => {storage.Nrepairs}]");
+                if (old.Noff != storage.Noff) changes.Add($"кол-во списанных [{ old.Noff} => {storage.Noff}]");
+                if (old.CartridgeId != storage.CartridgeId) changes.Add($"типовой картридж [{ old.CartridgeId} => {storage.CartridgeId}]");
+                if (old.Type != storage.Type) changes.Add($"тип позиции [{ old.Type} => {storage.Type}]");
+                if (old.Account != storage.Account) changes.Add($"счет учета [{ old.Account} => {storage.Account}]");
+                if (old.FolderId != storage.FolderId) changes.Add($"папка [{ old.FolderId} => {storage.FolderId}]");
+                if (old.Date != storage.Date) changes.Add($"дата прихода [{ old.Date} => {storage.Date}]");
+                if (old.Cost != storage.Cost) changes.Add($"стоимость [{ old.Cost} => {storage.Cost}]");
 
                 if (changes.Count > 0)
                 {
@@ -144,55 +132,52 @@ namespace Devin.Controllers
                         Account     = @Account,
                         CartridgeId = @CartridgeId,
                         FolderId    = @FolderId
-                    WHERE Inventory = '" + Id + "'", storage);
+                    WHERE Id = @Id", storage);
 
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
+                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @Id, @Text, @Username)", new Activity
                     {
-                        Date = DateTime.Now,
-                        Source = "storages",
-                        Id = storage.Inventory.ToString(),
+                        Id = storage.Id.ToString(),
                         Text = "Позиция изменена. Изменения: " + string.Join(",\n", changes.ToArray()),
                         Username = User.Identity.Name
                     });
 
-                    return "Позиция успешно обновлена! Изменены поля: <br />" + string.Join(",<br />", changes.ToArray()) + newNcard;
+                    return Json(new { Good = "Позиция успешно обновлена! Изменены поля: <br />" + string.Join(",<br />", changes.ToArray()) });
                 }
                 else
                 {
-                    return "Изменений не было";
+                    return Json(new { Warning = "Изменений не было" });
                 }
             }
         }
 
-        public void Delete(int Id)
+        public JsonResult Delete(int Id)
         {
             using (var conn = Database.Connection())
             {
-                conn.Execute("DELETE FROM Storages WHERE Inventory = @Id", new { Id });
-
-                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
+                conn.Execute("DELETE FROM Storages WHERE Id = @Id", new { Id });
+                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @Id, @Text, @Username)", new Activity
                 {
-                    Date = DateTime.Now,
-                    Source = "storages",
                     Id = Id.ToString(),
                     Text = "Позиция удалена",
                     Username = User.Identity.Name
                 });
+
+                return Json(new { Good = "Позиция удалена" });
             }
         }
 
-        public JsonResult Move(string select, int gid)
+        public JsonResult Move(string Select, int FolderId)
         {
-            string[] Storages = select.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] Storages = Select.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
 
             using (var conn = Database.Connection())
             {
                 foreach (string storage in Storages)
                 {
-                    conn.Execute("UPDATE Storages SET FolderId = @FolderId WHERE Id = @Id", new { FolderId = gid, Id = int.TryParse(storage, out int i) ? i : 0 });
+                    conn.Execute("UPDATE Storages SET FolderId = @FolderId WHERE Id = @Id", new { FolderId, Id = int.TryParse(storage, out int i) ? i : 0 });
                 }
 
-                string name = conn.Query<string>("SELECT Name FROM Folders WHERE Id = @FolderId", new { FolderId = gid }).FirstOrDefault();
+                string name = conn.Query<string>("SELECT Name FROM Folders WHERE Id = @FolderId", new { FolderId }).FirstOrDefault();
                 if (string.IsNullOrEmpty(name))
                 {
                     return Json(new { Good = "Выбранные позиции размещены отдельно" });

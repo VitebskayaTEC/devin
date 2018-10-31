@@ -55,7 +55,7 @@
             Storage = new Storage
             {
                 Id = Convert.ToInt32(row.Storage_Id),
-                Inventory = Convert.ToInt32(row.Storage_Inventory),
+                Inventory = row.Storage_Inventory,
                 Name = row.Storage_Name,
                 Nall = Convert.ToInt32(row.Storage_Nall),
                 Nstorage = Convert.ToInt32(row.Storage_Nstorage),

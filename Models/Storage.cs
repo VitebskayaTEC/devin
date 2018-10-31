@@ -9,7 +9,7 @@ namespace Devin.Models
 
         public string Name { get; set; }
 
-        public int Inventory { get; set; }
+        public string Inventory { get; set; }
 
         public string Type { get; set; }
 

@@ -2,7 +2,7 @@
 
 @using (var conn = Database.Connection())
 {
-    var logs = conn.Query<Activity>(@"SELECT * FROM Activity WHERE Source = 'repairs' AND Id = @Model ORDER BY Date DESC", new { Model });
+    var logs = conn.Query<Activity>(@"SELECT * FROM Activity WHERE Source = 'repairs' AND Id = @Id ORDER BY Date DESC", new { Id = Model.ToString() });
 
     <div class="cartHistory">
         <table class="cartHistory__table">

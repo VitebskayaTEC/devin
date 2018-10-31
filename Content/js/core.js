@@ -642,6 +642,59 @@ var Devices = {
     }
 };
 
+var Storages = {
+
+    create() {
+        fetch(host + 'storages/create', { method: 'POST' })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Error) message(json.Error);
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    restore();
+                    document.location.hash = '##' + json.Id;
+                }
+            });
+    },
+
+    update(Id) {
+        let form = new FormData();
+        document.getElementById('form').querySelectorAll('input,select,textarea').forEach(el => form.append(el.name, el.value));
+        fetch(host + 'storages/update/' + Id, { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Error) message(json.Error);
+                if (json.Warning) message(json.Warning, 'warning');
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    restore();
+                    cartOpenBack();
+                }
+            });
+    },
+
+    del(Id) {
+        if (!confirm("Данный объект будет удален. Продолжить?")) return;
+
+        fetch(host + 'storages/delete/' + Id, { method: 'POST' })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Error) message(json.Error);
+                if (json.Warning) message(json.Warning, 'warning');
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    cartClose()
+                    restore();
+                }
+            });
+    },
+
+    compare() {
+        document.querySelectorAll('.panel:not(#excl,#selected)').forEach(el = el.style.display = 'none');
+        document.getElementById('excl').style.display = 'block';
+    }
+};
+
 var Repairs = {
 
     Device: {
@@ -896,9 +949,8 @@ var Writeoffs = {
             .then(json => {
                 if (json.Good) {
                     message(json.Good, 'good');
-                    id = json.Id;
                     restore();
-                    cartOpenBack();
+                    document.location.hash = '##' + json.Id;
                 }
             });
     },

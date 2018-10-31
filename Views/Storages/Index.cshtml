@@ -9,24 +9,18 @@
             <input name="search" id="search" placeholder="Поиск" value="@Request.QueryString.Get("search")" />
         </form>
     </li><li>
-        <a class='has-icon' onmousedown='_menu(this)' menu='main'><div class='icon ic-menu'></div></a>
+        <a class="has-icon" onmousedown="_menu(this)" menu="main"><div class="icon ic-menu"></div></a>
     </li>
 }
 
 @section styles {
-    <link rel="stylesheet" href="~/content/lib/jquery-ui.min.css" />
-    <link rel="stylesheet" href="~/content/lib/select2.min.css" />
     <link rel="stylesheet" href="~/content/css/storage.css" />
 }
 
 @section scripts {
-    <script src="~/content/lib/jquery-1.12.4.min.js"></script>
-    <script src="~/content/lib/jquery-ui.min.js"></script>
-    <script src="~/content/lib/select2.min.js"></script>
+    <script src="~/content/lib/jquery-3.3.1.min.js"></script>
     <script src="~/content/js/core.js"></script>
-    <script src="~/content/js/storage.js"></script>
     <script>
-        var sortText = '@Request.QueryString.Get("search")';
         $('.view')
             .on('mousedown', '.unit:not(#solo) .caption th', function () { toggle(this) })
             .on('mousedown', '.items thead th:not(:first-child)', function () { _sort(this) });
@@ -36,15 +30,6 @@
             list: '@Url.Action("list", "storages")'
         }
 
-        setInterval(() => {
-            if (document.getElementById(id)) {
-                if (!document.getElementById(id).classList.contains('selected')) {
-                    document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-                    document.getElementById(id).classList.add('selected');
-                }
-            }
-        }, 50);
-
         function cartOpenBack() {
             fetch(host + 'storages/cart/' + id)
                 .then(res => res.text())
@@ -52,74 +37,12 @@
                     let cart = document.getElementById('cart');
                     cart.classList.add('cart_visible');
                     cart.innerHTML = text;
-                    document.getElementById('view').querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-                    document.getElementById(id).classList.add('selected');
-                });
-        }
-
-
-        function cartCreate() {
-
-            let ncard = prompt('Введите инвентарный номер новой позиции. Он должен быть уникальным, так как используется в качестве идентификатора при оформлении ремонтов', 0);
-            if (ncard != '') {
-                $.post('@Url.Action("create")/' + ncard, data => {
-                    id = data;
-                    restore();
-                    document.location.hash = '##' + data;
-                });
-            }
-        }
-
-        function cartSave() {
-
-            let form = {};
-            document.querySelector('#cart .cart-form').querySelectorAll('input,select,textarea').forEach(el => form[el.name] = el.type === 'checkbox' ? el.checked : el.value);
-
-            $.post('@Url.Action("update")/' + id, form, data => {
-
-                // Обработка ошибок валидации
-                if (data.indexOf('error') > -1) {
-                    document.getElementById('console').innerHTML = '<div class="error">' + data.replace('error:', '') + '</div>';
-                }
-
-                else if (data === 'Изменений не было') {
-                    document.getElementById('console').innerHTML = '<div class="done">' + data + '</div>';
-                }
-
-                else {
-                    document.getElementById('console').innerHTML = '<div class="done">' + data + '</div>';
-
-                    // Перезагрузка карточки необходима, если поменялся инвентарный номер
-                    if (data.indexOf("<div class='hide' id") > -1) {
-                        id = document.querySelector('#console div.hide').innerHTML;
-                        document.getElementById('console').innerHTML = '';
-                        document.location.hash = '##' + id;
-                        let i = setInterval(() => {
-                            if (document.getElementById('console')) {
-                                if (document.getElementById('console').innerHTML != data) {
-                                    document.getElementById('console').innerHTML = '<div class="done">' + data + '</div>';
-                                    clearInterval(i);
-                                }
-                            }
-                        }, 50);
+                    let elem = document.getElementById(id);
+                    if (elem) {
+                        document.getElementById('view').querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+                        elem.classList.add('selected');
                     }
-
-                    // Перезагрузка окна
-                    $.get('@Url.Action("list")/' + document.location.search, data => document.getElementById('view').innerHTML = data);
-                }
-            });
-        }
-
-        function cartDelete() {
-
-            if (!confirm('При удалении позиции со склада все записи о ремонтах и списаниях, созданные с ее использованием, будут повреждены. Это действие необратимо. Продолжить?')) return;
-
-            $.post('@Url.Action("delete")/' + id, data => {
-                $('#cart').fadeOut(100, () => document.getElementById('cart').innerHTML = '');
-                let el = document.getElementById(id);
-                el.parentNode.removeChild(el);
-                document.location.hash = '';
-            });
+                });
         }
 
         function allStoragesToRepair() {
@@ -135,6 +58,183 @@
             $.post("/devin/asp/storage_all_repairs.asp?r=" + Math.random(), "select=" + id + ";", function (data) {
                 $("#cart").addClass("repairs").html(data).fadeIn(150);
             });
+        }
+
+        function toggle(node) {
+            var $unit = $(node).closest('.unit');
+            if ($unit.hasClass("open")) {
+                $unit.children(".items_block").slideToggle(150, function () {
+                    $unit.removeClass("open");
+                });
+                setCookie($unit.attr("id"), "", {
+                    expires: 999999999
+                });
+            } else {
+                $unit.addClass("open").children(".items_block").slideToggle(150);
+                setCookie($unit.attr("id"), "open", {
+                    expires: 999999999
+                });
+            }
+        }
+
+        function cartBack() {
+            cartOpenBack();
+        }
+
+
+        function cartRepair() {
+            $("#cart").load("/devin/asp/storage_repair.asp?id=" + id + "&r=" + Math.random()).fadeIn(150);
+        }
+
+        function storagesToGroup() {
+            $.post("/devin/exes/storage/storages_to_group.asp?r=" + Math.random(), selectionToForm("select", ";") + "&gid=" + document.getElementById('move_select').getElementsByTagName('select')[0].value, restore);
+            removeAllSelection();
+        }
+
+
+        /*
+        Окно создания группы ремонтов для выбранных позиций
+        */
+
+        // Проверка вводимого значения количества на соответствие допустимым условиям
+        function verifyCounts(input) {
+            // Определяем позицию, с которой будем работать
+            var tr = input.parentNode.parentNode;
+
+            // Проверка, является ли введенное значение целым числом
+            if (isNaN(input.value) || (input.value.indexOf(".") > -1) || (input.value.indexOf(",") > -1)) {
+                input.value = "0";
+                return;
+            }
+
+            // Расчет общего введенного количества деталей 
+            var allVals = 0,
+                query = "." + tr.className;
+            for (var i = 0, allInputs = tr.parentNode.querySelectorAll(query); i < allInputs.length; i++)
+                if (allInputs[i].querySelector(".number") != input && !allInputs[i].getElementsByTagName("input")[1].checked)
+                    allVals += +allInputs[i].querySelector(".number").value;
+
+            // Расчет допустимого кол-ва деталей для данной строки и проверка на вхождение в допустимый диапазон
+            var val = +input.value,
+                max = +tr.querySelector("span").innerHTML - allVals;
+            if (val < 0) input.value = 0;
+            if (val > max && !tr.getElementsByTagName("input")[1].checked) input.value = max;
+        }
+
+        // Проверка количества в строке при удалении флага "виртуальный ремонт"
+        function virtualVerifyCounts(checkbox) {
+            if (!checkbox.checked) {
+                // Определяем позицию, с которой будем работать
+                var tr = checkbox.parentNode.parentNode;
+                var input = tr.querySelector(".number");
+
+                // Расчет общего введенного количества деталей 
+                var allVals = 0,
+                    query = "." + tr.className;
+                for (var i = 0, allInputs = tr.parentNode.querySelectorAll(query); i < allInputs.length; i++)
+                    if (allInputs[i] != tr && !allInputs[i].getElementsByTagName("input")[1].checked)
+                        allVals += +allInputs[i].querySelector(".number").value;
+
+                // Расчет допустимого кол-ва деталей для данной строки и проверка на вхождение в допустимый диапазон
+                var val = +input.value,
+                    max = +tr.querySelector("span").innerHTML - allVals;
+                if (val > max) input.value = max;
+            }
+        }
+
+        // Разделение позиций
+        function separatePosition(a) {
+            // Определяем позицию, с которой будем работать
+            var tr = a.parentNode.parentNode;
+
+            // Обновляем текущее значение количества у копируемой строки, чтобы новая сумма выбранных элементов не превысила кол-во на складе
+            //var oldVal = tr.querySelector(".number").value;
+            //tr.querySelector(".number").value = (+oldVal > 0 ? (+oldVal - 1) : 0);
+
+            // Зануляем значение количества у новой строки-копии
+            var newTr = tr.cloneNode(true);
+            newTr.querySelector(".number").value = 0;
+
+            // Вставка скопированной строки
+            tr.parentNode.insertBefore(newTr, tr);
+
+            // Проверка количества строк, оно не должно превышать кол-во на складе. Если кол-во строк достигло кол-ва на складе, скрываем кнопку-разделитель
+            //var $allTrs = $(tr).parent().find("." + tr.className), val = +tr.querySelector("span").innerHTML;
+            //if (val == $allTrs.length) $allTrs.find(".pos-separate").css("display", "none");
+        }
+
+        // Удаление позиции
+        function removePosition(a) {
+            // Определяем позицию, с которой будем работать, и ее класс, чтобы знать о остальных строках этой позиции
+            var tr = a.parentNode.parentNode;
+
+            // Проверяем кол-во строк, если оно меньше, чем кол-во на складе, показываем кнопку-разделитель
+            //var $allTrs = $(tr).parent().find("." + pos), val = +tr.querySelector("span").innerHTML;
+            //if (val > $allTrs.length - 1) $allTrs.find(".pos-separate").css("display", "inline");
+
+            // Удаляем строку
+            tr.parentNode.removeChild(tr);
+
+            // Проверяем, остались ли еще позиции для ремонта
+            if (document.getElementById("repairs-positions").getElementsByTagName("tr").length == 0) cartClose();
+        }
+
+        // Обновление количества используемых деталей в ремонте при изменении объекта ремонта
+        function changeDevice(select) {
+            var input = select.parentNode.parentNode.querySelector(".number");
+            if (select.value == "0") {
+                input.value = "0";
+            } else if (input.value == "0") {
+                input.value = "1";
+            }
+        }
+
+        // Сохранение выбранных ремонтов 
+        function createRepairs() {
+            var trs = document.getElementById("repairs-positions").getElementsByTagName("tr");
+            var form = "allrepairs=";
+            for (var i = 0; i < trs.length; i++) {
+                var device = trs[i].getElementsByTagName("select")[0],
+                    units = trs[i].getElementsByTagName("input")[0];
+                if (device.value != "0" && units.value != "0") {
+                    form += trs[i].className.replace("pos", "") + ";" + device.value + ";" + units.value + ";" + (trs[i].getElementsByTagName("input")[1].checked ? "1" : "0") + "<separate>";
+                }
+            }
+            if (document.getElementById("create-off-group").checked) form += "&createOff=" + encodeURIComponent(document.getElementById("name-off-group").value);
+
+            $.post("/devin/exes/storage/storage_create_repairs.asp?r=" + Math.random(), form, function (data) {
+
+                // Удаляем возможность повторной отправки запроса при успешной обработке запроса
+                $(".cart-overflow > table").remove();
+                $("#off-group").remove();
+                $("#cart").find(".cart-menu td:first-child").remove();
+
+                // Выводим ссылку на группу списаний, либо в приложение "ремонты"
+                document.getElementById("console").innerHTML = data;
+            })
+                .fail(function () {
+                    document.getElementById("console").innerHTML = "Произошла ошибка при обработке формы";
+                });
+        }
+
+
+
+        function excelExports() {
+            $.post(links.labels, selectionToForm("select", ";"), data => {
+
+                let a = document.createElement('a');
+                a.href = data;
+                a.download = '';
+                a.click();
+
+                removeAllSelection();
+            });
+
+        }
+
+        function closeExportsPanel() {
+            $('#excelExports').slideUp(100);
+            document.getElementById("excelExportsLink").innerHTML = "";
         }
 
     </script>
@@ -182,12 +282,12 @@
         <div><a onclick="closeExportsPanel()">Закрыть</a></div>
     </div>
 
-    <ul class="context-menu" id="main">
-        <li onclick="compare()">Импорт из 1C</li>
-        <li onclick="Folder.create()">Создать группу</li>
-        <li onclick="cartCreate()">Создать позицию на складе</li>
-        <li onclick="document.location = '/devin/storage/labels/';">Просмотр прихода картриджей</li>
-    </ul>
+    <div class="context-menu" id="main">
+        <div onclick="compare()">Импорт из 1C</div>
+        <div onclick="Folder.create()">Создать группу</div>
+        <div onclick="Storages.create()">Создать позицию на складе</div>
+        <a href="~/storages/labels/">Просмотр прихода картриджей</a>
+    </div>
 
     <ul class="context-menu" id="group">
         <li onclick="Folder.update()">Переименовать</li>
