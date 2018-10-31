@@ -4,7 +4,7 @@
 {
     var logs = conn.Query(@"SELECT Repairs.Date, Repairs.Author, Storages.Name, Repairs.Number FROM Repairs INNER JOIN Storages ON Repairs.StorageId = Storages.Id WHERE Repairs.DeviceId = @Model ORDER BY Repairs.Date DESC", new { Model });
 
-    <button onclick="Devices.Cart.backToAddons()">Вернуться</button>
+    <button class="cart__button" onclick="Devices.Cart.backToAddons()">Вернуться</button>
 
     <div class="cartHistory">
         <table class="cartHistory__table">

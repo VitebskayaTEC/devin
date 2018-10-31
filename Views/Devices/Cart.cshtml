@@ -33,22 +33,22 @@
 
     <div class="tabsContainer">
         <div class="tabsContainer__item tabsContainer__item_selected" data-tab="info">
-            <table class="cart-table" id="form">
+            <table class="cart__table" id="form">
 
                 <tr>
                     <td width="200px">Наименование</td>
-                    <td><input name="@nameof(device.Name)" value="@device.Name" /></td>
+                    <td><input class="cart__field" name="@nameof(device.Name)" value="@device.Name" /></td>
                 </tr>
 
                 <tr>
                     <td>Инвентарный номер</td>
-                    <td><input name="@nameof(device.Inventory)" value="@device.Inventory" /></td>
+                    <td><input class="cart__field" name="@nameof(device.Inventory)" value="@device.Inventory" /></td>
                 </tr>
 
                 <tr>
                     <td>Тип устройства</td>
                     <td>
-                        <select name="@nameof(device.Type)">
+                        <select class="cart__field" name="@nameof(device.Type)">
                             <option value="0">? не определен</option>
                             @{
                                 var classes = conn.Query("SELECT Id, DeviceText FROM TypesDevices ORDER BY DeviceText");
@@ -64,7 +64,7 @@
                 <tr>
                     <td>За чем закреплено</td>
                     <td>
-                        <select name="Destination">
+                        <select class="cart__field" name="Destination">
                             <option value="0">отдельно</option>
                             @{
                                 var folders = conn.Query<Folder>("SELECT Id, Name FROM Folders WHERE Type = 'device' ORDER BY Name");
@@ -88,28 +88,28 @@
 
                 <tr>
                     <td>Имя для печати</td>
-                    <td><input name="@nameof(device.PublicName)" value="@device.PublicName" /></td>
+                    <td><input class="cart__field" name="@nameof(device.PublicName)" value="@device.PublicName" /></td>
                 </tr>
 
                 <tr>
                     <td>Описание</td>
-                    <td><textarea name="@nameof(device.Description)">@device.Description</textarea></td>
+                    <td><textarea class="cart__field" name="@nameof(device.Description)">@device.Description</textarea></td>
                 </tr>
 
                 <tr>
                     <td>М.О.Л.</td>
-                    <td><input name="@nameof(device.Mol)" value="@device.Mol" /></td>
+                    <td><input class="cart__field" name="@nameof(device.Mol)" value="@device.Mol" /></td>
                 </tr>
 
                 <tr>
                     <td>Расположение</td>
-                    <td><input name="@nameof(device.Location)" value="@device.Location" /></td>
+                    <td><input class="cart__field" name="@nameof(device.Location)" value="@device.Location" /></td>
                 </tr>
 
                 <tr>
                     <td>Помещение</td>
                     <td>
-                        <select name="@nameof(device.PlaceId)">
+                        <select class="cart__field" name="@nameof(device.PlaceId)">
                             <option value="0">? не определен</option>
                             @{
                                 var places = conn.Query<WorkPlace>("SELECT * FROM WorkPlaces ORDER BY Location");
@@ -124,23 +124,23 @@
 
                 <tr>
                     <td>Серийный номер</td>
-                    <td><input name="@nameof(device.SerialNumber)" value="@device.SerialNumber" /></td>
+                    <td><input class="cart__field" name="@nameof(device.SerialNumber)" value="@device.SerialNumber" /></td>
                 </tr>
 
                 <tr>
                     <td>Паспортный номер</td>
-                    <td><input name="@nameof(device.PassportNumber)" value="@device.PassportNumber" /></td>
+                    <td><input class="cart__field" name="@nameof(device.PassportNumber)" value="@device.PassportNumber" /></td>
                 </tr>
 
                 <tr>
                     <td>Сервис-тег</td>
-                    <td><input name="@nameof(device.ServiceTag)" value="@device.ServiceTag" /></td>
+                    <td><input class="cart__field" name="@nameof(device.ServiceTag)" value="@device.ServiceTag" /></td>
                 </tr>
 
                 <tr>
                     <td>Дата установки</td>
                     <td>
-                        <input name="@nameof(device.DateInstall)" style="width: 100px" value="@device.DateInstall.ToString("dd.MM.yyyy")" />
+                        <input class="cart__field" name="@nameof(device.DateInstall)" style="width: 100px" value="@device.DateInstall.ToString("dd.MM.yyyy")" />
                         <a>
                             <b>
                                 @((DateTime.Now - device.DateInstall).TotalHours.ToString("0")) часов
@@ -152,7 +152,7 @@
                 <tr>
                     <td>Последний ремонт</td>
                     <td>
-                        <input name="@nameof(device.DateLastRepair)" style="width: 100px;" value="@(device.DateLastRepair?.ToString("dd.MM.yyyy"))" />
+                        <input class="cart__field" name="@nameof(device.DateLastRepair)" style="width: 100px;" value="@(device.DateLastRepair?.ToString("dd.MM.yyyy"))" />
                         @{
                             var lastRepairDate = conn.Query("SELECT Max(Date) FROM Repairs WHERE DeviceId = @Model", new { Model }).FirstOrDefault();
                             if (lastRepairDate == null)
@@ -172,7 +172,7 @@
                     <tr>
                         <td>Операционная система</td>
                         <td>
-                            <select name="@nameof(device.OS)">
+                            <select class="cart__field" name="@nameof(device.OS)">
                                 <option value="0">? не выбрана</option>
                                 @{
                                     var systems = conn.Query("SELECT Id, Name FROM TypesSystems");
@@ -187,7 +187,7 @@
 
                     <tr>
                         <td>Ключ ОС</td>
-                        <td><input name="@nameof(device.OSKey)" value="@device.OSKey" /></td>
+                        <td><input class="cart__field" name="@nameof(device.OSKey)" value="@device.OSKey" /></td>
                     </tr>
                 }
 
@@ -196,7 +196,7 @@
                     <tr>
                         <td>Типовой принтер</td>
                         <td>
-                            <select name="@nameof(device.PrinterId)">
+                            <select class="cart__field" name="@nameof(device.PrinterId)">
                                 <option value="0">? не определен</option>
                                 @{
                                     var printers = conn.Query("SELECT Id, Name FROM Printers ORDER BY Name");
@@ -213,7 +213,7 @@
                 <tr>
                     <td>Списано</td>
                     <td>
-                        <select name="@nameof(device.IsOff)">
+                        <select class="cart__field" name="@nameof(device.IsOff)">
                             <option value="0">Нет</option>
                             <option value="1" @(device.IsOff ? "selected" : "")>Да</option>
                         </select>
@@ -234,7 +234,7 @@
             }
             else
             {
-                <div class="cart-overflow">
+                <div class="cart__table">
                     <table>
                         <tr>
                             <td style="width: 250px;">Наименование</td>

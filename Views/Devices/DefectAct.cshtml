@@ -19,32 +19,32 @@
 
     if (data == null)
     {
-        <div class="cart-overflow">
-            <button onclick="Devices.Cart.backToAddons()">Вернуться</button>
+        <div>
+            <button class="cart__button" onclick="Devices.Cart.backToAddons()">Вернуться</button>
             <br /> Устройство не найдено в базе данных
         </div>
         return;
     }
     else
     {
-        <div class="cart-overflow">
+        <div>
 
-            <button onclick="Devices.Cart.backToAddons()">Вернуться</button>
-            <button onclick="Devices.DefectAct.print()">Печать</button>
+            <button class="cart__button" onclick="Devices.Cart.backToAddons()">Вернуться</button>
+            <button class="cart__button" onclick="Devices.DefectAct.print()">Печать</button>
 
-            <table class="cart-table" id="defect-cart">
+            <table class="cart__table" id="defect-cart">
                 <tbody>
                     <tr>
                         <td>На дату</td>
-                        <td><input style="width: 100px" name="DateInstall" value="@data.DateInstall.ToString("dd.MM.yyyy")" /></td>
+                        <td><input class="cart__field" style="width: 100px" name="DateInstall" value="@data.DateInstall.ToString("dd.MM.yyyy")" /></td>
                     </tr>
                     <tr>
                         <td>Наименование по 1С</td>
-                        <td><textarea name="Description">@(string.IsNullOrEmpty(data.Description1C) ? data.Description : data.Description1C)</textarea></td>
+                        <td><textarea class="cart__field" name="Description">@(string.IsNullOrEmpty(data.Description1C) ? data.Description : data.Description1C)</textarea></td>
                     </tr>
                     <tr>
                         <td>Инвентарный номер</td>
-                        <td><input name="Inventory" value="@data.Inventory" /></td>
+                        <td><input class="cart__field" name="Inventory" value="@data.Inventory" /></td>
                     </tr>
                     <tr>
                         @if (data.Type == "CMP")
@@ -55,19 +55,19 @@
                         {
                             <td>Имя компьютера</td>
                         }
-                        <td><input name="Name" value="@data.Name" /></td>
+                        <td><input class="cart__field" name="Name" value="@data.Name" /></td>
                     </tr>
                     <tr>
                         <td>М.О.Л. (должность)</td>
-                        <td><input name="Position" value="" /></td>
+                        <td><input class="cart__field" name="Position" value="" /></td>
                     </tr>
                     <tr>
                         <td>М.О.Л. (фамилия и.о.)</td>
-                        <td><input name="Mol" value="@(string.IsNullOrEmpty(data.Mol1C) ? data.Mol : data.Mol1C)" /></td>
+                        <td><input class="cart__field" name="Mol" value="@(string.IsNullOrEmpty(data.Mol1C) ? data.Mol : data.Mol1C)" /></td>
                     </tr>
                     <tr>
                         <td>Время наработки</td>
-                        <td><input name="Time" style="width: 100px;" value="@(Math.Round((DateTime.Now - data.DateInstall).TotalHours))" /> часов</td>
+                        <td><input class="cart__field" name="Time" style="width: 100px;" value="@(Math.Round((DateTime.Now - data.DateInstall).TotalHours))" /> часов</td>
                     </tr>
                 </tbody>
             </table>
@@ -80,7 +80,7 @@
                     <tr>
                         <td>
                             Тип:
-                            <select id="defect_position" onchange="Devices.DefectAct.check(this)">
+                            <select class="cart__field" id="defect_position" onchange="Devices.DefectAct.check(this)">
                                 @if (data.Type == "CMP")
                                 {
                                     <option value="motherboard">Материнская плата</option>
@@ -94,8 +94,8 @@
                             </select>
                         </td>
                         <td id="defect_unique"></td>
-                        <td>Кол-во: <input id="defect_count" style="width: 60px;" value="1" /></td>
-                        <td><button onclick="Devices.DefectAct.add()">Добавить</button></td>
+                        <td>Кол-во: <input class="cart__field" id="defect_count" style="width: 60px;" value="1" /></td>
+                        <td><button class="cart__button" onclick="Devices.DefectAct.add()">Добавить</button></td>
                     </tr>
                 </thead>
             </table>

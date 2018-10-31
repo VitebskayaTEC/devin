@@ -15,14 +15,14 @@
 
 <form action="@Url.Action("cartridgesUsage", "repairs")" method="get" class="filter">
     Сводная таблица по заменам картриджей на
-    <select name="year">
+    <select class="cart__field cart__field_autoWidth" name="year">
         @for (int i = 2016; i < DateTime.Now.Year + 1; i++)
         {
             <option value="@i" @(i == date.Year ? "selected" : "")>@i</option>
         }
     </select>
     год &emsp;&emsp;&emsp;
-    <input type="submit" value="Запрос данных" />
+    <input class="cart__button" type="submit" value="Запрос данных" />
 </form>
 <br />
 

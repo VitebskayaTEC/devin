@@ -305,8 +305,8 @@ GO
 --	ADD Id int IDENTITY(1, 1) NOT NULL
 --GO
 
---UPDATE Repairs SET Repairs.StorageInventory = Storages.Id
---FROM Repairs INNER JOIN Storages ON Storages.Inventory = Repairs.StorageInventory
+--UPDATE Repairs SET Repairs.StorageId = Storages.Id
+--FROM Repairs INNER JOIN Storages ON Storages.Inventory = Repairs.StorageId
 --GO
 
 --UPDATE Activity SET Activity.Id = Storages.Id, Activity.Text = REPLACE(Activity.Text, 'storage' + Cast(Storages.Inventory as nvarchar), 'storage' + Cast(Storages.Id as nvarchar))

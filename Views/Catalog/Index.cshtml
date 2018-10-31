@@ -7,105 +7,47 @@
     <li>
         <input onkeyup="search(this)" placeholder="Поиск" value="" />
     </li><li>
-        <a class='has-icon' onmousedown='_menu(this)' menu='main'><div class='icon ic-menu'></div></a>
+        <a class="has-icon" onmousedown="_menu(this)" menu="main"><div class="icon ic-menu"></div></a>
     </li>
 }
 
-@section styles {
-    <style>
-        .view > table td {width: 50%;vertical-align: top}
-        .view a {color: #000;text-decoration: none}
-        .view a:hover {color: #007bd6}
-        .items input {
-            width: 100%;
-            box-sizing: border-box;
-            font: normal 12pt Segoe UI;
-            border: 1px solid #fff;
-        }
-        .catalog-compares tr td:first-child {width: inherit}
-        .cart-links div {word-break: break-word;max-width: 600px}
-    </style>
-}
 
 @section scripts {
     <script src="~/content/lib/jquery-3.3.1.min.js"></script>
     <script src="~/content/js/core.js"></script>
     <script>
+        function search(input) {
+            let s = input.value.toLowerCase();
+            if (s === '') {
+                document.querySelectorAll(".items tr").forEach(el => el.style.display = '');
+            } else {
+                document.querySelectorAll(".items tr").forEach(el => {
+                    let text = el.querySelector('td').innerHTML.toLowerCase();
+                    el.style.display = text.includes(s) ? '' : 'none';
+                });
+            }
+        }
+
         function cartOpen(node) {
             id = node.id;
             cartOpenBack();
             setHash(id);
         }
 
-        function search(input) {
-            var val = input.value.toLowerCase();
-            if (val == "") {
-                $(".items tbody tr").css("display", "table-row");
-            } else {
-                $(".items tbody tr").each(function () {
-                    var text = this.querySelector("td").innerHTML.toLowerCase();
-                    this.style.display = text.indexOf(val) > -1 ? 'table-row' : 'none';
-                });
-            }
-        }
-
         function cartOpenBack() {
-            $.get('@Url.Action("cart", "catalog")/' + id, data => {
-                document.getElementById('cart').innerHTML = data;
-                $("#cart").fadeIn(100);
+            fetch(host + 'catalog/cart/' + id)
+                .then(res => res.text())
+                .then(text => {
+                    let cart = document.getElementById('cart');
+                    cart.innerHTML = text;
+                    cart.classList.add('cart_visible');
 
-                let el = document.getElementById(id);
-                if (el) {
-                    document.querySelectorAll('.selected').forEach(x => x.classList.remove('selected'));
-                    el.classList.add('selected');
-                }
+                    let el = document.getElementById(id);
+                    if (el) {
+                        document.querySelectorAll('.selected').forEach(x => x.classList.remove('selected'));
+                        el.classList.add('selected');
+                    }
             })
-        }
-
-        function getCart() {
-            return (id.indexOf("prn") > -1) ? "printer" : "cartridge";
-        }
-
-        function createPrinter() {
-            $.post('@Url.Action("createPrinter")', _id => document.location.hash = "##prn" + _id);
-        }
-
-        function createCartridge() {
-            $.post('@Url.Action("createCartridge")', _id => document.location.hash = "##cart" + _id);
-        }
-
-        function cartSave() {
-            let url = id.indexOf("prn") > -1 ? '@Url.Action("savePrinter")' : '@Url.Action("saveCartridge")';
-            let form = { Id: id.replace('prn', '').replace('cart', '') }
-            document.querySelectorAll('.cart-form input,.cart-form select,.cart-form textarea').forEach(el => form[el.name] = el.value);
-
-            $.post(url, form, data => document.getElementById("console").innerHTML = data);
-        }
-
-        function cartDelete() {
-            let url = id.indexOf("prn") > -1 ? '@Url.Action("deletePrinter")' : '@Url.Action("deleteCartridge")';
-            let _id = id.replace('prn', '').replace('cart', '');
-
-            $.post(url + '/' + _id, () => {
-                $(".view .selected").remove();
-                cartClose();
-            });
-        }
-
-        function addCompare() {
-            $.post('@Url.Action("createCompare")', {
-                compare: document.getElementById("new-compare").value,
-                active: getCart(),
-                id: id
-            }, cartOpenBack);
-        }
-
-        function delCompare(div) {
-            $.post('@Url.Action("deleteCompare")', {
-                compare: div.parentNode.getAttribute("data-id"),
-                active: getCart(),
-                id: id
-            }, cartOpenBack);
         }
     </script>
 }
@@ -113,8 +55,8 @@
 @section html {
     <div class="context-menu" id="main">
         <a href="~/storages/analyze">Расход картриджей</a>
-        <div onclick="createPrinter()">Создать принтер</div>
-        <div onclick="createCartridge()">Создать картридж</div>
+        <div onclick="Catalog.create('printer')">Создать принтер</div>
+        <div onclick="Catalog.create('cartridge')">Создать картридж</div>
     </div>
 }
 
@@ -125,7 +67,7 @@
 
     <table>
         <tr>
-            <td>
+            <td width="50%" style="vertical-align: top;">
                 <div class="unit">
                     <table class="caption">
                         <tr>
@@ -136,13 +78,13 @@
                         @foreach (var printer in printers)
                         {
                             <tr>
-                                <td><a href="##prn@(printer.Id)">@printer.Name</a></td>
+                                <td id="prn@(printer.Id)"><a class="view__link" href="##prn@(printer.Id)">@printer.Name</a></td>
                             </tr>
                         }
                     </table>
                 </div>
             </td>
-            <td>
+            <td width="50%" style="vertical-align: top;">
                 <div class="unit">
                     <table class="caption">
                         <tr>
@@ -153,7 +95,7 @@
                         @foreach (var cartridge in cartridges)
                         {
                             <tr>
-                                <td><a href="##cart@(cartridge.Id)">@cartridge.Name</a></td>
+                                <td id="cart@(cartridge.Id)"><a class="view__link" href="##cart@(cartridge.Id)">@cartridge.Name</a></td>
                             </tr>
                         }
                     </table>

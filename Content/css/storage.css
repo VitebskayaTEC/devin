@@ -45,6 +45,6 @@ input[type=number] {
 	border-bottom: 1px solid #ddd;
 }
 
-.cart-table select {
+.cart__table select {
 	max-width: 400px;
 }

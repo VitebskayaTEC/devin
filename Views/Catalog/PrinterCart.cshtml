@@ -8,26 +8,31 @@
         <div class="error">Нет данных по данному идентификатору</div>
         return;
     }
+    
+    <div class="cart__header">
+        <div>@printer.Name</div>
+        <div class="cart__closeButton" title="Закрыть карточку" onclick="cartClose()">
+            <i class="icon ic-clear icon_white icon_no-hover"></i>
+        </div>
+    </div>
 
-    <div class="cart-header">@printer.Name</div>
+    <div class="cart__body">
 
-    <div class="cart-overflow">
-
-        <table class="cart-table cart-form">
+        <table id="form">
             <tr>
                 <td>Наименование</td>
-                <td><input name="Name" value="@printer.Name" placeholder="Наименование принтера" /></td>
+                <td><input class="cart__field" name="Name" value="@printer.Name" placeholder="Наименование принтера" /></td>
             </tr>
             <tr>
                 <td>Описание</td>
-                <td><textarea name="Description">@printer.Description</textarea></td>
+                <td><textarea class="cart__field" name="Description">@printer.Description</textarea></td>
             </tr>
         </table>
 
-        <table class="cart-table catalog-compares">
+        <table>
             <tr>
-                <td>
-                    <br /><b>Связи с типовыми картриджами:</b>
+                <td colspan="2">
+                    <br /><b class="cart__caption">Связи с типовыми картриджами:</b>
                 </td>
             </tr>
             @{
@@ -36,36 +41,37 @@
                 if (compared.Count() == 0)
                 {
                     <tr>
-                        <td>Не установлено ни одной связи</td>
+                        <td colspan="2">Не установлено ни одной связи</td>
                     </tr>
                 }
 
                 foreach (var cartridge in compared)
                 {
                     <tr>
-                        <td><a href="~/catalog/##cart@(cartridge.Id)">@cartridge.Name</a></td>
-                        <td width="30px" data-id="@cartridge.Id">
-                            <div class="icon ic-clear" onclick="delCompare(this)"></div>
+                        <td><a class="cart__link" href="~/catalog/##cart@(cartridge.Id)">@cartridge.Name</a></td>
+                        <td width="30px">
+                            <button class="cart__button" onclick="Catalog.remove({ CartridgeId: @cartridge.Id, PrinterId: @printer.Id  })">
+                                <div class="icon ic-clear"></div>
+                            </button>
                         </td>
                     </tr>
                 }
             }
             <tr>
                 <td>
-                    Добавить связь:
-                    <select id="new-compare">
+                    <select class="cart__field" id="new-compare">
                         <option value="0">?</option>
                         @{
                             var notCompared = conn.Query<Cartridge>(@"SELECT Cartridges.Id, Cartridges.Name
-                                FROM Cartridges
-                                WHERE Cartridges.Id NOT IN (
-                                    SELECT Cartridges.Id
-                                    FROM Cartridges
-                                    INNER JOIN PrintersCartridges ON PrintersCartridges.CartridgeId = Cartridges.Id
-                                    INNER JOIN Printers ON PrintersCartridges.PrinterId = Printers.Id
-                                    WHERE (Printers.Id = @Model)
-                                    GROUP BY Cartridges.Id )
-                                ORDER BY Cartridges.Name", new { Model });
+                                            FROM Cartridges
+                                            WHERE Cartridges.Id NOT IN (
+                                                SELECT Cartridges.Id
+                                                FROM Cartridges
+                                                INNER JOIN PrintersCartridges ON PrintersCartridges.CartridgeId = Cartridges.Id
+                                                INNER JOIN Printers ON PrintersCartridges.PrinterId = Printers.Id
+                                                WHERE (Printers.Id = @Model)
+                                                GROUP BY Cartridges.Id )
+                                            ORDER BY Cartridges.Name", new { Model });
 
                             foreach (var cartridge in notCompared)
                             {
@@ -75,21 +81,21 @@
                     </select>
                 </td>
                 <td width="30px">
-                    <div class="icon ic-add" onclick="addCompare()"></div>
+                    <button class="cart__button" onclick="Catalog.add({ CartridgeId: document.getElementById('new-compare').value, PrinterId: @printer.Id })">
+                        <div class="icon ic-add"></div>
+                    </button>
                 </td>
             </tr>
         </table>
 
-        <br /><b>Связанные устройства:</b>
-        <div class="cart-links">
+        <br /><b class="cart__caption">Связанные устройства:</b>
+        <div class="catalogLinks">
             @{
-                var devices = conn.Query<Device>("SELECT Id, Name, Description, Location FROM Devices WHERE PrinterId = @Model", new { Model });
-
+                var devices = conn.Query<Device>("SELECT Devices.Id, Computers.Name, Devices.PublicName, Devices.Location FROM Devices LEFT OUTER JOIN Devices AS Computers ON Computers.Id = Devices.ComputerId WHERE Devices.PrinterId = @Model", new { Model });
                 foreach (var device in devices)
                 {
                     <div>
-                        <a href="~/devices/##@(device.Id)"><b>@device.Name</b> @device.Description</a>
-                        <br />
+                        <a class="cart__link" href="~/devices/##@(device.Id)">@device.Name @device.PublicName</a>
                         <small>@device.Location</small>
                     </div>
                 }
@@ -97,13 +103,9 @@
         </div>
     </div>
 
-    <div id="console"></div>
-
-    <table class="cart-menu">
-        <tr>
-            <td onclick="cartSave()">Сохранить</td>
-            <td onclick="cartDelete()">Удалить</td>
-            <td onclick="cartClose()">Закрыть</td>
-        </tr>
-    </table>
+    <div class="cart__menu">
+        <button class="cart__button" onclick="Catalog.update()">Сохранить</button>
+        <button class="cart__button" onclick="Catalog.del()">Удалить</button>
+        <button class="cart__button" onclick="cartClose()">Закрыть</button>
+    </div>
 }

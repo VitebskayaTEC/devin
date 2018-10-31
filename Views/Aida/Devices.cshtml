@@ -1,6 +1,6 @@
 ﻿@model string
 
-<button onclick="Devices.Cart.backToAddons()">Вернуться</button>
+<button class="cart__button" onclick="Devices.Cart.backToAddons()">Вернуться</button>
 
 @using (var conn = Database.Connection())
 {
@@ -23,8 +23,8 @@
 
     string device = "";
 
-    <div class="cart-overflow cart-history-box">
-        <table class="cart-history">
+    <div class="cartHistory">
+        <table class="cartHistory__table">
             <thead>
                 <tr>
                     <th width="300px" data-type="string" onclick="_sort(this)">Устройство</th>

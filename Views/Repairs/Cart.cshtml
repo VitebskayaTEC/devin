@@ -26,12 +26,12 @@
 
     <div class="tabsContainer">
         <div class="tabsContainer__item tabsContainer__item_selected" data-tab="info">
-            <table class="cart-table" id="form">
+            <table class="cart__table" id="form">
 
                 <tr>
                     <td width="200px">Объект ремонта</td>
                     <td>
-                        <select name="@nameof(repair.DeviceId)" v_select>
+                        <select class="cart__field" name="@nameof(repair.DeviceId)" v_select>
                             @{ 
                                 var devices = conn.Query<Device>("SELECT Id, Type, Name, Description FROM Devices ORDER BY Type, Name");
                                 foreach (var device in devices)
@@ -46,7 +46,7 @@
                 <tr>
                     <td>Позиция со склада</td>
                     <td>
-                        <select name="@nameof(repair.StorageId)" v_select>
+                        <select class="cart__field" name="@nameof(repair.StorageId)" v_select>
                             @{ 
                                 var storages = conn.Query<Storage>("SELECT Id, Name FROM Storages ORDER BY Inventory");
                                 foreach (var storage in storages)
@@ -60,7 +60,7 @@
 
                 <tr>
                     <td>Кол-во единиц исп.</td>
-                    <td><input name="@nameof(repair.Number)" value="@repair.Number" type="number" min="0" onblur="this.value = Math.round(this.value)"/></td>
+                    <td><input class="cart__field" name="@nameof(repair.Number)" value="@repair.Number" type="number" min="0" onblur="this.value = Math.round(this.value)"/></td>
                 </tr>
 
                 <tr>
@@ -70,13 +70,13 @@
 
                 <tr>
                     <td>Дата проведения</td>
-                    <td><input name="@nameof(repair.Date)" value="@repair.Date.ToString("dd.MM.yyyy HH:mm:ss")" /></td>
+                    <td><input class="cart__field" name="@nameof(repair.Date)" value="@repair.Date.ToString("dd.MM.yyyy HH:mm:ss")" /></td>
                 </tr>
 
                 <tr>
                     <td>Списан</td>
                     <td>
-                        <select name="@nameof(repair.IsOff)">
+                        <select class="cart__field" name="@nameof(repair.IsOff)">
                             <option value="false">Нет</option>
                             <option value="true" @(repair.IsOff ? "selected" : "")>Да</option>
                         </select>
@@ -86,7 +86,7 @@
                 <tr>
                     <td>Виртуальный</td>
                     <td>
-                        <select name="@nameof(repair.IsVirtual)">
+                        <select class="cart__field" name="@nameof(repair.IsVirtual)">
                             <option value="false">Нет</option>
                             <option value="true" @(repair.IsVirtual ? "selected" : "")>Да</option>
                         </select>
@@ -96,7 +96,7 @@
                 <tr>
                     <td>Расположение</td>
                     <td>
-                        <select name="Destination">
+                        <select class="cart__field" name="Destination">
                             <option value="0">Не распределен</option>
                             @{
                                 var writeoffs = conn.Query<Writeoff>("SELECT Id, Name FROM Writeoffs ORDER BY Date DESC");

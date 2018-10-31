@@ -1,6 +1,6 @@
 ﻿@model string
 
-<button onclick="Devices.Cart.backToAddons()">Вернуться</button>
+<button class="cart__button" onclick="Devices.Cart.backToAddons()">Вернуться</button>
 
 @using (var conn = Database.Connection())
 {
@@ -22,19 +22,6 @@
         return;
     }
 
-    <b>Операционная система</b>
-    <table>
-        <tbody>
-            @foreach (var row in about)
-            {
-                <tr>
-                    <td>@row.IField</td>
-                    <td>@row.IValue</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-
     var model = conn.Query<string>(@"SELECT IDevice FROM Item 
     WHERE ReportId = @Id
         AND IPage = 'Установленные программы'
@@ -45,11 +32,23 @@
         AND IDevice NOT LIKE '%icecap_%'
     GROUP BY IDevice", new { Id });
 
-    <div class="cart-overflow">
+    <div class="cartHistory">
+        <b>Операционная система</b>
+        <table class="cartHistory__table">
+            @foreach (var row in about)
+            {
+                <tr>
+                    <td>@row.IField</td>
+                    <td>@row.IValue</td>
+                </tr>
+            }
+        </table>
         <b>Установленное ПО</b>
-        @foreach (string row in model)
-        {
-            <div>@row</div>
-        }
+        <table class="cartHistory__table">
+            @foreach (string row in model)
+            {
+                <tr><td>@row</td></tr>
+            }
+        </table>
     </div>
 }

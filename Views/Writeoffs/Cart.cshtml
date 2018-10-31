@@ -26,7 +26,7 @@
 
     <div class="tabsContainer">
         <div class="tabsContainer__item tabsContainer__item_selected" data-tab="info">
-            <table id="form">
+            <table id="form" class="cart__table">
                 <tr>
                     <td>Наименование</td>
                     <td>
@@ -132,7 +132,7 @@
                 }
             </table>
         </div>
-        <div class="tabsContainer__item" data-tab="history" data-tab-lazy="@Url.Action("history", "repairs", new { Id = writeoff.Id })"></div>
+        <div class="tabsContainer__item" data-tab="history" data-tab-lazy="@Url.Action("history", "writeoffs", new { Id = writeoff.Id })"></div>
     </div>
 
     <div class="cart__menu">

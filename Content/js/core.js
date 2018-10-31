@@ -794,7 +794,7 @@ var Repairs = {
                     if (json.Good) {
                         message(json.Good, 'good');
                         if (json.WriteoffId !== 0) {
-                            message('<a href="' + host + 'repairs/##' + json.WriteoffId + '">Перейти к созданному списанию</a>', 'good');
+                            message('<a href="' + host + 'repairs/##off' + json.WriteoffId + '">Перейти к созданному списанию</a>', 'good');
                         }
                         this.load();
                     }
@@ -1012,6 +1012,78 @@ var Writeoffs = {
             });
         $("#modal").fadeOut(100);
     }
+};
+
+var Catalog = {
+
+    create(type) {
+        fetch(host + 'catalog/create' + type, { method: 'POST' })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    document.location.hash = '##' + json.Id;
+                }
+            });
+    },
+
+    update() {
+        let form = new FormData();
+        document.getElementById('form').querySelectorAll('input,select,textarea').forEach(el => form.append(el.name, el.value));
+        form.append('Id', id.replace(/cart|prn/, ''));
+
+        fetch(host + 'catalog/update' + (id.includes('prn') ? 'printer' : 'cartridge'), { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) message(json.Good, 'good');
+                if (json.Warning) message(json.Warning, 'warning');
+                if (json.Error) message(json.Error);
+            });
+    },
+
+    del() {
+        if (!confirm("Данный объект будет удален. Продолжить?")) return;
+        fetch(host + 'catalog/delete' + (id.includes('prn') ? 'printer' : 'cartridge') + '/' + id.replace(/cart|prn/, ''), { method: 'POST' })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    cartClose()
+                }
+            });
+    },
+
+    add(obj) {
+        let form = new FormData();
+        form.append('PrinterId', obj.PrinterId);
+        form.append('CartridgeId', obj.CartridgeId);
+        fetch(host + 'catalog/createCompare', { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    cartOpenBack();
+                }
+            });
+    },
+
+    remove(obj) {
+        let form = new FormData();
+        form.append('PrinterId', obj.PrinterId);
+        form.append('CartridgeId', obj.CartridgeId);
+        fetch(host + 'catalog/deleteCompare', { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    cartOpenBack();
+                }
+            });
+    },
+};
+
+var Aida = {
+
 };
 
 document.querySelector('.messages').addEventListener('click', e => {
