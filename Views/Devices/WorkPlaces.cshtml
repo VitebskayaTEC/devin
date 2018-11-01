@@ -37,27 +37,39 @@
 
 @section scripts {
     <script src="~/content/lib/jquery-3.3.1.min.js"></script>
+    <script src="~/content/js/core.js"></script>
     <script>
         class WorkPlaces {
 
             static Create() {
-                $.post('@Url.Action("createWorkPlace")', () => location.reload());
+                fetch(host + 'devices/createWorkPlace').then(() => location.reload());
             }
 
             static Update(obj) {
-                var row = obj.parentNode.parentNode;
-                var form = { Id: row.id };
+                let row = obj.parentNode.parentNode;
 
-                row.querySelectorAll('input,select,textarea').forEach(el => form[el.name] = el.value);
+                let form = new FormData();
+                form.append('Id', row.id);
+                row.querySelectorAll('input,select,textarea').forEach(el => form.append(el.name, el.value));
 
-                $.post('@Url.Action("updateWorkPlace")', form);
+                fetch(host + 'devices/updateWorkPlace', { method: 'POST', body: form })
+                    .then(res => res.json())
+                    .then(json => {
+                        if (json.Good) message(json.Good, 'good');
+                    });
             }
 
             static Del(obj) {
-                var row = obj.parentNode.parentNode;
-                $.post('@Url.Action("deleteWorkPlace")/' + row.id, () => row.parentNode.removeChild(row));
+                let row = obj.parentNode.parentNode;
+                fetch(host + 'devices/deleteWorkPlace/' + row.id)
+                    .then(res => res.json())
+                    .then(json => {
+                        if (json.Good) {
+                            message(json.Good, 'good');
+                            row.parentNode.removeChild(row);
+                        }
+                    });
             }
-            
         }
     </script>
 }

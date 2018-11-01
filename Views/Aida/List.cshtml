@@ -52,8 +52,8 @@
 {
     string open = Request.Cookies.Get(computer.ID.ToString())?.Value ?? "";
 
-    <div class="unit @open">
-        <table class="caption">
+    <div class="unit @open" id="@computer.RHost">
+        <table class="caption" onclick="toggle(this)">
             <tr>
                 <td width="30px">
                     <div class="icon ic-computer"></div>
@@ -63,7 +63,7 @@
                 <td>@computer.RDateTime.ToString("dd.MM.yyyy") (@((DateTime.Now - computer.RDateTime).Days) дней)</td>
             </tr>
         </table>
-        <div class="items_block @(open == "open" ? "" : "hide")">
+        <div class="itemsBlock @(open == "open" ? "itemsBlock_expanded" : "")">
             <div class='title-wrapper' id='@computer.ID' onclick="cartOpen(this)">
                 <div class='title'>Открыть карточку компьютера</div>
             </div>

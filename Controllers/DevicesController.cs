@@ -2,7 +2,6 @@
 using Devin.Models;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
-using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +17,7 @@ namespace Devin.Controllers
 
         public ActionResult List() => View();
 
-        public ActionResult Cart(string Id) => View(model: Id);
+        public ActionResult Cart(int Id) => View(model: Id);
 
         public ActionResult History() => View();
 
@@ -28,7 +27,7 @@ namespace Devin.Controllers
 
         public ActionResult HistoryRepairsById(int Id) => View(model: Id);
 
-        public ActionResult DefectAct(string Id) => View(model: Id);
+        public ActionResult DefectAct(int Id) => View(model: Id);
 
         public ActionResult Table() => View();
 
@@ -41,10 +40,10 @@ namespace Devin.Controllers
         public ActionResult Repair(int Id) => View(model: Id);
 
 
-        public string Update(int Id, [Bind(Include = "Id,Name,Inventory,Type,Description,PublicName,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,IsOff")] Device device)
+        public JsonResult Update(int Id, [Bind(Include = "Id,Name,Inventory,Type,Description,PublicName,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,IsOff")] Device device)
         {
             // Валидация 
-            if (!DateTime.TryParse(Request.Form.Get("DateInstall"), out DateTime d)) return "error:Дата установки введена в неверном формате"; else device.DateInstall = d;
+            if (!DateTime.TryParse(Request.Form.Get("DateInstall"), out DateTime d)) return Json(new { Error = "Дата установки введена в неверном формате" }); else device.DateInstall = d;
 
             if (DateTime.TryParse(Request.Form.Get("DateLastRepair"), out d)) device.DateLastRepair = d;
             else device.DateLastRepair = null;
@@ -200,11 +199,11 @@ namespace Devin.Controllers
                         Username = User.Identity.Name
                     });
 
-                    return "Позиция успешно обновлена! Изменены поля: <br />" + string.Join(",<br />", changes.ToArray());
+                    return Json(new { Good = "Позиция успешно обновлена!<br />Изменены поля:<br />" + string.Join(",<br />", changes.ToArray()) });
                 }
                 else
                 {
-                    return "Изменений не было";
+                    return Json(new { Warning = "Изменений не было" });
                 }
             }
         }
@@ -286,54 +285,44 @@ namespace Devin.Controllers
             }
         }
 
-        public void MoveSelected(string Devices, string Key)
+        public JsonResult MoveSelected(string Devices, string Key)
         {
             string[] devices = Devices.Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
 
             using (var conn = Database.Connection())
             {
+                int ComputerId = int.TryParse(Key.Replace("computer", ""), out int i) ? i : 0;
+                int FolderId = int.TryParse(Key.Replace("folder", ""), out i) ? i : 0;
+
+                string message = "Устройство размещено отдельно";
+                if (Key.Contains("computer")) message = "Устройство перемещено в компьютер [device" + ComputerId + "]";
+                if (Key.Contains("folder")) message = "Устройство перемещено в папку [folder" + FolderId + "]";
+
                 foreach (string device in devices)
                 {
-                    int Id = int.TryParse(device, out int i) ? i : 0;
-                    string message = "";
+                    int Id = int.TryParse(device, out i) ? i : 0;
                     if (Id != 0)
                     {
-                        if (Key == "0")
+                        conn.Execute("UPDATE Devices SET ComputerId = @ComputerId, FolderId = @FolderId WHERE Id = @Id", new { ComputerId, FolderId, Id });
+                        conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'devices', @Id, @Text, @Name)", new
                         {
-                            conn.Execute("UPDATE Devices SET ComputerId = 0, FolderId = 0 WHERE Id = @Id", new { Id });
-                            message = "Устройство размещено отдельно";
-                        }
-                        else if (Key.Contains("cmp"))
-                        {
-                            int key = int.TryParse(Key.Replace("cmp", ""), out i) ? i : 0;
-                            conn.Execute("UPDATE Devices SET ComputerId = @Key, FolderId = 0 WHERE Id = @Id", new { Id, Key = key });
-                            message = "Устройство перемещено в компьютер #" + key;
-                        }
-                        else
-                        {
-                            int key = int.TryParse(Key.Replace("g", ""), out i) ? i : 0;
-                            conn.Execute("UPDATE Devices SET ComputerId = 0, FolderId = @Key0 WHERE Id = @Id", new { Id, Key = key });
-                            message = "Устройство перемещено в папку #" + key;
-                        }
+                            Id,
+                            Text = message,
+                            User.Identity.Name
+                        });
                     }
-
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
-                    {
-                        Date = DateTime.Now,
-                        Source = "devices",
-                        Id = Id.ToString(),
-                        Text = message,
-                        Username = User.Identity.Name
-                    });
                 }
             }
+
+            return Json(new { Good = "Все устройства успешно перемещены" });
         }
 
-        public void Move(int Id, int Key)
+        public JsonResult Move(int Id, int Key)
         {
             using (var conn = Database.Connection())
             {
                 conn.Execute("UPDATE Devices SET FolderId = @Key WHERE Id = @Id", new { Id, Key });
+                return Json(new { Good = "Компьютер успешно перемещен" });
             }
         }
 
@@ -346,7 +335,7 @@ namespace Devin.Controllers
             }
         }
 
-        public string PrintDefectAct()
+        public JsonResult PrintDefectAct(string Description, string Inventory, string Name, string Position, string Mol, string Time)
         {
             var keys = new Dictionary<string, string>
             {
@@ -368,47 +357,38 @@ namespace Devin.Controllers
                 { "videocard", "Ремонт видеокарты" },
             };
 
-            var model = new
-            {
-                Id = Request.Form.Get("id"),
-                Date = DateTime.TryParse(Request.Form.Get("data"), out DateTime d) ? d : DateTime.Now,
-                Description = Request.Form.Get("description"),
-                Inventory = Request.Form.Get("inventory"),
-                Name = Request.Form.Get("name"),
-                MolTitle = Request.Form.Get("mol_post"),
-                MolName = Request.Form.Get("mol_name"),
-                WorkTime = Request.Form.Get("work_time"),
-                Positions = Request.Form.Get("positions").Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries),
-            };
+            string[] months = new string[] { "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря" };
 
-            var months = new string[] { "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря" };
 
-            string template = Server.MapPath("/devin/content/exl/") + "defect.xls";
-            string output = Server.MapPath("/devin/content/excels/") + "defect.xls";
+            DateTime Date = DateTime.TryParse(Request.Form.Get("DateInstall"), out DateTime d) ? d : DateTime.Now;
+            string[] Positions = Request.Form.Get("positions").Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
 
-            if (!System.IO.File.Exists(template)) return "Файла шаблона не существует либо путь к нему неправильно прописан в исходниках";
+            string template = Url.Action("exl", "content") + "defect.xls";
+            string output = Url.Action("excels", "content") + "defect.xls";
 
-            IWorkbook book;
-            using (var fs = new FileStream(template, FileMode.Open, FileAccess.Read))
+            if (!System.IO.File.Exists(Server.MapPath(template))) return Json(new { Error = "Файла шаблона не существует либо путь к нему неправильно прописан в исходниках" });
+
+            HSSFWorkbook book;
+            using (var fs = new FileStream(Server.MapPath(template), FileMode.Open, FileAccess.Read))
             {
                 book = new HSSFWorkbook(fs);
             }
 
             var sheet = book.GetSheetAt(0);
 
-            sheet.GetRow(27).GetCell(22).SetCellValue(model.MolTitle);
-            sheet.GetRow(27).GetCell(68).SetCellValue(model.MolName);
-            sheet.GetRow(33).GetCell(0).SetCellValue(model.Description + " (" + model.Name + ") инв. № " + model.Inventory + " Cрок работы: " + model.WorkTime + " часов");
+            sheet.GetRow(27).GetCell(22).SetCellValue(Position);
+            sheet.GetRow(27).GetCell(68).SetCellValue(Mol);
+            sheet.GetRow(33).GetCell(0).SetCellValue(Description + " (" + Name + ") инв. № " + Inventory + " Cрок работы: " + Time + " часов");
             sheet.GetRow(35).GetCell(16).SetCellValue("произошел выход из строя следующих комплектующих:");
 
-            sheet.GetRow(87).GetCell(2).SetCellValue(model.Date.Day);
-            sheet.GetRow(87).GetCell(8).SetCellValue(months[model.Date.Month - 1]);
-            sheet.GetRow(87).GetCell(32).SetCellValue(model.Date.Year);
+            sheet.GetRow(87).GetCell(2).SetCellValue(Date.Day);
+            sheet.GetRow(87).GetCell(8).SetCellValue(months[Date.Month - 1]);
+            sheet.GetRow(87).GetCell(32).SetCellValue(Date.Year);
 
             string defects = "";
             int i = 0;
 
-            foreach (var position in model.Positions)
+            foreach (string position in Positions)
             {
                 if (position != "")
                 {
@@ -425,15 +405,15 @@ namespace Devin.Controllers
 
             sheet.GetRow(38).GetCell(0).SetCellValue(defects);
 
-            using (var fs = new FileStream(output, FileMode.OpenOrCreate, FileAccess.Write))
+            using (var fs = new FileStream(Server.MapPath(output), FileMode.OpenOrCreate, FileAccess.Write))
             {
                 book.Write(fs);
             }
 
-            return "<a href='/devin/content/excels/defect.xls'>Дефектный акт в формате Excel</a>";
+            return Json(new { Good = "Дефектный акт создан", Link = output });
         }
 
-        public string PrintRecordCartByIp(string Ip)
+        public JsonResult PrintRecordCartByIp(string Ip)
         {
             IPAddress addr = IPAddress.Parse(Ip);
             IPHostEntry entry = Dns.GetHostEntry(addr);
@@ -442,20 +422,20 @@ namespace Devin.Controllers
             using (var conn = Database.Connection())
             {
                 int Id = conn.Query<int>("SELECT Id FROM Devices WHERE Name = @Name", new { Name }).FirstOrDefault();
-                if (Id == 0) return "error:Компьютер с именем \"" + Name + "\" не найден в базе.";
-                return PrintRecordCart(Id);
+                if (Id == 0) return Json(new { Error = "Компьютер с именем \"" + Name + "\" не найден в базе." });
+                return PrintRecordCart(Id.ToString());
             }
         }
 
-        public string PrintRecordCart(int Id)
+        public JsonResult PrintRecordCart(string Id)
         {
-            string template = Server.MapPath(Url.Action("exl", "content") + "/ReportCart.xlsx");
-            string output = Server.MapPath(Url.Action("excels", "content") + "/ReportCart.xlsx");
+            string template = Server.MapPath(Url.Action("exl", "content") + "/ReportCart.xls");
+            string output = Server.MapPath(Url.Action("excels", "content") + "/ReportCart.xls");
 
-            XSSFWorkbook book;
+            HSSFWorkbook book;
             using (var fs = new FileStream(template, FileMode.Open, FileAccess.Read))
             {
-                book = new XSSFWorkbook(fs);
+                book = new HSSFWorkbook(fs);
             }
 
             ISheet sheet = book.GetSheetAt(0);
@@ -470,13 +450,14 @@ namespace Devin.Controllers
 	                Devices.Inventory,
 	                Devices.Name,
 	                Devices.Description,
+	                Devices.PublicName,
 	                Devices1C.Description AS Description1C,
 	                Devices.SerialNumber,
 	                CASE WHEN Devices1C.Mol IS NULL THEN Devices.Mol ELSE Devices1C.Mol END AS Mol,
 	                Devices.DateInstall
                 FROM Devices
                 LEFT OUTER JOIN Devices1C ON Devices1C.Inventory = Devices.Inventory
-                WHERE Devices.Id = @Id OR Devices.ComputerId = @Id
+                WHERE Devices.Id = @Id OR Devices.ComputerId = @Id AND Devvices.IsDeleted <> 1
                 ORDER BY Devices.Inventory, Description1C", new { Id }).AsList();
             }
 
@@ -491,7 +472,7 @@ namespace Devin.Controllers
                 row.GetCell(0).SetCellValue(device.Inventory);
                 row.GetCell(1).SetCellValue(device.Description1C ?? device.Description);
                 row.GetCell(2).SetCellValue(device.SerialNumber ?? "");
-                row.GetCell(3).SetCellValue(device.Description);
+                row.GetCell(3).SetCellValue(device.PublicName);
                 row.GetCell(4).SetCellValue(device.DateInstall.ToString("dd.MM.yyyy"));
                 row.GetCell(5).SetCellValue(device.Mol ?? "");
                 row.GetCell(6).SetCellValue(now);
@@ -504,11 +485,11 @@ namespace Devin.Controllers
             }
 
 
-            return Url.Action("excels", "content") + "/ReportCart.xlsx";
+            return Json(new { Good = "", Link = Url.Action("excels", "content") + "/ReportCart.xlsx" });
         }
 
 
-        public void CreateWorkPlace()
+        public JsonResult CreateWorkPlace()
         {
             using (var conn = Database.Connection())
             {
@@ -519,22 +500,25 @@ namespace Devin.Controllers
                     Id = Id,
                     Location = "Новое рабочее место #" + Id
                 });
+                return Json(new { Good = "Новое рабочее место создано" });
             }
         }
 
-        public void UpdateWorkPlace([Bind(Include = "Id,Location,Guild")] WorkPlace workPlace)
+        public JsonResult UpdateWorkPlace([Bind(Include = "Id,Location,Guild")] WorkPlace workPlace)
         {
             using (var conn = Database.Connection())
             {
                 conn.Execute("UPDATE WorkPlaces SET Location = @Location, Guild = @Guild WHERE Id = @Id", workPlace);
+                return Json(new { Good = "Рабочее место обновлено" });
             }
         }
 
-        public void DeleteWorkPlace(int Id)
+        public JsonResult DeleteWorkPlace(int Id)
         {
             using (var conn = Database.Connection())
             {
                 conn.Execute("DELETE FROM WorkPlaces WHERE Id = @Id", new { Id });
+                return Json(new { Good = "Рабочее место удалено" });
             }
         }
     }

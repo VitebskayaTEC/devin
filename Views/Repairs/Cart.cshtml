@@ -6,7 +6,13 @@
 
     if (repair == null)
     {
-        <div class="error">Нет данных по данному идентификатору</div>
+        <div class="cart__header">
+            <div></div>
+            <div class="cart__closeButton" title="Закрыть карточку" onclick="cartClose()">
+                <i class="icon ic-clear icon_white icon_no-hover"></i>
+            </div>
+        </div>
+        <div class="cart__body">Нет данных по данному идентификатору</div>
         return;
     }
 

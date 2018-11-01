@@ -23,7 +23,7 @@ namespace Devin.Controllers
 
         public ActionResult Cart(int Id) => View(model: Id);
 
-        public ActionResult Repairs() => View();
+        public ActionResult History(int Id) => View(model: Id);
 
         public ActionResult Import()
         {
@@ -68,9 +68,7 @@ namespace Devin.Controllers
             return View(model);
         }
 
-        public ActionResult History(int Id) => View(model: Id);
-
-
+        
         public JsonResult Create()
         {
             using (var conn = Database.Connection())
@@ -168,7 +166,7 @@ namespace Devin.Controllers
 
         public JsonResult Move(string Select, int FolderId)
         {
-            string[] Storages = Select.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] Storages = Select.Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
 
             using (var conn = Database.Connection())
             {
@@ -232,78 +230,79 @@ namespace Devin.Controllers
             }
         }
 
-        public string Labels()
+        public JsonResult Labels(string Select)
         {
-            string sql = @"SELECT 
-                Storages.Nstorage,
-                Storages.Inventory,
-                Cartridges.Name AS Cartridges_Name,
-                Storages.Date,
-                Storages.Name
-            FROM Storages
-            LEFT OUTER JOIN Cartridges ON Storages.CartridgeId = Cartridges.Id
-            WHERE Inventory = '" + (Request.Form.Get("select") ?? "1").Replace(";", "' OR Inventory = '") + "'" +
-            "ORDER BY Date DESC";
+            List<Storage> Storages;
 
             using (var conn = Database.Connection())
             {
-                var model = conn.Query(sql).AsList();
+                Storages = conn.Query<Storage>(@"SELECT
+                    Storages.Id,
+                    Storages.Nstorage,
+                    Storages.Inventory,
+                    Cartridges.Name AS [Type],
+                    Storages.Date,
+                    Storages.Name
+                FROM Storages
+                LEFT OUTER JOIN Cartridges ON Storages.CartridgeId = Cartridges.Id
+                WHERE Storages.Id IN (" + Select + ") ORDER BY Storages.Date DESC").AsList();
+            }
 
-                if (model.Count == 0) return "Нечего печатать";
+            if (Storages.Count == 0) return Json(new { Warning = "Нечего печатать" });
+            if (Storages.Select(x => x.Nstorage).Sum() == 0) return Json(new { Warning = "На складе нет выбранных позиций" });
 
-                IWorkbook book;
-                using (var fs = new FileStream(Server.MapPath("../content/exl/") + "labels.xls", FileMode.Open, FileAccess.Read))
+            HSSFWorkbook book;
+            using (var fs = new FileStream(Server.MapPath("../content/exl/") + "labels.xls", FileMode.Open, FileAccess.Read))
+            {
+                book = new HSSFWorkbook(fs);
+            }
+
+            var sheet = book.GetSheetAt(0);
+
+            bool isLeft = true;
+            int rowCount = 1;
+
+            for (int i = 0; i < Storages.Count; i++)
+            {
+                for (int j = 0; j < Storages[i].Nstorage; j++)
                 {
-                    book = new HSSFWorkbook(fs);
-                }
-                var sheet = book.GetSheetAt(0);
-
-                bool isLeft = true;
-                int rowCount = 1;
-
-                for (int i = 0; i < model.Count; i++)
-                {
-                    for (int j = 0; j < model[i].Nstorage; j++)
+                    if (isLeft)
                     {
-                        if (isLeft)
-                        {
-                            sheet.GetRow(rowCount * 3 - 3).GetCell(0).SetCellValue("№");
-                            sheet.GetRow(rowCount * 3 - 2).GetCell(0).SetCellValue("Тип:");
-                            sheet.GetRow(rowCount * 3 - 1).GetCell(0).SetCellValue("Приход:");
+                        sheet.GetRow(rowCount * 3 - 3).GetCell(0).SetCellValue("№");
+                        sheet.GetRow(rowCount * 3 - 2).GetCell(0).SetCellValue("Тип:");
+                        sheet.GetRow(rowCount * 3 - 1).GetCell(0).SetCellValue("Приход:");
 
-                            sheet.GetRow(rowCount * 3 - 3).GetCell(1).SetCellValue(model[i].Inventory);
-                            sheet.GetRow(rowCount * 3 - 2).GetCell(1).SetCellValue(model[i].Cartridges_Name ?? model[i].Name);
-                            sheet.GetRow(rowCount * 3 - 1).GetCell(1).SetCellValue(model[i].Date.ToString("dd.MM.yyyy"));
+                        sheet.GetRow(rowCount * 3 - 3).GetCell(1).SetCellValue(Storages[i].Inventory);
+                        sheet.GetRow(rowCount * 3 - 2).GetCell(1).SetCellValue(Storages[i].Type ?? Storages[i].Name);
+                        sheet.GetRow(rowCount * 3 - 1).GetCell(1).SetCellValue(Storages[i].Date.ToString("dd.MM.yyyy"));
 
-                            isLeft = false;
-                        }
-                        else
-                        {
-                            sheet.GetRow(rowCount * 3 - 3).GetCell(2).SetCellValue("№");
-                            sheet.GetRow(rowCount * 3 - 2).GetCell(2).SetCellValue("Тип:");
-                            sheet.GetRow(rowCount * 3 - 1).GetCell(2).SetCellValue("Приход:");
+                        isLeft = false;
+                    }
+                    else
+                    {
+                        sheet.GetRow(rowCount * 3 - 3).GetCell(2).SetCellValue("№");
+                        sheet.GetRow(rowCount * 3 - 2).GetCell(2).SetCellValue("Тип:");
+                        sheet.GetRow(rowCount * 3 - 1).GetCell(2).SetCellValue("Приход:");
 
-                            sheet.GetRow(rowCount * 3 - 3).GetCell(3).SetCellValue(model[i].Inventory);
-                            sheet.GetRow(rowCount * 3 - 2).GetCell(3).SetCellValue(model[i].Cartridges_Name ?? model[i].Name);
-                            sheet.GetRow(rowCount * 3 - 1).GetCell(3).SetCellValue(model[i].Date.ToString("dd.MM.yyyy"));
-
-
-                            rowCount = rowCount + 1;
-                            isLeft = true;
-                        }
+                        sheet.GetRow(rowCount * 3 - 3).GetCell(3).SetCellValue(Storages[i].Inventory);
+                        sheet.GetRow(rowCount * 3 - 2).GetCell(3).SetCellValue(Storages[i].Type ?? Storages[i].Name);
+                        sheet.GetRow(rowCount * 3 - 1).GetCell(3).SetCellValue(Storages[i].Date.ToString("dd.MM.yyyy"));
+                        
+                        rowCount = rowCount + 1;
+                        isLeft = true;
                     }
                 }
-                
-                using (var fs = new FileStream(Server.MapPath("../content/excels/") + "Бирки.xls", FileMode.OpenOrCreate, FileAccess.Write))
-                {
-                    book.Write(fs);
-                }
-
-                return Url.Action("excels", "content") + "/Бирки.xls";
             }
+
+            using (var fs = new FileStream(Server.MapPath("../content/excels/") + "Бирки.xls", FileMode.OpenOrCreate, FileAccess.Write))
+            {
+                book.Write(fs);
+            }
+
+            return Json(new { Good = "Создание файла с бирками завершено", Link = Url.Action("excels", "content") + "/Бирки.xls" });
         }
 
-        public string AnalyzePrint()
+        public JsonResult AnalyzePrint(string Data)
         {
             // Получение исходных данных
             float cost = 0;
@@ -312,26 +311,26 @@ namespace Devin.Controllers
             var lastType = new List<Cartridge>();
             string lastName = "";
 
-            string[] Data = (Request.Form.Get("data") ?? "").Split(new string[] { "----" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] DataSplit = (Data ?? "").Split(new string[] { "----" }, StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (string data in Data)
+            foreach (string data in DataSplit)
             {
-                string[] _ = data.Split(new string[] { "__" }, StringSplitOptions.RemoveEmptyEntries);
+                string[] raw = data.Split(new string[] { "__" }, StringSplitOptions.RemoveEmptyEntries);
 
                 var cartridge = new Cartridge
                 {
-                    Name = _[0],
-                    Count = int.Parse(_[3]),
-                    Cost = float.Parse(_[1])
+                    Name = raw[0],
+                    Count = int.Parse(raw[3]),
+                    Cost = float.Parse(raw[1])
                 };
 
-                switch (_[2]) {
+                switch (raw[2]) {
                     case "flow": cartridge.Type = "Картридж струйный"; break;
                     case "laser": cartridge.Type = "Тонер-картридж"; break;
                     case "matrix": cartridge.Type = "Матричная лента"; break;
                 }
 
-                switch (_[4])
+                switch (raw[4])
                 { 
                     case "black": cartridge.Color = "черный"; break;
                     case "blue": cartridge.Color = "голубой"; break;
@@ -355,12 +354,12 @@ namespace Devin.Controllers
 
 
             // Открытие шаблона
-            IWorkbook book;
-            using (var fs = new FileStream(Server.MapPath("/devin/content/exl/") + "analyze.xls", FileMode.Open, FileAccess.Read))
+            HSSFWorkbook book;
+            using (var fs = new FileStream(Server.MapPath("../content/exl/") + "analyze.xls", FileMode.Open, FileAccess.Read))
             {
                 book = new HSSFWorkbook(fs);
             }
-            ISheet sheet = book.GetSheetAt(0);
+            var sheet = book.GetSheetAt(0);
 
 
             // Заполнение полей
@@ -404,14 +403,15 @@ namespace Devin.Controllers
                 startRegion = endRegion;
             }
 
-           
+
             // Сохранение документа
-            using (var fs = new FileStream(Server.MapPath("/devin/content/excels/") + "analyze.xls", FileMode.OpenOrCreate, FileAccess.Write))
+            string name = "Заявка на закупку картриджей " + DateTime.Now.ToString("d MMMM yyyy") + ".xls";
+            using (var fs = new FileStream(Server.MapPath("../content/excels/") + name, FileMode.OpenOrCreate, FileAccess.Write))
             {
                 book.Write(fs);
             }
 
-            return "<a href='/devin/content/excels/analyze.xls'>Сохранить файл</a>";
+            return Json(new { Good = "Создание заявки на закупку завершено", Link = Url.Action("excels", "content") + name });
         }
     }
 }

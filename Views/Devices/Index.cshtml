@@ -9,48 +9,32 @@
             <input name="search" id="search" placeholder="Поиск" value="@Request.QueryString.Get("search")" />
         </form>
     </li><li>
-        <a class='has-icon' onmousedown='_menu(this)' menu='main'><div class='icon ic-menu'></div></a>
+        <a class="has-icon" onmousedown="_menu(this)" menu="main"><div class="icon ic-menu"></div></a>
     </li>
-}
-
-@section styles {
-    <link rel="stylesheet" href="~/content/css/device.css" />
 }
 
 @section scripts {
     <script src="~/content/lib/jquery-3.3.1.min.js"></script>
     <script src="~/content/js/core.js"></script>
     <script>
-        var sortKey = '@Request.QueryString.Get("key")',
-            sortDesc = '@Request.QueryString.Get("desc")',
-            sortText = '@Request.QueryString.Get("search")';
-
         $('.view')
             .on('mousedown', '.unit:not(#solo) .caption th,.unit:not(#solo) .caption td:not(:first-child)', function () { toggle(this) })
             .on('mousedown', '.items th', function () { _sort(this) })
 
-
         function cartOpenBack() {
-            fetch('@Url.Action("cart")/' + id)
+            fetch(host + 'devices/cart/' + id)
                 .then(res => res.text())
                 .then(text => {
                     let cart = document.getElementById('cart');
                     cart.innerHTML = text;
                     cart.classList.add('cart_visible');
-                    document.getElementById('view').querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-                    document.getElementById(id).classList.add('selected');
+                    let el = document.getElementById(id);
+                    if (el) {
+                        document.getElementById('view').querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+                        el.classList.add('selected');
+                    }
                 });
         }
-
-        var Device = {
-            PrintReportCart() {
-                fetch('@Url.Action("PrintRecordCart", "Devices")/' + menuId).then(res => res.text()).then(text => {
-                    let a = document.createElement('a');
-                    a.href = text;
-                    a.click();
-                });
-            }
-        };
 
         function computerOpen() {
             cartOpen(document.getElementById(menuId).querySelector('.title'));
@@ -105,35 +89,33 @@
 }
 
 @section html {
-
-    <div id='selected' class='panel'>
+    <div class="panel" id="selected">
         <div>Выбрано элементов: <b></b></div>
         <div>
-            <select id='moveKey'></select>
-            <a onclick='moveSelectedDevices()'>Переместить</a>
-        </div>
-        <div><a onclick='removeAllSelection()'>Сбросить выбор</a></div>
-    </div>
-
-    <div id="excl" class='panel'>
-        <form method="POST" enctype="multipart/form-data" action="/devin/asp/device_1c_compare.asp?typeof=0">
-            <select onchange="parentNode.action='/devin/asp/device_1c_compare.asp?typeof='+this.value;" name='typeof'>
-                <option value='0'>Компьютеры</option>
-                <option value='1'>Принтеры</option>
-                <option value='2'>Мониторы</option>
-                <option value='3'>Модемы</option>
-                <option value='4'>Сканеры</option>
-                <option value='5'>ИБП</option>
-                <option value='6'>Другое</option>
+            <select id="moveKey" class="cart__field cart__field_autoWidth">
+                <option value="0">Не распределенные</option>
+                @using (var conn = Database.Connection())
+                {
+                    var computers = conn.Query<Computer>("SELECT Id, Name FROM Devices WHERE Type = 'CMP' AND IsDeleted = 0 AND IsOff = 0 ORDER BY Name");
+                    foreach (var computer in computers)
+                    {
+                        <option value="computer@(computer.Id)">[компьютер] @computer.Name</option>
+                    }
+                    var folders = conn.Query<Folder>("SELECT Id, Name FROM Folders WHERE Type = 'device' ORDER BY Name");
+                    foreach (var folder in folders)
+                    {
+                        <option value="folder@(folder.Id)">[папка] @folder.Name</option>
+                    }
+                }
             </select>
-            <input type='file' name="FILE1" />
-            <input type='submit' value="Загрузить" />
-        </form>
+            <br /><a onclick="moveSelectedDevices()">Переместить</a>
+        </div>
+        <div><a onclick="removeAllSelection()">Сбросить выбор</a></div>
     </div>
 
     <div class="context-menu" id="main">
         <div onclick="Devices.Cart.create()">Создать карточку устройства</div>
-        <div onclick="Folder.create()">Создать группу</div>
+        <div onclick="Folders.create()">Создать группу</div>
         <hr />
         <a href="@Url.Action("analyze", "storages")">Анализ расхода картриджей</a>
         <hr />
@@ -146,17 +128,17 @@
 
     <ul class="context-menu" id="computer">
         <li onclick="computerOpen()">Открыть карточку</li>
-        <li onclick="Device.PrintReportCart()">Карточка учета техники</li>
-        <li onclick="Folder.beforeMove()">Переместить</li>
+        <li onclick="Devices.printReport()">Карточка учета техники</li>
+        <li onclick="Folders.beforeMove()">Переместить</li>
         <li onclick="computerDelete()">Удалить</li>
     </ul>
 
     <ul class="context-menu" id="group">
-        <li onclick="Folder.update()">Переименовать
-        <li onclick="Folder.beforeMove()">Переместить</li>
-        <li onclick="Folder.createInner()">Создать вложенную группу</li>
-        <li onclick="Folder.clear()">Очистить</li>
-        <li onclick="Folder.del()">Удалить</li>
+        <li onclick="Folders.update()">Переименовать
+        <li onclick="Folders.beforeMove()">Переместить</li>
+        <li onclick="Folders.createInner()">Создать вложенную группу</li>
+        <li onclick="Folders.clear()">Очистить</li>
+        <li onclick="Folders.del()">Удалить</li>
     </ul>
 
     <ul class="context-menu" id="modal">

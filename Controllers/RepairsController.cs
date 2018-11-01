@@ -23,11 +23,14 @@ namespace Devin.Controllers
 
         public ActionResult Storage(string Id) => View(model: Id);
 
+        public ActionResult History(int Id) => View(model: Id);
+
         public ActionResult CreateFromDevice(int Id) => View(model: Id);
 
         public ActionResult CreateFromDeviceData(int Id) => View(model: Id);
 
-        public ActionResult History(int Id) => View(model: Id);
+        public ActionResult CreateFromStorages(string Select) => View(model: Select);
+
 
         public JsonResult Update(int Id, [Bind(Include = "Id,DeviceId,StorageId,Number,IsOff,IsVirtual")] Repair repair, string Destination)
         {
@@ -508,6 +511,68 @@ namespace Devin.Controllers
                         WriteoffId,
                         User.Identity.Name,
                         Text = "Автоматически создано списание при ремонте устройства [device" + Id + "]"
+                    });
+                }
+
+                foreach (var repair in repairs)
+                {
+                    conn.Execute("INSERT INTO Repairs (DeviceId, StorageId, Number, Date, IsOff, IsVirtual, Author) VALUES (@DeviceId, @StorageId, @Number, @Date, @IsOff, @IsVirtual, @Author)", repair);
+                    conn.Execute("UPDATE Storages SET " + (repair.IsVirtual ? "" : "Nstorage = Nstorage - @Number,") + "Nrepairs = Nrepairs + @Number WHERE Id = @StorageId", repair);
+
+                    repair.Id = conn.QueryFirst<int>("SELECT Max(Id) FROM Repairs");
+
+                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'repairs', @Id, @Text, @Name)", new
+                    {
+                        repair.Id,
+                        User.Identity.Name,
+                        Text = "Ремонт: использована позиция с инвентарным № [storage" + repair.StorageId + "] в количестве " + repair.Number + " шт." + (repair.IsVirtual ? " (виртуальный)" : "")
+                    });
+                }
+
+                return Json(new
+                {
+                    Good = "Ремонты успешно созданы",
+                    WriteoffId
+                });
+            }
+        }
+
+        public JsonResult EndCreateFromStorages(string[] Repairs, string Writeoff)
+        {
+            List<Repair> repairs = new List<Repair>();
+            foreach (string s in Repairs)
+            {
+                string[] sub = s.Split(':');
+                var r = new Repair
+                {
+                    StorageId = int.TryParse(sub[0], out int i) ? i : 0,
+                    DeviceId = int.TryParse(sub[1], out i) ? i : 0,
+                    Number = int.TryParse(sub[2], out i) ? i : 0,
+                    IsVirtual = sub[3] == "true",
+                    FolderId = 0,
+                    Author = User.Identity.Name,
+                    Date = DateTime.Now,
+                    IsOff = false
+                };
+                if (r.StorageId != 0 && r.Number != 0) repairs.Add(r);
+            }
+
+            repairs = repairs.Where(x => x.DeviceId != 0).ToList();
+            if (repairs.Count == 0) return Json(new { Warning = "Нет выбранных объектов для создания ремонтов" });
+
+            using (var conn = Database.Connection())
+            {
+                int WriteoffId = 0;
+                if (!string.IsNullOrEmpty(Writeoff))
+                {
+                    conn.Execute("INSERT INTO Writeoffs (Name, Type, Date, FolderId, CostArticle) VALUES (@Writeoff, 'expl', GetDate(), 0, 0)", new { Writeoff });
+                    WriteoffId = conn.QueryFirst<int>("SELECT Max(Id) FROM Writeoffs");
+                    foreach (var repair in repairs) repair.WriteoffId = WriteoffId;
+                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'writeoffs', @WriteoffId, @Text, @Name)", new
+                    {
+                        WriteoffId,
+                        User.Identity.Name,
+                        Text = "Автоматически создано списание при создании группы ремонтов на складе"
                     });
                 }
 

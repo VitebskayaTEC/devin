@@ -9,14 +9,8 @@
     <li><button class="cart__button" onclick="exportToExcel()">Печать заказа на закупку картриджей</button></li>
 }
 
-@section styles {
-    <link rel="stylesheet" href="~/content/lib/jquery-ui.min.css" />
-    <link rel="stylesheet" href="~/content/lib/select2.min.css" />
-    <link rel="stylesheet" href="~/content/css/storage.css" />
-}
-
 @section scripts {
-    <script src="~/content/lib/jquery-1.12.4.min.js"></script>
+    <script src="~/content/lib/jquery-3.3.1.min.js"></script>
     <script src="~/content/js/core.js"></script>
     <script>
         $(".view")
@@ -43,35 +37,37 @@
         };
 
         function exportToExcel() {
-	        var formData = "";
-	        var trs = document.getElementById("analyzeCartridges").getElementsByTagName("tbody")[1].getElementsByTagName("tr");
-	        for (var i = 0; i < trs.length; i++) {
-		        var input = trs[i].querySelector("input");
-		        var val = +input.value;
-		        if (val > 0 && !isNaN(val)) {
-			        // Получаем данные, если предполагается или введено некоторое положительное количество
-			        formData += (formData == "" ? "" : "----") +
-				        encodeURIComponent(trs[i].querySelector("a").innerHTML.toString()) + "__" +
-				        trs[i].getElementsByTagName("td")[2].innerHTML.toString() + "__" +
-				        input.name + "__" +
-				        val.toFixed(0) + "__" +
-				        input.getAttribute("color");
+            let formData = '';
+
+	        let rows = document.getElementById('analyzeCartridges').getElementsByTagName('tbody')[1].getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                let input = rows[i].querySelector('input');
+                let val = +input.value;
+                if (val > 0 && !isNaN(val)) {
+			        formData += (formData == '' ? '' : '----') +
+                        encodeURIComponent(rows[i].querySelector('a').innerHTML.toString()) + '__' +
+                        rows[i].getElementsByTagName('td')[2].innerHTML.toString() + '__' +
+				        input.name + '__' +
+				        val.toFixed(0) + '__' +
+				        input.getAttribute('color');
 		        }
-	        }
-	        document.getElementById("export").style.display = "none";
-	        $.post('@Url.Action("analyzePrint", "storages")', 'data=' + formData, data => {
-		        document.getElementById("export").querySelector("div").innerHTML = data;
-		        $("#export").slideDown(100);
-	        });
+            }
+
+            let form = new FormData();
+            form.append('data', formData);
+            fetch(host + 'storages/analyzePrint', { method: 'POST', body: form })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.Good) {
+                        message(json.Good, 'good');
+                        let a = document.createElement('a');
+                        document.body.appendChild(a);
+                        a.href = json.Link;
+                        a.click();
+                    }
+                });
         }
     </script>
-}
-
-@section html {
-    <div id='export' class='panel'>
-        <div></div>
-        <div><a onclick='$(this).closest(".panel").slideUp(100)'>Закрыть</a></div>
-    </div>
 }
 
 @using (var conn = Database.Connection())

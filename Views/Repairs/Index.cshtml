@@ -13,10 +13,6 @@
     </li>
 }
 
-@section styles {
-    <link rel="stylesheet" href="~/content/css/repair.css" />
-}
-
 @section scripts {
     <script src="~/content/lib/jquery-3.3.1.min.js"></script>
     <script src="~/content/js/core.js"></script>
@@ -91,14 +87,14 @@
         <a href="~/storages/analyze">Закупка картриджей</a>
         <a href="~/repairs/yearReport">Годовой отчет по ремонтам</a>
         <a href="~/repairs/cartridgesUsage">Годовой отчет по картриджам</a>
-        <div onclick="Folder.create()">Создать группу</div>
+        <div onclick="Folders.create()">Создать группу</div>
         <div onclick="Writeoffs.create()">Создать списание</div>
     </div>
 
     <ul class="context-menu" id="writeoff">
         <li onclick="Writeoffs.cart()">Открыть карточку</li>
         <li onclick="Writeoffs.export()">Печать</li>
-        <li onclick="Folder.beforeMove()">Переместить</li>
+        <li onclick="Folders.beforeMove()">Переместить</li>
         <li onclick="Repairs.off()">Отметить все ремонты как списаные</li>
         <li onclick="Repairs.on()">Отметить все ремонты как активные</li>
         <li onclick="Repairs.clear()">Отменить все ремонты</li>
@@ -106,11 +102,11 @@
     </ul>
 
     <ul class="context-menu" id="group">
-        <li onclick="Folder.update()">Переименовать</li>
-        <li onclick="Folder.beforeMove()">Переместить</li>
-        <li onclick="Folder.createInner()">Создать вложенную группу</li>
-        <li onclick="Folder.clear()">Очистить</li>
-        <li onclick="Folder.del()">Удалить</li>
+        <li onclick="Folders.update()">Переименовать</li>
+        <li onclick="Folders.beforeMove()">Переместить</li>
+        <li onclick="Folders.createInner()">Создать вложенную группу</li>
+        <li onclick="Folders.clear()">Очистить</li>
+        <li onclick="Folders.del()">Удалить</li>
     </ul>
 
     <ul class="context-menu" id="modal">

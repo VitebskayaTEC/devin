@@ -4,60 +4,61 @@
     var storage = conn.Query<Storage>(@"SELECT * FROM Storages WHERE Id = @Model", new { Model }).FirstOrDefault();
     if (storage == null)
     {
-        <div>Позиция не найдено</div>
+        <div class="cart__body">Позиция не найдено</div>
         return;
     }
 
-    <table class="cart__table">
-        <tbody>
-            <tr>
-                <td>Инвентарный номер</td>
-                <td>@storage.Inventory</td>
-            </tr>
-            <tr>
-                <td>Наименование</td>
-                <td>@storage.Name</td>
-            </tr>
-            <tr>
-                <td>Стоимость</td>
-                <td>@storage.Cost.ToString("0.00")</td>
-            </tr>
-            <tr>
-                <td>Счет учета</td>
-                <td>@storage.Account</td>
-            </tr>
-            <tr>
-                <td>Дата прихода</td>
-                <td>@storage.Date.ToString("dd.MM.yyyy")</td>
-            </tr>
-            @if (storage.Type == "PRN")
-            {
-                storage.Cartridge = conn.Query<Cartridge>("SELECT * FROM Cartridges WHERE Id = @CartridgeId", new { storage.CartridgeId }).FirstOrDefault();
-                if (storage.Cartridge == null)
+    <div class="cart__body">
+        <table class="cart__table">
+            <tbody>
+                <tr>
+                    <td>Инвентарный номер</td>
+                    <td>@storage.Inventory</td>
+                </tr>
+                <tr>
+                    <td>Наименование</td>
+                    <td>@storage.Name</td>
+                </tr>
+                <tr>
+                    <td>Стоимость</td>
+                    <td>@storage.Cost.ToString("0.00")</td>
+                </tr>
+                <tr>
+                    <td>Счет учета</td>
+                    <td>@storage.Account</td>
+                </tr>
+                <tr>
+                    <td>Дата прихода</td>
+                    <td>@storage.Date.ToString("dd.MM.yyyy")</td>
+                </tr>
+                @if (storage.Type == "PRN")
                 {
-                    <tr>
-                        <td>Типовой картридж</td>
-                        <td>не установлен</td>
-                    </tr>
+                    storage.Cartridge = conn.Query<Cartridge>("SELECT * FROM Cartridges WHERE Id = @CartridgeId", new { storage.CartridgeId }).FirstOrDefault();
+                    if (storage.Cartridge == null)
+                    {
+                        <tr>
+                            <td>Типовой картридж</td>
+                            <td>не установлен</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td>Типовой картридж</td>
+                            <td>@storage.Cartridge.Name</td>
+                        </tr>
+                    }
                 }
-                else
-                {
-                    <tr>
-                        <td>Типовой картридж</td>
-                        <td>@storage.Cartridge.Name</td>
-                    </tr>
-                }
-            }
-            <tr>
-                <td colspan="2">
-                    <br />Всего <b>@storage.Nall</b>, из них 
-                    <b>@storage.Nstorage</b> на складе, 
-                    <b>@storage.Nrepairs</b> в ремонтах, 
-                    <b>@storage.Noff</b> списано
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
-    <a class="cart__button" href="~/storages/##@(storage.Id)">Карточка позиции</a>
+                <tr>
+                    <td colspan="2">
+                        <br />Всего <b>@storage.Nall</b>, из них
+                        <b>@storage.Nstorage</b> на складе,
+                        <b>@storage.Nrepairs</b> в ремонтах,
+                        <b>@storage.Noff</b> списано
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <a class="cart__link" href="~/storages/##@(storage.Id)">Карточка позиции</a>
+    </div>
 }

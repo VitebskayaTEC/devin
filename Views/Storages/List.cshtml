@@ -15,8 +15,8 @@
     {
         var storages = conn.Query<Storage>(string.Format("SELECT * FROM Storages WHERE IsDeleted <> 1 AND (Inventory LIKE '%{0}%' OR Name LIKE '%{0}%' OR Date LIKE '%{0}%' OR Account LIKE '%{0}%') ORDER BY Inventory", search)).AsList();
 
-        <div class='unit'>
-            <table class='caption'>
+        <div class="unit">
+            <table class="caption">
                 <tr>
                     <th>Поиск совпадений по запросу: @search</th>
                 </tr>
@@ -136,7 +136,7 @@
         <tbody>
             @foreach (var storage in storages)
             {
-                <tr id="@storage.Inventory" class="item">
+                <tr id="@storage.Id" class="item">
                     <td><input type="checkbox" class="selecter" /></td>
                     <td><a class="view__link" href="##@(storage.Id)"><div class="led @storage.Led()"></div></a></td>
                     <td><a class="view__link" href="##@(storage.Id)">@storage.Inventory</a></td>

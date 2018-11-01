@@ -1,32 +1,11 @@
-// Обслуживание текстовых полей ввода с классом def, предполагающих наличие в пустом поле поясняющего текста
-// Поясняющий текст указывается через атрибут def для каждого из текстовых полей
-$("input.def").each(function () {
-    this.setAttribute("placeholder", this.getAttribute("def"));
-    _blur(this);
-});
-
-$(document)
-    .on("focus", "input.def", function () { _focus(this); })
-    .on("blur", "input.def", function () { _blur(this); });
-
-function _blur(input) {
-	if (input.value == '') {
-		input.value = input.getAttribute("def");
-		$(input).addClass('unfocused');
-	}
-}
-
-function _focus(input) {
-	if (input.value == input.getAttribute("def")) {
-		input.value = '';
-		$(input).removeClass('unfocused');
-	}
-}
+let pageName = '';
+if (document.location.pathname.includes('devices')) pageName = 'devices';
+else if (document.location.pathname.includes('storages')) pageName = 'storages';
+else if (document.location.pathname.includes('repairs')) pageName = 'repairs';
+else if (document.location.pathname.includes('catalog')) pageName = 'catalog';
+else if (document.location.pathname.includes('aida')) pageName = 'aida';
 
 
-// Работа с cookie значениями
-// Можно устанавливать и читать значения
-// Для удаления значения необходимо выполнить установку значения, но указать при этом expires: -1
 function getCookie(name) {
 	var matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
 	return matches ? decodeURIComponent(matches[1]) : undefined;
@@ -52,47 +31,8 @@ function setCookie(name, value, options) {
 }
 
 
-/** Поиск по строкам таблицы */
-function _search(input, allTable) {
-
-    if (allTable) {
-        var val = input.value.toLowerCase();
-        var tbody = input.parentNode.parentNode.parentNode.parentNode.getElementsByTagName("tbody")[0];
-        var rows = tbody.getElementsByTagName("tr");
-        if (val == "") {
-            for (var i = 0; i < rows.length; i++) rows[i].style.display = 'table-row';
-        } else {
-            for (var i = 0; i < rows.length; i++) {
-                var cells = rows[i].getElementsByTagName('td');
-                var found = false;
-                for (var j = 0; j < cells.length; j++) {
-                    if (!found && cells[j].innerHTML.toLowerCase().indexOf(val) > -1) found = true;
-                }
-                rows[i].style.display = found ? 'table-row' : 'none';
-            }
-        }
-
-    } else {
-        var index = input.parentNode.cellIndex;
-        var tbody = input.parentNode.parentNode.parentNode.parentNode.getElementsByTagName("tbody")[0];
-        var rows = tbody.getElementsByTagName("tr");
-        var val = input.value.toLowerCase();
-        if (val == "") {
-            for (var i = 0; i < rows.length; i++) rows[i].style.display = 'table-row';
-        } else {
-            for (var i = 0; i < rows.length; i++) {
-                var text = trs[i].getElementsByTagName("td")[index].innerHTML.toLowerCase();
-                rows[i].style.display = text.indexOf(val) > -1 ? 'table-row' : 'none';
-            }
-        }
-    }
-}
-
-
-/** Контекстные меню */
 var when, menuId;
 
-/** Контекстное меню по клику */
 function _menu(obj) {
 	$(".context-menu:visible").css("display", "none");
 	clearTimeout(when);
@@ -108,18 +48,7 @@ function _menu(obj) {
 	menuId = $(obj).closest(".unit").attr("id") ? $(obj).closest(".unit").attr("id") : $(obj).closest(".unit").find(".title-wrapper:first-child").attr("id");
 }
 
-
-/**
- * Диалоговые окна для взаимодействия с пользователем и выполнения несложных операций
- * Должно предусматривать:
- * выбор варианта/отмена
- * подтверждение/отмена
- * ввод данных/отмена
- * уведомление
- * */
 function _modal(target, source, handler) {
-
-	// Скрытие всех активных меню
 	$(".context-menu:visible").css("display", "none");
 	clearTimeout(when);
 
@@ -131,17 +60,6 @@ function _modal(target, source, handler) {
 	$(menu).css("display", "block");
 }
 
-
-/** Функционал групп */
-let pageName = '';
-if (document.location.pathname.indexOf('devices') > -1) pageName = 'devices';
-else if (document.location.pathname.indexOf('storages') > -1) pageName = 'storages';
-else if (document.location.pathname.indexOf('repairs') > -1) pageName = 'repairs';
-else if (document.location.pathname.indexOf('catalog') > -1) pageName = 'catalog';
-else if (document.location.pathname.indexOf('aida') > -1) pageName = 'aida';
-
-
-
 function restore() {
     fetch(host + pageName + '/list')
         .then(res => res.text())
@@ -152,30 +70,6 @@ function restore() {
         });
 };
 
-
-/* Drag-n-drop функционал */
-if (document.getElementById('cart')) {
-    try {
-        $("#cart")
-            .draggable().draggable("disable");
-        $("#cart")
-            .on("mousedown", ".cart-header", function () { $("#cart").draggable("enable"); })
-            .on("mouseup", ".cart-header", function () { $("#cart").draggable("disable"); });
-    } catch (e) {}
-}
-
-
-
-
-/**
- * Сортировка в таблице по столбцу
- * Для его корректной работы нужно четко указать элементы thead и tbody, а так же прописать тип данных в столбце для каждого th в thead
- * Типы для сортировки:
- * number - приведение к числовому значению
- * date - приведение к дате, работает с форматами дд.мм.гггг
- * string - алфавитное сравнение
- * type - алфавитное сравнение по имени класса элемента div в ячейке
- * */
 function _sort(th) {
 	function to_date(s) {
 		if (s.indexOf(" ") > -1) {
@@ -243,12 +137,7 @@ function _sort(th) {
 	table.appendChild(tbody);
 }
 
-/*
-Реализация истории браузера с учетом ajax вьювов через location.hash
-Функция cartOpenBack отдается на откуп конкретному приложению, для корректной обработки типа открываемого элемента
-*/
-var id = "",
-	hashSet = true;
+var id = "", hashSet = true;
 
 $(window)
     .on("load", function () { cartOpenByHash(); })
@@ -281,12 +170,6 @@ function cartClose() {
 	setHash(null);
 }
 
-
-/**
- * Мульти-выбор табличных элементов (универсальный)
- * Все действия с выбранными элементами реализуются в div#selected и собственных обработчиках
- * Для обработки списка выбранных элементов используется глобальный массив selected и сериализующая его функция selectionToForm(имя, разделитель)
- * */
 $(".view")
     .on("change", ".items input.selecter-all", function () { setAllSelection(this); })
     .on("change", ".items input.selecter", function () { setSelection(this); });
@@ -355,63 +238,12 @@ function selectionPanel() {
 	}
 }
 
-function selectionToForm(name, separate) {
-	var text = name + "=";
-	for (var i = 0; i < selected.length; i++) {
-		text += selected[i] + separate;
-	}
-	return text;
-}
-
-
-function closeExportsPanel() {
-	$('#excelExports').slideUp(100);
-	document.getElementById("excelExportsLink").innerHTML = "";
-}
-
-
-
 
 /* Переход на другую модель организации JS кода */
 
+var Folders = {
 
-// Табы
-document.addEventListener('click', ev => {
-    document.querySelectorAll('.tabsSelector').forEach(el => {
-        if (el.contains(ev.target)) {
-            let currentSelector = ev.target.closest('.tabsSelector__item');
-            let tabName = currentSelector.getAttribute('data-tab');
-            let currentContainer = document.querySelector('.tabsContainer__item[data-tab="' + tabName + '"]');
-
-            let changeContainer = () => {
-                document.querySelector('.tabsSelector__item_selected').classList.remove('tabsSelector__item_selected');
-                document.querySelector('.tabsContainer__item_selected').classList.remove('tabsContainer__item_selected');
-                currentSelector.classList.add('tabsSelector__item_selected');
-                currentContainer.classList.add('tabsContainer__item_selected');
-            };
-
-            if (currentContainer) {
-                if (currentContainer.hasAttribute('data-tab-lazy')) {
-                    fetch(currentContainer.getAttribute('data-tab-lazy'))
-                        .then(res => res.text())
-                        .then(text => {
-                            currentContainer.innerHTML = text;
-                            changeContainer();
-                        });
-                }
-                else {
-                    changeContainer();
-                }
-            }
-        }
-    });
-});
-
-
-
-var Folder = {
-
-    _fetch(url, data, callback) {
+    fetch(url, data, callback) {
         data = data || {};
         let form = new FormData();
         Object.keys(data).forEach(key => form.append(key, data[key]));
@@ -430,14 +262,14 @@ var Folder = {
         let name = prompt("Название группы: ", "Новая группа (" + (new Date).toLocaleString() + ")");
         if (!name) return;
 
-        Folder._fetch(host + 'folders/create', { Type: pageName, Name: name });
+        Folders.fetch(host + 'folders/create', { Type: pageName, Name: name });
     },
 
     createInner() {
         let name = prompt("Название группы: ", "Новая группа (" + (new Date).toLocaleString() + ")");
         if (!name) return;
         
-        Folder._fetch(host + 'folders/createInner', {
+        Folders.fetch(host + 'folders/createInner', {
             Type: pageName,
             Name: name,
             FolderId: menuId.slice(2)
@@ -445,15 +277,13 @@ var Folder = {
     },
 
     beforeMove() {
-        var obj = $("#" + menuId).closest(".unit"); // Получаем ссылку на группу, относительн которой будет спозиционировано меню
-        var exceptions = []; // Массив возможных вариантов для перемещени данной группы
+        var obj = $("#" + menuId).closest(".unit");
+        var exceptions = [];
 
-        // Составляем список исключений
-        exceptions.push(menuId); // Сама перемещаемая группа
-        exceptions.push($(obj).parent().closest(".group").attr("id")); // Группа, в которой аходится перемещаемая (на 1 уровне вложенности)
-        $(obj).find(".group").each(function () { exceptions.push(this.id); }); // Все группы, вложенные в перемещаемую
+        exceptions.push(menuId);
+        exceptions.push($(obj).parent().closest(".group").attr("id"));
+        $(obj).find(".group").each(function () { exceptions.push(this.id); });
 
-        // Составляем список доступных вариантов для перемещения
         var select = "<option value='0'>Расположить отдельно";
         $("div.group").each(function() {
             var exception = false;
@@ -470,12 +300,12 @@ var Folder = {
 	        else if (menuId.indexOf("-") > -1)
 		        computerMove();
 	        else
-		        Folder.move();
+		        Folders.move();
         });
     },
 
     move() {
-        Folder._fetch(host + 'folders/move', {
+        Folders.fetch(host + 'folders/move', {
             FolderId: document.getElementById('modal').querySelector('select').value.replace(/\D+/g, ''),
             Id: menuId.slice(2)
         });
@@ -486,15 +316,15 @@ var Folder = {
 	    let name = prompt("Название группы: ", $("#" + menuId).find("th").first().text());
         if (!name) return;
         
-        Folder._fetch(host + 'folders/update', { Name: name, Id: menuId.slice(2) }, () => $("#" + menuId).find("th").first().html(title));
+        Folders.fetch(host + 'folders/update', { Name: name, Id: menuId.slice(2) }, () => $("#" + menuId).find("th").first().html(title));
     },
 
     clear() {
-        Folder._fetch(host + 'folders/clear', { Type: pageName, Id: menuId.slice(2) });
+        Folders.fetch(host + 'folders/clear', { Type: pageName, Id: menuId.slice(2) });
     },
 
     del() {
-        Folder._fetch(host + 'folders/delete', { Type: pageName, Id: menuId.slice(2) });
+        Folders._fetch(host + 'folders/delete', { Type: pageName, Id: menuId.slice(2) });
     }
 };
 
@@ -506,35 +336,42 @@ var Devices = {
             fetch(host + 'devices/create', { method: 'POST' })
                 .then(res => res.json())
                 .then(json => {
-                    id = json.Id;
-                    cartOpenBack();
-                    restore();
-                    if (json.Good) message(json.Good, 'good');
+                    if (json.Good) {
+                        message(json.Good, 'good');
+                        id = json.Id;
+                        cartOpenBack();
+                        restore();
+                    }
                 });
         },
 
         update(Id) {
             let form = new FormData();
-
             document.getElementById('form').querySelectorAll('input,select,textarea').forEach(el => form.append(el.name, el.value));
 
             fetch(host + 'devices/update/' + Id, { method: 'POST', body: form })
-                .then(res => res.text())
-                .then(text => {
-                    text.indexOf('error:') > -1 ? message(text.replace('error:', '')) : message(text, 'good');
-                    restore();
-                })
-                .catch(e => message(`'[${e.status}] ${e.statusText}<br />${e.responseText}`));
+                .then(res => res.json())
+                .then(json => {
+                    if (json.Error) message(json.Error);
+                    if (json.Warning) message(json.Warning, 'warning');
+                    if (json.Good) {
+                        message(json.Good, 'good');
+                        restore();
+                        cartOpenBack();
+                    }
+                });
         },
 
         copy() {
             fetch(host + 'devices/copy/' + id, { method: 'POST' })
                 .then(res => res.json())
                 .then(json => {
-                    id = json.Id;
-                    cartOpenBack();
-                    restore();
-                    if (json.Good) message(json.Good, 'good');
+                    if (json.Good) {
+                        message(json.Good, 'good');
+                        id = json.Id;
+                        cartOpenBack();
+                        restore();
+                    }
                 });
         },
 
@@ -542,10 +379,10 @@ var Devices = {
             fetch(host + 'devices/delete/' + id, { method: 'POST' })
                 .then(res => res.json())
                 .then(json => {
-                    restore();
                     if (json.Good) {
                         message(json.Good, 'good');
                         cartClose();
+                        restore();
                     }
                 });
         },
@@ -553,11 +390,14 @@ var Devices = {
         moveSelected() {
             let form = new FormData();
                 form.append('Key', document.getElementById('moveKey').value);
-                form.append('Devices', selectionToForm('devices', ';;'));
+                form.append('Devices', selected.join(';;'));
             fetch(host + 'devices/moveSelected', { method: 'POST', body: form })
-                .then(() => {
-                    removeAllSelection();
-                    restore();
+                .then(res => res.json())
+                .then(json => {
+                    if (json.Good) {
+                        message(json.Good, 'good');
+                        restore();
+                    }
                 });
         },
 
@@ -615,9 +455,8 @@ var Devices = {
 
         print() {
 
-            let data = new FormData();
-
-            document.getElementById('defect-cart').querySelectorAll('input,textarea').forEach(el => data.append(el.name, el.value));
+            let form = new FormData();
+            document.getElementById('defect-cart').querySelectorAll('input,textarea').forEach(el => form.append(el.name, el.value));
 
             let positions = '';
             document.getElementById('defect_container').querySelectorAll('tr').forEach(el => {
@@ -626,19 +465,35 @@ var Devices = {
 
                 positions += (type !== 'unique' ? cells[0].getAttribute('val') : cells[0].innerHTML) + '::' + cells[1].innerHTML + ';;';
             });
-            data.append('positions', positions);
+            form.append('Positions', positions);
 
-            let link = document.getElementById('defect_link');
-            link.innerHTML = '<i>... идет печать ...</i>';
-
-            fetch(host + 'devices/printDefectAct', {
-                method: 'POST',
-                body: data
-            })
-                .then(res => res.text())
-                .then(text => link.innerHTML = text)
-                .catch(() => message('Произошла ошибка'));
+            fetch(host + 'devices/printDefectAct', { method: 'POST', body: form })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.Error) message(json.Error);
+                    if (json.Good) {
+                        message(json.Good, 'good');
+                        let a = document.createElement('a');
+                        document.body.appendChild(a);
+                        a.href = json.Link;
+                        a.click();
+                    }
+                });
         }
+    },
+
+    printReport() {
+        fetch(host + 'devices/printRecordCart/' + menuId, { method: 'POST' })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good);
+                    let a = document.createElement('a');
+                    document.body.appendChild(a);
+                    a.href = json.Link;
+                    a.click();
+                }
+            });
     }
 };
 
@@ -675,7 +530,6 @@ var Storages = {
 
     del(Id) {
         if (!confirm("Данный объект будет удален. Продолжить?")) return;
-
         fetch(host + 'storages/delete/' + Id, { method: 'POST' })
             .then(res => res.json())
             .then(json => {
@@ -692,6 +546,51 @@ var Storages = {
     compare() {
         document.querySelectorAll('.panel:not(#excl,#selected)').forEach(el = el.style.display = 'none');
         document.getElementById('excl').style.display = 'block';
+    },
+
+    move() {
+        let form = new FormData();
+        form.append('Select', selected.join(';;'));
+        form.append('FolderId', document.getElementById('move_select').value);
+        fetch(host + 'storages/move', { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    removeAllSelection();
+                    restore();
+                }
+            });
+    },
+
+    labels() {
+        let form = new FormData();
+        form.append('Select', selected.join(','));
+        fetch(host + 'storages/labels', { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    removeAllSelection();
+                    let a = document.createElement('a');
+                    document.body.appendChild(a);
+                    a.href = json.Link;
+                    a.click();
+                }
+            });
+    },
+
+    repair(Id) {
+        let form = new FormData();
+        form.append('Select', Id);
+        Repairs.Storage.create(form);
+    },
+
+    repairsSelected() {
+        let form = new FormData();
+        form.append('Select', selected.join(','));
+        removeAllSelection();
+        Repairs.Storage.create(form);
     }
 };
 
@@ -805,6 +704,75 @@ var Repairs = {
             clearInterval(this.interval);
             cartOpenBack();
         }
+    },
+
+    Storage: {
+        create(form) {
+            fetch(host + 'repairs/createFromStorages', { method: 'POST', body: form })
+                .then(res => res.text())
+                .then(text => {
+                    let cart = document.getElementById('cart');
+                    cart.innerHTML = text;
+                    cart.classList.add('cart_visible');
+
+                    document.getElementById('repairsData').addEventListener('change', e => {
+                        let input = e.target;
+                        if (input.type === 'number') {
+                            if (input.value > 0) {
+                                input.parentNode.parentNode.classList.add('repairs__row_checked');
+                            }
+                            else {
+                                input.parentNode.parentNode.classList.remove('repairs__row_checked');
+                            }
+                        }
+                    });
+                });
+        },
+
+        add(button) {
+            var row = button.parentNode.parentNode;
+            var copyRow = row.cloneNode(true);
+            row.parentNode.insertBefore(copyRow, row);
+        },
+
+        remove(button) {
+            var row = button.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+            if (document.getElementById("repairsData").querySelectorAll("tr").length == 0) cartClose();
+        },
+
+        end(withWriteoff) {
+            let form = new FormData();
+            form.append('Id', id);
+            let rows = document.getElementById('repairsData').querySelectorAll('.repairs__row_checked');
+
+            rows.forEach(el => {
+                let inventory = el.getAttribute('data-id');
+                let device = el.querySelector('select').value;
+                let number = el.querySelector('input[type="number"]').value;
+                let virtual = el.querySelector('input[type="checkbox"]').checked;
+                form.append('Repairs[]', inventory + ':' + device + ':' + number + ':' + virtual);
+            });
+
+            if (withWriteoff) {
+                form.append('Writeoff', prompt('Введите наименование нового списания', 'Списание: ' + (new Date).toLocaleString()));
+            }
+
+            fetch(host + 'repairs/endCreateFromStorages', { method: 'POST', body: form })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.Error) message(json.Error);
+                    if (json.Warning) message(json.Warning, 'warning');
+                    if (json.Good) {
+                        message(json.Good, 'good');
+                        if (json.WriteoffId !== 0) {
+                            message('<a href="' + host + 'repairs/##off' + json.WriteoffId + '">Перейти к созданному списанию</a>', 'good');
+                        }
+                        rows.forEach(el => el.parentNode.removeChild(el));
+                    }
+                });
+        }
+
     },
 
     Cart: {
@@ -973,7 +941,7 @@ var Writeoffs = {
     },
 
     export(Id) {
-        fetch(host + 'writeoffs/print/' + (Id || menuId.replace("off", "")))
+        fetch(host + 'writeoffs/print/' + (Id || menuId.replace("off", "")), { method: 'POST' })
             .then(res => res.json())
             .then(json => {
                 if (json.Error) message(json.Error);
@@ -1002,7 +970,7 @@ var Writeoffs = {
     },
 
     move() {
-        fetch(host + 'writeoff/move/' + menuId + '?FolderId=' + $("#modal select:first-child").val())
+        fetch(host + 'writeoff/move/' + menuId + '?FolderId=' + $("#modal select:first-child").val(), { method: 'POST' })
             .then(res => res.json())
             .then(json => {
                 if (json.Good) {
@@ -1084,7 +1052,50 @@ var Catalog = {
 
 var Aida = {
 
+    del() {
+        if (!confirm("Отчет по данному компьютеру будет безвозвратно удален. Продолжить?")) return;
+        fetch(host + 'aida/delete/' + id, { method: 'POST' })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    cartClose();
+                    restore();
+                }
+            });
+    }
 };
+
+document.addEventListener('click', e => {
+    document.querySelectorAll('.tabsSelector').forEach(el => {
+        if (el.contains(e.target)) {
+            let currentSelector = e.target.closest('.tabsSelector__item');
+            let tabName = currentSelector.getAttribute('data-tab');
+            let currentContainer = document.querySelector('.tabsContainer__item[data-tab="' + tabName + '"]');
+
+            let changeContainer = () => {
+                document.querySelector('.tabsSelector__item_selected').classList.remove('tabsSelector__item_selected');
+                document.querySelector('.tabsContainer__item_selected').classList.remove('tabsContainer__item_selected');
+                currentSelector.classList.add('tabsSelector__item_selected');
+                currentContainer.classList.add('tabsContainer__item_selected');
+            };
+
+            if (currentContainer) {
+                if (currentContainer.hasAttribute('data-tab-lazy')) {
+                    fetch(currentContainer.getAttribute('data-tab-lazy'))
+                        .then(res => res.text())
+                        .then(text => {
+                            currentContainer.innerHTML = text;
+                            changeContainer();
+                        });
+                }
+                else {
+                    changeContainer();
+                }
+            }
+        }
+    });
+});
 
 document.querySelector('.messages').addEventListener('click', e => {
     console.log(e.target);

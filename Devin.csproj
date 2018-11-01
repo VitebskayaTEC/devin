@@ -148,15 +148,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="asp\storage_all_repairs.asp" />
     <Content Include="Content\css\table.css" />
     <Content Include="Content\excels\TextFile1.txt" />
     <Content Include="Content\img\devin_icons_white.png" />
     <Content Include="Content\js\table.js" />
     <Content Include="Content\css\core.css" />
-    <Content Include="Content\css\device.css" />
-    <Content Include="Content\css\repair.css" />
-    <Content Include="Content\css\storage.css" />
     <Content Include="Content\img\background.png" />
     <Content Include="Content\img\devin_icons_black.png" />
     <Content Include="Content\img\devin_icons_blue.png" />
@@ -193,7 +189,7 @@
     <Content Include="Content\exl\mat.xls" />
     <Content Include="Content\exl\mat_org.xls" />
     <Content Include="Content\exl\test.xls" />
-    <Content Include="Content\exl\ReportCart.xlsx" />
+    <Content Include="Content\exl\ReportCart.xls" />
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\Local Publish.pubxml" />
     <Content Include="Views\Writeoffs\CodeError.cshtml" />
@@ -222,7 +218,7 @@
     <Content Include="Views\Catalog\PrinterCart.cshtml" />
     <Content Include="Views\Catalog\CartridgeCart.cshtml" />
     <Content Include="Views\Storages\Cart.cshtml" />
-    <Content Include="Views\Storages\Repairs.cshtml" />
+    <Content Include="Views\Repairs\CreateFromStorages.cshtml" />
     <Content Include="Views\Devices\WorkPlaces.cshtml" />
     <Content Include="Views\Devices\Cart.cshtml" />
     <Content Include="Views\Devices\HistoryById.cshtml" />

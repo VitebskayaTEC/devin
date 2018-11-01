@@ -11,9 +11,7 @@
 }
 
 #data td,
-#data th {
-	border: 1px solid #ccc;
-}
+#data th {border: 1px solid #ccc;}
 
 .search input {
     padding: 6px;
@@ -21,8 +19,5 @@
     width: 100%;
 }
 
-.search {
-    margin-bottom: 10px;
-}
-
+.search {margin-bottom: 10px;}
 label {display: block;}

@@ -121,7 +121,7 @@ namespace Devin.Controllers
             return Json(new { Good = "Списание удалено без отмены вложенных ремонтов" });
         }
 
-        public string Print(int Id)
+        public JsonResult Print(int Id)
         {
             string[] months = new string[] { "январе", "феврале", "марте", "апреле", "мае", "июне", "июле", "августе", "сентябре", "октябре", "ноябре", "декабре" };
 
@@ -136,17 +136,17 @@ namespace Devin.Controllers
                 LEFT OUTER JOIN catalog_writeoffs c ON Writeoffs.Type = c.O_Alias 
                 WHERE (Writeoffs.Id = @Id)", new { Id });
 
-                string template = Server.MapPath("/devin/content/exl/") + writeoff.Type + ".xls";
+                string template = Server.MapPath("../content/exl/") + writeoff.Type + ".xls";
                 string output = writeoff.Name + " " + DateTime.Now.ToLongDateString() + ".xls";
 
-                if (!System.IO.File.Exists(template)) return "Файла шаблона не существует либо путь к нему неправильно прописан в исходниках";
+                if (!System.IO.File.Exists(template)) return Json(new { Error = "Файла шаблона не существует либо путь к нему неправильно прописан в исходниках" });
 
                 IWorkbook book;
                 ISheet sheet;
 
                 int step = 0;
 
-                if (string.IsNullOrEmpty(writeoff.Params)) return "В списании не были заданы параметры";
+                if (string.IsNullOrEmpty(writeoff.Params)) return Json(new { Error = "В списании не были заданы параметры" });
 
                 string[] props = writeoff.Params.Split(new string[] { ";;" }, StringSplitOptions.None);
 
@@ -160,7 +160,7 @@ namespace Devin.Controllers
                     /* Эксплуатационные расходы */
                     case "expl":
 
-                        if (props.Length != 2) return "Недостаточное количество параметров для экспорта. Получено " + props.Length + ", ожидается 2.";
+                        if (props.Length != 2) return Json(new { Error = "Недостаточное количество параметров для экспорта. Получено " + props.Length + ", ожидается 2." });
 
                         sheet = book.GetSheetAt(0);
                         sheet.GetRow(13).GetCell(0).SetCellValue("      Комиссия,  назначенная приказом №108 от 28.08.2012г. произвела подсчет и списание товарно-материальных ценностей, израсходованных в " + months[writeoff.Date.Month - 1] + " " + writeoff.Date.Year + " г. Были использованы  следующие материалы:");
@@ -182,11 +182,11 @@ namespace Devin.Controllers
                             FROM Repairs 
                             LEFT OUTER JOIN Storages  ON Repairs.StorageId = Storages.Id
                             LEFT OUTER JOIN Devices   ON Repairs.DeviceId  = Devices.Id 
-                            WHERE (Repairs.WriteoffId = @Id)", new { Id }));
+                            WHERE Repairs.WriteoffId = @Id", new { Id }));
                         }
                         catch (Exception)
                         {
-                            return "Хуйня с запросом";
+                            return Json(new { Error = "Хуйня с запросом" });
                         }
 
                         float sum = 0;
@@ -242,15 +242,15 @@ namespace Devin.Controllers
                         var rs = conn.QueryFirst(@"SELECT 
                             TOP (1) DeviceId AS [DeviceNumber], 
                             COUNT(Id) AS [RepairsCount] 
-                        FROM Repairs WHERE (WriteoffId = @Id) GROUP BY DeviceId", new { Id });
+                        FROM Repairs WHERE WriteoffId = @Id GROUP BY DeviceId", new { Id });
 
-                        if (rs == null) return "В ремонтах не найден идентификатор основного средства, либо списание не содержит ремонтов";
+                        if (rs == null) return Json(new { Error = "В ремонтах не найден идентификатор основного средства, либо списание не содержит ремонтов" });
 
                         int DeviceId = (int)rs.DeviceNumber;
                         int RepairsCount = (int)rs.RepairsCount;
 
-                        Device device = conn.QueryFirst<Device>(@"SELECT * FROM Devices WHERE (Id = @Id)", new { DeviceId });
-                        if (device == null) return "Устройство не найдено";
+                        Device device = conn.QueryFirst<Device>(@"SELECT * FROM Devices WHERE Id = @Id", new { DeviceId });
+                        if (device == null) return Json(new { Error = "Устройство не найдено" });
 
                         var metals = conn.Query<Device1C>("SELECT Description, Gold, Silver, Platinum, Palladium, Mpg, SubDivision FROM Devices1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
 
@@ -298,7 +298,7 @@ namespace Devin.Controllers
                             Storages.Inventory
                         FROM Repairs 
                         LEFT OUTER JOIN Storages ON Repairs.StorageId = Storages.Id
-                        WHERE (Repairs.WriteoffId = @Id)", new { Id });
+                        WHERE Repairs.WriteoffId = @Id", new { Id });
 
 
                         foreach (var storage in storages)
@@ -358,12 +358,12 @@ namespace Devin.Controllers
 
                 output = output.Replace("\"", "");
 
-                using (var fs = new FileStream(Server.MapPath("/devin/content/excels/") + output, FileMode.OpenOrCreate, FileAccess.Write))
+                using (var fs = new FileStream(Server.MapPath("../content/excels/") + output, FileMode.OpenOrCreate, FileAccess.Write))
                 {
                     book.Write(fs);
                 }
 
-                return "<a href='/devin/content/excels/" + output + "'>" + output + "</a>";
+                return Json(new { Good = "", Link = Url.Action("excels", "content") + output });
             }
         }
     }

@@ -5,7 +5,13 @@
     var cartridge = conn.Query<Cartridge>("SELECT * FROM Cartridges WHERE Id = @Model", new { Model }).FirstOrDefault();
     if (cartridge == null)
     {
-        <div class="error">Нет данных по данному идентификатору</div>
+        <div class="cart__header">
+            <div></div>
+            <div class="cart__closeButton" title="Закрыть карточку" onclick="cartClose()">
+                <i class="icon ic-clear icon_white icon_no-hover"></i>
+            </div>
+        </div>
+        <div class="cart__body">Нет данных по данному идентификатору</div>
         return;
     }
 
@@ -148,6 +154,10 @@
                 <div>
                     <a class="cart__link" href="~/storages/##@(storage.Id)"><b>@storage.Inventory</b> @storage.Name</a> @storage.Nstorage шт.
                 </div>
+            }
+            @if (storages.Count() == 0)
+            {
+                @: не найдено
             }
         </div>
     </div>

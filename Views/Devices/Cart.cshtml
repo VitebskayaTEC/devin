@@ -1,4 +1,4 @@
-﻿@model string
+﻿@model int
 
 @using (var conn = Database.Connection())
 {
@@ -6,14 +6,20 @@
 
     if (device == null)
     {
-        <div class="error">Нет данных по данному идентификатору</div>
+        <div class="cart__header">
+            <div></div>
+            <div class="cart__closeButton" title="Закрыть карточку" onclick="cartClose()">
+                <i class="icon ic-clear icon_white icon_no-hover"></i>
+            </div>
+        </div>
+        <div class="cart__body">Нет данных по данному идентификатору</div>
         return;
     }
 
     device.Device1C = conn.Query<Device1C>("SELECT * FROM Devices1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
 
     <div class="cart__header">
-        <div>@(device.Name ?? "<имя не задано>")</div>
+        <div>@device.Name | @device.PublicName</div>
         <div class="cart__closeButton" title="Закрыть карточку" onclick="cartClose()">
             <i class="icon ic-clear icon_white icon_no-hover"></i>
         </div>
@@ -141,11 +147,7 @@
                     <td>Дата установки</td>
                     <td>
                         <input class="cart__field" name="@nameof(device.DateInstall)" style="width: 100px" value="@device.DateInstall.ToString("dd.MM.yyyy")" />
-                        <a>
-                            <b>
-                                @((DateTime.Now - device.DateInstall).TotalHours.ToString("0")) часов
-                            </b>
-                        </a>
+                        @((DateTime.Now - device.DateInstall).TotalHours.ToString("0")) часов
                     </td>
                 </tr>
 

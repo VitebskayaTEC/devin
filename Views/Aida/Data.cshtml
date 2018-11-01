@@ -20,14 +20,14 @@
 
     if (model.Count() == 0)
     {
-        <div>Компьютер не найден в базе Aida</div>
+        <div class="cart__body">Компьютер не найден в базе Aida</div>
         return;
     }
 
     string page = null, device = "", group = "";
     int inum = 0;
 
-    Response.Write("<div class=\"cart-overflow\"><div><div><div>");
+    Response.Write("<div class=\"cart__body\"><div><div><div>");
 
     foreach (var row in model)
     {

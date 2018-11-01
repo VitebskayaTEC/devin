@@ -1,0 +1,92 @@
+﻿@model string
+<div class="cart__header">
+    <div>Создание ремонтов</div>
+    <div class="cart__closeButton" title="Закрыть карточку" onclick="cartClose()">
+        <i class="icon ic-clear icon_white icon_no-hover"></i>
+    </div>
+</div>
+@if (string.IsNullOrEmpty(Model))
+{
+    <div class="cart__body">Не получен список выбранных элементов</div>
+    return;
+}
+@using (var conn = Database.Connection())
+{
+    var storages = conn.Query<Storage>("SELECT Id, Inventory, Name, Nstorage FROM Storages WHERE Id IN (" + Model + ") AND Nstorage > 0 ORDER BY Inventory");
+    if (storages.Count() == 0)
+    {
+        <div class="cart__body">Нет элементов для оформления ремонтов</div>
+        return;
+    }
+
+    var computers = AutoMapper.MapDynamic<Computer>(conn.Query(@"SELECT
+        Computers.Id,
+        Computers.Name,
+        Computers.PublicName,
+        Devices.Id         AS Devices_Id,
+        Devices.Name       AS Devices_Name,
+        Devices.PublicName AS Devices_PublicName
+    FROM Devices
+    LEFT OUTER JOIN Devices AS Computers ON Devices.ComputerId = Computers.Id AND Computers.IsDeleted = 0
+    WHERE Devices.IsDeleted = 0 AND Devices.IsOff = 0 AND (
+        Devices.Type <> 'CMP' OR (
+            Devices.Type = 'CMP' AND Devices.Id NOT IN (SELECT ComputerId FROM Devices WHERE ComputerId IS NOT NULL AND ComputerId <> 0 GROUP BY ComputerId)
+        )
+    )
+    ORDER BY Computers.Name, Devices.Name"));
+
+    string select = "<select class=\"computers cart__field\"><option value=\"0\">? Не выбрано</option>";
+    foreach (var computer in computers)
+    {
+        select += "<optgroup label=\"" + computer.Name + "\">"
+            + "<option value=\"" + computer.Id + "\">[компьютер] " + computer.Name + " | " + computer.PublicName + "</option>";
+
+        foreach (var device in computer.Devices)
+        {
+            select += "<option value=\"" + device.Id + "\">" + device.Name + " | " + device.PublicName + "</option>";
+        }
+
+        select += "</optgroup>";
+    }
+    select += "</select>";
+
+    <div class="cart__body cart__body_expanded">
+        <table class="repairs__table">
+            <thead>
+                <tr>
+                    <th>позиция</th>
+                    <th width="400px">на какое устройство</th>
+                    <th width="100px">кол-во</th>
+                    <th width="50px">вирт.</th>
+                </tr>
+            </thead>
+            <tbody id="repairsData">
+                @foreach (var storage in storages)
+                {
+                    <tr class="repairs__row" data-id="@storage.Id">
+                        <td>
+                            <button class="cart__button" onclick="Repairs.Storage.add(this)"><i class="icon ic-content-copy icon_no-hover"></i></button>
+                            <button class="cart__button" onclick="Repairs.Storage.remove(this)"><i class="icon ic-clear icon_no-hover"></i></button> 
+                            <b>@storage.Inventory</b> @storage.Name [<b>@storage.Nstorage</b> шт.]
+                        </td>
+                        <td class="computers-container">
+                            @Html.Raw(select)
+                        </td>
+                        <td>
+                            <input class="cart__field" type="number" value="0" />
+                        </td>
+                        <td>
+                            <input type="checkbox" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="cart__menu">
+        <button class="cart__button" onclick="Repairs.Storage.end()">Подтвердить</button>
+        <button class="cart__button" onclick="Repairs.Storage.end(true)">Подтвердить и сгруппировать в списание</button>
+        <button class="cart__button" onclick="Repairs.Storage.back()">Отмена</button>
+    </div>
+}
