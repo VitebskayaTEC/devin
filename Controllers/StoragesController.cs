@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Devin.Forms;
 using Devin.Models;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
@@ -27,7 +26,7 @@ namespace Devin.Controllers
 
         public ActionResult Import()
         {
-            var model = new StorageCompare();
+            var excels = new List<Storage>();
 
             var file = Request.Files[Request.Files.AllKeys[0]];
             var book = new XSSFWorkbook(file.InputStream);
@@ -45,7 +44,7 @@ namespace Devin.Controllers
                     string date = row.GetCell(15).StringCellValue;
                     DateTime.TryParse(date.Substring(0, date.Length - 2) + "20" + date.Substring(date.Length - 2), out DateTime d);
 
-                    model.Excels.Add(new Storage
+                    excels.Add(new Storage
                     {
                         Name = row.GetCell(10).StringCellValue,
                         Inventory = row.GetCell(11).StringCellValue,
@@ -59,13 +58,8 @@ namespace Devin.Controllers
                 }
             }
 
-            using (var conn = Database.Connection())
-            {
-                model.Storages = conn.Query<Storage>("SELECT * FROM Storages ORDER BY Inventory").AsList();
-            }
-
             ViewBag.Title = title;
-            return View(model);
+            return View(excels);
         }
 
         

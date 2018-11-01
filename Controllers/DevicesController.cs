@@ -326,7 +326,6 @@ namespace Devin.Controllers
             }
         }
 
-
         public void HideDevice1C(int Id, bool Hide)
         {
             using (var conn = Database.Connection())
@@ -363,13 +362,12 @@ namespace Devin.Controllers
             DateTime Date = DateTime.TryParse(Request.Form.Get("DateInstall"), out DateTime d) ? d : DateTime.Now;
             string[] Positions = Request.Form.Get("positions").Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
 
-            string template = Url.Action("exl", "content") + "defect.xls";
             string output = Url.Action("excels", "content") + "defect.xls";
 
-            if (!System.IO.File.Exists(Server.MapPath(template))) return Json(new { Error = "Файла шаблона не существует либо путь к нему неправильно прописан в исходниках" });
+            if (!System.IO.File.Exists(Server.MapPath("../content/exl/defect.xls"))) return Json(new { Error = "Файла шаблона не существует либо путь к нему неправильно прописан в исходниках" });
 
             HSSFWorkbook book;
-            using (var fs = new FileStream(Server.MapPath(template), FileMode.Open, FileAccess.Read))
+            using (var fs = new FileStream(Server.MapPath("../content/exl/defect.xls"), FileMode.Open, FileAccess.Read))
             {
                 book = new HSSFWorkbook(fs);
             }
@@ -405,12 +403,12 @@ namespace Devin.Controllers
 
             sheet.GetRow(38).GetCell(0).SetCellValue(defects);
 
-            using (var fs = new FileStream(Server.MapPath(output), FileMode.OpenOrCreate, FileAccess.Write))
+            using (var fs = new FileStream(Server.MapPath("../content/excels/defect.xls"), FileMode.OpenOrCreate, FileAccess.Write))
             {
                 book.Write(fs);
             }
 
-            return Json(new { Good = "Дефектный акт создан", Link = output });
+            return Json(new { Good = "Дефектный акт создан", Link = Url.Action("excels", "content") + "/defect.xls" });
         }
 
         public JsonResult PrintRecordCartByIp(string Ip)
@@ -487,7 +485,6 @@ namespace Devin.Controllers
 
             return Json(new { Good = "", Link = Url.Action("excels", "content") + "/ReportCart.xlsx" });
         }
-
 
         public JsonResult CreateWorkPlace()
         {

@@ -155,8 +155,8 @@
         <div class="unit" id="solo">
             <table class="caption">
                 <tr>
-                    <td width="24px"><div class="icon ic-cached"></div></td>
-                    <th>Не распределенные устройства</th>
+                    <th width="24px"><div class="icon ic-cached"></div></th>
+                    <td><b>Не распределенные устройства</b></td>
                 </tr>
             </table>
             @RenderDevices(devices)
@@ -171,19 +171,19 @@
 
 @helper RenderFolder(Folder folder)
 {
-    string id = "dg" + folder.Id;
+    string id = "folder" + folder.Id;
     string open = Request.Cookies.Get(id)?.Value ?? "";
 
     <div class="unit group @open" id="@id">
-        <table class='caption'>
+        <table class="caption">
             <tr>
-                <td width='24px' menu='group' onmousedown='_menu(this)'>
-                    <div class='icon ic-folder'></div>
-                </td>
-                <th>@folder.Name</th>
+                <th width="24px" menu="group" onmousedown="_menu(this)">
+                    <div class="icon ic-folder"></div>
+                </th>
+                <td><b>@folder.Name</b></td>
             </tr>
         </table>
-        <div class="items_block @(open == "open" ? "" : "hide")">
+        <div class="itemsBlock @(open == "open" ? "itemsBlock_expanded" : "")">
             @foreach (var sub in folder.SubFolders)
             {
                 @RenderFolder(sub)
@@ -205,10 +205,10 @@
     <div class="unit computer @open">
         <table class="caption">
             <tr>
-                <td width="30px">
-                    <div class="icon ic-computer" menu='computer' onmousedown='_menu(this)'></div>
-                </td>
-                <th width="200px">@computer.Name</th>
+                <th width="30px">
+                    <div class="icon ic-computer" menu="computer" onmousedown="_menu(this)"></div>
+                </th>
+                <td width="200px"><b>@computer.Name</b></td>
                 <td width="40px"><div class="led @(computer.IsOff ? "off" : "on")"></div></td>
                 <td width="60px">@computer.Inventory</td>
                 <td width="140px">@computer.Location</td>
@@ -216,7 +216,7 @@
                 <td>@computer.Description</td>
             </tr>
         </table>
-        <div class="items_block @(open == "open" ? "" : "hide")">
+        <div class="itemsBlock @(open == "open" ? "itemsBlock_expanded" : "")">
             <div class="title-wrapper" id="@computer.Id">
                 <a class="view__link title" href="##@(computer.Id)">Компьютер @computer.Name - открыть карточку</a>
             </div>

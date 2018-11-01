@@ -29,22 +29,6 @@
                 });
         }
 
-        $(".view")
-            .on("mousedown", ".unit:not(#solo) .caption th,.unit:not(#solo) .caption td:not(:first-child)", function () { toggle(this) })
-            .on("mousedown", ".items thead th", function () { _sort(this) });
-
-        function toggle(node) {
-            var $unit = $(node).closest('.unit');
-            var id = $unit.attr("id") ? $unit.attr("id") : $unit.find(".title-wrapper:first-child").attr("id");
-            if ($unit.hasClass("open")) {
-                $unit.children(".items_block").slideToggle(150, function () { $unit.removeClass("open"); });
-                setCookie(id, "close", { expires: 9999999999 });
-            } else {
-                $unit.addClass("open").children(".items_block").slideToggle(150);
-                setCookie(id, "open", { expires: 9999999999 });
-            }
-        }
-
         function cartOpen(node) {
             id = node.parentNode.id;
             cartOpenBack();

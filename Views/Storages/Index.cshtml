@@ -17,9 +17,6 @@
     <script src="~/content/lib/jquery-3.3.1.min.js"></script>
     <script src="~/content/js/core.js"></script>
     <script>
-        $('.view')
-            .on('mousedown', '.unit:not(#solo) .caption th', function () { toggle(this) })
-            .on('mousedown', '.items thead th:not(:first-child)', function () { _sort(this) });
 
         function cartBack() {
             cartOpenBack();
@@ -38,23 +35,6 @@
                         elem.classList.add('selected');
                     }
                 });
-        }
-
-        function toggle(node) {
-            var $unit = $(node).closest('.unit');
-            if ($unit.hasClass("open")) {
-                $unit.children(".items_block").slideToggle(150, function () {
-                    $unit.removeClass("open");
-                });
-                setCookie($unit.attr("id"), "", {
-                    expires: 999999999
-                });
-            } else {
-                $unit.addClass("open").children(".items_block").slideToggle(150);
-                setCookie($unit.attr("id"), "open", {
-                    expires: 999999999
-                });
-            }
         }
 
         // Сохранение выбранных ремонтов 

@@ -1,4 +1,4 @@
-﻿@model StorageCompare
+﻿@model List<Storage>
 
 @{
     ViewBag.Title = "DEVIN | Склад | 1С";
@@ -42,13 +42,18 @@
         <tbody>
             @{
                 var storages = new List<Storage>();
+                var Storages = new List<Storage>();
+                using (var conn = Database.Connection())
+                {
+                    Storages = conn.Query<Storage>("SELECT * FROM Storages ORDER BY Inventory").AsList();
+                }
             }
-            @foreach (var storage in Model.Storages)
+            @foreach (var storage in Storages)
             {
                 string className = "";
                 bool hasExcel = false;
 
-                foreach (var excel in Model.Excels)
+                foreach (var excel in Model)
                 {
                     if (storage.Inventory == excel.Inventory)
                     {
@@ -77,11 +82,11 @@
                     storages.Add(storage);
                 }
             }
-            @foreach (var excel in Model.Excels)
+            @foreach (var excel in Model)
             {
                 bool isFound = false;
 
-                foreach (var storage in Model.Storages)
+                foreach (var storage in Storages)
                 {
                     if (storage.Inventory == excel.Inventory)
                     {

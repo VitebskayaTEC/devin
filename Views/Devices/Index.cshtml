@@ -17,9 +17,6 @@
     <script src="~/content/lib/jquery-3.3.1.min.js"></script>
     <script src="~/content/js/core.js"></script>
     <script>
-        $('.view')
-            .on('mousedown', '.unit:not(#solo) .caption th,.unit:not(#solo) .caption td:not(:first-child)', function () { toggle(this) })
-            .on('mousedown', '.items th', function () { _sort(this) })
 
         function cartOpenBack() {
             fetch(host + 'devices/cart/' + id)
@@ -56,27 +53,6 @@
                     restore();
                     $('#modal').fadeOut(100);
                 });
-        }
-
-        function toggle(node) {
-            var $unit = $(node).closest('.unit');
-            var id = $unit.attr('id')
-                ? $unit.attr('id')
-                : $unit.find('.title-wrapper:first-child').attr('id');
-            if ($unit.hasClass('open')) {
-                $unit
-                    .children('.items_block')
-                    .slideToggle(150, function () {
-                        $unit.removeClass('open');
-                    });
-                setCookie(id, '', { expires: 9999999999 });
-            } else {
-                $unit
-                    .addClass('open')
-                    .children('.items_block')
-                    .slideToggle(150);
-                setCookie(id, 'open', { expires: 9999999999 });
-            }
         }
 
         function cartOpen(node) {
@@ -117,13 +93,13 @@
         <div onclick="Devices.Cart.create()">Создать карточку устройства</div>
         <div onclick="Folders.create()">Создать группу</div>
         <hr />
-        <a href="@Url.Action("analyze", "storages")">Анализ расхода картриджей</a>
+        <a href="~/storage/analyze">Анализ расхода картриджей</a>
         <hr />
-        <a href="@Url.Action("table")">Табличный просмотр Devin</a>
-        <a href="@Url.Action("table1C")">Просмотр данных 1С</a>
-        <a href="@Url.Action("compare1C")">Сверка с 1С</a>
+        <a href="~/devices/table">Табличный просмотр Devin</a>
+        <a href="~/devices/table1C">Просмотр данных 1С</a>
+        <a href="~/devices/compare1C">Сверка с 1С</a>
         <hr />
-        <a href="@Url.Action("workplaces")">Справочник рабочих мест</a>
+        <a href="~/devices/workplaces">Справочник рабочих мест</a>
     </div>
 
     <ul class="context-menu" id="computer">
@@ -144,7 +120,7 @@
     <ul class="context-menu" id="modal">
         <li></li>
         <li>Ок</li>
-        <li onclick="$(this).parent().fadeOut(100)">Отмена</li>
+        <li onclick="document.getElementById('modal').classList.remove('contentMenu_visible')">Отмена</li>
     </ul>
 }
 

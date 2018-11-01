@@ -167,8 +167,8 @@
         <div class="unit" id="solo">
             <table class="caption">
                 <tr>
-                    <td width="24px"><div class="icon ic-cached"></div></td>
-                    <th>Не распределенные ремонты</th>
+                    <th width="24px"><div class="icon ic-cached"></div></th>
+                    <td><b>Не распределенные ремонты</b></td>
                 </tr>
             </table>
             @RenderItems(repairs)
@@ -188,19 +188,19 @@
 
 @helper RenderFolder(Folder folder)
 {
-    string id = "rg" + folder.Id;
+    string id = "folder" + folder.Id;
     string open = Request.Cookies.Get(id)?.Value ?? "";
 
     <div class="unit group @open" id="@id">
         <table class='caption'>
             <tr>
-                <td width='24px' menu='group' onmousedown='_menu(this)'>
+                <th width='24px' menu='group' onmousedown='_menu(this)'>
                     <div class='icon ic-folder'></div>
-                </td>
-                <th>@folder.Name</th>
+                </th>
+                <td><b>@folder.Name</b></td>
             </tr>
         </table>
-        <div class="items_block @(open == "open" ? "" : "hide")">
+        <div class="itemsBlock @(open == "open" ? "itemsBlock_expanded" : "")">
             @foreach (var sub in folder.SubFolders)
             {
                 @RenderFolder(sub)
@@ -225,13 +225,13 @@
                     <td width="30px">
                         <div class="icon ic-info-outline" menu="writeoff" onmousedown="_menu(this)"></div>
                     </td>
-                    <th>@writeoff.Name</th>
+                    <td><b>@writeoff.Name</b></td>
                     <td width="250px">@writeoff.Type</td>
                     <td width="150px">@writeoff.AllCost() р.</td>
                     <td width="70px">@writeoff.Date.ToString("dd.MM.yyyy")</td>
                 </tr>
             </table>
-            <div class="items_block @(open == "open" ? "" : "hide")">
+            <div class="itemsBlock @(open == "open" ? "itemsBlock_expanded" : "")">
                 <div class='title-wrapper' id='@id'>
                     <a class="title view__link" href="##off@(writeoff.Id)">Открыть карточку списания</a>
                 </div>

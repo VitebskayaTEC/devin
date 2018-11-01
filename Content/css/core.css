@@ -127,6 +127,10 @@ a.has-icon {
     text-decoration: underline;
 }
 
+.selection_visible {
+    display: block;
+}
+
 #excelExports {
     left: 1000px;
     top: 0;
@@ -156,7 +160,7 @@ a.has-icon {
 .unit-nohover .items tbody tr:hover,
 .unit-nohover .items th:hover {color: #000;}
 
-.view .open {
+.unit.open {
     border-color: #FF5722;
     box-shadow: 0 1px 8px 0 #E6B451;
 }
@@ -166,7 +170,7 @@ a.has-icon {
         border-bottom: 1px solid #FF5722;
     }
 
-.view .open:hover .caption {color: #000;}
+.unit.open:hover .caption {color: #000;}
 
 #solo {
     margin-top: 5px;
@@ -234,15 +238,13 @@ a.has-icon {
 .caption {cursor: pointer;}
 
 .caption td {
-    padding: 2px;
+    padding: 4px;
     font: normal 8pt Segoe UI, sans-serif;
-    text-align: left;
 }
 
-.caption th {
-    text-align: left;
-    padding: 4px;
-    font: 600 13pt Segoe UI, sans-serif;
+.caption td b {
+    font-weight: 600;
+    font-size: 13pt;
 }
 
 .selected {
@@ -441,6 +443,10 @@ textarea.cart__field {
         border: .5px solid #666;
         margin: 2px;
     }
+
+.contextMenu_visible {
+    display: block;
+}
 
 .modal {
     display: none;

@@ -55,10 +55,10 @@
     <div class="unit @open" id="@computer.RHost">
         <table class="caption" onclick="toggle(this)">
             <tr>
-                <td width="30px">
+                <th width="30px">
                     <div class="icon ic-computer"></div>
-                </td>
-                <th width="150px">@computer.RHost</th>
+                </th>
+                <td width="150px"><b>@computer.RHost</b></td>
                 <td width="150px">@computer.RUser</td>
                 <td>@computer.RDateTime.ToString("dd.MM.yyyy") (@((DateTime.Now - computer.RDateTime).Days) дней)</td>
             </tr>

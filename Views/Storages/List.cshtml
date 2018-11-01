@@ -73,8 +73,8 @@
             <div class="unit" id="solo">
                 <table class="caption">
                     <tr>
-                        <td width="24px"><div class="icon ic-cached"></div></td>
-                        <th>Не распределенные позиции</th>
+                        <th width="24px"><div class="icon ic-cached"></div></th>
+                        <td><b>Не распределенные позиции</b></td>
                     </tr>
                 </table>
                 @RenderItems(solo)
@@ -96,7 +96,7 @@
 
 @helper RenderFolder(Folder folder, bool isOff = false)
 {
-    string id = "sg" + folder.Id;
+    string id = "folder" + folder.Id;
     string open = Request.Cookies.Get(id)?.Value ?? "";
 
     <div class="unit group @open" id="@id">
@@ -104,20 +104,20 @@
             <tr>
                 @if (isOff)
                 {
-                    <td width="24px">
+                    <th width="24px">
                         <div class="icon ic-cached"></div>
-                    </td>
+                    </th>
                 }
                 else
                 {
-                    <td width="24px" menu="group" onmousedown="_menu(this)">
+                    <th width="24px" menu="group" onmousedown="_menu(this)">
                         <div class="icon ic-folder"></div>
-                    </td>
+                    </th>
                 }
-                <th>@folder.Name</th>
+                <td><b>@folder.Name</b></td>
             </tr>
         </table>
-        <div class="items_block @(open == "open" ? "" : "hide")">
+        <div class="itemsBlock @(open == "open" ? "itemsBlock_expanded" : "")">
             @foreach (var sub in folder.SubFolders)
             {
                 @RenderFolder(sub)

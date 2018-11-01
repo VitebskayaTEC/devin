@@ -126,7 +126,6 @@
     <Compile Include="Controllers\RepairsController.cs" />
     <Compile Include="Controllers\StoragesController.cs" />
     <Compile Include="Controllers\WriteoffsController.cs" />
-    <Compile Include="Forms\StorageCompare.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -160,9 +159,6 @@
     <Content Include="Content\img\white_carbonfiber.png" />
     <Content Include="Content\js\core.js" />
     <Content Include="Content\lib\jquery-3.3.1.min.js" />
-    <Content Include="core\core.inc" />
-    <Content Include="core\upload.asp" />
-    <Content Include="exes\storage\storage_create_repairs.asp" />
     <Content Include="Global.asax" />
     <Content Include="Migration.sql" />
     <Content Include="Web.config" />
