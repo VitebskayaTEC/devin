@@ -96,7 +96,7 @@
         var devices1c = conn.Query<Device1C>(devices1cSQL);
 
         <div class="compare_outline">
-            <table class="compare" id="data">
+            <table class="compare items" id="data">
                 <thead>
                     <tr>
                         <th data-type="number" data-way="up" onclick="_sort(this)" rowspan="2" class="right-border" id="inv">Инв. номер</th>
@@ -104,15 +104,15 @@
                         <th colspan="4" class="bottom-border">1C</th>
                     </tr>
                     <tr>
-                        <th data-type="string" onclick="_sort(this)">Тип</th>
-                        <th data-type="string" onclick="_sort(this)">Наименование</th>
-                        <th data-type="string" onclick="_sort(this)">М.О.Л.</th>
-                        <th data-type="string" onclick="_sort(this)">Расположение</th>
-                        <th data-type="string" onclick="_sort(this)" class="right-border">Сетевое имя</th>
-                        <th data-type="string" onclick="_sort(this)">Наименование</th>
-                        <th data-type="string" onclick="_sort(this)">Цех</th>
-                        <th data-type="string" onclick="_sort(this)">Подразделение</th>
-                        <th data-type="string" onclick="_sort(this)">М.О.Л.</th>
+                        <th data-type="string">Тип</th>
+                        <th data-type="string">Наименование</th>
+                        <th data-type="string">М.О.Л.</th>
+                        <th data-type="string">Расположение</th>
+                        <th data-type="string" class="right-border">Сетевое имя</th>
+                        <th data-type="string">Наименование</th>
+                        <th data-type="string">Цех</th>
+                        <th data-type="string">Подразделение</th>
+                        <th data-type="string"">М.О.Л.</th>
                     </tr>
                 </thead>
                 <tbody>

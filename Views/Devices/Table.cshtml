@@ -13,13 +13,11 @@
     <script src="~/Content/js/table.js"></script>
     <script>
         function reload() {
-
-            var fields = '';
-            var inputs = document.getElementById('fields').getElementsByTagName('input');
-            for (var i = 0; i < inputs.length; i++) {
+            let fields = '';
+            let inputs = document.getElementById('fields').getElementsByTagName('input');
+            for (let i = 0; i < inputs.length; i++) {
                 if (inputs[i].checked) fields += (fields == '' ? '' : ',') + inputs[i].name;
             }
-
             document.location = './table?fields=' + fields + '&used=' + (document.getElementById('used').checked ? '0' : '1') + '&type=' + document.getElementById('type').value;
         }
     </script>
@@ -34,30 +32,30 @@
 @{
     var Fields = new Dictionary<string, string>
     {
-    {"Inventory", "Инв. номер"},
-    {"Type", "Тип"},
-    {"Name", "Наименование"},
-    {"Description", "Описание"},
-    {"DateInstall", "Дата установки"},
-    {"Mol", "МОЛ"},
-    {"SerialNumber", "Серийный номер"},
-    {"PassportNumber", "Паспортный номер"},
-    {"Location", "Расположение"},
-    {"OS", "ОС"},
-    {"OSKey", "Ключ ОС"},
-    {"ServiceTag", "Сервис-тег"},
-    {"PassportGold", "Золото по паспорту"},
-    {"PassportSilver", "Серебро по паспорту"},
-    {"PassportPlatinum", "Платина по паспорту"},
-    {"PassportMPG", "МПГ по паспорту"},
+        {"Inventory", "Инв. номер"},
+        {"Type", "Тип"},
+        {"Name", "Наименование"},
+        {"Description", "Описание"},
+        {"DateInstall", "Дата установки"},
+        {"Mol", "МОЛ"},
+        {"SerialNumber", "Серийный номер"},
+        {"PassportNumber", "Паспортный номер"},
+        {"Location", "Расположение"},
+        {"OS", "ОС"},
+        {"OSKey", "Ключ ОС"},
+        {"ServiceTag", "Сервис-тег"},
+        {"PassportGold", "Золото по паспорту"},
+        {"PassportSilver", "Серебро по паспорту"},
+        {"PassportPlatinum", "Платина по паспорту"},
+        {"PassportMPG", "МПГ по паспорту"},
     };
 
     var Types = new Dictionary<string, string>
     {
-    {"", "Все"},
-    {"CMP", "Компьютеры"},
-    {"DIS", "Мониторы"},
-    {"PRN", "Принтеры"},
+        {"", "Все"},
+        {"CMP", "Компьютеры"},
+        {"DIS", "Мониторы"},
+        {"PRN", "Принтеры"},
     };
 
     string type = Request.QueryString.Get("type") ?? "";
