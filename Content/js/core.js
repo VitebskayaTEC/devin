@@ -654,6 +654,51 @@ var Storages = {
         form.append('Select', selected.join(','));
         removeAllSelection();
         Repairs.Storage.create(form);
+    },
+
+    Import: {
+
+        add(obj, excel) {
+            
+            let form = new FormData();
+            for (let key in excel) form.append(key, excel[key]);
+
+            fetch(host + 'storages/addExcelToStorage', { method: 'POST', body: form })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.Error) message(json.Error);
+                    if (json.Good) {
+                        message(json.Good, 'good');
+
+                        let row = obj.closest('tr');
+                        row.classList.remove('compare_not_found');
+                        row.querySelector('td[insert="Nis"]').innerHTML = excel.Nall;
+                        row.querySelector('td[insert="Nuse"]').innerHTML = 0;
+                        row.setAttribute('id', json.Id);
+
+                        obj.onclick = () => Storages.Import.open(json.Id);
+                        obj.innerHTML = 'Открыть карточку';
+                    }
+                });
+        },
+
+        addAll() {
+            let rows = document.querySelectorAll('#view .compare_not_found button');
+            if (rows.length == 0) return message('Нет позиций, которые необходимо добавить', 'warning');
+            rows.forEach(el => el.click());
+        },
+
+        open(Id) {
+            fetch(host + 'storages/cart/' + Id)
+                .then(res => res.text())
+                .then(text => {
+                    let cart = document.getElementById('cart');
+                    cart.innerHTML = text;
+                    cart.classList.add('cart_visible');
+                    document.querySelectorAll('#view .selected').forEach(el => el.classList.remove('selected'));
+                    document.getElementById(Id).classList.add('selected');
+                });
+        }
     }
 };
 

@@ -3,7 +3,6 @@ using Devin.Models;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.SS.Util;
-using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,7 +28,7 @@ namespace Devin.Controllers
             var excels = new List<Storage>();
 
             var file = Request.Files[Request.Files.AllKeys[0]];
-            var book = new XSSFWorkbook(file.InputStream);
+            var book = new HSSFWorkbook(file.InputStream);
             var sheet = book.GetSheetAt(0);
 
             string title = "";
@@ -182,7 +181,7 @@ namespace Devin.Controllers
             }
         }
 
-        public void AddExcelToStorage([Bind(Include = "Inventory,Name,Date,Account,Nall,Cost")] Storage storage)
+        public JsonResult AddExcelToStorage([Bind(Include = "Inventory,Name,Date,Account,Nall,Cost")] Storage storage)
         {
             string name = storage.Name.ToLower();
 
@@ -221,6 +220,9 @@ namespace Devin.Controllers
             using (var conn = Database.Connection())
             {
                 conn.Execute("INSERT INTO Storages (Inventory, Name, Date, Account, Nall, Nstorage, Nrepairs, Noff, IsDeleted, Type, Cost) VALUES (@Inventory, @Name, @Date, @Account, @Nall, @Nall, 0, 0, 1, @Type, @Cost)", storage);
+                int Id = conn.QueryFirst<int>("SELECT Max(Id) FROM Storages");
+
+                return Json(new { Good = "Позиция \"" + storage.Name + "\" с инв. номером \"" + storage.Inventory +"\" добавлена на склад", Id });
             }
         }
 

@@ -16,7 +16,7 @@
 
 @section menu {
     <li>
-        <a class="menu-button" onclick="Storage.addAllExcelsToStorage()">Добавить все новые позиции</a>
+        <a class="menu-button" onclick="Storages.Import.addAll()">Добавить все новые позиции</a>
     </li>
 }
 
@@ -68,7 +68,7 @@
                             <td>@storage.Nrepairs</td>
                             <td>@excel.Nall</td>
                             <td>
-                                <button onclick="Storage.openCart('@storage.Id')">Карточка</button>
+                                <button onclick="Storages.Import.open('@storage.Id')">Карточка</button>
                             </td>
                         </tr>
 
@@ -98,18 +98,23 @@
                 if (!isFound)
                 {
                     <tr class="compare_not_found">
-                        <td name="Ncard">@excel.Inventory</td>
-                        <td name="Name">@excel.Name</td>
+                        <td>@excel.Inventory</td>
+                        <td>@excel.Name</td>
                         <td>@excel.Date.ToString("d MMMM yyyy")</td>
-                        <td name="Uchet">@excel.Account</td>
+                        <td>@excel.Account</td>
                         <td insert="Nis">не найдено на складе</td>
                         <td insert="Nuse">не найдено на складе</td>
-                        <td name="Nadd">@excel.Nall</td>
+                        <td>@excel.Nall</td>
                         <td>
-                            <button onclick="Storage.addExcelToStorage(this)">Добавить на складе</button>
+                            <button onclick="Storages.Import.add(this, { 
+                                    Inventory: '@excel.Inventory',
+                                    Name: '@excel.Name',
+                                    Account: '@excel.Account',
+                                    Nall: @excel.Nall,
+                                    Date: '@excel.Date.ToString("dd.MM.yyyy HH:mm")',
+                                    Cost: @excel.Cost
+                                })">Добавить на складе</button>
                         </td>
-                        <td class="hide" name="Date">@excel.Date.ToString("dd.MM.yyyy")</td>
-                        <td class="hide" name="Price">@excel.Cost</td>
                     </tr>
                 }
             }
@@ -124,54 +129,10 @@
                     <td>@storage.Nrepairs</td>
                     <td>не найдено в 1С</td>
                     <td>
-                        <button onclick="Storage.openCart('@storage.Inventory')">Карточка</button>
+                        <button onclick="Storages.Import.open('@storage.Id')">Карточка</button>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 </div>
-
-@section scripts {
-    <script src="~/Content/lib/jquery-3.3.1.min.js"></script>
-    <script>
-
-        var Storage = {
-
-            addExcelToStorage(obj) {
-
-                var excel = {};
-                var $row = $(obj).closest('tr');
-
-                $row.find('td[name]').each(function () { excel[this.getAttribute('name')] = this.innerHTML; });
-
-                $.post('@Url.Action("AddExcelToStorage", "Storages")', excel, () => {
-
-                    $row.find('td[insert="Nis"]').html(excel.Nadd);
-                    $row.find('td[insert="Nuse"]').html(0);
-                    $row.find('td.hide').remove();
-                    $row.removeClass('compare_not_found');
-                    $row.attr('id', excel.NCard);
-
-                    obj.onclick = () => Storage.openCart(excel.Ncard);
-                    obj.innerHTML = 'Открыть карточку';
-                });
-            },
-
-            addAllExcelsToStorage() {
-                var $rows = $('#view').find('.compare_not_found button');
-                if ($rows.length == 0) {
-                    alert('Нет позиций, которые необходимо добавить');
-                } else {
-                    $rows.each(function () { this.click(); });
-                }
-            },
-
-            openCart(ncard) {
-                $("#cart").load("@Url.Action("cart", "storages")/" + ncard).fadeIn(150);
-                $(".selected").removeClass("selected");
-                $("#" + ncard).addClass("selected");
-            }
-        };
-    </script>
-}
