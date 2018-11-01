@@ -111,13 +111,14 @@ a.has-icon {
 .panel {
     display: none;
     position: fixed;
-    top: 34px;
+    top: 0;
     background: #eee;
     color: #000;
     border: 1px solid #000;
     box-shadow: 1px 1px 6px #1b1b1b;
     padding: 6px;
     text-align: center;
+    right: 10px;
 }
 
 .panel a {cursor: default;}
@@ -310,7 +311,6 @@ a.has-icon {
     max-height: 700px;
 }
 .cart__body_expanded {width: 1350px;}
-
 .cart__closeButton {width: 40px;}
 
 .cart__closeButton:hover {
@@ -351,6 +351,11 @@ textarea.cart__field {
 }
 
 .cart__field_autoWidth {width: inherit;}
+
+.cart__field_noBorder {
+    margin: 0;
+    border: 0;
+}
 
 .tabsSelector {
     display: table;
@@ -708,14 +713,12 @@ textarea.cart__field {
 
 .repairs__row_hided {display: none;}
 
-
 .catalogLinks {
     overflow-y: auto;
     max-height: 300px;
     word-break: break-word;
     max-width: 650px;
 }
-
 
 .page > *,
 .set > * {margin-left: 15px;}
@@ -727,6 +730,12 @@ textarea.cart__field {
 .open,
 .open > a {display: block;}
 
-#aida-data a:before {content: "+ ";}
-#aida-data a.open:before {content: "- ";}
-f {color: #555;}
+a[for] {
+    color: #007bd6;
+    font-family: Consolas, sans-serif;
+}
+a[for]:hover {color: #2aa4fe;}
+
+a[for]:before {content: "+ ";}
+a[for].open:before {content: "- ";}
+.f {color: #555;}

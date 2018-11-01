@@ -263,6 +263,9 @@
                         <a class="view__link" href="##@(repair.Id)">@((repair.Number * repair.Storage.Cost).ToString("0.00")) р.</a>
                     </td>
                     <td>
+                        <a class="view__link" href="##@(repair.Id)">@repair.Date.ToString("dd.MM.yyyy")</a>
+                    </td>
+                    <td>
                         <a class="view__link" href="##@(repair.Id)"><input type="checkbox" disabled @(repair.IsOff ? "checked" : "") /></a>
                     </td>
 			        <td>

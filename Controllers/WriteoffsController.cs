@@ -17,6 +17,7 @@ namespace Devin.Controllers
 
         public ActionResult History(string Id) => View(model: Id);
 
+
         public JsonResult Create()
         {
             using (var conn = Database.Connection())
@@ -86,21 +87,13 @@ namespace Devin.Controllers
             }
         }
 
-        public JsonResult Move(string Id, string FolderId)
+        public JsonResult Move(int Id, int FolderId)
         {
-            int id = int.TryParse(Id.Replace("off", ""), out int i) ? i : 0;
-            int folderId = int.TryParse(Id.Replace("rg", ""), out i) ? i : 0;
-            
             using (var conn = Database.Connection())
             {
-                conn.Execute("UPDATE Writeoffs SET FolderId = @FolderId WHERE Id = @Id", new
-                {
-                    Id = id,
-                    FolderId = folderId
-                });
+                conn.Execute("UPDATE Writeoffs SET FolderId = @FolderId WHERE Id = @Id", new { Id, FolderId });
+                return Json(new { Good = "Списание перемещено" });
             }
-
-            return Json(new { Good = "Списание перемещено" });
         }
 
         public JsonResult Delete(string Id)

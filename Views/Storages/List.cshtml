@@ -2,15 +2,6 @@
 {
     string search = Request.QueryString.Get("search");
 
-    var _folders = conn.Query<Folder>(@"SELECT 
-	    Folders.Id,
-	    CASE WHEN Parents.Id IS NULL THEN 0 ELSE Parents.Id END AS FolderId,
-	    Folders.Name
-    FROM Folders
-	LEFT OUTER JOIN Folders AS Parents ON Folders.FolderId = Parents.Id
-    WHERE Folders.Type = 'storage'
-    ORDER BY Folders.Name").AsList();
-
     if (!string.IsNullOrEmpty(search))
     {
         var storages = conn.Query<Storage>(string.Format("SELECT * FROM Storages WHERE IsDeleted <> 1 AND (Inventory LIKE '%{0}%' OR Name LIKE '%{0}%' OR Date LIKE '%{0}%' OR Account LIKE '%{0}%') ORDER BY Inventory", search)).AsList();
@@ -26,6 +17,15 @@
     }
     else
     {
+        var _folders = conn.Query<Folder>(@"SELECT 
+	        Folders.Id,
+	        CASE WHEN Parents.Id IS NULL THEN 0 ELSE Parents.Id END AS FolderId,
+	        Folders.Name
+        FROM Folders
+	    LEFT OUTER JOIN Folders AS Parents ON Folders.FolderId = Parents.Id
+        WHERE Folders.Type = 'storage'
+        ORDER BY Folders.Name").AsList();
+
         var storages = conn.Query<Storage>("SELECT * FROM Storages WHERE IsDeleted <> 1 ORDER BY Date DESC").AsList();
         var off = new List<Storage>();
         var solo = new List<Storage>();
@@ -77,7 +77,9 @@
                         <td><b>Не распределенные позиции</b></td>
                     </tr>
                 </table>
-                @RenderItems(solo)
+                <div class="itemsBlock itemsBlock_expanded">
+                    @RenderItems(solo)
+                </div>
             </div>
         }
 
@@ -158,9 +160,9 @@
 { 
     <thead>
         <tr>
-            <th width="20px">
+            <td width="20px">
                 <input type="checkbox" class="selecter-all" />
-            </th>
+            </td>
             <th width="20px" data-type="type"></th>
             <th width="56px" data-type="number">Инв. №</th>
             <th data-type="string">Наименование</th>

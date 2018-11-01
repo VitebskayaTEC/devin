@@ -15,7 +15,7 @@
     @{ string url = Request.Url.AbsoluteUri.ToLower(); }
     <ul class="main-menu">
         <li>
-            <a href="~/" style="width: 36px"><div class="icon ic-exit-to-app"></div></a>
+            <a href="/" style="width: 36px"><div class="icon ic-exit-to-app"></div></a>
         </li><li>
             <a href="~/devices/" class="@(url.Contains("devices") ? "point-now" : "")">DEVIN</a>
         </li><li>
@@ -40,6 +40,7 @@
     <div class="messages"></div>
 
     <script>const host = '@Url.Action(null, "")';</script>
+    <script src="~/content/js/core.js"></script>
     @RenderSection("scripts", false)
 </body>
 

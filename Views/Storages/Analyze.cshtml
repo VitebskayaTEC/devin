@@ -5,29 +5,8 @@
     var cartridges = new List<Cartridge>();
 }
 
-@section menu {
-    <li><button class="cart__button" onclick="exportToExcel()">Печать заказа на закупку картриджей</button></li>
-}
-
 @section scripts {
-    <script src="~/content/lib/jquery-3.3.1.min.js"></script>
-    <script src="~/content/js/core.js"></script>
     <script>
-        $(".view")
-	        .on("mousedown", ".group .items thead th", function() { _sort(this) })
-	        .on("mousedown", ".unit .caption th", function() { toggle(this) });
-
-        function toggle(node) {
-	        var $unit = $(node).closest('.unit');
-	        if ($unit.hasClass("open")) {
-		        $unit.children(".items_block").slideToggle(150, () => $unit.removeClass("open"));
-		        setCookie($unit.attr("id"), "", { expires: 999999999 });
-	        } else {
-		        $unit.addClass("open").children(".items_block").slideToggle(150);
-		        setCookie($unit.attr("id"), "open", { expires: 999999999 });
-	        }
-        }
-
         function unique(rowA, rowB, way, colNum) {
 	        if (way == "up") {
 		        return rowA.cells[colNum].querySelector("a").innerHTML > rowB.cells[colNum].querySelector("a").innerHTML ? 1 : -1;
@@ -159,13 +138,16 @@
     int activePrinter = 0;
     int activeCartridge = 0;
 
+    <button class="cart__button" onclick="exportToExcel()">Печать заказа на закупку картриджей</button>
+
     <div class="unit" id="analyzeRepairs">
         <table class="caption">
             <tr>
-                <th>Данные по ремонтам</th>
+                <th width="50px"><i class="icon ic-code"></i></th>
+                <td><b>Данные по ремонтам</b></td>
             </tr>
         </table>
-        <div class="items_block hide">
+        <div class="itemsBlock">
             <table class="items">
                 <thead>
                     <tr>
@@ -225,10 +207,11 @@
     <div class="unit open" id="analyzeCartridges">
         <table class="caption">
             <tr>
-                <th>Прогноз закупки картриджей</th>
+                <th width="50px"><i class="icon ic-code"></i></th>
+                <td><b>Прогноз закупки картриджей</b></td>
             </tr>
         </table>
-        <div class="items_block">
+        <div class="itemsBlock itemsBlock_expanded">
             <table class="items">
                 <thead>
                     <tr>
@@ -237,7 +220,7 @@
                         <th data-type="string">Стоимость</th>
                         <th data-type="number">На складе</th>
                         <th data-type="string">Прогноз</th>
-                        <th data-type="none">Итог</th>
+                        <th data-type="none" width="60px">Итог</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -279,7 +262,7 @@
                                 }
                             </td>
                             <td>
-                                <input color="@c.Color" name="@c.Name" type="number" min="0" onblur="this.value = Math.round(this.value);" value="@forecast" />
+                                <input class="cart__field" color="@c.Color" name="@c.Name" type="number" min="0" onblur="this.value = Math.round(this.value);" value="@forecast" />
                             </td>
                         </tr>
                     }

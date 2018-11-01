@@ -5,51 +5,10 @@
 
 @section menu {
     <li>
-        <input onkeyup="search(this)" placeholder="Поиск" value="" />
+        <input onkeyup="Catalog.search(this)" placeholder="Поиск" value="" />
     </li><li>
         <a class="has-icon" onmousedown="_menu(this)" menu="main"><div class="icon ic-menu"></div></a>
     </li>
-}
-
-
-@section scripts {
-    <script src="~/content/lib/jquery-3.3.1.min.js"></script>
-    <script src="~/content/js/core.js"></script>
-    <script>
-        function search(input) {
-            let s = input.value.toLowerCase();
-            if (s === '') {
-                document.querySelectorAll(".items tr").forEach(el => el.style.display = '');
-            } else {
-                document.querySelectorAll(".items tr").forEach(el => {
-                    let text = el.querySelector('td').innerHTML.toLowerCase();
-                    el.style.display = text.includes(s) ? '' : 'none';
-                });
-            }
-        }
-
-        function cartOpen(node) {
-            id = node.id;
-            cartOpenBack();
-            setHash(id);
-        }
-
-        function cartOpenBack() {
-            fetch(host + 'catalog/cart/' + id)
-                .then(res => res.text())
-                .then(text => {
-                    let cart = document.getElementById('cart');
-                    cart.innerHTML = text;
-                    cart.classList.add('cart_visible');
-
-                    let el = document.getElementById(id);
-                    if (el) {
-                        document.querySelectorAll('.selected').forEach(x => x.classList.remove('selected'));
-                        el.classList.add('selected');
-                    }
-            })
-        }
-    </script>
 }
 
 @section html {
@@ -71,7 +30,7 @@
                 <div class="unit">
                     <table class="caption">
                         <tr>
-                            <th>Принтеры</th>
+                            <td><b>Принтеры</b></td>
                         </tr>
                     </table>
                     <table class="items">
@@ -88,7 +47,7 @@
                 <div class="unit">
                     <table class="caption">
                         <tr>
-                            <th>Картриджи</th>
+                            <td><b>Картриджи</b></td>
                         </tr>
                     </table>
                     <table class="items">

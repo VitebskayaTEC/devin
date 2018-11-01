@@ -27,7 +27,7 @@
     }
     else
     {
-        <div>
+        <div class="cart__body">
 
             <button class="cart__button" onclick="Devices.Cart.backToAddons()">Вернуться</button>
             <button class="cart__button" onclick="Devices.DefectAct.print()">Печать</button>
@@ -73,13 +73,18 @@
             </table>
 
             <br />
-            <b>Неисправности</b>
+            <b class="cart__caption">Неисправности</b>
 
-            <table>
+            <table class="cartHistory__table">
                 <thead>
                     <tr>
-                        <td>
-                            Тип:
+                        <th>Тип</th>
+                        <th></th>
+                        <th width="50px"></th>
+                        <th width="80px"></th>
+                    </tr>
+                    <tr>
+                        <td width="250px">
                             <select class="cart__field" id="defect_position" onchange="Devices.DefectAct.check(this)">
                                 @if (data.Type == "CMP")
                                 {
@@ -93,19 +98,9 @@
                                 <option value="unique">Свое</option>
                             </select>
                         </td>
-                        <td id="defect_unique"></td>
-                        <td>Кол-во: <input class="cart__field" id="defect_count" style="width: 60px;" value="1" /></td>
+                        <td><input class="cart__field" id="defect_unique" disabled /></td>
+                        <td><input class="cart__field" id="defect_count" type="number" min="0" value="1" /></td>
                         <td><button class="cart__button" onclick="Devices.DefectAct.add()">Добавить</button></td>
-                    </tr>
-                </thead>
-            </table>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th width="100px"></th>
-                        <th width="100px"></th>
                     </tr>
                 </thead>
                 <tbody id="defect_container"></tbody>

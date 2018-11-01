@@ -7,16 +7,16 @@ else if (document.location.pathname.includes('aida')) pageName = 'aida';
 
 document.addEventListener('click', e => {
     let unit = e.target.closest('.caption');
-    if (unit) if (unit.id !== 'solo') toggle(unit);
-    if (e.target.closest('.items th')) _sort(e.target);
+    if (unit && e.target.tagName !== 'TH' && e.target.tagName !== 'DIV' && unit.parentNode.id !== 'solo') toggle(unit);
+    if (e.target.tagName === 'TH' && e.target.parentNode.parentNode.parentNode.classList.contains('items')) sortTable(e.target);
 });
 
 function toggle(node) {
     let unit = node.closest('.unit');
-    let name = unit.id || unit.querySelector('.title-wrapper:first-child').id;
+    let wrapper = unit.querySelector('.title-wrapper:first-child');
+    let name = unit.id || (wrapper ? wrapper.id : null);
+    if (!name) return;
     let block = unit.querySelector('.itemsBlock');
-
-    console.log(name);
 
     if (unit.classList.contains('open')) {
         unit.classList.remove('open');
@@ -29,26 +29,97 @@ function toggle(node) {
     }
 }
 
+function sortTable(th) {
+    function to_date(s) {
+        if (s.indexOf(' ') > -1) {
+            let t = s.split(' ');
+            let tdate = t[0].split('.');
+            let ttime = t[1].split(':');
+            return new Date(tdate[2], tdate[1], tdate[0], ttime[0], ttime[1], ttime[2]);
+        } else {
+            if (s.indexOf('.') > -1) {
+                let t = s.split('.');
+                return new Date(t[2], t[1], t[0]);
+            } else {
+                let t = s.split(':');
+                return new Date(2000, 1, 1, t[0], t[1], t[2]);
+            }
+        }
+    }
+
+    var table = th.parentNode.parentNode.parentNode,
+        tbody = table.getElementsByTagName('tbody')[0],
+        rowsArray = [],
+        type = th.getAttribute('data-type') || 'string',
+        way = th.getAttribute('data-way'),
+        colNum = th.cellIndex,
+        compare;
+    for (let i = 0; i < tbody.rows.length; i++) rowsArray.push(tbody.rows[i]);
+    switch (type) {
+        case 'number':
+            compare = (rowA, rowB) => (way == 'up')
+                ? rowA.cells[colNum].innerHTML - rowB.cells[colNum].innerHTML
+                : rowB.cells[colNum].innerHTML - rowA.cells[colNum].innerHTML;
+            break;
+        case 'string':
+            compare = (rowA, rowB) => (way == 'up')
+                ? rowA.cells[colNum].innerHTML > rowB.cells[colNum].innerHTML ? 1 : -1
+                : rowB.cells[colNum].innerHTML > rowA.cells[colNum].innerHTML ? 1 : -1;
+            break;
+        case 'date':
+            compare = (rowA, rowB) => {
+                let a = +to_date(rowA.cells[colNum].innerHTML);
+                let b = +to_date(rowB.cells[colNum].innerHTML);
+                return (way == 'up')
+                    ? b > a ? 1 : -1
+                    : a > b ? 1 : -1;
+            };
+            break;
+        case 'type':
+            compare = (rowA, rowB) => (way == 'up')
+                ? rowA.cells[colNum].querySelector('div').className > rowB.cells[colNum].querySelector('div').className ? 1 : -1
+                : rowB.cells[colNum].querySelector('div').className > rowA.cells[colNum].querySelector('div').className ? 1 : -1;
+            break;
+        case 'unique':
+            compare = (rowA, rowB) => unique(rowA, rowB, way, colNum);
+            break;
+        default: return;
+    }
+
+    for (let i = 0, ths = th.parentNode.getElementsByTagName('th'), len = ths.length; i < len; i++) ths[i].className = '';
+    if (way == 'up') {
+        th.setAttribute('data-way', 'down');
+        th.className = 'sort_down';
+    } else {
+        th.setAttribute('data-way', 'up');
+        th.className = 'sort_up';
+    }
+    rowsArray.sort(compare);
+    table.removeChild(tbody);
+    for (let i = 0; i < rowsArray.length; i++) tbody.appendChild(rowsArray[i]);
+    table.appendChild(tbody);
+}
+
 function getCookie(name) {
-	let matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
+	let matches = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)'));
 	return matches ? decodeURIComponent(matches[1]) : undefined;
 }
 
 function setCookie(name, value, options) {
 	options = options || {};
 	let expires = options.expires;
-	if (typeof expires == "number" && expires) {
+	if (typeof expires == 'number' && expires) {
         let d = new Date();
 		d.setTime(d.getTime() + expires * 1000);
 		expires = options.expires = d;
 	}
 	if (expires && expires.toUTCString) options.expires = expires.toUTCString();
 	value = encodeURIComponent(value);
-    let updatedCookie = name + "=" + value;
+    let updatedCookie = name + '=' + value;
     for (let propName in options) {
-		updatedCookie += "; " + propName;
+		updatedCookie += '; ' + propName;
         let propValue = options[propName];
-		if (propValue !== true) updatedCookie += "=" + propValue;
+		if (propValue !== true) updatedCookie += '=' + propValue;
 	}
 	document.cookie = updatedCookie;
 }
@@ -61,31 +132,17 @@ function _menu(obj) {
     clearTimeout(when);
 
     let menu = document.getElementById(obj.getAttribute('menu'));
-    let rect = obj.getBoundingClientRect();
-    let container = obj.closest('.unit');
-
     menu.onmouseleave = () => when = setTimeout(() => menu.classList.remove('contextMenu_visible'), 1000);
     menu.onmouseenter = () => clearTimeout(when);
     menu.onclick = () => menu.classList.remove('contextMenu_visible');
+
+    let rect = obj.getBoundingClientRect();
     menu.style.top = (rect.top + pageYOffset + 6) + 'px';
     menu.style.left = (rect.left + pageXOffset + 2) + 'px';
     menu.classList.add('contextMenu_visible');
 
-    menuId = container.hasAttribute('id') ? container.id : container.querySelector('.title-wrapper:first-child').id;
-}
-
-function _modal(target, source, handler) {
-    document.querySelectorAll('.contextMenu_visible').forEach(el => el.classList.remove('contextMenu_visible'));
-	clearTimeout(when);
-
-    let menu = document.getElementById("modal");
-    let rect = target.getBoundingClientRect();
-
-    menu.style.top = (rect.top + pageYOffset + 6) + "px";
-    menu.style.left = (rect.left + pageXOffset + 2) + "px";
-	menu.getElementsByTagName("li")[0].innerHTML = source;
-    menu.getElementsByTagName("li")[1].onclick = handler;
-    menu.classList.add('contextMenu_visible');
+    let container = obj.closest('.unit');
+    if (container) menuId = container.id || container.querySelector('.title-wrapper:first-child').id;
 }
 
 function restore() {
@@ -93,112 +150,60 @@ function restore() {
         .then(res => res.text())
         .then(text => {
             document.getElementById('view').innerHTML = text;
-            let el = document.getElementById(id);
+            let el = document.getElementById(Cart.id);
             if (el) el.classList.add('selected');
         });
 };
 
-function _sort(th) {
-	function to_date(s) {
-		if (s.indexOf(" ") > -1) {
-			var t = s.split(" ");
-			var tdate = t[0].split(".");
-			var ttime = t[1].split(":");
-			return new Date(tdate[2], tdate[1], tdate[0], ttime[0], ttime[1], ttime[2]);
-		} else {
-			if (s.indexOf(".") > -1) {
-				var t = s.split(".");
-				return new Date(t[2], t[1], t[0]);
-			} else {
-				var t = s.split(":");
-				return new Date(2000, 1, 1, t[0], t[1], t[2]);
-			}
-		}
-	}
+window.onload = () => Cart.byHash();
+window.onhashchange = () => Cart.hashSet && Cart.byHash();
 
-	var table = th.parentNode.parentNode.parentNode,
-		tbody = table.getElementsByTagName("tbody")[0],
-		rowsArray = [],
-		type = th.getAttribute("data-type") || "string",
-		way = th.getAttribute("data-way"),
-		colNum = th.cellIndex,
-		compare;
-	for (var i = 0; i < tbody.rows.length; i++) rowsArray.push(tbody.rows[i]);
-	switch (type) {
-		case 'number':
-            compare = (rowA, rowB) => (way == "up")
-                ? rowA.cells[colNum].innerHTML - rowB.cells[colNum].innerHTML
-                : rowB.cells[colNum].innerHTML - rowA.cells[colNum].innerHTML;
-			break;
-		case 'string':
-            compare = (rowA, rowB) => (way == "up")
-                ? rowA.cells[colNum].innerHTML > rowB.cells[colNum].innerHTML ? 1 : -1
-                : rowB.cells[colNum].innerHTML > rowA.cells[colNum].innerHTML ? 1 : -1;
-			break;
-		case 'date':
-			compare = (rowA, rowB) => {
-                let a = +to_date(rowA.cells[colNum].innerHTML);
-				let b = +to_date(rowB.cells[colNum].innerHTML);
-                return (way == "up")
-                    ? b > a ? 1 : -1
-                    : a > b ? 1 : -1;
-			};
-			break;
-		case "type":
-            compare = (rowA, rowB) => (way == "up")
-                ? rowA.cells[colNum].querySelector("div").className > rowB.cells[colNum].querySelector("div").className ? 1 : -1
-                : rowB.cells[colNum].querySelector("div").className > rowA.cells[colNum].querySelector("div").className ? 1 : -1;
-			break;
-		case "unique":
-            compare = (rowA, rowB) => unique(rowA, rowB, way, colNum);
-            break;
-        default: return;
-	}
+var Cart = {
 
-	for (var i = 0, ths = th.parentNode.getElementsByTagName("th"), len = ths.length; i < len; i++) ths[i].className = "";
-	if (way == "up") {
-		th.setAttribute("data-way", "down");
-		th.className = "sort_down";
-	} else {
-		th.setAttribute("data-way", "up");
-		th.className = "sort_up";
-	}
-	rowsArray.sort(compare);
-	table.removeChild(tbody);
-	for (var i = 0; i < rowsArray.length; i++) tbody.appendChild(rowsArray[i]);
-	table.appendChild(tbody);
-}
+    id: '',
+    hashSet: true,
 
-let id = '', hashSet = true;
+    open(node) {
+        this.id = node.parentNode.id;
+        this.reopen();
+        this.setHash(this.id);
+    },
 
-window.onload = () => cartOpenByHash();
-window.onhashchange = () => hashSet && cartOpenByHash();
+    setHash(hash) {
+        this.hashSet = false;
+        document.location.hash = '##' + hash;
+        setTimeout(() => this.hashSet = true, 100);
+    },
 
-function setHash(hash) {
-	hashSet = false;
-	try { document.location.hash = "##" + hash; } catch (e) {}
-	setTimeout(() => hashSet = true, 100);
-}
+    byHash() {
+        let hash = document.location.hash;
+        if (hash.indexOf('##') > -1 && hash != '##null') {
+            this.id = hash.replace('##', '');
+            try { this.reopen(); } catch (e) { }
+        } else try { this.close(); } catch (e) { }
+    },
 
-function cartOpen(node) {
-	id = node.parentNode.id;
-	cartOpenBack();
-	setHash(id);
-}
+    reopen() {
+        fetch(host + pageName + '/cart/' + this.id)
+            .then(res => res.text())
+            .then(text => {
+                let cart = document.getElementById('cart');
+                cart.innerHTML = text;
+                cart.classList.add('cart_visible');
+                let el = document.getElementById(this.id);
+                if (el) {
+                    document.querySelectorAll('#view .selected').forEach(el => el.classList.remove('selected'));
+                    el.classList.add('selected');
+                }
+            });
+    },
 
-function cartOpenByHash() {
-	let hash = document.location.hash;
-	if (hash.indexOf("##") > -1 && hash != "##null") {
-		id = hash.replace("##", "");
-		try { cartOpenBack(); } catch (e) {}
-	} else try { cartClose(); } catch (e) {}
-}
-
-function cartClose() {
-    document.getElementById('cart').classList.remove('cart_visible');
-    document.getElementById('view').querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-	id = '';
-	setHash(null);
+    close() {
+        document.getElementById('cart').classList.remove('cart_visible');
+        document.getElementById('view').querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+        this.id = '';
+        this.setHash(null);
+    }
 }
 
 document.addEventListener('change', e => {
@@ -271,9 +276,6 @@ function selectionPanel() {
 	}
 }
 
-
-/* Переход на другую модель организации JS кода */
-
 var Folders = {
 
     fetch(url, data, callback) {
@@ -283,6 +285,8 @@ var Folders = {
         fetch(url, { method: 'POST', body: form })
             .then(res => res.json())
             .then(json => {
+                if (json.Error) message(json.Error);
+                if (json.Warning) message(json.Warning);
                 if (json.Good) {
                     message(json.Good, 'good');
                     restore();
@@ -292,72 +296,77 @@ var Folders = {
     },
 
     create() {
-        let name = prompt("Название группы: ", "Новая группа (" + (new Date).toLocaleString() + ")");
+        let name = prompt('Название группы: ', 'Новая группа (' + (new Date).toLocaleString() + ')');
         if (!name) return;
 
         Folders.fetch(host + 'folders/create', { Type: pageName, Name: name });
     },
 
     createInner() {
-        let name = prompt("Название группы: ", "Новая группа (" + (new Date).toLocaleString() + ")");
+        let name = prompt('Название группы: ', 'Новая группа (' + (new Date).toLocaleString() + ')');
         if (!name) return;
         
         Folders.fetch(host + 'folders/createInner', {
             Type: pageName,
             Name: name,
-            FolderId: menuId.slice(2)
+            FolderId: menuId.replace(/\D+/g, '')
         });
     },
 
     beforeMove() {
-        var obj = $("#" + menuId).closest(".unit");
-        var exceptions = [];
+        let obj = document.getElementById(menuId).closest('.unit');
+        let exceptions = [];
 
         exceptions.push(menuId);
-        exceptions.push($(obj).parent().closest(".group").attr("id"));
-        $(obj).find(".group").each(function () { exceptions.push(this.id); });
+        let parent = obj.parentNode.closest('.group');
+        if (parent) exceptions.push(parent.id);
+        obj.querySelectorAll('.group').forEach(el => exceptions.push(el.id));
 
-        var select = "<option value='0'>Расположить отдельно";
-        $("div.group").each(function() {
-            var exception = false;
-            for (var i = 0; i < exceptions.length; i++)
-    	        if (this.id == exceptions[i]) exception = true;
-            if (!exception) {
-    	        select += "<option value='" + this.id + "'>" + $(this).children(".caption").find("th").html();
-            }
+        let options = '<option value="0">Расположить отдельно';
+        document.querySelectorAll('div.group').forEach(el => {
+            let exception = false;
+            for (let i = 0; i < exceptions.length; i++) if (el.id === exceptions[i]) exception = true;
+            if (!exception) options += '<option value="' + el.id + '">' + el.querySelector('.caption b').innerHTML;
         });
 
-        _modal(obj, "<select>" + select + "</select>", function() {
-	        if (menuId.indexOf("off") > -1)
-		        writeoffMove();
-	        else if (menuId.indexOf("-") > -1)
-		        computerMove();
-	        else
-		        Folders.move();
-        });
+        document.querySelectorAll('.contextMenu_visible').forEach(el => el.classList.remove('contextMenu_visible'));
+        clearTimeout(when);
+
+        let menu = document.getElementById('modal');
+        let rect = obj.getBoundingClientRect();
+
+        menu.style.top = (rect.top + pageYOffset + 6) + 'px';
+        menu.style.left = (rect.left + pageXOffset + 2) + 'px';
+        menu.getElementsByTagName('li')[0].innerHTML = '<select>' + options + '</select>';
+        menu.getElementsByTagName('li')[1].onclick = () => {
+            if (menuId.includes('folder')) Folders.move();
+            else if (menuId.includes('off')) Writeoffs.move();
+            else Devices.computerMove();
+            menu.classList.remove('contextMenu_visible');
+        };
+        menu.classList.add('contextMenu_visible');
     },
 
     move() {
         Folders.fetch(host + 'folders/move', {
             FolderId: document.getElementById('modal').querySelector('select').value.replace(/\D+/g, ''),
-            Id: menuId.slice(2)
+            Id: menuId.replace(/\D+/g, '')
         });
-        $("#modal").fadeOut(100);
     },
 
     update() {
-	    let name = prompt("Название группы: ", $("#" + menuId).find("th").first().text());
+        let name = prompt('Название группы: ', document.querySelector('#' + menuId + ' .caption b').innerHTML);
         if (!name) return;
         
-        Folders.fetch(host + 'folders/update', { Name: name, Id: menuId.slice(2) }, () => $("#" + menuId).find("th").first().html(title));
+        Folders.fetch(host + 'folders/update', { Name: name, Id: menuId.replace(/\D+/g, '') }, () => document.querySelector('#' + menuId + ' .caption b').innerHTML = name);
     },
 
     clear() {
-        Folders.fetch(host + 'folders/clear', { Type: pageName, Id: menuId.slice(2) });
+        Folders.fetch(host + 'folders/clear', { Type: pageName, Id: menuId.replace(/\D+/g, '') });
     },
 
     del() {
-        Folders._fetch(host + 'folders/delete', { Type: pageName, Id: menuId.slice(2) });
+        Folders.fetch(host + 'folders/delete', { Type: pageName, Id: menuId.replace(/\D+/g, '') });
     }
 };
 
@@ -371,8 +380,8 @@ var Devices = {
                 .then(json => {
                     if (json.Good) {
                         message(json.Good, 'good');
-                        id = json.Id;
-                        cartOpenBack();
+                        Cart.id = json.Id;
+                        Cart.reopen();
                         restore();
                     }
                 });
@@ -390,31 +399,31 @@ var Devices = {
                     if (json.Good) {
                         message(json.Good, 'good');
                         restore();
-                        cartOpenBack();
+                        Cart.reopen();
                     }
                 });
         },
 
         copy() {
-            fetch(host + 'devices/copy/' + id, { method: 'POST' })
+            fetch(host + 'devices/copy/' + Cart.id, { method: 'POST' })
                 .then(res => res.json())
                 .then(json => {
                     if (json.Good) {
                         message(json.Good, 'good');
-                        id = json.Id;
-                        cartOpenBack();
+                        Cart.id = json.Id;
+                        Cart.reopen();
                         restore();
                     }
                 });
         },
 
         del() {
-            fetch(host + 'devices/delete/' + id, { method: 'POST' })
+            fetch(host + 'devices/delete/' + Cart.id, { method: 'POST' })
                 .then(res => res.json())
                 .then(json => {
                     if (json.Good) {
                         message(json.Good, 'good');
-                        cartClose();
+                        Cart.close();
                         restore();
                     }
                 });
@@ -460,18 +469,18 @@ var Devices = {
 
         add() {
             let count = document.getElementById('defect_count').value;
-            if (isNaN(+count) || count === '') return alert('Количество деталей должно быть числом');
+            if (isNaN(+count) || count === '') return message('Количество деталей должно быть числом');
 
             let select = document.getElementById('defect_position');
             let type = select.value;
-            let text = type === 'unique' ? document.getElementById('unique_name').value : select.options[select.selectedIndex].innerHTML;
-            if (type === 'unique' && String(document.getElementById('unique_name').value) === '') return alert("Не введено название неисправности");
+            let text = type === 'unique' ? document.getElementById('defect_unique').value : select.options[select.selectedIndex].innerHTML;
+            if (type === 'unique' && text === '') return message('Не введено название неисправности');
 
             document.getElementById('defect_container').insertAdjacentHTML('beforeend', `
             <tr>
-                <td val="${type}">${text}</td>
+                <td val="${type}" colspan="2">${text}</td>
                 <td>${Math.round(count)}</td>
-                <td><button onclick="Devices.DefectAct.del(this)">Удалить</button></td>
+                <td><button class="cart__button" onclick="Devices.DefectAct.del(this)">Удалить</button></td>
             </tr>`);
         },
 
@@ -481,9 +490,7 @@ var Devices = {
         },
 
         check(select) {
-            document.getElementById('defect_unique').innerHTML = select.value === 'unique'
-                ? `Свое: <input type="text" id="unique_name" />`
-                : '';
+            document.getElementById('defect_unique').disabled = select.value !== 'unique';
         },
 
         print() {
@@ -527,6 +534,29 @@ var Devices = {
                     a.click();
                 }
             });
+    },
+
+    computerOpen() {
+        document.location.hash = '##' + menuId;
+    },
+
+    computerDelete() {
+        Devices.del(menuId);
+    },
+
+    computerMove() {
+        let form = new FormData();
+        form.append('Id', menuId.replace(/\D+/g, ''));
+        form.append('FolderId', document.querySelector('#modal select').value.replace(/\D+/g, ''));
+
+        fetch(host + 'devices/move/', { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    restore();
+                }
+            });
     }
 };
 
@@ -556,13 +586,13 @@ var Storages = {
                 if (json.Good) {
                     message(json.Good, 'good');
                     restore();
-                    cartOpenBack();
+                    Cart.reopen();
                 }
             });
     },
 
     del(Id) {
-        if (!confirm("Данный объект будет удален. Продолжить?")) return;
+        if (!confirm('Данный объект будет удален. Продолжить?')) return;
         fetch(host + 'storages/delete/' + Id, { method: 'POST' })
             .then(res => res.json())
             .then(json => {
@@ -570,15 +600,15 @@ var Storages = {
                 if (json.Warning) message(json.Warning, 'warning');
                 if (json.Good) {
                     message(json.Good, 'good');
-                    cartClose()
+                    Cart.close()
                     restore();
                 }
             });
     },
 
     compare() {
-        document.querySelectorAll('.panel:not(#excl,#selected)').forEach(el = el.style.display = 'none');
-        document.getElementById('excl').style.display = 'block';
+        document.getElementById('selected').classList.remove('selection_visible');
+        document.getElementById('excl').classList.add('selection_visible');
     },
 
     move() {
@@ -649,7 +679,7 @@ var Repairs = {
         },
 
         create() {
-            fetch(host + 'repairs/createFromDevice/' + id)
+            fetch(host + 'repairs/createFromDevice/' + Cart.id)
                 .then(res => res.text())
                 .then(text => {
                     let cart = document.getElementById('cart');
@@ -693,7 +723,7 @@ var Repairs = {
 
         load() {
             let form = new FormData();
-            form.append('Id', id);
+            form.append('Id', Cart.id);
             document.getElementById('repairsForm').querySelectorAll('input,select,textarea').forEach(el => form.append(el.name, el.value));
             fetch(host + 'repairs/createFromDeviceData', { method: 'POST', body: form })
                 .then(res => res.text())
@@ -706,7 +736,7 @@ var Repairs = {
         end(withWriteoff) {
 
             let form = new FormData();
-            form.append('Id', id);
+            form.append('Id', Cart.id);
             document.getElementById('repairsData').querySelectorAll('.repairs__row_checked').forEach(el => {
                 let inventory = el.getAttribute('data-id');
                 let number = el.querySelector('input[type="number"]').value;
@@ -735,7 +765,8 @@ var Repairs = {
 
         back() {
             clearInterval(this.interval);
-            cartOpenBack();
+            setHash(null);
+            Cart.close();
         }
     },
 
@@ -771,12 +802,12 @@ var Repairs = {
         remove(button) {
             var row = button.parentNode.parentNode;
             row.parentNode.removeChild(row);
-            if (document.getElementById("repairsData").querySelectorAll("tr").length == 0) cartClose();
+            if (document.getElementById('repairsData').querySelectorAll('tr').length == 0) Cart.close();
         },
 
         end(withWriteoff) {
             let form = new FormData();
-            form.append('Id', id);
+            form.append('Id', Cart.id);
             let rows = document.getElementById('repairsData').querySelectorAll('.repairs__row_checked');
 
             rows.forEach(el => {
@@ -804,6 +835,10 @@ var Repairs = {
                         rows.forEach(el => el.parentNode.removeChild(el));
                     }
                 });
+        },
+
+        back() {
+            Cart.reopen();
         }
 
     },
@@ -820,7 +855,7 @@ var Repairs = {
                     if (json.Good) {
                         message(json.Good, 'good');
                         restore();
-                        cartOpenBack();
+                        Cart.reopen();
                     }
                     if (json.Warning) message(json.Warning, 'warning');
                     if (json.Error) message(json.Error);
@@ -828,14 +863,14 @@ var Repairs = {
         },
 
         del(Id) {
-            if (!confirm("Данный объект будет удален. Продолжить?")) return;
+            if (!confirm('Данный объект будет удален. Продолжить?')) return;
 
             fetch(host + 'repairs/delete/' + Id, { method: 'POST' })
                 .then(res => res.json())
                 .then(json => {
                     if (json.Good) {
                         message(json.Good, 'good');
-                        cartClose()
+                        Cart.close()
                         restore();
                     }
                 });
@@ -843,7 +878,7 @@ var Repairs = {
     },
 
     off() {
-        fetch(host + 'repairs/off/' + menuId.replace("off", ""), { method: 'POST' })
+        fetch(host + 'repairs/off/' + menuId.replace('off', ''), { method: 'POST' })
             .then(res => res.json())
             .then(json => {
                 if (json.Good) {
@@ -854,7 +889,7 @@ var Repairs = {
     },
 
     on() {
-        fetch(host + 'repairs/on/' + menuId.replace("off", ""), { method: 'POST' })
+        fetch(host + 'repairs/on/' + menuId.replace('off', ''), { method: 'POST' })
             .then(res => res.json())
             .then(json => {
                 if (json.Good) {
@@ -865,7 +900,7 @@ var Repairs = {
     },
 
     clear() {
-        if (!confirm("Все ремонты в выбранном списании будут отменены, использованные позиции будут возвращены на склад. Продолжить?")) return;
+        if (!confirm('Все ремонты в выбранном списании будут отменены, использованные позиции будут возвращены на склад. Продолжить?')) return;
         fetch(host + 'repairs/deleteAll/' + menuId.replace('off', ''), { method: 'POST' })
             .then(res => res.json())
             .then(json => {
@@ -966,7 +1001,7 @@ var Writeoffs = {
                 if (json.Good) {
                     message(json.Good, 'good');
                     restore();
-                    cartOpenBack();
+                    Cart.reopen();
                 }
                 if (json.Warning) message(json.Warning, 'warning');
                 if (json.Error) message(json.Error);
@@ -974,7 +1009,7 @@ var Writeoffs = {
     },
 
     export(Id) {
-        fetch(host + 'writeoffs/print/' + (Id || menuId.replace("off", "")), { method: 'POST' })
+        fetch(host + 'writeoffs/print/' + (Id || menuId.replace(/\D+/g, '')), { method: 'POST' })
             .then(res => res.json())
             .then(json => {
                 if (json.Error) message(json.Error);
@@ -989,21 +1024,24 @@ var Writeoffs = {
     },
 
     del(Id) {
-        if (!confirm("Данный объект будет удален. Продолжить?")) return;
+        if (!confirm('Данный объект будет удален. Продолжить?')) return;
 
-        fetch(host + 'writeoffs/delete/' + (Id || menuId.replace('off', '')), { method: 'POST' })
+        fetch(host + 'writeoffs/delete/' + (Id || menuId.replace(/\D+/g, '')), { method: 'POST' })
             .then(res => res.json())
             .then(json => {
                 if (json.Good) {
                     message(json.Good, 'good');
-                    cartClose()
+                    Cart.close()
                     restore();
                 }
             });
     },
 
     move() {
-        fetch(host + 'writeoff/move/' + menuId + '?FolderId=' + $("#modal select:first-child").val(), { method: 'POST' })
+        let form = new FormData();
+        form.append('Id', menuId.replace(/\D+/g, ''))
+        form.append('FolderId', document.querySelector('#modal select').value);
+        fetch(host + 'writeoff/move', { method: 'POST', body: form })
             .then(res => res.json())
             .then(json => {
                 if (json.Good) {
@@ -1011,7 +1049,6 @@ var Writeoffs = {
                     restore();
                 }
             });
-        $("#modal").fadeOut(100);
     }
 };
 
@@ -1031,9 +1068,9 @@ var Catalog = {
     update() {
         let form = new FormData();
         document.getElementById('form').querySelectorAll('input,select,textarea').forEach(el => form.append(el.name, el.value));
-        form.append('Id', id.replace(/cart|prn/, ''));
+        form.append('Id', Cart.id.replace(/cart|prn/, ''));
 
-        fetch(host + 'catalog/update' + (id.includes('prn') ? 'printer' : 'cartridge'), { method: 'POST', body: form })
+        fetch(host + 'catalog/update' + (Cart.id.includes('prn') ? 'printer' : 'cartridge'), { method: 'POST', body: form })
             .then(res => res.json())
             .then(json => {
                 if (json.Good) message(json.Good, 'good');
@@ -1043,13 +1080,13 @@ var Catalog = {
     },
 
     del() {
-        if (!confirm("Данный объект будет удален. Продолжить?")) return;
-        fetch(host + 'catalog/delete' + (id.includes('prn') ? 'printer' : 'cartridge') + '/' + id.replace(/cart|prn/, ''), { method: 'POST' })
+        if (!confirm('Данный объект будет удален. Продолжить?')) return;
+        fetch(host + 'catalog/delete' + (Cart.id.includes('prn') ? 'printer' : 'cartridge') + '/' + Cart.id.replace(/cart|prn/, ''), { method: 'POST' })
             .then(res => res.json())
             .then(json => {
                 if (json.Good) {
                     message(json.Good, 'good');
-                    cartClose()
+                    Cart.close()
                 }
             });
     },
@@ -1063,7 +1100,7 @@ var Catalog = {
             .then(json => {
                 if (json.Good) {
                     message(json.Good, 'good');
-                    cartOpenBack();
+                    Cart.reopen();
                 }
             });
     },
@@ -1077,22 +1114,39 @@ var Catalog = {
             .then(json => {
                 if (json.Good) {
                     message(json.Good, 'good');
-                    cartOpenBack();
+                    Cart.reopen();
                 }
             });
     },
+
+    search(input) {
+        let s = input.value.toLowerCase();
+        if (s === '') {
+            document.querySelectorAll('.items tr').forEach(el => el.style.display = '');
+        } else {
+            document.querySelectorAll('.items tr').forEach(el => {
+                let text = el.querySelector('td').innerHTML.toLowerCase();
+                el.style.display = text.includes(s) ? '' : 'none';
+            });
+        }
+    }
 };
 
 var Aida = {
 
+    toggle(el) {
+        el.classList.toggle('open');
+        document.getElementById(el.getAttribute("for")).classList.toggle('open');
+    },
+
     del() {
-        if (!confirm("Отчет по данному компьютеру будет безвозвратно удален. Продолжить?")) return;
-        fetch(host + 'aida/delete/' + id, { method: 'POST' })
+        if (!confirm('Отчет по данному компьютеру будет безвозвратно удален. Продолжить?')) return;
+        fetch(host + 'aida/delete/' + Cart.id, { method: 'POST' })
             .then(res => res.json())
             .then(json => {
                 if (json.Good) {
                     message(json.Good, 'good');
-                    cartClose();
+                    Cart.close();
                     restore();
                 }
             });

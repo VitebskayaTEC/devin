@@ -5,14 +5,6 @@
     DateTime date = DateTime.TryParse("01.01." + (Request.QueryString.Get("year") ?? ""), out DateTime d) ? d : DateTime.Now;
 }
 
-@section styles {
-    <link rel="stylesheet" href="~/content/css/repair.css" />
-}
-
-@section scripts {
-    <script src="~/content/lib/jquery-1.12.4.min.js"></script>
-}
-
 <form action="@Url.Action("cartridgesUsage", "repairs")" method="get" class="filter">
     Сводная таблица по заменам картриджей на
     <select class="cart__field cart__field_autoWidth" name="year">

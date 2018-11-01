@@ -13,61 +13,6 @@
     </li>
 }
 
-@section scripts {
-    <script src="~/content/lib/jquery-3.3.1.min.js"></script>
-    <script src="~/content/js/core.js"></script>
-    <script>
-
-        function cartBack() {
-            cartOpenBack();
-        }
-
-        function cartOpenBack() {
-            fetch(host + 'storages/cart/' + id)
-                .then(res => res.text())
-                .then(text => {
-                    let cart = document.getElementById('cart');
-                    cart.classList.add('cart_visible');
-                    cart.innerHTML = text;
-                    let elem = document.getElementById(id);
-                    if (elem) {
-                        document.getElementById('view').querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-                        elem.classList.add('selected');
-                    }
-                });
-        }
-
-        // Сохранение выбранных ремонтов 
-        function createRepairs() {
-            var trs = document.getElementById("repairs-positions").getElementsByTagName("tr");
-            var form = "allrepairs=";
-            for (var i = 0; i < trs.length; i++) {
-                var device = trs[i].getElementsByTagName("select")[0],
-                    units = trs[i].getElementsByTagName("input")[0];
-                if (device.value != "0" && units.value != "0") {
-                    form += trs[i].className.replace("pos", "") + ";" + device.value + ";" + units.value + ";" + (trs[i].getElementsByTagName("input")[1].checked ? "1" : "0") + "<separate>";
-                }
-            }
-            if (document.getElementById("create-off-group").checked) form += "&createOff=" + encodeURIComponent(document.getElementById("name-off-group").value);
-
-            $.post(host + 'repairs/endCreateFromStorages', form, function (data) {
-
-                // Удаляем возможность повторной отправки запроса при успешной обработке запроса
-                $(".cart-overflow > table").remove();
-                $("#off-group").remove();
-                $("#cart").find(".cart-menu td:first-child").remove();
-
-                // Выводим ссылку на группу списаний, либо в приложение "ремонты"
-                document.getElementById("console").innerHTML = data;
-            })
-                .fail(function () {
-                    document.getElementById("console").innerHTML = "Произошла ошибка при обработке формы";
-                });
-        }
-
-    </script>
-}
-
 @section html {
     <div id="excl" class="panel">
         <form id="compare-form" method="POST" enctype="multipart/form-data" action="@Url.Action("import", "storages")">
@@ -77,7 +22,7 @@
             </div>
             <div>
                 <input type="submit" value="Загрузить" />
-                <input type="button" value="Закрыть" onclick="Storages.compare()" />
+                <input type="button" value="Закрыть" onclick="document.getElementById('excl').classList.remove('selection_visible');" />
             </div>
         </form>
     </div>
@@ -107,7 +52,9 @@
         <div onclick="Storages.compare()">Импорт из 1C</div>
         <div onclick="Folders.create()">Создать группу</div>
         <div onclick="Storages.create()">Создать позицию на складе</div>
-        <a href="~/storages/labels/">Просмотр прихода картриджей</a>
+        <hr />
+        <a href="~/storages/labels">Просмотр прихода картриджей</a>
+        <a href="~/storages/analyze">Анализ расхода картриджей</a>
     </div>
 
     <ul class="context-menu" id="group">
@@ -121,7 +68,7 @@
     <ul class="context-menu" id="modal">
         <li></li>
         <li>Ок</li>
-        <li onclick="document.getElementById('modal').style.display = 'none';">Отмена</li>
+        <li onclick="document.getElementById('modal').classList.remove('contextMenu_visible')">Отмена</li>
     </ul>
 }
 

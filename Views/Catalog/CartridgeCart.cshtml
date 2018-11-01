@@ -7,7 +7,7 @@
     {
         <div class="cart__header">
             <div></div>
-            <div class="cart__closeButton" title="Закрыть карточку" onclick="cartClose()">
+            <div class="cart__closeButton" title="Закрыть карточку" onclick="Cart.close()">
                 <i class="icon ic-clear icon_white icon_no-hover"></i>
             </div>
         </div>
@@ -17,7 +17,7 @@
 
     <div class="cart__header">
         <div>@cartridge.Name</div>
-        <div class="cart__closeButton" title="Закрыть карточку" onclick="cartClose()">
+        <div class="cart__closeButton" title="Закрыть карточку" onclick="Cart.close()">
             <i class="icon ic-clear icon_white icon_no-hover"></i>
         </div>
     </div>
@@ -165,6 +165,6 @@
     <div class="cart__menu">
         <button class="cart__button" onclick="Catalog.update()">Сохранить</button>
         <button class="cart__button" onclick="Catalog.del()">Удалить</button>
-        <button class="cart__button" onclick="cartClose()">Закрыть</button>
+        <button class="cart__button" onclick="Cart.close()">Закрыть</button>
     </div>
 }

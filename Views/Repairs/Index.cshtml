@@ -13,30 +13,6 @@
     </li>
 }
 
-@section scripts {
-    <script src="~/content/lib/jquery-3.3.1.min.js"></script>
-    <script src="~/content/js/core.js"></script>
-    <script>
-        function cartOpenBack() {
-            fetch(host + (id.indexOf('off') < 0 ? 'repairs' : 'writeoffs') + '/cart/' + id.replace('off', ''))
-                .then(res => res.text())
-                .then(text => {
-                    let cart = document.getElementById('cart');
-                    cart.classList.add('cart_visible');
-                    cart.innerHTML = text;
-                    document.getElementById('view').querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-                    document.getElementById(id).classList.add('selected');
-                });
-        }
-
-        function cartOpen(node) {
-            id = node.parentNode.id;
-            cartOpenBack();
-            setHash(id);
-        }
-    </script>
-}
-
 @section html {
     <div id="selected" class="panel">
         <div>Выбрано элементов: <b></b></div>
@@ -96,7 +72,7 @@
     <ul class="context-menu" id="modal">
         <li></li>
         <li>Ок</li>
-        <li onclick="$(this).parent().fadeOut(100)">Отмена</li>
+        <li onclick="document.getElementById('modal').classList.remove('contextMenu_visible')">Отмена</li>
     </ul>
 }
 

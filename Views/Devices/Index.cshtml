@@ -13,57 +13,6 @@
     </li>
 }
 
-@section scripts {
-    <script src="~/content/lib/jquery-3.3.1.min.js"></script>
-    <script src="~/content/js/core.js"></script>
-    <script>
-
-        function cartOpenBack() {
-            fetch(host + 'devices/cart/' + id)
-                .then(res => res.text())
-                .then(text => {
-                    let cart = document.getElementById('cart');
-                    cart.innerHTML = text;
-                    cart.classList.add('cart_visible');
-                    let el = document.getElementById(id);
-                    if (el) {
-                        document.getElementById('view').querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-                        el.classList.add('selected');
-                    }
-                });
-        }
-
-        function computerOpen() {
-            cartOpen(document.getElementById(menuId).querySelector('.title'));
-        }
-
-        function computerDelete() {
-            if (confirm('Данный компьютер будет удален. Продолжить?')) {
-                id = menuId;
-                cartDelete();
-            }
-        }
-
-        function computerMove() {
-            let form = new FormData();
-            form.append('Key', $('#modal select:first-child').val().replace('dg', ''));
-
-            fetch(host + 'devices/move/' + menuId, { method: 'POST', body: form })
-                .then(() => {
-                    restore();
-                    $('#modal').fadeOut(100);
-                });
-        }
-
-        function cartOpen(node) {
-            id = node.parentNode.id;
-            cartOpenBack();
-            setHash(id);
-        }
-
-    </script>
-}
-
 @section html {
     <div class="panel" id="selected">
         <div>Выбрано элементов: <b></b></div>
@@ -93,7 +42,7 @@
         <div onclick="Devices.Cart.create()">Создать карточку устройства</div>
         <div onclick="Folders.create()">Создать группу</div>
         <hr />
-        <a href="~/storage/analyze">Анализ расхода картриджей</a>
+        <a href="~/storages/analyze">Анализ расхода картриджей</a>
         <hr />
         <a href="~/devices/table">Табличный просмотр Devin</a>
         <a href="~/devices/table1C">Просмотр данных 1С</a>
@@ -103,10 +52,10 @@
     </div>
 
     <ul class="context-menu" id="computer">
-        <li onclick="computerOpen()">Открыть карточку</li>
+        <li onclick="Devices.computerOpen()">Открыть карточку</li>
         <li onclick="Devices.printReport()">Карточка учета техники</li>
         <li onclick="Folders.beforeMove()">Переместить</li>
-        <li onclick="computerDelete()">Удалить</li>
+        <li onclick="Devices.computerDelete()">Удалить</li>
     </ul>
 
     <ul class="context-menu" id="group">
@@ -120,7 +69,7 @@
     <ul class="context-menu" id="modal">
         <li></li>
         <li>Ок</li>
-        <li onclick="document.getElementById('modal').classList.remove('contentMenu_visible')">Отмена</li>
+        <li onclick="document.getElementById('modal').classList.remove('contextMenu_visible')">Отмена</li>
     </ul>
 }
 

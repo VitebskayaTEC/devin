@@ -3,16 +3,6 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-@section scripts {
-    <script src="~/content/lib/jquery-3.3.1.min.js"></script>
-    <script src="~/content/js/core.js"></script>
-    <script>
-        function toggle(node) {
-            $(node).closest('.unit').find('.items_block').slideToggle(100);
-        }
-    </script> 
-}
-
 <div id="summary"></div>
 <br />
 
@@ -53,15 +43,15 @@
     foreach (var writeoff in writeoffs)
     {
         <div class="unit">
-            <table class="caption" onclick="toggle(this)">
+            <table class="caption">
                 <tr>
                     <td width="80px">@writeoff.Date.ToString("dd.MM.yyyy")</td>
-                    <th width="800px">@writeoff.Name</th>
+                    <td width="800px"><b>@writeoff.Name</b></td>
                     <td width="140px">Кол-во: @writeoff.Repairs.Select(x => x.Number).Sum()</td>
                     <td>Стоимость: @writeoff.Repairs.Select(x => x.StoragePrice).Sum().ToString("0.00") р.</td>
                 </tr>
             </table>
-            <div class="items_block hide">
+            <div class="itemsBlock">
                 <table class="items">
                     <thead>
                         <tr>

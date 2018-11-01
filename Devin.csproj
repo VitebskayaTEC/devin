@@ -188,8 +188,6 @@
     <Content Include="Content\exl\ReportCart.xls" />
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\Local Publish.pubxml" />
-    <Content Include="Views\Writeoffs\CodeError.cshtml" />
-    <Content Include="Views\Writeoffs\Print.cshtml" />
     <Content Include="Views\Storages\Import.cshtml" />
     <None Include="Properties\PublishProfiles\WEB Publish.pubxml" />
     <Content Include="Views\Devices\Table1C.cshtml" />

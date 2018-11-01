@@ -11,47 +11,4 @@
     </li>
 }
 
-@section scripts {
-    <script src="~/content/lib/jquery-3.3.1.min.js"></script>
-    <script src="~/content/js/core.js"></script>
-    <script>
-
-        function toggle(node) {
-            let unit = node.parentNode;
-            if (unit.classList.contains('open')) {
-                unit.querySelector(".items_block").classList.remove('items_block_expanded');
-                setCookie(unit.id, 'close', { expires: 9999999999 });
-            }
-            else {
-                unit.querySelector(".items_block").classList.add('items_block_expanded');
-                setCookie(unit.id, 'open', { expires: 9999999999 });
-            }
-            unit.classList.toggle('open');
-        }
-
-        function cartOpen(node) {
-            id = node.id;
-            cartOpenBack();
-            setHash(id);
-        }
-
-        function cartOpenBack() {
-            fetch(host + 'aida/cart/' + id)
-                .then(res => res.text())
-                .then(text => {
-                    let cart = document.getElementById('cart');
-                    cart.classList.add('cart_visible');
-                    cart.innerHTML = text;
-                    let elem = document.getElementById(id);
-                    if (elem) {
-                        document.getElementById('view').querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-                        elem.classList.add('selected');
-                    }
-                });
-        }
-
-        function cartBack() { cartOpenBack(); }
-    </script>
-}
-
 @Html.Action("list")

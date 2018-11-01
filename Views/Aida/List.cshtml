@@ -50,10 +50,10 @@
 
 @helper RenderComputer(AidaComputer computer)
 {
-    string open = Request.Cookies.Get(computer.ID.ToString())?.Value ?? "";
+    string open = Request.Cookies.Get(computer.RHost)?.Value ?? "";
 
     <div class="unit @open" id="@computer.RHost">
-        <table class="caption" onclick="toggle(this)">
+        <table class="caption">
             <tr>
                 <th width="30px">
                     <div class="icon ic-computer"></div>
@@ -64,8 +64,8 @@
             </tr>
         </table>
         <div class="itemsBlock @(open == "open" ? "itemsBlock_expanded" : "")">
-            <div class='title-wrapper' id='@computer.ID' onclick="cartOpen(this)">
-                <div class='title'>Открыть карточку компьютера</div>
+            <div class="title-wrapper" id="@computer.ID">
+                <div class="title" onclick="Cart.open(this)">Открыть карточку компьютера</div>
             </div>
             <table class="items">
                 @foreach (var item in computer.Items)

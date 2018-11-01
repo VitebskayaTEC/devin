@@ -9,6 +9,25 @@
     <link rel="stylesheet" href="~/content/css/table.css" />
 }
 
+@section scripts {
+    <script src="~/Content/js/table.js"></script>
+    <script>
+        function reload() {
+            var fields = '';
+            var inputs = document.getElementById('fields').getElementsByTagName('input');
+            for (var i = 0; i < inputs.length; i++) {
+                if (inputs[i].checked) fields += (fields == '' ? '' : ',') + inputs[i].name;
+            }
+            document.location = './table1c?fields=' + fields + '&hide=' + document.getElementById('hide').value;
+        }
+
+        function hide(id, hide) {
+            fetch('@Url.Action("HideDevice1C")/' + id + "?hide=" + hide)
+                .then(() => location.reload());
+        }
+    </script>
+}
+
 @section menu {
     <li>
         <input id="search" placeholder="@(ViewBag.Search ?? "Поиск...")" />
@@ -175,22 +194,3 @@
         }
     }
 </table>
-
-@section scripts {
-    <script src="~/Content/js/table.js"></script>
-    <script>
-        function reload() {
-            var fields = '';
-            var inputs = document.getElementById('fields').getElementsByTagName('input');
-            for (var i = 0; i < inputs.length; i++) {
-                if (inputs[i].checked) fields += (fields == '' ? '' : ',') + inputs[i].name;
-            }
-            document.location = './table1c?fields=' + fields + '&hide=' + document.getElementById('hide').value;
-        }
-
-        function hide(id, hide) {
-            fetch('@Url.Action("HideDevice1C")/' + id + "?hide=" + hide)
-                .then(() => location.reload());
-        }
-    </script>
-}

@@ -317,11 +317,11 @@ namespace Devin.Controllers
             return Json(new { Good = "Все устройства успешно перемещены" });
         }
 
-        public JsonResult Move(int Id, int Key)
+        public JsonResult Move(int Id, int FolderId)
         {
             using (var conn = Database.Connection())
             {
-                conn.Execute("UPDATE Devices SET FolderId = @Key WHERE Id = @Id", new { Id, Key });
+                conn.Execute("UPDATE Devices SET FolderId = @FolderId WHERE Id = @Id", new { Id, FolderId });
                 return Json(new { Good = "Компьютер успешно перемещен" });
             }
         }

@@ -5,9 +5,7 @@
 
 @section styles {
     <style>
-        .compare_ounline {
-            border: 1px solid #333;
-        }
+        .compare_outline {border: 1px solid #333;}
 
         .compare {
             width: 100%;
@@ -28,20 +26,21 @@
             padding: 3px 5px;
         }
 
-        .compare tbody tr:hover td {
-            color: #1a6094;
-        }
-
-        th.right-border,
-        td.right-border {
-            border-right-color: #333 !important;
-        }
-
-        th.bottom-border,
-        td.bottom-border {
-            border-bottom-color: #333 !important;
-        }
+        .compare tbody tr:hover td {color: #1a6094;}
+        th.right-border, td.right-border {border-right-color: #333 !important;}
+        th.bottom-border, td.bottom-border {border-bottom-color: #333 !important;}
     </style>
+}
+
+@section scripts {
+    <script src="~/Content/js/table.js"></script>
+    <script>
+        function go(url) {
+            event.preventDefault();
+            if (event.button === 1) window.open(url);
+        }
+        document.getElementById('inv').click();
+    </script>    
 }
 
 @section menu {
@@ -55,7 +54,7 @@
 	    Devices.Inventory
 	    ,Devices.Type
 	    ,Devices.Id
-	    ,Devices.Description
+	    ,Devices.PublicName
 	    ,Devices.Mol
 	    ,Devices.Location
 	    ,CASE 
@@ -96,7 +95,7 @@
         var devices = conn.Query<Device>(devicesSQL);
         var devices1c = conn.Query<Device1C>(devices1cSQL);
 
-        <div class="compare_ounline">
+        <div class="compare_outline">
             <table class="compare" id="data">
                 <thead>
                     <tr>
@@ -122,11 +121,11 @@
                     bool found = false;
                     <tr>
                         <td class="right-border">@device.Inventory</td>
-                        <td onmouseup="go('/devin/devices/##@device.Id')">@types[device.Type]</td>
-                        <td onmouseup="go('/devin/devices/##@device.Id')">@device.Description</td>
-                        <td onmouseup="go('/devin/devices/##@device.Id')">@device.Mol</td>
-                        <td onmouseup="go('/devin/devices/##@device.Id')">@device.Location</td>
-                        <td onmouseup="go('/devin/devices/##@device.Id')" class="right-border">@device.NetworkName</td>
+                        <td onmouseup="go('@Url.Action(null,  "devices")##@device.Id')">@types[device.Type]</td>
+                        <td onmouseup="go('@Url.Action(null,  "devices")##@device.Id')">@device.PublicName</td>
+                        <td onmouseup="go('@Url.Action(null,  "devices")##@device.Id')">@device.Mol</td>
+                        <td onmouseup="go('@Url.Action(null,  "devices")##@device.Id')">@device.Location</td>
+                        <td onmouseup="go('@Url.Action(null,  "devices")##@device.Id')" class="right-border">@device.NetworkName</td>
                         @foreach (var device1c in devices1c)
                         {
                             if (device1c.Inventory == device.Inventory)
@@ -179,16 +178,4 @@
             </table>
         </div>
     }
-}
-
-@section scripts {
-    <script src="~/Content/js/table.js"></script>
-    <script>
-        function go(url) {
-            var e = event || window.event;
-            e.preventDefault();
-            if (e.button === 1) window.open(url);
-        }
-        document.getElementById('inv').click();
-    </script>    
 }

@@ -159,7 +159,9 @@
                     <td><b>Не распределенные устройства</b></td>
                 </tr>
             </table>
-            @RenderDevices(devices)
+            <div class="itemsBlock itemsBlock_expanded">
+                @RenderDevices(devices)
+            </div>
         </div>
 
         foreach (var folder in folders)
