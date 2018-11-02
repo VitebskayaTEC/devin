@@ -138,7 +138,6 @@
     <Compile Include="Models\Device1C.cs" />
     <Compile Include="Models\DragMetal.cs" />
     <Compile Include="Models\Folder.cs" />
-    <Compile Include="Models\KeyValue.cs" />
     <Compile Include="Models\Printer.cs" />
     <Compile Include="Models\Repair.cs" />
     <Compile Include="Models\Storage.cs" />
