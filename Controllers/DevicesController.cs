@@ -428,7 +428,6 @@ namespace Devin.Controllers
         public JsonResult PrintRecordCart(string Id)
         {
             string template = Server.MapPath(Url.Action("exl", "content") + "/ReportCart.xls");
-            string output = Server.MapPath(Url.Action("excels", "content") + "/ReportCart.xls");
 
             HSSFWorkbook book;
             using (var fs = new FileStream(template, FileMode.Open, FileAccess.Read))
@@ -440,9 +439,10 @@ namespace Devin.Controllers
 
             string cabinet;
             List<Device> devices;
+            string name;
             using (var conn = Database.Connection())
             {
-                cabinet = conn.QueryFirst<string>(@"SELECT Location FROM Devices LEFT OUTER JOIN WorkPlaces ON WorkPlaces.Id = Devices.PlaceId WHERE Id = @Id", new { Id });
+                cabinet = conn.QueryFirst<string>(@"SELECT WorkPlaces.Location FROM Devices LEFT OUTER JOIN WorkPlaces ON WorkPlaces.Id = Devices.PlaceId WHERE Devices.Id = @Id", new { Id });
 
                 devices = conn.Query<Device>(@"SELECT
 	                Devices.Inventory,
@@ -455,8 +455,10 @@ namespace Devin.Controllers
 	                Devices.DateInstall
                 FROM Devices
                 LEFT OUTER JOIN Devices1C ON Devices1C.Inventory = Devices.Inventory
-                WHERE Devices.Id = @Id OR Devices.ComputerId = @Id AND Devvices.IsDeleted <> 1
+                WHERE Devices.Id = @Id OR Devices.ComputerId = @Id AND Devices.IsDeleted <> 1
                 ORDER BY Devices.Inventory, Description1C", new { Id }).AsList();
+
+                name = conn.QueryFirst<string>("SELECT Name FROM Devices WHERE Id = @Id", new { Id });
             }
 
             string now = DateTime.Now.ToString("dd.MM.yyyy");
@@ -477,13 +479,18 @@ namespace Devin.Controllers
                 step++;
             }
 
+            string output = Server.MapPath(Url.Action("excels", "content") + "/Карточка_учета_оргтехники_" + name + ".xls");
+
             using (var fs = new FileStream(output, FileMode.OpenOrCreate, FileAccess.Write))
             {
                 book.Write(fs);
             }
 
-
-            return Json(new { Good = "", Link = Url.Action("excels", "content") + "/ReportCart.xlsx" });
+            return Json(new
+            {
+                Good = "Карточка учета вычислительной техники на рабочем месте \"" + name + "\" создана",
+                Link = Url.Action("excels", "content") + "/Карточка_учета_оргтехники_" + name + ".xls?r=" + (new Random()).Next()
+            });
         }
 
         public JsonResult CreateWorkPlace()

@@ -66,7 +66,6 @@ GO
 --DROP TABLE [GROUP]
 --GO
 
---IF OBJECT_ID('dbo.Writeoffs') IS NOT NULL DROP TABLE Writeoffs;
 --CREATE TABLE Writeoffs (
 --	Id int IDENTITY(1,1) NOT NULL,
 --	Name nvarchar(max) NULL,
@@ -114,6 +113,8 @@ GO
 --DROP TABLE SKLAD
 --GO
 
+-------------------------
+
 --sp_rename 'DEVICE.class_device', 'Type', 'COLUMN'
 --GO
 --sp_rename 'DEVICE.number_device', 'Number', 'COLUMN'
@@ -156,7 +157,9 @@ GO
 --FROM REMONT INNER JOIN DEVICE ON DEVICE.Number = REMONT.ID_D
 --GO
 
---UPDATE Activity SET Activity.Id = Device.Id, Activity.Text = REPLACE(Text, DEVICE.Number, 'device' + DEVICE.Id)
+------------------------------
+
+--UPDATE Activity SET Activity.Id = CAST(DEVICE.Id as nvarchar), Activity.Text = REPLACE(Text, DEVICE.Number, 'device' + CAST(DEVICE.Id as nvarchar))
 --FROM Activity INNER JOIN DEVICE ON DEVICE.Number = Activity.Id
 --GO
 
@@ -170,9 +173,14 @@ GO
 --sp_rename 'REMONT', 'Repairs'
 --GO
 
+------------------------------
+
+
 --ALTER TABLE Devices 
 --	DROP COLUMN Number, ComputerNumber
 --GO
+
+------------------------------
 
 --sp_rename 'Repairs.ID_U', 'StorageNcard', 'COLUMN'
 --GO
@@ -301,8 +309,13 @@ GO
 --	DROP COLUMN O_ID
 --GO
 
+------------------------------
+
 --ALTER TABLE Storages
 --	ADD Id int IDENTITY(1, 1) NOT NULL
+--GO
+
+--sp_rename 'Repairs.StorageInventory', 'StorageId', 'COLUMN'
 --GO
 
 --UPDATE Repairs SET Repairs.StorageId = Storages.Id
@@ -314,5 +327,5 @@ GO
 --WHERE Activity.Source = 'storages'
 --GO
 
---sp_rename 'Repairs.StorageInventory', 'StorageId', 'COLUMN'
+--DROP TABLE DATABANK
 --GO

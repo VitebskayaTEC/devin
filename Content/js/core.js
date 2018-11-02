@@ -527,7 +527,7 @@ var Devices = {
             .then(res => res.json())
             .then(json => {
                 if (json.Good) {
-                    message(json.Good);
+                    message(json.Good, 'good');
                     let a = document.createElement('a');
                     document.body.appendChild(a);
                     a.href = json.Link;

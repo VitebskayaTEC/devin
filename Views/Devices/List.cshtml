@@ -13,7 +13,7 @@
         Devices.Id,
         Devices.Name,
         Devices.ComputerId,
-        Devices.Description,
+        Devices.PublicName,
         Devices.Mol,
         WorkPlaces.Location,
         Devices.IsOff,
@@ -69,7 +69,7 @@
                     Type = d.Type,
                     Inventory = d.Inventory,
                     Name = d.Name,
-                    Description = d.Description,
+                    PublicName = d.PublicName,
                     Mol = d.Mol,
                     Location = d.Location,
                     IsOff = d.IsOff,
@@ -215,7 +215,7 @@
                 <td width="60px">@computer.Inventory</td>
                 <td width="140px">@computer.Location</td>
                 <td width="200px">@computer.Mol</td>
-                <td>@computer.Description</td>
+                <td>@computer.PublicName</td>
             </tr>
         </table>
         <div class="itemsBlock @(open == "open" ? "itemsBlock_expanded" : "")">
@@ -241,7 +241,7 @@
                     <td><a class="view__link" href="##@(device.Id)">@device.Name</a></td>
                     <td><a class="view__link" href="##@(device.Id)">@device.Inventory</a></td>
                     <td><a class="view__link" href="##@(device.Id)">@device.Mol</a></td>
-                    <td><a class="view__link" href="##@(device.Id)">@device.Description</a></td>
+                    <td><a class="view__link" href="##@(device.Id)">@device.PublicName</a></td>
                 </tr>
             }
         </tbody>
