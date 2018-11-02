@@ -146,7 +146,7 @@ function _menu(obj) {
 }
 
 function restore() {
-    fetch(host + pageName + '/list')
+    fetch(host + pageName + '/list?search=' + search)
         .then(res => res.text())
         .then(text => {
             document.getElementById('view').innerHTML = text;
@@ -536,6 +536,20 @@ var Devices = {
             });
     },
 
+    printReportByFolder() {
+        fetch(host + 'devices/printRecordCartByFolder/' + menuId.replace(/\D+/g, ''), { method: 'POST' })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    let a = document.createElement('a');
+                    document.body.appendChild(a);
+                    a.href = json.Link;
+                    a.click();
+                }
+            });
+    },
+
     computerOpen() {
         document.location.hash = '##' + menuId;
     },
@@ -774,7 +788,6 @@ var Repairs = {
                 .then(res => res.text())
                 .then(text => {
                     document.getElementById('repairsData').innerHTML = text;
-                    setTimeout(() => this.search(this.searchQuery), 100);
                 });
         },
 
@@ -810,7 +823,7 @@ var Repairs = {
 
         back() {
             clearInterval(this.interval);
-            setHash(null);
+            Cart.setHash(null);
             Cart.close();
         }
     },

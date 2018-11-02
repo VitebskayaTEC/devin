@@ -11,4 +11,5 @@
     </li>
 }
 
-@Html.Action("list")
+<script>let search = '@Request.QueryString.Get("search")';</script>
+@Html.Action("list", new { search = Request.QueryString.Get("search") })

@@ -59,8 +59,9 @@
     </ul>
 
     <ul class="context-menu" id="group">
-        <li onclick="Folders.update()">Переименовать
+        <li onclick="Folders.update()">Переименовать</li>
         <li onclick="Folders.beforeMove()">Переместить</li>
+        <li onclick="Devices.printReportByFolder()">Карточка учета техники</li>
         <li onclick="Folders.createInner()">Создать вложенную группу</li>
         <li onclick="Folders.clear()">Очистить</li>
         <li onclick="Folders.del()">Удалить</li>
@@ -73,4 +74,5 @@
     </ul>
 }
 
-@Html.Action("list")
+<script>let search = '@Request.QueryString.Get("search")';</script>
+@Html.Action("list", new { search = Request.QueryString.Get("search") })

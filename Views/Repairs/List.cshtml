@@ -1,6 +1,5 @@
 ﻿@using (var conn = Database.Connection())
 {
-    string id = Request.QueryString.Get("id");
     string search = Request.QueryString.Get("search");
     string where = string.IsNullOrEmpty(search)
         ? "" : $"WHERE Devices.Name LIKE '%{search}%' OR Devices.Description LIKE '%{search}%' OR Devices.Inventory LIKE '%{search}%' OR Storages.Name LIKE '%{search}%' OR Storages.Ncard Inventory '%{search}%'";
@@ -11,7 +10,7 @@
         ,Devices.Id          AS Device_Id
         ,Devices.Inventory   AS Device_Inventory
         ,Devices.Name        AS Device_Name
-        ,Devices.Description AS Device_Description
+        ,Devices.PublicName  AS Device_PublicName
         ,Devices.Type        AS Device_Type
 
         ,Storages.Id        AS Storage_Id
@@ -49,7 +48,7 @@
                 Id = Convert.ToInt32(row.Device_Id),
                 Inventory = row.Device_Inventory,
                 Name = row.Device_Name,
-                Description = row.Device_Description,
+                PublicName = row.Device_PublicName,
                 Type = row.Device_Type
             },
             Storage = new Storage
@@ -251,7 +250,7 @@
                 <tr id="@repair.Id" class="item">
                     <td><input type="checkbox" class="selecter" /></td>
                     <td>
-                        <a class="view__link" href="##@(repair.Id)"><b>@(repair.Device?.Name)</b> @(repair.Device?.Description)</a>
+                        <a class="view__link" href="##@(repair.Id)"><b>@(repair.Device?.Name)</b> @(repair.Device?.PublicName)</a>
                     </td>
                     <td>
                         <a class="view__link" href="##@(repair.Id)"><div class="led @repair.Storage.Led()"></div> @repair.Storage.Name</a>

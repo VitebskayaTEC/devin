@@ -1,10 +1,8 @@
 ﻿@using (var conn = Database.Connection())
 {
-    int Id = int.TryParse(Request.QueryString.Get("Id"), out int i) ? i : 0;
+    int Id = int.TryParse(Request.Form.Get("Id"), out int i) ? i : 0;
     int FolderId = int.TryParse(Request.Form.Get("Folder"), out i) ? i : 0;
     bool OnlyCompared = Request.Form.Get("OnlyCompared") == "true";
-
-    string where = FolderId != -1 ? " AND FolderId = @FolderId " : " ";
 
     List<Storage> Storages;
 
@@ -15,11 +13,12 @@
 	            LEFT OUTER JOIN PrintersCartridges
 		            LEFT OUTER JOIN Storages ON PrintersCartridges.CartridgeId = Storages.CartridgeId
 	            ON PrintersCartridges.PrinterId = Devices.PrinterId
-            WHERE Devices.Id = @Id AND Storages.Nstorage > 0 AND Storages.IsDeleted = 0" 
-            + where + "ORDER BY Storages.Inventory", new { Id }).AsList();
+            WHERE Devices.Id = @Id AND Storages.Nstorage > 0 AND Storages.IsDeleted = 0
+            ORDER BY Storages.Inventory", new { Id }).AsList();
     }
     else
     {
+        string where = FolderId != -1 ? " AND FolderId = @FolderId " : " ";
         string sql = "SELECT * FROM Storages WHERE Nstorage > 0 AND IsDeleted = 0" + where + "ORDER BY Storages.Inventory";
 
         Storages = conn.Query<Storage>(sql, new { FolderId }).AsList();
@@ -41,7 +40,8 @@
                         </td>
                         <td width="82px">@storage.Inventory</td>
                         <td>@storage.Name</td>
-                        <td width="100px">@storage.Nstorage</td>
+                        <td width="80px">@storage.Date.ToString("dd.MM.yyyy")</td>
+                        <td width="90px">@storage.Nstorage</td>
                         <td width="80px">@storage.Account</td>
                         <td width="50px">
                             <input type="checkbox" name="IsVirtual" />

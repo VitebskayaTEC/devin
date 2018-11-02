@@ -1,3 +1,8 @@
 ﻿@{
+    using (var conn = Database.Connection())
+    {
+        var numbers = conn.Query<string>("SELECT Number FROM Devices GROUP BY Number");
+    }
+
     Response.Redirect(Url.Action(null, "devices"));
 }

@@ -463,12 +463,13 @@ namespace Devin.Controllers
 
             string now = DateTime.Now.ToString("dd.MM.yyyy");
             sheet.GetRow(4).GetCell(9).SetCellValue(cabinet);
-            sheet.GetRow(20).GetCell(0).SetCellValue(now);
+            sheet.GetRow(12).GetCell(0).SetCellValue(now);
 
             int step = 0;
             foreach (Device device in devices)
             {
-                IRow row = sheet.GetRow(8 + step);
+                sheet.CopyRow(8, 9 + step);
+                IRow row = sheet.GetRow(9 + step);
                 row.GetCell(0).SetCellValue(device.Inventory);
                 row.GetCell(1).SetCellValue(device.Description1C ?? device.Description);
                 row.GetCell(2).SetCellValue(device.SerialNumber ?? "");
@@ -479,6 +480,7 @@ namespace Devin.Controllers
                 step++;
             }
 
+            sheet.GetRow(8).Height = 0;
             string output = Server.MapPath(Url.Action("excels", "content") + "/Карточка_учета_оргтехники_" + name + ".xls");
 
             using (var fs = new FileStream(output, FileMode.OpenOrCreate, FileAccess.Write))
@@ -490,6 +492,83 @@ namespace Devin.Controllers
             {
                 Good = "Карточка учета вычислительной техники на рабочем месте \"" + name + "\" создана",
                 Link = Url.Action("excels", "content") + "/Карточка_учета_оргтехники_" + name + ".xls?r=" + (new Random()).Next()
+            });
+        }
+
+        public JsonResult PrintRecordCartByFolder(int Id)
+        {
+            string template = Server.MapPath(Url.Action("exl", "content") + "/ReportCart.xls");
+
+            HSSFWorkbook book;
+            using (var fs = new FileStream(template, FileMode.Open, FileAccess.Read))
+            {
+                book = new HSSFWorkbook(fs);
+            }
+
+            ISheet sheet = book.GetSheetAt(0);
+
+            Folder cabinet;
+            List<Device> devices;
+            using (var conn = Database.Connection())
+            {
+                cabinet = conn.QueryFirst<Folder>(@"SELECT * FROM Folders WHERE Id = @Id", new { Id });
+
+                devices = conn.Query<Device>(@"SELECT
+					Devices.Inventory,
+	                Devices.Name,
+	                Devices.Description,
+	                Devices.PublicName,
+	                Devices1C.Description AS Description1C,
+	                Devices.SerialNumber,
+	                CASE WHEN Devices1C.Mol IS NULL THEN Devices.Mol ELSE Devices1C.Mol END AS Mol,
+	                Devices.DateInstall
+                FROM Devices
+				LEFT OUTER JOIN Devices AS Computers ON Computers.Id        = Devices.ComputerId
+                LEFT OUTER JOIN Devices1C            ON Devices1C.Inventory = Devices.Inventory
+                WHERE Devices.FolderId = @Id OR Computers.FolderId = @Id AND Devices.IsDeleted <> 1
+                GROUP BY Devices.Inventory,
+	                Devices.Name,
+	                Devices.Description,
+	                Devices.PublicName,
+	                Devices1C.Description,
+	                Devices.SerialNumber,
+	                CASE WHEN Devices1C.Mol IS NULL THEN Devices.Mol ELSE Devices1C.Mol END,
+	                Devices.DateInstall
+                ORDER BY Devices.Inventory, Description1C", new { Id }).AsList();
+            }
+
+            string now = DateTime.Now.ToString("dd.MM.yyyy");
+            sheet.GetRow(4).GetCell(9).SetCellValue(cabinet.Name);
+            sheet.GetRow(12).GetCell(0).SetCellValue(now);
+
+            int step = 0;
+            foreach (Device device in devices)
+            {
+                sheet.CopyRow(8, 9 + step);
+                IRow row = sheet.GetRow(9 + step);
+                row.GetCell(0).SetCellValue(device.Inventory);
+                row.GetCell(1).SetCellValue(device.Description1C ?? device.Description);
+                row.GetCell(2).SetCellValue(device.SerialNumber ?? "");
+                row.GetCell(3).SetCellValue(device.PublicName);
+                row.GetCell(4).SetCellValue(device.DateInstall.ToString("dd.MM.yyyy"));
+                row.GetCell(5).SetCellValue(device.Mol ?? "");
+                row.GetCell(6).SetCellValue(now);
+                step++;
+            }
+
+            sheet.GetRow(8).Height = 0;
+            
+            string output = Server.MapPath(Url.Action("excels", "content") + "/Карточка_учета_оргтехники_" + cabinet.Name.Replace("/", "-").Replace(".", "") + ".xls");
+
+            using (var fs = new FileStream(output, FileMode.OpenOrCreate, FileAccess.Write))
+            {
+                book.Write(fs);
+            }
+
+            return Json(new
+            {
+                Good = "Карточка учета вычислительной техники на рабочем месте \"" + cabinet.Name + "\" создана",
+                Link = Url.Action("excels", "content") + "/Карточка_учета_оргтехники_" + cabinet.Name.Replace("/", "-").Replace(".", "") + ".xls?r=" + (new Random()).Next()
             });
         }
 

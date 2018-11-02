@@ -1,10 +1,5 @@
 ﻿@using (var conn = Database.Connection())
 {
-    string[] key = new string[] { "Name", "Inventory", "Location", "Mol", "Description", "Name, Type" };
-    string[] direction = new string[] { "", " DESC" };
-    int sortKey = int.TryParse(Request.QueryString.Get("key") ?? "5", out int _sortKey) ? _sortKey : 5;
-    int sortDirection = int.TryParse(Request.QueryString.Get("direction") ?? "0", out int _sortDirection) ? _sortDirection : 0;
-    string id = Request.QueryString.Get("id");
     string search = Request.QueryString.Get("search");
 
     string sql = @"SELECT
@@ -21,7 +16,7 @@
     FROM Devices
     LEFT OUTER JOIN Folders    ON Folders.Id  = Devices.FolderId
 	LEFT OUTER JOIN WorkPlaces ON WorkPlaces.Id = Devices.PlaceId
-    WHERE (Devices.IsDeleted = 0) ORDER BY " + key[sortKey] + direction[sortDirection];
+    WHERE (Devices.IsDeleted = 0) ORDER BY Name, Type";
 
     if (!string.IsNullOrEmpty(search))
     {
