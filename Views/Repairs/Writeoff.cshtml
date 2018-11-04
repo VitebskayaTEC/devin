@@ -1,0 +1,29 @@
+﻿@model Writeoff
+
+@{ 
+    string id = "off" + Model.Id;
+    string open = Request.Cookies.Get(id)?.Value ?? "";
+}
+
+<div class="unit writeoff @open" data-id="@id">
+    <table class="caption">
+        <tr>
+            <td width="30px">
+                <div class="icon ic-info-outline" menu="writeoff" onmousedown="_menu(this)"></div>
+            </td>
+            <td><b>@Model.Name</b></td>
+            <td width="250px">@Model.Type</td>
+            <td width="150px">@Model.AllCost() р.</td>
+            <td width="70px">@Model.Date.ToString("dd.MM.yyyy")</td>
+        </tr>
+    </table>
+    <div class="itemsBlock @(open == "open" ? "itemsBlock_expanded" : "")">
+        @if (open == "open")
+        {
+            <div class="title-wrapper" id="@id">
+                <a class="title view__link" href="##@(id)">Открыть карточку списания</a>
+            </div>
+            @Html.Partial("Repairs", Model.Repairs)
+        }
+    </div>
+</div>

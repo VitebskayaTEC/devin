@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Devin.Models;
+using Devin.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +11,6 @@ namespace Devin.Controllers
     public class RepairsController : Controller
     {
         public ActionResult Index() => View();
-
-        public ActionResult List() => View();
 
         public ActionResult YearReport() => View();
 
@@ -30,6 +29,33 @@ namespace Devin.Controllers
         public ActionResult CreateFromDeviceData(int Id) => View(model: Id);
 
         public ActionResult CreateFromStorages(string Select) => View(model: Select);
+
+        public ActionResult List(string Item, string Search)
+        {
+            var model = new RepairsViewModel(Search);
+
+            if ((Item ?? "").Contains("folder"))
+            {
+                int Id = int.Parse(Item.Replace("folder", ""));
+                return View("FolderData", model.Folders.First(x => x.Id == Id));
+            }
+            else if ((Item ?? "").Contains("off"))
+            {
+                int Id = int.Parse(Item.Replace("off", ""));
+                Writeoff writeoff = model.Writeoffs.FirstOrDefault(x => x.Id == Id);
+                foreach (Folder f in model.Folders) if (f.Writeoffs.Count(x => x.Id == Id) > 0) writeoff = f.Writeoffs.First(x => x.Id == Id);
+                return View("WriteoffData", writeoff);
+            }
+            else if (!string.IsNullOrEmpty(Search))
+            {
+                ViewBag.Search = Search;
+                return View("Search", model);
+            }
+            else
+            {
+                return View("List", model);
+            }
+        }
 
 
         public JsonResult Update(int Id, [Bind(Include = "Id,DeviceId,StorageId,Number,IsOff,IsVirtual")] Repair repair, string Destination)

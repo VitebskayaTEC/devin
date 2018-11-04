@@ -1,0 +1,7 @@
+﻿@model Writeoff
+
+<div class="title-wrapper" id="off@(Model.Id)">
+    <a class="title view__link" href="##off@(Model.Id)">Открыть карточку списания</a>
+</div>
+
+@Html.Partial("Repairs", Model.Repairs)

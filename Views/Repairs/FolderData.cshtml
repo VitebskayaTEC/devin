@@ -1,0 +1,15 @@
+﻿@model Folder
+
+@{ 
+    foreach (var folder in Model.SubFolders)
+    {
+        @Html.Partial("Folder", folder)
+    }
+
+    foreach (var writeoff in Model.Writeoffs)
+    {
+        @Html.Partial("Writeoff", writeoff)
+    }
+
+    @Html.Partial("Repairs", Model.Repairs)
+}

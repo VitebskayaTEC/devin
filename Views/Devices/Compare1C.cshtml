@@ -121,11 +121,11 @@
                     bool found = false;
                     <tr>
                         <td class="right-border">@device.Inventory</td>
-                        <td onmouseup="go('@Url.Action(null,  "devices")##@device.Id')">@types[device.Type]</td>
-                        <td onmouseup="go('@Url.Action(null,  "devices")##@device.Id')">@device.PublicName</td>
-                        <td onmouseup="go('@Url.Action(null,  "devices")##@device.Id')">@device.Mol</td>
-                        <td onmouseup="go('@Url.Action(null,  "devices")##@device.Id')">@device.Location</td>
-                        <td onmouseup="go('@Url.Action(null,  "devices")##@device.Id')" class="right-border">@device.NetworkName</td>
+                        <td><a href="##device@(device.Id)">@types[device.Type]</a></td>
+                        <td><a href="##device@(device.Id)">@device.PublicName</a></td>
+                        <td><a href="##device@(device.Id)">@device.Mol</a></td>
+                        <td><a href="##device@(device.Id)">@device.Location</a></td>
+                        <td class="right-border"><a href="##device@(device.Id)">@device.NetworkName</a></td>
                         @foreach (var device1c in devices1c)
                         {
                             if (device1c.Inventory == device.Inventory)

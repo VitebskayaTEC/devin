@@ -101,7 +101,7 @@
                 foreach (var device in devices)
                 {
                     <div>
-                        <a class="cart__link" href="~/devices/##@(device.Id)">@device.Name @device.PublicName</a>
+                        <a class="cart__link" href="##device@(device.Id)">@device.Name @device.PublicName</a>
                         <small>@device.Location</small>
                     </div>
                 }

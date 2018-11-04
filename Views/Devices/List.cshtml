@@ -42,8 +42,8 @@
 
     if (!string.IsNullOrEmpty(search))
     {
-        <div class='unit'>
-            <table class='caption'>
+        <div class="unit">
+            <table class="caption">
                 <tr>
                     <th>Поиск совпадений по запросу: @search</th>
                 </tr>
@@ -196,10 +196,11 @@
 
 @helper RenderComputer(Computer computer)
 {
-    int id = computer.Id;
+    string id = "device" + computer.Id;
+    string href = "##" + id;
     string open = Request.Cookies.Get(id.ToString())?.Value ?? "";
 
-    <div class="unit computer @open">
+    <div class="unit computer @open" data-id="@id">
         <table class="caption">
             <tr>
                 <th width="30px">
@@ -214,8 +215,8 @@
             </tr>
         </table>
         <div class="itemsBlock @(open == "open" ? "itemsBlock_expanded" : "")">
-            <div class="title-wrapper" id="@computer.Id">
-                <a class="view__link title" href="##@(computer.Id)">Компьютер @computer.Name - открыть карточку</a>
+            <div class="title-wrapper" id="@id">
+                <a class="view__link title" href="@href)">Компьютер @computer.Name - открыть карточку</a>
             </div>
             @RenderDevices(computer.Devices)
         </div>
@@ -230,13 +231,16 @@
         <tbody>
             @foreach (var device in devices)
             {
-                <tr id="@device.Id" class="item">
+                string id = "device" + device.Id;
+                string href = "##" + id;
+
+                <tr id="@id" class="item">
                     <td><input type="checkbox" class="selecter" /></td>
-                    <td><a class="view__link" href="##@(device.Id)"><div class="led @(device.IsOff ? "off" : "on")"></div></a></td>
-                    <td><a class="view__link" href="##@(device.Id)">@device.Name</a></td>
-                    <td><a class="view__link" href="##@(device.Id)">@device.Inventory</a></td>
-                    <td><a class="view__link" href="##@(device.Id)">@device.Mol</a></td>
-                    <td><a class="view__link" href="##@(device.Id)">@device.PublicName</a></td>
+                    <td><a class="view__link" href="@href"><div class="led @(device.IsOff ? "off" : "on")"></div></a></td>
+                    <td><a class="view__link" href="@href">@device.Name</a></td>
+                    <td><a class="view__link" href="@href">@device.Inventory</a></td>
+                    <td><a class="view__link" href="@href">@device.Mol</a></td>
+                    <td><a class="view__link" href="@href">@device.PublicName</a></td>
                 </tr>
             }
         </tbody>

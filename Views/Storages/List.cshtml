@@ -138,18 +138,18 @@
         <tbody>
             @foreach (var storage in storages)
             {
-                <tr id="@storage.Id" class="item">
+                <tr id="storage@(storage.Id)" class="item">
                     <td><input type="checkbox" class="selecter" /></td>
-                    <td><a class="view__link" href="##@(storage.Id)"><div class="led @storage.Led()"></div></a></td>
-                    <td><a class="view__link" href="##@(storage.Id)">@storage.Inventory</a></td>
-                    <td><a class="view__link" href="##@(storage.Id)">@storage.Name</a></td>
-                    <td><a class="view__link" href="##@(storage.Id)">@storage.Cost</a></td>
-                    <td><a class="view__link" href="##@(storage.Id)">@storage.Nall</a></td>
-                    <td><a class="view__link" href="##@(storage.Id)">@storage.Date.ToString("dd.MM.yyyy")</a></td>
-                    <td><a class="view__link" href="##@(storage.Id)">@storage.Nstorage</a></td>
-                    <td><a class="view__link" href="##@(storage.Id)">@storage.Nrepairs</a></td>
-                    <td><a class="view__link" href="##@(storage.Id)">@storage.Noff</a></td>
-                    <td><a class="view__link" href="##@(storage.Id)">@storage.Account</a></td>
+                    <td><a class="view__link" href="##storage(storage.Id)"><div class="led @storage.Led()"></div></a></td>
+                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Inventory</a></td>
+                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Name</a></td>
+                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Cost</a></td>
+                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Nall</a></td>
+                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Date.ToString("dd.MM.yyyy")</a></td>
+                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Nstorage</a></td>
+                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Nrepairs</a></td>
+                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Noff</a></td>
+                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Account</a></td>
                 </tr>
             }
         </tbody>
