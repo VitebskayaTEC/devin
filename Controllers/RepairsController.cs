@@ -12,6 +12,36 @@ namespace Devin.Controllers
     {
         public ActionResult Index() => View();
 
+        public ActionResult Load(string Item, string Search)
+        {
+            if ((Item ?? "").Contains("off"))
+            {
+                int Id = int.Parse(Item.Replace("off", ""));
+                Writeoff writeoff = new Writeoff { Id = Id };
+                writeoff.Load();
+                return View("ComputerData", writeoff);
+            }
+            else
+            {
+                var model = new RepairsViewModel(Search);
+
+                if ((Item ?? "").Contains("folder"))
+                {
+                    int Id = int.Parse(Item.Replace("folder", ""));
+                    return View("FolderData", Folder.FindSubFolder(model.Folders, Id));
+                }
+                else if (!string.IsNullOrEmpty(Search))
+                {
+                    ViewBag.Search = Search;
+                    return View("Search", model.Repairs);
+                }
+                else
+                {
+                    return View("List", model);
+                }
+            }
+        }
+
         public ActionResult YearReport() => View();
 
         public ActionResult CartridgesUsage() => View();
@@ -29,33 +59,6 @@ namespace Devin.Controllers
         public ActionResult CreateFromDeviceData(int Id) => View(model: Id);
 
         public ActionResult CreateFromStorages(string Select) => View(model: Select);
-
-        public ActionResult List(string Item, string Search)
-        {
-            var model = new RepairsViewModel(Search);
-
-            if ((Item ?? "").Contains("folder"))
-            {
-                int Id = int.Parse(Item.Replace("folder", ""));
-                return View("FolderData", model.Folders.First(x => x.Id == Id));
-            }
-            else if ((Item ?? "").Contains("off"))
-            {
-                int Id = int.Parse(Item.Replace("off", ""));
-                Writeoff writeoff = model.Writeoffs.FirstOrDefault(x => x.Id == Id);
-                foreach (Folder f in model.Folders) if (f.Writeoffs.Count(x => x.Id == Id) > 0) writeoff = f.Writeoffs.First(x => x.Id == Id);
-                return View("WriteoffData", writeoff);
-            }
-            else if (!string.IsNullOrEmpty(Search))
-            {
-                ViewBag.Search = Search;
-                return View("Search", model);
-            }
-            else
-            {
-                return View("List", model);
-            }
-        }
 
 
         public JsonResult Update(int Id, [Bind(Include = "Id,DeviceId,StorageId,Number,IsOff,IsVirtual")] Repair repair, string Destination)

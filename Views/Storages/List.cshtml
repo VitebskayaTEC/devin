@@ -1,178 +1,44 @@
-﻿@using (var conn = Database.Connection())
-{
-    string search = Request.QueryString.Get("search");
+﻿@model StoragesViewModel
 
-    if (!string.IsNullOrEmpty(search))
+@{
+    List<Storage> Storages = new List<Storage>();
+    Folder OffStorages = new Folder
     {
-        var storages = conn.Query<Storage>(string.Format("SELECT * FROM Storages WHERE IsDeleted <> 1 AND (Inventory LIKE '%{0}%' OR Name LIKE '%{0}%' OR Date LIKE '%{0}%' OR Account LIKE '%{0}%') ORDER BY Inventory", search)).AsList();
+        Id = -1,
+        Name = "Списанные позиции"
+    };
 
-        <div class="unit">
+    foreach (Storage storage in Model.Storages)
+    {
+        if (storage.IsOff())
+        {
+            OffStorages.Storages.Add(storage);
+        }
+        else
+        {
+            Storages.Add(storage);
+        }
+    }
+
+    if (Storages.Count > 0)
+    {
+        <div class="unit" id="solo">
             <table class="caption">
                 <tr>
-                    <th>Поиск совпадений по запросу: @search</th>
+                    <th width="24px"><div class="icon ic-cached"></div></th>
+                    <td><b>Не распределенные позиции</b></td>
                 </tr>
             </table>
-            @RenderItems(storages)
-        </div>
-    }
-    else
-    {
-        var _folders = conn.Query<Folder>(@"SELECT 
-	        Folders.Id,
-	        CASE WHEN Parents.Id IS NULL THEN 0 ELSE Parents.Id END AS FolderId,
-	        Folders.Name
-        FROM Folders
-	    LEFT OUTER JOIN Folders AS Parents ON Folders.FolderId = Parents.Id
-        WHERE Folders.Type = 'storage'
-        ORDER BY Folders.Name").AsList();
-
-        var storages = conn.Query<Storage>("SELECT * FROM Storages WHERE IsDeleted <> 1 ORDER BY Date DESC").AsList();
-        var off = new List<Storage>();
-        var solo = new List<Storage>();
-        var folders = new List<Folder>();
-        bool found = false;
-
-        // Получение списка компьютеров из устройств
-        foreach (var storage in storages)
-        {
-            found = false;
-            foreach (var folder in _folders)
-            {
-                if (storage.FolderId == folder.Id)
-                {
-                    folder.Storages.Add(storage);
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found)
-            {
-                if (storage.IsOff())
-                {
-                    off.Add(storage);
-                }
-                else
-                {
-                    solo.Add(storage);
-                }
-            }
-        }
-
-        // Распределение иерархии папок
-        foreach (var folder in _folders)
-        {
-            if (folder.FolderId == 0)
-            {
-                folders.Add(Folder.Build(folder, _folders));
-            }
-        }
-
-        if (solo.Count > 0)
-        {
-            <div class="unit" id="solo">
-                <table class="caption">
-                    <tr>
-                        <th width="24px"><div class="icon ic-cached"></div></th>
-                        <td><b>Не распределенные позиции</b></td>
-                    </tr>
-                </table>
-                <div class="itemsBlock itemsBlock_expanded">
-                    @RenderItems(solo)
-                </div>
+            <div class="itemsBlock itemsBlock_expanded">
+                @Html.Partial("Storages", Storages)
             </div>
-        }
-
-        @RenderFolder(new Folder
-        {
-            Name = "Списанные позиции",
-            Storages = off
-        }, true);
-
-        foreach (var folder in folders)
-        {
-            @RenderFolder(folder)
-        }
-    }
-}
-
-@helper RenderFolder(Folder folder, bool isOff = false)
-{
-    string id = "folder" + folder.Id;
-    string open = Request.Cookies.Get(id)?.Value ?? "";
-
-    <div class="unit group @open" id="@id">
-        <table class="caption">
-            <tr>
-                @if (isOff)
-                {
-                    <th width="24px">
-                        <div class="icon ic-cached"></div>
-                    </th>
-                }
-                else
-                {
-                    <th width="24px" menu="group" onmousedown="_menu(this)">
-                        <div class="icon ic-folder"></div>
-                    </th>
-                }
-                <td><b>@folder.Name</b></td>
-            </tr>
-        </table>
-        <div class="itemsBlock @(open == "open" ? "itemsBlock_expanded" : "")">
-            @foreach (var sub in folder.SubFolders)
-            {
-                @RenderFolder(sub)
-            }
-            @RenderItems(folder.Storages)
         </div>
-    </div>
-}
+    }
 
+    foreach (Folder folder in Model.Folders)
+    {
+        @Html.Partial("Folder", folder)
+    }
 
-@helper RenderItems(List<Storage> storages)
-{
-    if (storages.Count == 0) { return; }
-    <table class="items">
-        @RenderHead()
-        <tbody>
-            @foreach (var storage in storages)
-            {
-                <tr id="storage@(storage.Id)" class="item">
-                    <td><input type="checkbox" class="selecter" /></td>
-                    <td><a class="view__link" href="##storage(storage.Id)"><div class="led @storage.Led()"></div></a></td>
-                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Inventory</a></td>
-                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Name</a></td>
-                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Cost</a></td>
-                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Nall</a></td>
-                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Date.ToString("dd.MM.yyyy")</a></td>
-                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Nstorage</a></td>
-                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Nrepairs</a></td>
-                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Noff</a></td>
-                    <td><a class="view__link" href="##storage@(storage.Id)">@storage.Account</a></td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-
-@helper RenderHead()
-{ 
-    <thead>
-        <tr>
-            <td width="20px">
-                <input type="checkbox" class="selecter-all" />
-            </td>
-            <th width="20px" data-type="type"></th>
-            <th width="56px" data-type="number">Инв. №</th>
-            <th data-type="string">Наименование</th>
-            <th width="56px" data-type="number">Стоимость</th>
-            <th width="56px" data-type="number">Приход</th>
-            <th width="90px" data-type="date">Дата покупки</th>
-            <th width="60px" data-type="number">На складе</th>
-            <th width="60px" data-type="number">Установлено</th>
-            <th width="60px" data-type="number">Списано</th>
-            <th width="70px" data-type="string">Счет учета</th>
-        </tr>
-    </thead>
+    @Html.Partial("Folder", OffStorages)
 }

@@ -1,0 +1,33 @@
+﻿@model List<Device>
+
+@if (Model.Count > 0)
+{
+    <table class="items">
+        <thead>
+            <tr>
+                <td width="20px"><input type="checkbox" class="selecter-all" /></td>
+                <th width="20px" data-type="type"></th>
+                <th width="100px" data-type="string">название</th>
+                <th width="80px" data-type="number">инв. номер</th>
+                <th width="140px" data-type="string">м.о.л.</th>
+                <th data-type="string">описание</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var device in Model)
+            {
+                string id = "device" + device.Id;
+                string href = "##" + id;
+
+                <tr id="@id" class="item">
+                    <td><input type="checkbox" class="selecter" /></td>
+                    <td><a class="view__link" href="@href"><div class="led @(device.IsOff ? "off" : "on")"></div></a></td>
+                    <td><a class="view__link" href="@href">@device.Name</a></td>
+                    <td><a class="view__link" href="@href">@device.Inventory</a></td>
+                    <td><a class="view__link" href="@href">@device.Mol</a></td>
+                    <td><a class="view__link" href="@href">@device.PublicName</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

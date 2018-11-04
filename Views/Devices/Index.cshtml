@@ -75,4 +75,4 @@
 }
 
 <script>let search = '@Request.QueryString.Get("search")';</script>
-@Html.Action("list", new { search = Request.QueryString.Get("search") })
+@Html.Action("Load", new { Search = Request.QueryString.Get("search") })

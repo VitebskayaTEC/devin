@@ -144,6 +144,8 @@
     <Compile Include="Models\WorkPlace.cs" />
     <Compile Include="Models\Writeoff.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\DevicesViewModel.cs" />
+    <Compile Include="ViewModels\StoragesViewModel.cs" />
     <Compile Include="ViewModels\RepairsViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -171,11 +173,8 @@
     <Content Include="Views\Web.config">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Views\Home\Index.cshtml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Views\Folders\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="Content\exl\analyze.xls" />
     <Content Include="Content\exl\defect.xls" />
@@ -238,6 +237,16 @@
     <Content Include="Views\Repairs\Repairs.cshtml" />
     <Content Include="Views\Repairs\WriteoffData.cshtml" />
     <Content Include="Views\Repairs\Search.cshtml" />
+    <Content Include="Views\Storages\Search.cshtml" />
+    <Content Include="Views\Storages\Storages.cshtml" />
+    <Content Include="Views\Storages\Folder.cshtml" />
+    <Content Include="Views\Storages\FolderData.cshtml" />
+    <Content Include="Views\Devices\Folder.cshtml" />
+    <Content Include="Views\Devices\FolderData.cshtml" />
+    <Content Include="Views\Devices\Computer.cshtml" />
+    <Content Include="Views\Devices\ComputerData.cshtml" />
+    <Content Include="Views\Devices\Devices.cshtml" />
+    <Content Include="Views\Devices\Search.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

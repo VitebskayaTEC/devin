@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Devin.Models;
+using Devin.ViewModels;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.SS.Util;
@@ -15,7 +16,26 @@ namespace Devin.Controllers
     {
         public ActionResult Index() => View();
 
-        public ActionResult List() => View();
+        public ActionResult Load(string Item, string Search)
+        {
+            var model = new StoragesViewModel(Search);
+
+            if ((Item ?? "").Contains("folder"))
+            {
+                int Id = int.Parse(Item.Replace("folder", ""));
+                if (Id < 0) return View("Storages", model.Storages.Where(x => x.IsOff()).ToList());
+                return View("FolderData", Folder.FindSubFolder(model.Folders, Id));
+            }
+            else if (!string.IsNullOrEmpty(Search))
+            {
+                ViewBag.Search = Search;
+                return View("Search", model.Storages);
+            }
+            else
+            {
+                return View("List", model);
+            }
+        }
 
         public ActionResult Analyze() => View();
 
@@ -159,7 +179,7 @@ namespace Devin.Controllers
 
         public JsonResult Move(string Select, int FolderId)
         {
-            string[] Storages = Select.Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] Storages = Select.Replace("storage", "").Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
 
             using (var conn = Database.Connection())
             {

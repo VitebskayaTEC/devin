@@ -1,0 +1,12 @@
+﻿@model Folder
+
+
+@foreach (var sub in Model.SubFolders)
+{
+    @Html.Partial("Folder", sub)
+}
+@foreach (var computer in Model.Computers)
+{
+    @Html.Partial("Computer", computer)
+}
+@Html.Partial("Devices", Model.Devices)

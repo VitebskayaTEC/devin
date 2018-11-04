@@ -34,5 +34,16 @@ namespace Devin.Models
 
             return folder;
         }
+
+        public static Folder FindSubFolder(List<Folder> folders, int id)
+        {
+            foreach (Folder sub in folders)
+            {
+                if (sub.Id == id) return sub;
+                var found = FindSubFolder(sub.SubFolders, id);
+                if (found != null) return found;
+            }
+            return null;
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿@model List<Repair>
+﻿@model List<Device>
 
 <div class="unit">
     <table class="caption">
@@ -6,5 +6,5 @@
             <th>Поиск совпадений по запросу: @ViewBag.Search</th>
         </tr>
     </table>
-    @Html.Partial("Repairs", Model)
+    @Html.Partial("Devices", Model)
 </div>

@@ -1,0 +1,31 @@
+﻿@model Folder
+
+@{
+    string id = "folder" + Model.Id;
+    string open = Request.Cookies.Get(id)?.Value ?? "";
+}
+<div class="unit @(Model.Id < 0 ? "" : "group") @open" id="@id">
+    <table class="caption">
+        <tr>
+            @if (Model.Id < 0)
+            {
+                <th width="24px">
+                    <div class="icon ic-cached"></div>
+                </th>
+            }
+            else
+            {
+                <th width="24px" menu="group" onmousedown="_menu(this)">
+                    <div class="icon ic-folder"></div>
+                </th>
+            }
+            <td><b>@Model.Name</b></td>
+        </tr>
+    </table>
+    <div class="itemsBlock @(open == "open" ? "itemsBlock_expanded" : "")">
+        @if (open == "open")
+        {
+            @Html.Partial("FolderData", Model)
+        }
+    </div>
+</div>

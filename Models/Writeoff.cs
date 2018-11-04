@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dapper;
+using System;
 using System.Collections.Generic;
 
 namespace Devin.Models
@@ -41,6 +42,14 @@ namespace Devin.Models
                 cost += repair.Number * repair.Storage.Cost;
             }
             return cost;
+        }
+
+        public void Load()
+        {
+            using (var conn = Database.Connection())
+            {
+                Repairs = conn.Query<Repair>("SELECT * FROM Repairs WHERE WriteoffId = @Id", new { Id }).AsList();
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Devin.Models;
+using Devin.ViewModels;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using System;
@@ -15,7 +16,35 @@ namespace Devin.Controllers
     {
         public ActionResult Index() => View();
 
-        public ActionResult List() => View();
+        public ActionResult Load(string Item, string Search)
+        {
+            if ((Item ?? "").Contains("device"))
+            {
+                int Id = int.Parse(Item.Replace("device", ""));
+                Computer computer = new Computer { Id = Id };
+                computer.Load();
+                return View("ComputerData", computer);
+            }
+            else
+            {
+                var model = new DevicesViewModel(Search);
+
+                if ((Item ?? "").Contains("folder"))
+                {
+                    int Id = int.Parse(Item.Replace("folder", ""));
+                    return View("FolderData", Folder.FindSubFolder(model.Folders, Id));
+                }
+                else if (!string.IsNullOrEmpty(Search))
+                {
+                    ViewBag.Search = Search;
+                    return View("Search", model.Devices);
+                }
+                else
+                {
+                    return View("List", model);
+                }
+            }
+        }
 
         public ActionResult Cart(int Id) => View(model: Id);
 

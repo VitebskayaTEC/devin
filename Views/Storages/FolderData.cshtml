@@ -1,0 +1,8 @@
+﻿@model Folder
+
+@foreach (var folder in Model.SubFolders)
+{
+    @Html.Partial("Folder", folder)
+}
+
+@Html.Partial("Storages", Model.Storages)

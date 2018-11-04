@@ -25,7 +25,7 @@ function toggle(node) {
     }
     else {
         if (!block.querySelector('div')) {
-            fetch(host + pageName + '/list?Item=' + name)
+            fetch(host + pageName + '/load?Item=' + name)
                 .then(res => res.text())
                 .then(text => {
                     block.innerHTML = text;
@@ -159,7 +159,7 @@ function _menu(obj) {
 }
 
 function restore() {
-    fetch(host + pageName + '/list?search=' + search)
+    fetch(host + pageName + '/load?search=' + search)
         .then(res => res.text())
         .then(text => {
             document.getElementById('view').innerHTML = text;

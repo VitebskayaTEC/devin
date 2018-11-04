@@ -8,7 +8,7 @@ namespace Devin.Controllers
     {
         public ActionResult Index() => View();
 
-        public ActionResult List() => View();
+        public ActionResult Load() => View("List");
 
         public ActionResult Cart(int Id) => View(model: Id);
 

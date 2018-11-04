@@ -53,7 +53,7 @@
                     <table class="items">
                         @foreach (var cartridge in cartridges)
                         {
-                            <tr id="cart@(printer.Id)">
+                            <tr id="cart@(cartridge.Id)">
                                 <td id="cart@(cartridge.Id)"><a class="view__link" href="##cart@(cartridge.Id)">@cartridge.Name</a></td>
                             </tr>
                         }
