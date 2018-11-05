@@ -19,7 +19,7 @@ namespace Devin.Controllers
                 int Id = int.Parse(Item.Replace("off", ""));
                 Writeoff writeoff = new Writeoff { Id = Id };
                 writeoff.Load();
-                return View("ComputerData", writeoff);
+                return View("WriteoffData", writeoff);
             }
             else
             {

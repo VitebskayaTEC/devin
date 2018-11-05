@@ -6,7 +6,6 @@ else if (document.location.pathname.includes('catalog')) pageName = 'catalog';
 else if (document.location.pathname.includes('aida')) pageName = 'aida';
 
 document.addEventListener('click', e => {
-    console.log(e);
     let unit = e.target.closest('.caption');
     if (unit && (e.target.tagName !== 'TD' || e.target.tagName !== 'B') && unit.parentNode.id !== 'solo') toggle(unit);
     if (e.target.tagName === 'TH' && e.target.parentNode.parentNode.parentNode.classList.contains('items')) sortTable(e.target);
@@ -155,7 +154,7 @@ function _menu(obj) {
     menu.classList.add('contextMenu_visible');
 
     let container = obj.closest('.unit');
-    if (container) menuId = container.id || container.querySelector('.title-wrapper:first-child').id;
+    if (container) menuId = container.id || container.getAttribute('data-id');
 }
 
 function restore() {
@@ -327,7 +326,8 @@ var Folders = {
     },
 
     beforeMove() {
-        let obj = document.getElementById(menuId).closest('.unit');
+        let obj = document.getElementById(menuId) || document.querySelector('[data-id="' + menuId + '"]');
+        obj = obj.closest('.unit');
         let exceptions = [];
 
         exceptions.push(menuId);

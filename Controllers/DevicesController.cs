@@ -456,6 +456,7 @@ namespace Devin.Controllers
 
         public JsonResult PrintRecordCart(string Id)
         {
+            Id = Id.Replace("device", "");
             string template = Server.MapPath(Url.Action("exl", "content") + "/ReportCart.xls");
 
             HSSFWorkbook book;
@@ -510,7 +511,7 @@ namespace Devin.Controllers
             }
 
             sheet.GetRow(8).Height = 0;
-            string output = Server.MapPath(Url.Action("excels", "content") + "/Карточка_учета_оргтехники_" + name + ".xls");
+            string output = @"\\backup\pub\web\devin\Карточка_учета_оргтехники_" + name.Replace("/", "-").Replace(".", "") + ".xls";
 
             using (var fs = new FileStream(output, FileMode.OpenOrCreate, FileAccess.Write))
             {
@@ -520,8 +521,8 @@ namespace Devin.Controllers
             return Json(new
             {
                 Good = "Карточка учета вычислительной техники на рабочем месте \"" + name + "\" создана",
-                Link = Url.Action("excels", "content") + "/Карточка_учета_оргтехники_" + name + ".xls?r=" + (new Random()).Next()
-            });
+                Link = "http://www.vst.vitebsk.energo.net/files/devin/Карточка_учета_оргтехники_" + name.Replace("/", "-").Replace(".", "") + ".xls?r=" + (new Random()).Next()
+            }, JsonRequestBehavior.AllowGet);
         }
 
         public JsonResult PrintRecordCartByFolder(int Id)
@@ -587,7 +588,7 @@ namespace Devin.Controllers
 
             sheet.GetRow(8).Height = 0;
             
-            string output = Server.MapPath(Url.Action("excels", "content") + "/Карточка_учета_оргтехники_" + cabinet.Name.Replace("/", "-").Replace(".", "") + ".xls");
+            string output = @"\\backup\pub\web\devin\Карточка_учета_оргтехники_" + cabinet.Name.Replace("/", "-").Replace(".", "") + ".xls";
 
             using (var fs = new FileStream(output, FileMode.OpenOrCreate, FileAccess.Write))
             {
@@ -597,8 +598,8 @@ namespace Devin.Controllers
             return Json(new
             {
                 Good = "Карточка учета вычислительной техники на рабочем месте \"" + cabinet.Name + "\" создана",
-                Link = Url.Action("excels", "content") + "/Карточка_учета_оргтехники_" + cabinet.Name.Replace("/", "-").Replace(".", "") + ".xls?r=" + (new Random()).Next()
-            });
+                Link = "http://www.vst.vitebsk.energo.net/files/devin/Карточка_учета_оргтехники_" + cabinet.Name.Replace("/", "-").Replace(".", "") + ".xls?r=" + (new Random()).Next()
+            }, JsonRequestBehavior.AllowGet);
         }
 
         public JsonResult CreateWorkPlace()
