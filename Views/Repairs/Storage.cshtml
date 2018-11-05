@@ -1,4 +1,5 @@
-﻿@model string
+﻿@model int
+
 @using (var conn = Database.Connection())
 {
     var storage = conn.Query<Storage>(@"SELECT * FROM Storages WHERE Id = @Model", new { Model }).FirstOrDefault();

@@ -46,17 +46,17 @@ namespace Devin.Controllers
 
         public ActionResult CartridgesUsage() => View();
 
-        public ActionResult Cart(int Id) => View(model: Id);
+        public ActionResult Cart(string Id) => View(model: Id);
 
         public ActionResult Device(int Id) => View(model: Id);
 
-        public ActionResult Storage(string Id) => View(model: Id);
+        public ActionResult Storage(int Id) => View(model: Id);
 
         public ActionResult History(int Id) => View(model: Id);
 
-        public ActionResult CreateFromDevice(int Id) => View(model: Id);
+        public ActionResult CreateFromDevice(string Id) => View(model: Id);
 
-        public ActionResult CreateFromDeviceData(int Id) => View(model: Id);
+        public ActionResult CreateFromDeviceData(string Id) => View(model: Id);
 
         public ActionResult CreateFromStorages(string Select) => View(model: Select);
 
@@ -507,9 +507,10 @@ namespace Devin.Controllers
             return Json(new { Good = "Все ремонты отмечены как активные, позиции забраны со склада" });
         }
 
-        public JsonResult EndCreateFromDevice(int Id, string[] Repairs, string Writeoff)
+        public JsonResult EndCreateFromDevice(string Id, string[] Repairs, string Writeoff)
         {
             List<Repair> repairs = new List<Repair>();
+            int id = int.Parse(Id.Replace("device", ""));
             foreach (string s in Repairs)
             {
                 string[] sub = s.Split(':');
@@ -518,7 +519,7 @@ namespace Devin.Controllers
                     StorageId = int.TryParse(sub[0], out int i) ? i : 0,
                     Number = int.TryParse(sub[1], out i) ? i : 0,
                     IsVirtual = sub[2] == "true",
-                    DeviceId = Id,
+                    DeviceId = id,
                     FolderId = 0,
                     Author = User.Identity.Name,
                     Date = DateTime.Now,

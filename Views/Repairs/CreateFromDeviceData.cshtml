@@ -1,6 +1,6 @@
 ﻿@using (var conn = Database.Connection())
 {
-    int Id = int.TryParse(Request.Form.Get("Id"), out int i) ? i : 0;
+    int Id = int.TryParse((Request.Form.Get("Id") ?? "").Replace("device", ""), out int i) ? i : 0;
     int FolderId = int.TryParse(Request.Form.Get("Folder"), out i) ? i : 0;
     bool OnlyCompared = Request.Form.Get("OnlyCompared") == "true";
 

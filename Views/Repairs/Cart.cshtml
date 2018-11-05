@@ -1,8 +1,9 @@
-﻿@model int
+﻿@model string
 
 @using (var conn = Database.Connection())
 {
-    var repair = conn.Query<Repair>(@"SELECT * FROM Repairs WHERE Id = @Model", new { Model }).FirstOrDefault();
+    int Id = int.Parse(Model.Replace("repair", ""));
+    var repair = conn.Query<Repair>(@"SELECT * FROM Repairs WHERE Id = @Id", new { Id }).FirstOrDefault();
 
     if (repair == null)
     {

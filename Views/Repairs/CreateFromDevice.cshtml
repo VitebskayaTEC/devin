@@ -1,8 +1,9 @@
-﻿@model int
+﻿@model string
 
 @using (var conn = Database.Connection())
 {
-    var device = conn.Query<Device>(@"SELECT * FROM Devices WHERE Id = @Model", new { Model }).FirstOrDefault();
+    int Id = int.Parse(Model.Replace("device", ""));
+    var device = conn.Query<Device>(@"SELECT * FROM Devices WHERE Id = @Id", new { Id }).FirstOrDefault();
     if (device == null)
     {
          <div class="cart__header">
