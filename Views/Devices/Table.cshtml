@@ -140,7 +140,7 @@
                             else if (name == "datetime") { sort = "date"; }
                             else if (name == "int") { sort = "number"; }
 
-                            <th data-type="@sort" onclick="_sort(this)">@(Fields.TryGetValue(reader.GetName(i), out string x) ? x : reader.GetName(i))</th>
+                            <th data-type="@sort" onclick="sortTable(this)">@(Fields.TryGetValue(reader.GetName(i), out string x) ? x : reader.GetName(i))</th>
                         }
                     </tr>
                 </thead>
