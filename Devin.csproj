@@ -247,6 +247,7 @@
     <Content Include="Views\Devices\ComputerData.cshtml" />
     <Content Include="Views\Devices\Devices.cshtml" />
     <Content Include="Views\Devices\Search.cshtml" />
+    <Content Include="Views\Devices\Files.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

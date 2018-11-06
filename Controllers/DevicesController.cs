@@ -50,6 +50,8 @@ namespace Devin.Controllers
 
         public ActionResult History() => View();
 
+        public ActionResult Files(string Id) => View(model: Id);
+
         public ActionResult HistoryById(string Id) => View(model: Id);
 
         public ActionResult ElmById(string Id) => View(model: Id);
@@ -632,6 +634,70 @@ namespace Devin.Controllers
             {
                 conn.Execute("DELETE FROM WorkPlaces WHERE Id = @Id", new { Id });
                 return Json(new { Good = "Рабочее место удалено" });
+            }
+        }
+
+        public JsonResult UploadFile(string Id)
+        {
+            int id = int.Parse(Id.Replace("device", ""));
+            string root = @"\\web\DevinFiles\";
+            string name = "";
+
+            try
+            {
+                if (!Directory.Exists(root)) return Json(new { Error = "Папка-хранилище файлов \"" + root + "\" недоступна" });
+                if (!Directory.Exists(root + "devices")) Directory.CreateDirectory(root + "devices");
+                if (!Directory.Exists(root + "devices\\" + id)) Directory.CreateDirectory(root + "devices\\" + id);
+
+                var file = Request.Files[0];
+                name = file.FileName;
+
+                if (System.IO.File.Exists(root + "devices\\" + id + "\\" + name)) return Json(new { Warning = "Файл с таким именем уже существует" });
+
+                file.SaveAs(root + "devices\\" + id + "\\" + name);
+            }
+            catch (Exception)
+            {
+                return Json(new { Error = "Ошибка при доступе к файловой системе, возможно, нет прав у учетной записи ASP.NET" });
+            }
+
+            using (var conn = Database.Connection())
+            {
+                string old = conn.Query<string>("SELECT Files FROM Devices WHERE Id = @id", new { id }).FirstOrDefault() ?? "";
+                string changed = old + ";;" + name;
+
+                conn.Execute("UPDATE Devices SET Files = @changed WHERE Id = @id", new { id, changed });
+                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'devices', @Id, @Text, @Name)", new
+                {
+                    Id = id,
+                    Text = "К списку файлов добавлен файл [" + name + "]",
+                    User.Identity.Name
+                });
+
+                return Json(new { Good = "К списку файлов добавлен файл [" + name + "]" });
+            }
+        }
+
+        public JsonResult DeleteFile(string Id, string File)
+        {
+            int id = int.Parse(Id.Replace("device", ""));
+
+            System.IO.File.Delete(@"\\web\DevinFiles\devices\" + id + @"\" + File);
+
+            using (var conn = Database.Connection())
+            {
+                string old = conn.Query<string>("SELECT Files FROM Devices WHERE Id = @id", new { id }).FirstOrDefault() ?? "";
+                string changed = old.Replace(File, "").Replace(";;;;", ";;");
+
+                conn.Execute("UPDATE Devices SET Files = @changed WHERE Id = @id", new { id, changed });
+                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'devices', @Id, @Text, @Name)", new
+                {
+                    Id = id,
+                    Text = "Из списка файлов удален файл [" + File + "]",
+                    User.Identity.Name
+                });
+
+                return Json(new { Good = "Из списка файлов удален файл [" + File + "]" });
             }
         }
     }

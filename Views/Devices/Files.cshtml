@@ -1,0 +1,35 @@
+﻿@model string
+
+@using (var conn = Database.Connection())
+{
+    int id = int.Parse(Model.Replace("device", ""));
+    var raw = conn.Query<string>(@"SELECT Files FROM Devices WHERE Id = @id", new { id }).FirstOrDefault() ?? "";
+
+    string[] files = raw.Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
+
+    <div class="cartHistory">
+        <table class="cartHistory__table">
+            <tbody>
+                @foreach (string file in files)
+                {
+                    <tr>
+                        <td>
+                            <a href="~/files/devices/@id/@file" class="cart__link">@file</a>
+                        </td>
+                        <td width="100px">
+                            <button class="cart__button" onclick="Devices.Files.del('@file')">Удалить</button>
+                        </td>
+                    </tr>
+                }
+                <tr>
+                    <td>
+                        <input type="file" name="File" />
+                    </td>
+                    <td width="100px">
+                        <button class="cart__button" onclick="Devices.Files.add(this)">Добавить</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+}

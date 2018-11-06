@@ -28,6 +28,7 @@
     <div class="tabsSelector">
         <div class="tabsSelector__item tabsSelector__item_selected" data-tab="info"><span>Информация</span></div>
         <div class="tabsSelector__item" data-tab="1c">1С</div>
+        <div class="tabsSelector__item" data-tab="files">Файлы</div>
         <div class="tabsSelector__item" data-tab="history">Логи</div>
         @if (device.Type == "CMP")
         {
@@ -286,6 +287,7 @@
                 </div>
             }
         </div>
+        <div class="tabsContainer__item" data-tab="files" data-tab-lazy="@Url.Action("files", "devices", new { Id = device.Id })" id="files"></div>
         <div class="tabsContainer__item" data-tab="history" data-tab-lazy="@Url.Action("historyById", "devices", new { Id = device.Id })"></div>
         @if (device.Type == "CMP")
         {

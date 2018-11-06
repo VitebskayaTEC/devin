@@ -444,8 +444,8 @@ var Devices = {
 
         moveSelected() {
             let form = new FormData();
-                form.append('Key', document.getElementById('moveKey').value);
-                form.append('Devices', selected.join(';;'));
+            form.append('Key', document.getElementById('moveKey').value);
+            form.append('Devices', selected.join(';;'));
             fetch(host + 'devices/moveSelected', { method: 'POST', body: form })
                 .then(res => res.json())
                 .then(json => {
@@ -532,6 +532,38 @@ var Devices = {
                         a.click();
                     }
                 });
+        }
+    },
+
+    Files: {
+
+        callback(json) {
+            if (json.Error) message(json.Error);
+            if (json.Warning) message(json.Warning, 'warning');
+            if (json.Good) {
+                message(json.Good, 'good');
+                fetch(host + 'devices/files/' + Cart.id)
+                    .then(res => res.text())
+                    .then(text => document.getElementById('files').innerHTML = text);
+            }
+        },
+        
+        del(name) {
+            let form = new FormData();
+            form.append('File', name);
+            fetch(host + 'devices/deleteFile/' + Cart.id, { method: 'POST', body: form })
+                .then(res => res.json())
+                .then(Devices.Files.callback);
+        },
+
+        add(button) {
+            let input = button.closest('tr').querySelector('input');
+            let form = new FormData();
+            form.append('File', input.files[0]);
+            
+            fetch(host + 'devices/uploadFile/' + Cart.id, { method: 'POST', body: form })
+                .then(res => res.json())
+                .then(Devices.Files.callback);
         }
     },
 
