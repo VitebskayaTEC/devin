@@ -70,7 +70,7 @@
 
 @using (var conn = Database.Connection())
 {
-    var guilds = conn.Query<string>("SELECT Guild FROM Devices1C GROUP BY Guild ORDER BY Guild");
+    var guilds = conn.Query<string>("SELECT Guild FROM Objects1C GROUP BY Guild ORDER BY Guild");
     var places = conn.Query<WorkPlace>("SELECT * FROM WorkPlaces ORDER BY [Location]");
 
     <button class="cart__button" onclick="WorkPlaces.Create()">Добавить рабочее место</button>

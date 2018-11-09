@@ -245,9 +245,9 @@ namespace Devin.Controllers
                         Device device = conn.QueryFirst<Device>(@"SELECT * FROM Devices WHERE Id = @Id", new { DeviceId });
                         if (device == null) return Json(new { Error = "Устройство не найдено" });
 
-                        var metals = conn.Query<Device1C>("SELECT Description, Gold, Silver, Platinum, Palladium, Mpg, SubDivision FROM Devices1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
+                        var metals = conn.Query<Object1C>("SELECT Description, Gold, Silver, Platinum, Palladium, Mpg, SubDivision FROM Objects1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
 
-                        if (metals == null) metals = new Device1C();
+                        if (metals == null) metals = new Object1C();
 
                         if ((device.Gold ?? "") == "") device.Gold = metals.Gold.ToString();
                         if ((device.Silver ?? "") == "") device.Silver = metals.Silver.ToString();

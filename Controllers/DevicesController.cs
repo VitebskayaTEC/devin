@@ -357,11 +357,15 @@ namespace Devin.Controllers
             }
         }
 
-        public void HideDevice1C(int Id, bool Hide)
+        public void HideObject1C(string Id, bool Hide)
         {
             using (var conn = Database.Connection())
             {
-                conn.Execute("UPDATE Devices1C SET IsHide = @Hide WHERE Inventory = @Id", new { Id, Hide });
+                conn.Execute(
+                    @"IF EXISTS (SELECT * FROM Objects1C WHERE Inventory = @Id)
+                        UPDATE Objects1C SET IsHide = @Hide WHERE Inventory = @Id
+                    ELSE
+                        UPDATE Objects1C SET IsHide = @Hide WHERE InventoryNew = @Id", new { Id, Hide });
             }
         }
 
@@ -481,12 +485,12 @@ namespace Devin.Controllers
 	                Devices.Name,
 	                Devices.Description,
 	                Devices.PublicName,
-	                Devices1C.Description AS Description1C,
+	                Objects1C.Description AS Description1C,
 	                Devices.SerialNumber,
-	                CASE WHEN Devices1C.Mol IS NULL THEN Devices.Mol ELSE Devices1C.Mol END AS Mol,
+	                CASE WHEN Objects1C.Mol IS NULL THEN Devices.Mol ELSE Objects1C.Mol END AS Mol,
 	                Devices.DateInstall
                 FROM Devices
-                LEFT OUTER JOIN Devices1C ON Devices1C.Inventory = Devices.Inventory
+                LEFT OUTER JOIN Objects1C ON Objects1C.Inventory = Devices.Inventory
                 WHERE Devices.Id = @Id OR Devices.ComputerId = @Id AND Devices.IsDeleted <> 1
                 ORDER BY Devices.Inventory, Description1C", new { Id }).AsList();
 
@@ -550,21 +554,21 @@ namespace Devin.Controllers
 	                Devices.Name,
 	                Devices.Description,
 	                Devices.PublicName,
-	                Devices1C.Description AS Description1C,
+	                Objects1C.Description AS Description1C,
 	                Devices.SerialNumber,
-	                CASE WHEN Devices1C.Mol IS NULL THEN Devices.Mol ELSE Devices1C.Mol END AS Mol,
+	                CASE WHEN Objects1C.Mol IS NULL THEN Devices.Mol ELSE Objects1C.Mol END AS Mol,
 	                Devices.DateInstall
                 FROM Devices
 				LEFT OUTER JOIN Devices AS Computers ON Computers.Id        = Devices.ComputerId
-                LEFT OUTER JOIN Devices1C            ON Devices1C.Inventory = Devices.Inventory
+                LEFT OUTER JOIN Objects1C            ON Objects1C.Inventory = Devices.Inventory
                 WHERE Devices.FolderId = @Id OR Computers.FolderId = @Id AND Devices.IsDeleted <> 1
                 GROUP BY Devices.Inventory,
 	                Devices.Name,
 	                Devices.Description,
 	                Devices.PublicName,
-	                Devices1C.Description,
+	                Objects1C.Description,
 	                Devices.SerialNumber,
-	                CASE WHEN Devices1C.Mol IS NULL THEN Devices.Mol ELSE Devices1C.Mol END,
+	                CASE WHEN Objects1C.Mol IS NULL THEN Devices.Mol ELSE Objects1C.Mol END,
 	                Devices.DateInstall
                 ORDER BY Devices.Inventory, Description1C", new { Id }).AsList();
             }

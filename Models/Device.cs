@@ -65,7 +65,7 @@ namespace Devin.Models
 
         public Printer Printer { get; set; }
 
-        public Device1C Device1C { get; set; }
+        public Object1C Object1C { get; set; }
 
         public virtual WorkPlace Place { get; set; }
 

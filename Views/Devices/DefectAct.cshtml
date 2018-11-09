@@ -4,8 +4,8 @@
 {
     var data = conn.Query(@"SELECT
         Devices.Type,
-        Devices1C.Description AS Description1C,
-        Devices1C.Mol         AS Mol1C,
+        Objects1C.Description AS Description1C,
+        Objects1C.Mol         AS Mol1C,
         Devices.Description    AS Description,
         Devices.Inventory,
         Devices.Name,
@@ -13,7 +13,7 @@
         Devices.DateInstall,
         Devices.Mol
     FROM Devices
-    LEFT OUTER JOIN Devices1C ON Devices.Inventory = Devices1C.Inventory
+    LEFT OUTER JOIN Objects1C ON Devices.Inventory = Objects1C.Inventory
     LEFT OUTER JOIN Devices AS Computers ON Devices.ComputerId = Computers.Id
     WHERE Devices.Id = @Model", new { Model }).FirstOrDefault();
 

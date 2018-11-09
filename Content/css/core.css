@@ -739,3 +739,48 @@ a[for]:hover {color: #2aa4fe;}
 a[for]:before {content: "+ ";}
 a[for].open:before {content: "- ";}
 .f {color: #555;}
+
+/* View statistics data */
+
+.stats {
+    background: #fff;
+    border: 1px solid #ccc;
+}
+
+.stats th {
+    padding: 4px;
+    font-weight: 500;
+    font-size: 10pt;
+    background: #E6B451;
+}
+
+.stats td {
+    padding: 4px;
+    font-size: 10pt;
+    border: 1px solid #ccc;
+    text-align: center;
+}
+
+.stats tr td:first-child,
+.stats tr th:first-child {
+    text-align: left;
+}
+
+.stats tbody tr:hover,
+.stats tbody tr:hover a {
+    background: #eee;
+}
+
+.stats a {
+    color: #000;
+    text-decoration: none;
+}
+
+.stats tbody tr a:hover {
+    color: #3E97F9;
+    text-decoration: underline;
+}
+
+.stats .summary td {
+    background: #90dc78;
+}

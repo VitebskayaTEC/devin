@@ -21,9 +21,15 @@
             document.location = './table1c?fields=' + fields + '&hide=' + document.getElementById('hide').value;
         }
 
-        function hide(id, hide) {
-            fetch(host + 'storages/hideDevice1C/' + id + "?hide=" + hide)
-                .then(() => location.reload());
+        function hide(id, hide, obj) {
+            fetch(host + 'devices/hideObject1C/' + id + "?hide=" + hide)
+                .then(() => {
+                    if (hide) {
+                        let row = obj.parentNode.parentNode;
+                        row.parentNode.removeChild(row);
+                    }
+                    else location.reload();
+                });
         }
     </script>
 }
@@ -39,12 +45,17 @@
     var Fields = new Dictionary<string, string>
     {
         {"Inventory", "Инв. номер"},
+        {"InventoryNew", "Инв. номер (новый)"},
         {"Description", "Наименование"},
         {"Guild", "Цех"},
         {"SubDivision", "Подразделение"},
         {"Mol", "М.О.Л."},
+        {"Account", "Счет учета"},
+        {"Location", "Места хранения"},
         {"BalanceCost", "Балансная стоимость"},
         {"DepreciationCost", "Остаточная стоимость"},
+        {"Rest", "Остаток"},
+        {"RestCost", "Остаток сумма"},
         {"Gold", "Золото"},
         {"Silver", "Серебро"},
         {"Platinum", "Платина"},
@@ -74,8 +85,8 @@
     }
 
     if (!fields.ToLower().Contains("inventory")) { fields += ", Inventory"; }
-    fields += ", IsHide";
-    sql = "SELECT " + fields + " FROM Devices1C";
+    fields += ", CASE WHEN Inventory IS NULL THEN InventoryNew ELSE Inventory END AS Id, IsHide";
+    sql = "SELECT " + fields + " FROM Objects1C";
 
     if (hide == "0") { sql += " WHERE IsHide IS NULL OR IsHide = 0"; }
     else if (hide == "1") { sql += " WHERE IsHide = 1"; }
@@ -129,7 +140,7 @@
                             {
                                 <th>Операции</th>
                             }
-                            else if (!(name == "Inventory" && !fields.Contains("Inventory")))
+                            else if (!(name == "Inventory" && !fields.Contains("Inventory")) && (name != "Id"))
                             {
                                 <th data-type="@sort">@(Fields.TryGetValue(reader.GetName(i), out string x) ? x : reader.GetName(i))</th>
                             }
@@ -139,8 +150,6 @@
                 <tbody>
                     @while (reader.Read())
                     {
-                        int id = 0;
-
                         <tr>
                             @for (int i = 0; i < len; i++)
                             {
@@ -161,7 +170,6 @@
                                 }
                                 else if (name == "Inventory")
                                 {
-                                    id = int.Parse((string)reader[i]);
                                     if (fields.Contains("Inventory"))
                                     {
                                         <td>@reader[i]</td>
@@ -172,21 +180,19 @@
                                     <td>
                                         @if (reader[i].ToString() != "True")
                                         {
-                                            <button onclick="hide(@id, true)">Скрыть</button>
+                                            <button onclick="hide('@reader["Id"]', true, this)">Скрыть</button>
                                         }
                                         else
                                         {
-                                            <button onclick="hide(@id, false)">Показать</button>
+                                            <button onclick="hide('@reader["Id"]', false, this)">Показать</button>
                                         }
                                     </td>
                                 }
-                                else
+                                else if (name != "Id")
                                 {
                                     <td>@reader[i]</td>
                                 }
                             }
-
-
                         </tr>
                     }
                 </tbody>

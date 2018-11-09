@@ -9,6 +9,7 @@ namespace Devin.Controllers
         public ActionResult Cart(string Id)
         {
             if (Id.Contains("device")) return RedirectToAction("Cart", "Devices", new { Id = int.Parse(Id.Replace("device", "")) });
+            if (Id.Contains("aida")) return RedirectToAction("Cart", "Aida", new { Id = int.Parse(Id.Replace("aida", "")) });
             if (Id.Contains("storage")) return RedirectToAction("Cart", "Storages", new { Id = int.Parse(Id.Replace("storage", "")) });
             if (Id.Contains("repair")) return RedirectToAction("Cart", "Repairs", new { Id = int.Parse(Id.Replace("repair", "")) });
             if (Id.Contains("off")) return RedirectToAction("Cart", "Writeoffs", new { Id = int.Parse(Id.Replace("off", "")) });

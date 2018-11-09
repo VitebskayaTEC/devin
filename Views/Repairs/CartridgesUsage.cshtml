@@ -98,7 +98,7 @@
 	    Repairs.Date   AS Repairs_Date,
 	    Repairs.Number AS Repairs_Number
     FROM Repairs
-    LEFT OUTER JOIN Devices ON Devices.Id = Repairs.DevicesId
+    LEFT OUTER JOIN Devices ON Devices.Id = Repairs.DeviceId
     WHERE Devices.Type = 'PRN' AND Year(Repairs.Date) = @Year
     ORDER BY Devices.Description", new { date.Year }));
 

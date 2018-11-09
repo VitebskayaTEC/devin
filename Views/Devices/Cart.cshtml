@@ -16,7 +16,7 @@
         return;
     }
 
-    device.Device1C = conn.Query<Device1C>("SELECT * FROM Devices1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
+    device.Object1C = conn.Query<Object1C>("SELECT * FROM Objects1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
 
     <div class="cart__header">
         <div>@device.Name | @device.PublicName</div>
@@ -231,7 +231,7 @@
             </div>
         </div>
         <div class="tabsContainer__item" data-tab="1c">
-            @if (device.Device1C == null)
+            @if (device.Object1C == null)
             {
                 <div>Устройство не найдено в базе 1С</div>
             }
@@ -241,47 +241,47 @@
                     <table>
                         <tr>
                             <td style="width: 250px;">Наименование</td>
-                            <td>@device.Device1C.Description</td>
+                            <td>@device.Object1C.Description</td>
                         </tr>
                         <tr>
                             <td>Цех</td>
-                            <td>@device.Device1C.Guild</td>
+                            <td>@device.Object1C.Guild</td>
                         </tr>
                         <tr>
                             <td>Подразделение</td>
-                            <td>@device.Device1C.SubDivision</td>
+                            <td>@device.Object1C.SubDivision</td>
                         </tr>
                         <tr>
                             <td>М.О.Л.</td>
-                            <td>@device.Device1C.Mol</td>
+                            <td>@device.Object1C.Mol</td>
                         </tr>
                         <tr>
                             <td>Балансная стоимость</td>
-                            <td>@device.Device1C.BalanceCost</td>
+                            <td>@device.Object1C.BalanceCost</td>
                         </tr>
                         <tr>
                             <td>Амортизационная стоимость</td>
-                            <td>@device.Device1C.DepreciationCost</td>
+                            <td>@device.Object1C.DepreciationCost</td>
                         </tr>
                         <tr>
                             <td>Золото</td>
-                            <td>@device.Device1C.Gold</td>
+                            <td>@device.Object1C.Gold</td>
                         </tr>
                         <tr>
                             <td>Серебро</td>
-                            <td>@device.Device1C.Silver</td>
+                            <td>@device.Object1C.Silver</td>
                         </tr>
                         <tr>
                             <td>Платина</td>
-                            <td>@device.Device1C.Platinum</td>
+                            <td>@device.Object1C.Platinum</td>
                         </tr>
                         <tr>
                             <td>Палладий</td>
-                            <td>@device.Device1C.Palladium</td>
+                            <td>@device.Object1C.Palladium</td>
                         </tr>
                         <tr>
                             <td>МПГ</td>
-                            <td>@device.Device1C.Mpg</td>
+                            <td>@device.Object1C.Mpg</td>
                         </tr>
                     </table>
                 </div>

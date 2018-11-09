@@ -67,16 +67,6 @@
     WHERE (Devices.IsDeleted IS NULL OR Devices.IsDeleted <> 1) AND (Devices.IsOff <> 1)
     ORDER BY Devices.Inventory";
 
-    string devices1cSQL = @"SELECT 
-	    Inventory
-        ,Description
-        ,Guild
-        ,SubDivision
-        ,Mol
-    FROM Devices1C
-    WHERE IsHide IS NULL OR IsHide = 0
-    ORDER BY Inventory";
-
     var types = new Dictionary<string, string>
     {
         { "CMP", "Компьютеры" },
@@ -93,7 +83,15 @@
     using (var conn = Database.Connection())
     {
         var devices = conn.Query<Device>(devicesSQL);
-        var devices1c = conn.Query<Device1C>(devices1cSQL);
+        var objects1c = conn.Query<Object1C>(@"SELECT 
+	    Inventory
+        ,Description
+        ,Guild
+        ,SubDivision
+        ,Mol
+    FROM Objects1C
+    WHERE IsHide IS NULL OR IsHide = 0
+    ORDER BY Inventory");
 
         <div class="compare_outline">
             <table class="compare items" id="data">
@@ -126,14 +124,14 @@
                         <td><a href="##device@(device.Id)">@device.Mol</a></td>
                         <td><a href="##device@(device.Id)">@device.Location</a></td>
                         <td class="right-border"><a href="##device@(device.Id)">@device.NetworkName</a></td>
-                        @foreach (var device1c in devices1c)
+                        @foreach (var object1C in objects1c)
                         {
-                            if (device1c.Inventory == device.Inventory)
+                            if (object1C.Inventory == device.Inventory)
                             {
-                                <td>@device1c.Description</td>
-                                <td>@device1c.Guild</td>
-                                <td>@device1c.SubDivision</td>
-                                <td>@device1c.Mol</td>
+                                <td>@object1C.Description</td>
+                                <td>@object1C.Guild</td>
+                                <td>@object1C.SubDivision</td>
+                                <td>@object1C.Mol</td>
                                 found = true;
                                 break;
                             }
@@ -147,12 +145,12 @@
                         }
                     </tr>
                 }
-                @foreach (var device1c in devices1c)
+                @foreach (var object1C in objects1c)
                 {
                     bool found = false;
                     foreach (var device in devices)
                     {
-                        if (device.Inventory == device1c.Inventory)
+                        if (device.Inventory == object1C.Inventory)
                         {
                             found = true;
                             break;
@@ -161,16 +159,16 @@
                     if (!found)
                     {
                         <tr>
-                            <td class="right-border">@device1c.Inventory</td>
+                            <td class="right-border">@object1C.Inventory</td>
                             <td></td>
                             <td></td>
                             <td></td>
                             <td></td>
                             <td class="right-border"></td>
-                            <td>@device1c.Description</td>
-                            <td>@device1c.Guild</td>
-                            <td>@device1c.SubDivision</td>
-                            <td>@device1c.Mol</td>
+                            <td>@object1C.Description</td>
+                            <td>@object1C.Guild</td>
+                            <td>@object1C.SubDivision</td>
+                            <td>@object1C.Mol</td>
                         </tr>
                     }
                 }
