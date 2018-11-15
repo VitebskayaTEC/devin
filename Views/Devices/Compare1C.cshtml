@@ -84,14 +84,14 @@
     {
         var devices = conn.Query<Device>(devicesSQL);
         var objects1c = conn.Query<Object1C>(@"SELECT 
-	    Inventory
-        ,Description
-        ,Guild
-        ,SubDivision
-        ,Mol
-    FROM Objects1C
-    WHERE IsHide IS NULL OR IsHide = 0
-    ORDER BY Inventory");
+	        Inventory
+            ,Description
+            ,Guild
+            ,SubDivision
+            ,Mol
+        FROM Objects1C
+        WHERE IsHide IS NULL OR IsHide = 0
+        ORDER BY Inventory");
 
         <div class="compare_outline">
             <table class="compare items" id="data">

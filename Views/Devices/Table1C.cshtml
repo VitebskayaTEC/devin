@@ -45,7 +45,6 @@
     var Fields = new Dictionary<string, string>
     {
         {"Inventory", "Инв. номер"},
-        {"InventoryNew", "Инв. номер (новый)"},
         {"Description", "Наименование"},
         {"Guild", "Цех"},
         {"SubDivision", "Подразделение"},
@@ -61,6 +60,7 @@
         {"Platinum", "Платина"},
         {"Palladium", "Палладий"},
         {"Mpg", "МПГ"},
+        {"Date", "Дата прихода"},
     };
 
     string fields = Request.QueryString.Get("fields") ?? "";
@@ -85,7 +85,7 @@
     }
 
     if (!fields.ToLower().Contains("inventory")) { fields += ", Inventory"; }
-    fields += ", CASE WHEN Inventory IS NULL THEN InventoryNew ELSE Inventory END AS Id, IsHide";
+    fields += ", Inventory AS Id, IsHide, IsChecked";
     sql = "SELECT " + fields + " FROM Objects1C";
 
     if (hide == "0") { sql += " WHERE IsHide IS NULL OR IsHide = 0"; }
@@ -140,7 +140,7 @@
                             {
                                 <th>Операции</th>
                             }
-                            else if (!(name == "Inventory" && !fields.Contains("Inventory")) && (name != "Id"))
+                            else if (!(name == "Inventory" && !fields.Contains("Inventory")) && (name != "Id") && (name != "IsChecked"))
                             {
                                 <th data-type="@sort">@(Fields.TryGetValue(reader.GetName(i), out string x) ? x : reader.GetName(i))</th>
                             }
@@ -158,14 +158,21 @@
 
                                 if (type == "datetime")
                                 {
-                                    DateTime d = (DateTime)reader[i];
-                                    if (d.Year <= 1990)
+                                    try
+                                    {
+                                        DateTime d = (DateTime)reader[i];
+                                        if (d.Year <= 1990)
+                                        {
+                                            <td></td>
+                                        }
+                                        else
+                                        {
+                                            <td>@d.ToString("yyyy.MM.dd")</td>
+                                        }
+                                    }
+                                    catch(Exception)
                                     {
                                         <td></td>
-                                    }
-                                    else
-                                    {
-                                        <td>@d.ToString("yyyy.MM.dd")</td>
                                     }
                                 }
                                 else if (name == "Inventory")
@@ -188,7 +195,7 @@
                                         }
                                     </td>
                                 }
-                                else if (name != "Id")
+                                else if (name != "Id" && name != "IsChecked")
                                 {
                                     <td>@reader[i]</td>
                                 }

@@ -145,6 +145,7 @@
     <Compile Include="Models\WorkPlace.cs" />
     <Compile Include="Models\Writeoff.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\Objects1CViewModel.cs" />
     <Compile Include="ViewModels\DevicesViewModel.cs" />
     <Compile Include="ViewModels\StoragesViewModel.cs" />
     <Compile Include="ViewModels\RepairsViewModel.cs" />
@@ -174,9 +175,7 @@
       <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Views\Objects1C\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="Content\exl\analyze.xls" />
     <Content Include="Content\exl\defect.xls" />
@@ -250,6 +249,13 @@
     <Content Include="Views\Devices\Devices.cshtml" />
     <Content Include="Views\Devices\Search.cshtml" />
     <Content Include="Views\Devices\Files.cshtml" />
+    <Content Include="Views\Objects1C\Import.cshtml" />
+    <Content Include="Views\Objects1C\Index.cshtml" />
+    <Content Include="Views\Objects1C\FolderData.cshtml" />
+    <Content Include="Views\Objects1C\Folder.cshtml" />
+    <Content Include="Views\Objects1C\Items.cshtml" />
+    <Content Include="Views\Objects1C\List.cshtml" />
+    <Content Include="Views\Objects1C\Search.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

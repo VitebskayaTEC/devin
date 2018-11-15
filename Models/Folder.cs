@@ -22,6 +22,8 @@ namespace Devin.Models
 
         public List<Repair> Repairs { get; set; } = new List<Repair>();
 
+        public List<Object1C> Objects { get; set; } = new List<Object1C>();
+
         public static Folder Build(Folder folder, List<Folder> folders)
         {
             foreach (var f in folders)

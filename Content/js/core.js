@@ -3,6 +3,7 @@ if (document.location.pathname.includes('devices')) pageName = 'devices';
 else if (document.location.pathname.includes('storages')) pageName = 'storages';
 else if (document.location.pathname.includes('repairs')) pageName = 'repairs';
 else if (document.location.pathname.includes('catalog')) pageName = 'catalog';
+else if (document.location.pathname.includes('objects1c')) pageName = 'objects1c';
 else if (document.location.pathname.includes('aida')) pageName = 'aida';
 
 document.addEventListener('click', e => {
@@ -1253,6 +1254,34 @@ var Aida = {
                     restore();
                 }
             });
+    }
+};
+
+var Objects1C = {
+    fetch(url, inventory) {
+        fetch(host + url + inventory, { method: 'POST' })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Error) message(json.Error);
+                if (json.Warning) message(json.Warning, 'warning');
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    let el = document.querySelector('[data-inventory="' + inventory + '"]');
+                    if (el) el.parentNode.removeChild(el);
+                }
+            });
+    },
+    createDevice(inventory) {
+        Objects1C.fetch('objects1c/createDevice/', inventory);
+    },
+    createStorage(inventory) {
+        Objects1C.fetch('objects1c/createStorage/', inventory);
+    },
+    setChecked(inventory) {
+        Objects1C.fetch('objects1c/check/', inventory);
+    },
+    setHided(inventory) {
+        Objects1C.fetch('objects1c/hide/', inventory);
     }
 };
 

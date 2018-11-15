@@ -1,0 +1,10 @@
+﻿@model List<Object1C>
+
+<div class="unit">
+    <table class="caption">
+        <tr>
+            <th>Поиск совпадений по запросу: @ViewBag.Search</th>
+        </tr>
+    </table>
+    @Html.Partial("Items", Model)
+</div>

@@ -1,0 +1,36 @@
+﻿@model List<Object1C>
+
+@if (Model.Count != 0)
+{
+    <table class="items">
+        <thead>
+            <tr>
+                <td width="20px">
+                    <input type="checkbox" class="selecter-all" />
+                </td>
+                <th width="90px" data-type="string">Инв. №</th>
+                <th data-type="string">Наименование</th>
+                <th width="150px" data-type="string">м.о.л.</th>
+                <th width="90px" data-type="date">Дата прихода</th>
+                <th width="150px" data-type="string">Подразделение</th>
+                <th width="70px" data-type="string">Счет учета</th>
+                <th width="60px" data-type="string">Проверено</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var obj in Model)
+            {
+                <tr id="object@(obj.Inventory)" class="item">
+                    <td><input type="checkbox" class="selecter" /></td>
+                    <td><a class="view__link">@obj.Inventory</a></td>
+                    <td><a class="view__link">@obj.Description</a></td>
+                    <td><a class="view__link">@obj.Mol</a></td>
+                    <td><a class="view__link">@(obj.Date?.ToString("dd.MM.yyyy"))</a></td>
+                    <td><a class="view__link">@obj.Guild</a></td>
+                    <td><a class="view__link">@obj.Account</a></td>
+                    <td><a class="view__link"><input type="checkbox" disabled @(obj.IsChecked ? "checked" : "") /></a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

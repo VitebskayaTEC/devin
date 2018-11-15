@@ -1,0 +1,23 @@
+﻿@model Folder
+
+@{
+    string id = "objects" + Model.Id;
+    string open = Request.Cookies.Get(id)?.Value ?? "";
+}
+
+<div class="unit @open" id="@id">
+    <table class="caption">
+        <tr>
+            <th width="24px">
+                <div class="icon ic-folder"></div>
+            </th>
+            <td><b>@Model.Name</b></td>
+        </tr>
+    </table>
+    <div class="itemsBlock @(open == "open" ? "itemsBlock_expanded" : "")">
+        @if (open == "open")
+        {
+            @Html.Partial("FolderData", Model)
+        }
+    </div>
+</div>

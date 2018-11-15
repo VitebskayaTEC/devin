@@ -1,0 +1,13 @@
+﻿@model Folder
+
+@if (Model.SubFolders.Count == 0 && Model.Objects.Count == 0)
+{
+    <div>папка не содержит вложенных элементов</div>
+}
+
+@foreach (var sub in Model.SubFolders)
+{
+    @Html.Partial("Folder", sub)
+}
+
+@Html.Partial("Items", Model.Objects)

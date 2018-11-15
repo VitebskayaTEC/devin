@@ -331,13 +331,13 @@ namespace Devin.Controllers
 
             foreach (string data in DataSplit)
             {
-                string[] raw = data.Split(new string[] { "__" }, StringSplitOptions.RemoveEmptyEntries);
+                string[] raw = data.Split(new string[] { "|" }, StringSplitOptions.RemoveEmptyEntries);
 
                 var cartridge = new Cartridge
                 {
                     Name = raw[0],
-                    Count = int.Parse(raw[3]),
-                    Cost = float.Parse(raw[1])
+                    Count = int.Parse(raw[4]),
+                    Cost = float.Parse(raw[3])
                 };
 
                 switch (raw[2]) {
@@ -346,7 +346,7 @@ namespace Devin.Controllers
                     case "matrix": cartridge.Type = "Матричная лента"; break;
                 }
 
-                switch (raw[4])
+                switch (raw[1])
                 { 
                     case "black": cartridge.Color = "черный"; break;
                     case "blue": cartridge.Color = "голубой"; break;
@@ -427,7 +427,7 @@ namespace Devin.Controllers
                 book.Write(fs);
             }
 
-            return Json(new { Good = "Создание заявки на закупку завершено", Link = Url.Action("excels", "content") + name });
+            return Json(new { Good = "Создание заявки на закупку завершено", Link = Url.Action("excels", "content") + "/" + name });
         }
     }
 }

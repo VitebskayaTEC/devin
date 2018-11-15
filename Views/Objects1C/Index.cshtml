@@ -1,0 +1,19 @@
+﻿@{
+    ViewBag.Title = "DEVIN | Склад";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section menu {
+    <li>
+        <a class="has-icon" onmousedown="_menu(this)" menu="main"><div class="icon ic-menu"></div></a>
+    </li>
+}
+
+@section html {
+    <div class="context-menu" id="main">
+        <a href="~/objects1c/import">Импорт</a>
+    </div>
+}
+
+<script>let search = '@Request.QueryString.Get("search")';</script>
+@Html.Action("Load", new { Search = Request.QueryString.Get("search") })

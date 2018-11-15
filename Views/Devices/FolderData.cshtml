@@ -1,5 +1,9 @@
 ﻿@model Folder
 
+@if (Model.SubFolders.Count == 0 && Model.Computers.Count == 0 && Model.Devices.Count == 0)
+{
+    <div>папка не содержит вложенных элементов</div>
+}
 
 @foreach (var sub in Model.SubFolders)
 {

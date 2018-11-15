@@ -1,0 +1,94 @@
+﻿@model List<Storage>
+
+@{
+    ViewBag.Title = "DEVIN | Склад | 1С";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles {
+    <style>
+        .new {background: #8de088}
+    </style>
+}
+
+@using (var conn = Database.Connection())
+{
+    var objects = conn.Query<Object1C>("SELECT * FROM Objects1C WHERE IsChecked = 0 ORDER BY Inventory");
+    var devices = conn.Query<Device>("SELECT Id, Name, PublicName, Inventory FROM Devices WHERE IsDeleted = 0");
+    var storages = conn.Query<Storage>("SELECT Id, Name, Inventory FROM Storages WHERE IsDeleted = 0");
+
+    <div class="unit unit-nohover">
+        <table class="caption">
+            <tr>
+                <td><b>Сравнение остатков, указанных в выгрузке 1С, с числящимися на складе записями</b></td>
+            </tr>
+        </table>
+        <table class="items">
+            <thead>
+                <tr>
+                    <th width="100px">Инв. №</th>
+                    <th>Наименование</th>
+                    <th width="90px">Дата прихода</th>
+                    <th width="100px">Счет учета</th>
+                    <th>Устройства</th>
+                    <th>Склад</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var obj in objects)
+                {
+                    var device = devices.FirstOrDefault(x => x.Inventory == obj.Inventory);
+                    var storage = storages.FirstOrDefault(x => x.Inventory == obj.Inventory);
+
+                    string className = (device == null && storage == null) ? "new" : "";
+
+                    <tr class="@className" data-inventory="@obj.Inventory">
+                        <td>@obj.Inventory</td>
+                        <td>@obj.Description</td>
+                        <td>@(obj.Date?.ToString("dd.MM.yyyy") ?? "")</td>
+                        <td>@obj.Account</td>
+                        <td>
+                            @if (device == null)
+                            {
+                                if (storage == null)
+                                {
+                                    <button onclick="Objects1C.createDevice('@obj.Inventory')">Создать устройство</button>
+                                }
+                                else
+                                {
+                                    <i>устройство не найдено</i>
+                                }
+                            }
+                            else
+                            {
+                                <a href="##device@(device.Id)">@device.Name @device.PublicName</a>
+                            }
+                        </td>
+                        <td>
+                            @if (storage == null)
+                            {
+                                if (device == null)
+                                {
+                                    <button onclick="Objects1C.createStorage('@obj.Inventory')">Создать позицию</button>
+                                }
+                                else
+                                {
+                                    <i>позиция не найдена</i>
+                                }
+                            }
+                            else
+                            {
+                                <a href="##storage@(storage.Id)">@storage.Name</a>
+                            }
+                        </td>
+                        <td>
+                            <button onclick="Objects1C.setChecked('@obj.Inventory')">Проверено</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+}

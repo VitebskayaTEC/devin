@@ -239,11 +239,12 @@ namespace Devin.Controllers
             }
         }
 
-        public JsonResult Copy(int Id)
+        public JsonResult Copy(string Id)
         {
+            int id = int.Parse(Id.Replace("device", ""));
             using (var conn = Database.Connection())
             {
-                Device device = conn.QueryFirst<Device>("SELECT * FROM Devices WHERE Id = @Id", new { Id });
+                Device device = conn.QueryFirst<Device>("SELECT * FROM Devices WHERE id = @id", new { id });
                 device.Name += " (копия)";
                 conn.Execute(@"INSERT INTO Devices (
                     [Inventory], [Type], [Name], [NetworkName], [Description], [DateInstall], [DateLastRepair], [Mol], [SerialNumber], [PassportNumber], [Location], [OS], [OSKey], [PrinterId], [FolderId], [IsOff], [IsDeleted], [ServiceTag], [PlaceId], [ComputerId]
@@ -251,18 +252,18 @@ namespace Devin.Controllers
                     @Inventory, @Type, @Name, @NetworkName, @Description, @DateInstall, @DateLastRepair, @Mol, @SerialNumber, @PassportNumber, @Location, @OS, @OSKey, @PrinterId, @FolderId, @IsOff, @IsDeleted, @ServiceTag, @PlaceId, @ComputerId
                 )", device);
 
-                int id = conn.QueryFirst<int>("SELECT Max(Id) FROM Devices");
+                int newid = conn.QueryFirst<int>("SELECT Max(Id) FROM Devices");
 
                 conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
                 {
                     Date = DateTime.Now,
                     Source = "devices",
-                    Id = id.ToString(),
-                    Text = "Позиция скопирована из #" + Id,
+                    Id = newid.ToString(),
+                    Text = "Позиция скопирована из [device" + Id + "]",
                     Username = User.Identity.Name
                 });
 
-                return Json(new { Id = id, Good = "Карточка устройства успешно скопирована" });
+                return Json(new { Id = "device" + newid, Good = "Карточка устройства успешно скопирована" });
             }
         }
 
@@ -297,17 +298,19 @@ namespace Devin.Controllers
 
         }
 
-        public JsonResult Delete(int Id)
+        public JsonResult Delete(string Id)
         {
+            int id = int.Parse(Id.Replace("device", ""));
+
             using (var conn = Database.Connection())
             {
-                conn.Execute("UPDATE Devices SET IsDeleted = 1 WHERE Id = @Id", new { Id });
+                conn.Execute("UPDATE Devices SET IsDeleted = 1 WHERE id = @id", new { id });
 
                 conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
                 {
                     Date = DateTime.Now,
                     Source = "devices",
-                    Id = Id.ToString(),
+                    Id = id.ToString(),
                     Text = "Устройство удалено",
                     Username = User.Identity.Name
                 });
@@ -361,11 +364,7 @@ namespace Devin.Controllers
         {
             using (var conn = Database.Connection())
             {
-                conn.Execute(
-                    @"IF EXISTS (SELECT * FROM Objects1C WHERE Inventory = @Id)
-                        UPDATE Objects1C SET IsHide = @Hide WHERE Inventory = @Id
-                    ELSE
-                        UPDATE Objects1C SET IsHide = @Hide WHERE InventoryNew = @Id", new { Id, Hide });
+                conn.Execute("UPDATE Objects1C SET IsHide = @Hide WHERE Inventory = @Id", new { Id, Hide });
             }
         }
 

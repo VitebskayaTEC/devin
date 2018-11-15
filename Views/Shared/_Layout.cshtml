@@ -2,9 +2,10 @@
 <html>
 
 <head>
+    @{ Random rnd = new Random(); }
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link rel="stylesheet" href="~/content/css/core.css?v=1" />
+    <link rel="stylesheet" href="~/content/css/core.css?@rnd.Next()" />
     <link rel="shortcut icon" href="~/content/img/favicon.ico" type="image/x-icon" />
     <title>@ViewBag.Title</title>
     @RenderSection("styles", false)
@@ -25,6 +26,8 @@
         </li><li>
             <a href="~/aida/" class="@(url.Contains("aida") ? "point-now" : "")">AIDA</a>
         </li><li>
+            <a href="~/objects1c/" class="@(url.Contains("objects1c") ? "point-now" : "")">1C</a>
+        </li><li>
             <a href="~/catalog/" class="@(url.Contains("catalog") ? "point-now" : "")">Каталог</a>
         </li>@RenderSection("menu", false)
     </ul>
@@ -40,7 +43,7 @@
     <div class="messages"></div>
 
     <script>const host = '@Url.Action("", "")';</script>
-    <script src="~/content/js/core.js?v=1"></script>
+    <script src="~/content/js/core.js?@rnd.Next()"></script>
     @RenderSection("scripts", false)
 </body>
 

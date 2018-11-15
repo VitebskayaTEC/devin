@@ -16,19 +16,17 @@
         };
 
         function exportToExcel() {
+
             let formData = '';
 
 	        let rows = document.getElementById('analyzeCartridges').getElementsByTagName('tbody')[1].getElementsByTagName('tr');
             for (let i = 0; i < rows.length; i++) {
+
                 let input = rows[i].querySelector('input');
                 let val = +input.value;
+
                 if (val > 0 && !isNaN(val)) {
-			        formData += (formData == '' ? '' : '----') +
-                        encodeURIComponent(rows[i].querySelector('a').innerHTML.toString()) + '__' +
-                        rows[i].getElementsByTagName('td')[2].innerHTML.toString() + '__' +
-				        input.name + '__' +
-				        val.toFixed(0) + '__' +
-				        input.getAttribute('color');
+                    formData += (formData == '' ? '' : '----') + input.getAttribute('cartridge') + '|' + val.toFixed(0); //4
 		        }
             }
 
@@ -262,7 +260,7 @@
                                 }
                             </td>
                             <td>
-                                <input class="cart__field" color="@c.Color" name="@c.Name" type="number" min="0" onblur="this.value = Math.round(this.value);" value="@forecast" />
+                                <input class="cart__field" cartridge="@c.Name|@c.Color|@c.Type|@c.Cost" type="number" min="0" onblur="this.value = Math.round(this.value);" value="@forecast" />
                             </td>
                         </tr>
                     }
