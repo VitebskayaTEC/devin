@@ -293,7 +293,7 @@ namespace Devin.Controllers
                     Username = User.Identity.Name
                 });
 
-                return Json(new { Id = id, Good = "Создано новое устройство" });
+                return Json(new { Id = "device" + id, Good = "Создано новое устройство" });
             }
 
         }

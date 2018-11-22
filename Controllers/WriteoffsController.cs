@@ -32,7 +32,7 @@ namespace Devin.Controllers
                     Username = User.Identity.Name
                 });
 
-                return Json(new { Id, Good = "Создано новое списание" });
+                return Json(new { Id = "off" + Id, Good = "Создано новое списание" });
             }
         }
 

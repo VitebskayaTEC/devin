@@ -96,7 +96,7 @@ namespace Devin.Controllers
                     Username = User.Identity.Name
                 });
 
-                return Json(new { Good = "Создана новая позиция", Id });
+                return Json(new { Good = "Создана новая позиция", Id = "storage" + Id });
             }
         }
 
