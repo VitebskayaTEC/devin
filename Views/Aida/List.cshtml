@@ -7,8 +7,11 @@
         Report.RDateTime,
         Item.IField,
         Item.IValue
-    FROM Report INNER JOIN Item ON Report.ID = Item.ReportID
-    WHERE (Item.IPage = 'Суммарная информация') AND (Report.RHostComment <> 'deleted')
+    FROM Report
+    INNER JOIN Item ON Report.ID = Item.ReportID
+    WHERE Report.ID IN (SELECT Max(ID) FROM Report GROUP BY RHost) 
+	    AND (Item.IPage = 'Суммарная информация') 
+	    AND (Report.RHostComment <> 'deleted')
     ORDER BY Report.RHost, Report.ID, Item.IField DESC";
 
     var model = conn.Query(sql).AsList();
