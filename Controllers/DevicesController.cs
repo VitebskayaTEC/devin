@@ -70,6 +70,8 @@ namespace Devin.Controllers
 
         public ActionResult Repair(int Id) => View(model: Id);
 
+        public ActionResult Inventory() => View();
+
 
         public JsonResult Update(int Id, [Bind(Include = "Id,Name,Inventory,Type,Description,PublicName,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,IsOff")] Device device)
         {

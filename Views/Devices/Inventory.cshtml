@@ -1,0 +1,100 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "DEVIN | Устройства | Инв. номер";
+
+    string inventory = Request.QueryString.Get("inventory");
+}
+
+@section styles {}
+    <style>
+
+    </style>
+
+@section scripts {
+    <script>
+        
+    </script>
+}
+
+@using System.Text
+
+<form method="get" action="./inventory">
+    <input type="text" name="inventory" value="@inventory" class="cart__field cart__field_autoWidth" />
+    <input type="submit" class="cart__button" value="Получить список оборудования" />
+</form>
+
+<br />
+
+<div>
+    @if (!string.IsNullOrEmpty(inventory))
+    {
+        using (var conn = Database.Connection())
+        {
+            var devices = AutoMapper.MapDynamic<Device>(conn.Query(@"SELECT
+                    Devices.Id,
+                    Devices.Inventory,
+                    Devices.Description,
+                    Objects1C.Description AS Description1C,
+                    Devices.SerialNumber,
+                    Devices.PublicName,
+                    CASE WHEN Objects1C.Mol IS NULL THEN Devices.Mol ELSE Objects1C.Mol END AS Mol,
+                    Devices.DateInstall,
+                    WorkPlaces.Id       AS Place_Id,
+                    WorkPlaces.Location AS Place_Location
+                FROM Devices
+                LEFT OUTER JOIN Objects1C ON Objects1C.Inventory = Devices.Inventory
+                LEFT OUTER JOIN WorkPlaces ON WorkPlaces.Id = Devices.PlaceId
+                WHERE Devices.Inventory = @Inventory AND Devices.IsDeleted <> 1 AND Devices.IsOff <> 1
+                ORDER BY Devices.Inventory, Description1C", new { Inventory = inventory }));
+
+            var csv = new StringBuilder();
+            csv.AppendLine("Инв. номер;Наименование;Заводской номер;Состав;М.О.Л.;Дата ввода в экспл.;Рабочее место");
+
+            if (devices.Count() > 0)
+            {
+                <div>
+                    <a class="cart__button" href="~/files/inventory/@(inventory).csv">Сохранить в файл .CSV</a>
+                </div>
+
+                <br />
+
+                <table class="items">
+                    <thead>
+                        <tr>
+                            <th>Инв. номер</th>
+                            <th>Наименование</th>
+                            <th>Заводской номер</th>
+                            <th>Состав</th>
+                            <th>М.О.Л.</th>
+                            <th>Дата ввода в экспл.</th>
+                            <th>Рабочее место</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var device in devices)
+                        {
+                            string link = "##device" + device.Id;
+                            <tr>
+                                <td><a href="@link" class="view__link">@device.Inventory</a></td>
+                                <td><a href="@link" class="view__link">@(device.Description1C ?? device.Description)</a></td>
+                                <td><a href="@link" class="view__link">@(device.SerialNumber ?? "")</a></td>
+                                <td><a href="@link" class="view__link">@device.PublicName</a></td>
+                                <td><a href="@link" class="view__link">@device.Mol</a></td>
+                                <td><a href="@link" class="view__link">@device.DateInstall.ToString("dd.MM.yyyy")</a></td>
+                                <td><a href="@link" class="view__link">@(device.Place?.Location ?? "Рабочее место не задано")</a></td>
+                            </tr>
+
+                            csv.AppendLine($"{device.Inventory};{(device.Description1C ?? device.Description).Trim()};{(device.SerialNumber ?? "")};{device.PublicName};{device.Mol};{device.DateInstall.ToString("dd.MM.yyyy")};{(device.Place?.Location ?? "Рабочее место не задано")}");
+                        }
+                    </tbody>
+                </table>
+
+                File.WriteAllText(@"\\web\c$\DevinFiles\inventory\" + inventory + ".csv", csv.ToString(), Encoding.GetEncoding(1251));
+            }
+            else
+            {
+                <div>По данному инвентарному номеру ничего не найдено</div>
+            }
+        }
+    }
+</div>
