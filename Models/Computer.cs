@@ -11,7 +11,7 @@ namespace Devin.Models
         {
             using (var conn = Database.Connection())
             {
-                Devices = conn.Query<Device>("SELECT * FROM Devices WHERE ComputerId = @Id", new { Id }).AsList();
+                Devices = conn.Query<Device>("SELECT * FROM Devices WHERE IsDeleted = 0 AND ComputerId = @Id", new { Id }).AsList();
             }
         }
     }

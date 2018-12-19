@@ -25,7 +25,7 @@ function toggle(node) {
     }
     else {
         if (!block.querySelector('div')) {
-            fetch(host + pageName + '/load?Item=' + name)
+            fetch(host + pageName + '/load?Item=' + name + '&r=' + Math.random())
                 .then(res => res.text())
                 .then(text => {
                     block.innerHTML = text;
