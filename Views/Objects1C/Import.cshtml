@@ -30,6 +30,7 @@
                     <th>Наименование</th>
                     <th width="90px">Дата прихода</th>
                     <th width="100px">Счет учета</th>
+                    <th>М.О.Л.</th>
                     <th>Устройства</th>
                     <th>Склад</th>
                     <th>Действия</th>
@@ -48,6 +49,7 @@
                         <td>@obj.Description</td>
                         <td>@(obj.Date?.ToString("dd.MM.yyyy") ?? "")</td>
                         <td>@obj.Account</td>
+                        <td>@obj.Mol</td>
                         <td>
                             @if (device == null)
                             {

@@ -356,7 +356,7 @@ namespace Devin.Controllers
                 string[] repairs = Repairs.Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var repair in repairs)
                 {
-                    int Id = int.TryParse(repair, out i) ? i : 0;
+                    int Id = int.TryParse(repair.Replace("repair", ""), out i) ? i : 0;
                     
                     if (Id != 0)
                     {
@@ -382,17 +382,18 @@ namespace Devin.Controllers
             return Json(new { Good = "Перемещение выполнено успешно" });
         }
 
-        public JsonResult Off(int Id)
+        public JsonResult Off(string Id)
         {
             using (var conn = Database.Connection())
             {
+                int id = int.TryParse(Id.Replace("writeoff", ""), out int i) ? i : 0;
                 var repairs = conn.Query<Repair>("SELECT Id, Number, StorageInventory, Author = @Author FROM Repairs WHERE WriteoffId = @Id AND IsOff <> 1", new { Id, Author = User.Identity.Name });
 
                 foreach (var repair in repairs)
                 {
                     conn.Execute("UPDATE Storages SET Noff = Noff + @Number, Nrepairs = Nrepairs - @Number WHERE Inventory = @StorageInventory", repair);
                     conn.Execute("UPDATE Repairs SET IsOff = 1 WHERE Id = @Id", repair);
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageInventory, @Text, @Name)", new
+                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageId, @Text, @Name)", new
                     {
                         repair.StorageId,
                         Text = "Обновлена позиция [storage" + repair.StorageId + "] при переводе ремонта [repair" + repair.Id + "] в списанный: " + repair.Number + " шт. деталей перемещены из используемых в списанные",
@@ -417,7 +418,7 @@ namespace Devin.Controllers
             {
                 foreach (string r in repairs)
                 {
-                    int Id = int.TryParse(r, out int i) ? i : 0;
+                    int Id = int.TryParse(r.Replace("repair", ""), out int i) ? i : 0;
                     if (Id != 0)
                     {
                         var repair = conn.Query<Repair>("SELECT Id, Number, StorageId, Author = @Author FROM Repairs WHERE Id = @Id AND IsOff <> 1", new { Id, Author = User.Identity.Name }).FirstOrDefault();
@@ -430,7 +431,7 @@ namespace Devin.Controllers
                                 repair.Author,
                                 Text = "Обновлена позиция при переводе ремонта [repair" + repair.Id + "] в списанные: " + repair.Number + " шт. деталей перемещены из используемых в списанные"
                             });
-                            conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageInventory, @Text, @Author)", new
+                            conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageId, @Text, @Author)", new
                             {
                                 repair.StorageId,
                                 repair.Author,
@@ -441,14 +442,15 @@ namespace Devin.Controllers
                 }
             }
 
-            return Json(new { Good = "Все ремонты отмечены как списанные, позиции возвращены на склад" });
+            return Json(new { Good = "Все ремонты отмечены как списанные" });
         }
 
-        public JsonResult On(int Id)
+        public JsonResult On(string Id)
         {
             using (var conn = Database.Connection())
             {
-                var repairs = conn.Query<Repair>("SELECT Id, Number, StorageId, Author = @Author FROM Repairs WHERE WriteoffId = @Id AND IsOff <> 0", new { Id, Author = User.Identity.Name });
+                int id = int.TryParse(Id.Replace("writeoff", ""), out int i) ? i : 0;
+                var repairs = conn.Query<Repair>("SELECT Id, Number, StorageId, Author = @Author FROM Repairs WHERE WriteoffId = @Id AND IsOff <> 0", new { id, Author = User.Identity.Name });
 
                 foreach (var repair in repairs)
                 {
@@ -469,7 +471,7 @@ namespace Devin.Controllers
                 }
             }
 
-            return Json(new { Good = "Все ремонты отмечены как активные, позиции забраны со склада" });
+            return Json(new { Good = "Все ремонты отмечены как активные" });
         }
 
         public JsonResult OnSelected(string Repairs)
@@ -479,7 +481,7 @@ namespace Devin.Controllers
             {
                 foreach (string r in repairs)
                 {
-                    int Id = int.TryParse(r, out int i) ? i : 0;
+                    int Id = int.TryParse(r.Replace("repair", ""), out int i) ? i : 0;
                     if (Id != 0)
                     {
                         var repair = conn.Query<Repair>("SELECT Id, Number, StorageId, Author = @Author FROM Repairs WHERE Id = @Id AND IsOff <> 0", new { Id, Author = User.Identity.Name }).FirstOrDefault();
@@ -493,7 +495,7 @@ namespace Devin.Controllers
                                 repair.Author,
                                 Text = "Обновлена позиция при переводе ремонта [repair" + repair.Id + "] в активное состояние: " + repair.Number + " шт. деталей из списанных в используемые"
                             });
-                            conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'repairs', @StorageInventory, @Text, @Author)", new
+                            conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'repairs', @StorageId, @Text, @Author)", new
                             {
                                 repair.StorageId,
                                 repair.Author,
@@ -504,7 +506,7 @@ namespace Devin.Controllers
                 }
             }
 
-            return Json(new { Good = "Все ремонты отмечены как активные, позиции забраны со склада" });
+            return Json(new { Good = "Все ремонты отмечены как активные" });
         }
 
         public JsonResult EndCreateFromDevice(string Id, string[] Repairs, string Writeoff)
