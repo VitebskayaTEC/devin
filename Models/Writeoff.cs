@@ -24,9 +24,9 @@ namespace Devin.Models
 
         public string Description { get; set; }
 
-        public string DefExcel { get; set; }
-
         public string Template { get; set; }
+
+        public string DefaultData { get; set; }
 
         public int FolderId { get; set; }
 

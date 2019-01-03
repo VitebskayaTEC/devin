@@ -43,58 +43,13 @@ namespace Devin.Controllers
 
         public ActionResult History(int Id) => View(model: Id);
 
-        public ActionResult Import()
-        {
-            var excels = new List<Storage>();
-
-            var file = Request.Files[Request.Files.AllKeys[0]];
-            var book = new HSSFWorkbook(file.InputStream);
-            var sheet = book.GetSheetAt(0);
-
-            string title = "";
-
-            for (int i = 10; i < sheet.LastRowNum; i++)
-            {
-                var row = sheet.GetRow(i);
-                if (row.GetCell(32).StringCellValue != "")
-                {
-                    row.GetCell(28).SetCellType(CellType.Numeric);
-
-                    string date = row.GetCell(15).StringCellValue;
-                    DateTime.TryParse(date.Substring(0, date.Length - 2) + "20" + date.Substring(date.Length - 2), out DateTime d);
-
-                    excels.Add(new Storage
-                    {
-                        Name = row.GetCell(10).StringCellValue,
-                        Inventory = row.GetCell(11).StringCellValue,
-                        Cost = (float)row.GetCell(12).NumericCellValue,
-                        Date =  d,
-                        Nall = (int)row.GetCell(28).NumericCellValue,
-                        Account = row.GetCell(32).StringCellValue
-                    });
-
-                    if (!title.EndsWith(row.GetCell(32).StringCellValue)) title += " " + row.GetCell(32).StringCellValue;
-                }
-            }
-
-            ViewBag.Title = title;
-            return View(excels);
-        }
-
-        
         public JsonResult Create()
         {
             using (var conn = Database.Connection())
             {
                 conn.Execute("INSERT INTO Storages (Inventory, Name, Nall, Nstorage, Nrepairs, Noff, Date, CartridgeId, IsDeleted) VALUES ('', '', 1, 1, 0, 0, @Date, 0, 0)", new { DateTime.Now.Date });
                 int Id = conn.QueryFirst<int>("SELECT Max(Id) FROM Storages");
-
-                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @Id, @Text, @Username)", new Activity
-                {
-                    Id = Id.ToString(),
-                    Text = "Создана новая позиция",
-                    Username = User.Identity.Name
-                });
+                conn.Log(User, "storages", Id, "Создана новая позиция");
 
                 return Json(new { Good = "Создана новая позиция", Id = "storage" + Id });
             }
@@ -102,7 +57,6 @@ namespace Devin.Controllers
 
         public JsonResult Update(int Id, [Bind(Include = "Id,Inventory,Name,Nall,Nstorage,Nrepairs,Noff,CartridgeId,Type,Account,FolderId")] Storage storage)
         {
-            // Валидация 
             if (!DateTime.TryParse(Request.Form.Get("Date"), out DateTime d)) return Json(new { Error = "Дата прихода введена в неверном формате" }); else storage.Date = d;
             if (!float.TryParse(Request.Form.Get("Cost"), out float f)) return Json(new { Error = "Стоимость введена в неверном формате" }); else storage.Cost = f;
             if (storage.Cost < 0) return Json(new { Error = "Стоимость не может быть отрицательной" });
@@ -110,10 +64,9 @@ namespace Devin.Controllers
 
             using (var conn = Database.Connection())
             {
-                // Логирование изменений
                 var old = conn.Query<Storage>("SELECT * FROM Storages WHERE Id = @Id", new { Id }).FirstOrDefault() ?? new Storage();
-
                 var changes = new List<string>();
+
                 if (old.Inventory != storage.Inventory) changes.Add($"инвентарный номер [{ old.Inventory} => {storage.Inventory}]");
                 if ((old.Name ?? "") != (storage.Name ?? "")) changes.Add($"наименование [\"{ old.Name}\" => \"{storage.Name}\"]");
                 if (old.Nall != storage.Nall) changes.Add($"кол-во прихода [{ old.Nall} => {storage.Nall}]");
@@ -129,7 +82,6 @@ namespace Devin.Controllers
 
                 if (changes.Count > 0)
                 {
-                    // Сохранение в базе
                     conn.Execute(@"UPDATE Storages SET
                         Inventory   = @Inventory,
                         Name        = @Name,
@@ -145,14 +97,9 @@ namespace Devin.Controllers
                         FolderId    = @FolderId
                     WHERE Id = @Id", storage);
 
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @Id, @Text, @Username)", new Activity
-                    {
-                        Id = storage.Id.ToString(),
-                        Text = "Позиция изменена. Изменения: " + string.Join(",\n", changes.ToArray()),
-                        Username = User.Identity.Name
-                    });
+                    conn.Log(User, "storages", storage.Id, "Позиция изменена. Изменения: " + changes.ToLog());
 
-                    return Json(new { Good = "Позиция успешно обновлена! Изменены поля: <br />" + string.Join(",<br />", changes.ToArray()) });
+                    return Json(new { Good = "Позиция успешно обновлена! Изменены поля: <br />" + changes.ToHtml() });
                 }
                 else
                 {
@@ -166,12 +113,7 @@ namespace Devin.Controllers
             using (var conn = Database.Connection())
             {
                 conn.Execute("DELETE FROM Storages WHERE Id = @Id", new { Id });
-                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @Id, @Text, @Username)", new Activity
-                {
-                    Id = Id.ToString(),
-                    Text = "Позиция удалена",
-                    Username = User.Identity.Name
-                });
+                conn.Log(User, "storages", Id, "Позиция удалена");
 
                 return Json(new { Good = "Позиция удалена" });
             }
@@ -183,9 +125,13 @@ namespace Devin.Controllers
 
             using (var conn = Database.Connection())
             {
+                string folder = conn.Query<string>("SELECT Name FROM Folders WHERE Id = @FolderId", new { FolderId }).FirstOrDefault() ?? "<не определено>";
+
                 foreach (string storage in Storages)
                 {
-                    conn.Execute("UPDATE Storages SET FolderId = @FolderId WHERE Id = @Id", new { FolderId, Id = int.TryParse(storage, out int i) ? i : 0 });
+                    int id = int.TryParse(storage, out int i) ? i : 0;
+                    conn.Execute("UPDATE Storages SET FolderId = @FolderId WHERE Id = @Id", new { FolderId, Id = id });
+                    conn.Log(User, "storages", id, "Позиция перемещена в папку \"" + folder + "\" [folder" + FolderId + "]");
                 }
 
                 string name = conn.Query<string>("SELECT Name FROM Folders WHERE Id = @FolderId", new { FolderId }).FirstOrDefault();
@@ -195,54 +141,8 @@ namespace Devin.Controllers
                 }
                 else
                 {
-                    
                     return Json(new { Good = "Выбранные позиции перемещены в папку \"" + name + "\"" });
                 }
-            }
-        }
-
-        public JsonResult AddExcelToStorage([Bind(Include = "Inventory,Name,Date,Account,Nall,Cost")] Storage storage)
-        {
-            string name = storage.Name.ToLower();
-
-            // Картриджи
-            if (name.Contains("картридж") || name.Contains("тонер") || name.Contains("чернильница") || name.Contains("катридж")) storage.Type = "PRN";
-
-            // Мониторы
-            else if (name.Contains("монитор")) storage.Type = "DIS";
-
-            // Комплектующие
-            else if (name.Contains("блок") 
-                || name.Contains("диск") 
-                || name.Contains("накопитель") 
-                || name.Contains("клави") 
-                || name.Contains("мыш") 
-                || name.Contains("памят") 
-                || name.Contains("озу") 
-                || name.Contains("плата") 
-                || name.Contains("процессор ")
-                || name.Contains("видеокарта")
-                || name.Contains("видеоплата")
-                || name.Contains("привод")) storage.Type = "CMP";
-
-            // Периферия
-            else if (name.Contains("клави") || name.Contains("мыш")) storage.Type = "INP";
-
-            // Коммутаторы
-            else if (name.Contains("коммутатор")) storage.Type = "SWT";
-
-            // Периферия
-            else if (name.Contains("батарея") || name.Contains("ибп") || name.Contains("элемент питания")) storage.Type = "UPS";
-
-            // Другое
-            else storage.Type = "RR";
-
-            using (var conn = Database.Connection())
-            {
-                conn.Execute("INSERT INTO Storages (Inventory, Name, Date, Account, Nall, Nstorage, Nrepairs, Noff, IsDeleted, Type, Cost) VALUES (@Inventory, @Name, @Date, @Account, @Nall, @Nall, 0, 0, 1, @Type, @Cost)", storage);
-                int Id = conn.QueryFirst<int>("SELECT Max(Id) FROM Storages");
-
-                return Json(new { Good = "Позиция \"" + storage.Name + "\" с инв. номером \"" + storage.Inventory +"\" добавлена на склад", Id });
             }
         }
 

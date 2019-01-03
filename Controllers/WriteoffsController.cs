@@ -17,7 +17,6 @@ namespace Devin.Controllers
 
         public ActionResult History(string Id) => View(model: Id);
 
-
         public JsonResult Create()
         {
             using (var conn = Database.Connection())
@@ -25,12 +24,7 @@ namespace Devin.Controllers
                 conn.Execute("INSERT INTO Writeoffs (Name, Date, Type, FolderId, CostArticle) VALUES ('Новое списание', GetDate(), 'expl', 0, 0)");
                 int Id = conn.QueryFirst<int>("SELECT Max(Id) FROM Writeoffs");
                 conn.Execute("UPDATE Writeoffs SET Name = Name + @Text WHERE Id = @Id", new { Id, Text = " #" + Id });
-                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'writeoffs', @Id, @Text, @Username)", new Activity
-                {
-                    Id = Id.ToString(),
-                    Text = "Создано списание",
-                    Username = User.Identity.Name
-                });
+                conn.Log(User, "writeoffs", Id, "Создано списание");
 
                 return Json(new { Id = "off" + Id, Good = "Создано новое списание" });
             }
@@ -60,7 +54,6 @@ namespace Devin.Controllers
 
                 if (changes.Count > 0)
                 {
-                    // Сохранение в базе
                     conn.Execute(@"UPDATE Writeoffs SET
                         Name        = @Name,
                         Type        = @Type,
@@ -71,14 +64,9 @@ namespace Devin.Controllers
                         Date        = @Date
                     WHERE Id = @Id", writeoff);
 
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'writeoffs', @Id, @Text, @Username)", new Activity
-                    {
-                        Id = Id.ToString(),
-                        Text = "Списание обновлено. Изменения: " + string.Join(",\n", changes.ToArray()),
-                        Username = User.Identity.Name
-                    });
+                    conn.Log(User, "writeoffs", Id, "Списание обновлено. Изменения: " + changes.ToLog());
 
-                    return Json(new { Good = "Списание обновлено!<br />Изменены поля:<br />" + string.Join(",<br />", changes.ToArray()) });
+                    return Json(new { Good = "Списание обновлено. Изменения:<br />" + changes.ToHtml() });
                 }
                 else
                 {
@@ -91,7 +79,10 @@ namespace Devin.Controllers
         {
             using (var conn = Database.Connection())
             {
+                string folder = conn.Query<string>("SELECT Name FROM Folders WHERE Id = @FolderId", new { FolderId }).FirstOrDefault() ?? "<не определено>";
                 conn.Execute("UPDATE Writeoffs SET FolderId = @FolderId WHERE Id = @Id", new { Id, FolderId });
+                conn.Log(User, "writeoffs", Id, "Списание перемещено в папку \"" + folder + "\" [folder" + FolderId + "]");
+
                 return Json(new { Good = "Списание перемещено" });
             }
         }
@@ -103,12 +94,7 @@ namespace Devin.Controllers
             using (var conn = Database.Connection())
             {
                 conn.Execute("DELETE FROM Writeoffs WHERE Id = @Id", new { Id = id });
-                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'writeoffs', @Id, @Text, @Username)", new Activity
-                {
-                    Id = id.ToString(),
-                    Text = "Списание удалено без отмены вложенных ремонтов",
-                    Username = User.Identity.Name
-                });
+                conn.Log(User, "writeoffs", id, "Списание удалено без отмены вложенных ремонтов");
             }
 
             return Json(new { Good = "Списание удалено без отмены вложенных ремонтов" });
@@ -122,17 +108,16 @@ namespace Devin.Controllers
             {
                 var writeoff = conn.QueryFirst<Writeoff>(@"SELECT 
                     Writeoffs.*,
-                    c.O_Excel        AS [DefExcel],
-                    c.O_Template     AS [Template],
-                    w.CostArticle
+                    TypesWriteoffs.Template    AS [Template],
+                    TypesWriteoffs.DefaultData AS [DefaultData]
                 FROM Writeoffs
-                LEFT OUTER JOIN catalog_writeoffs c ON Writeoffs.Type = c.O_Alias 
+                LEFT OUTER JOIN TypesWriteoffs ON Writeoffs.Type = TypesWriteoffs.Id 
                 WHERE (Writeoffs.Id = @Id)", new { Id });
 
-                string template = Server.MapPath("../content/exl/") + writeoff.Type + ".xls";
+                string template = Server.MapPath(Url.Action("exl", "content")) + "\\" + writeoff.Type + ".xls";
                 string output = writeoff.Name + " " + DateTime.Now.ToLongDateString() + ".xls";
 
-                if (!System.IO.File.Exists(template)) return Json(new { Error = "Файла шаблона не существует либо путь к нему неправильно прописан в исходниках" });
+                if (!System.IO.File.Exists(template)) return Json(new { Error = "Файла шаблона не существует либо путь к нему неправильно прописан в исходниках<br />Путь: " + template });
 
                 IWorkbook book;
                 ISheet sheet;
@@ -234,15 +219,17 @@ namespace Devin.Controllers
 
                         var rs = conn.QueryFirst(@"SELECT 
                             TOP (1) DeviceId AS [DeviceNumber], 
-                            COUNT(Id) AS [RepairsCount] 
-                        FROM Repairs WHERE WriteoffId = @Id GROUP BY DeviceId", new { Id });
+                            COUNT(Id)        AS [RepairsCount] 
+                        FROM Repairs
+                        WHERE WriteoffId = @Id
+                        GROUP BY DeviceId", new { Id });
 
                         if (rs == null) return Json(new { Error = "В ремонтах не найден идентификатор основного средства, либо списание не содержит ремонтов" });
 
                         int DeviceId = (int)rs.DeviceNumber;
                         int RepairsCount = (int)rs.RepairsCount;
 
-                        Device device = conn.QueryFirst<Device>(@"SELECT * FROM Devices WHERE Id = @Id", new { DeviceId });
+                        Device device = conn.QueryFirst<Device>(@"SELECT * FROM Devices WHERE Id = @DeviceId", new { DeviceId });
                         if (device == null) return Json(new { Error = "Устройство не найдено" });
 
                         var metals = conn.Query<Object1C>("SELECT Description, Gold, Silver, Platinum, Palladium, Mpg, SubDivision FROM Objects1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
@@ -351,12 +338,12 @@ namespace Devin.Controllers
 
                 output = output.Replace("\"", "");
 
-                using (var fs = new FileStream(Server.MapPath("../content/excels/") + output, FileMode.OpenOrCreate, FileAccess.Write))
+                using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content")) + "\\" + output, FileMode.OpenOrCreate, FileAccess.Write))
                 {
                     book.Write(fs);
                 }
 
-                return Json(new { Good = "", Link = Url.Action("excels", "content") + output });
+                return Json(new { Good = "Файл Excel списания успешно создан", Link = Url.Action("excels", "content") + "/" + output });
             }
         }
     }

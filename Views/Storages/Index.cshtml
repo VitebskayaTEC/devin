@@ -14,19 +14,6 @@
 }
 
 @section html {
-    <div id="excl" class="panel">
-        <form id="compare-form" method="POST" enctype="multipart/form-data" action="@Url.Action("import", "storages")">
-            <b>Обработка выгрузки из 1С</b>
-            <div>
-                <input type="file" name="excel" />
-            </div>
-            <div>
-                <input type="submit" value="Загрузить" />
-                <input type="button" value="Закрыть" onclick="document.getElementById('excl').classList.remove('selection_visible');" />
-            </div>
-        </form>
-    </div>
-
     <div id="selected" class="panel">
         <div>Выбрано позиций: <b></b></div>
         <div><a onclick="Storages.repairsSelected()">Оформить ремонты</a></div>
@@ -49,7 +36,6 @@
     </div>
 
     <div class="context-menu" id="main">
-        <div onclick="Storages.compare()">Импорт из 1C</div>
         <div onclick="Folders.create()">Создать группу</div>
         <div onclick="Storages.create()">Создать позицию на складе</div>
         <hr />

@@ -93,42 +93,14 @@ namespace Devin.Controllers
 
                 if (old.DeviceId != repair.DeviceId)
                 {
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
-                    {
-                        Date = DateTime.Now,
-                        Source = "devices",
-                        Id = old.DeviceId.ToString(),
-                        Text = "Ремонт устройства перемещен на другое устройство: #" + repair.DeviceId,
-                        Username = User.Identity.Name
-                    });
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
-                    {
-                        Date = DateTime.Now,
-                        Source = "devices",
-                        Id = repair.DeviceId.ToString(),
-                        Text = "Добавлен ремонт c другого устройства: #" + old.DeviceId,
-                        Username = User.Identity.Name
-                    });
+                    conn.Log(User, "devices", old.DeviceId, "Ремонт устройства перемещен на другое устройство: [device" + repair.DeviceId + "]");
+                    conn.Log(User, "devices", repair.DeviceId, "Добавлен ремонт c другого устройства: [device" + old.DeviceId + "]");
                 }
 
                 if (old.StorageId != repair.StorageId)
                 {
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
-                    {
-                        Date = DateTime.Now,
-                        Source = "storages",
-                        Id = old.StorageId.ToString(),
-                        Text = "Ремонт устройства [device" + old.DeviceId + "] перемещен на другую позицию: [storage" + repair.StorageId + "]",
-                        Username = User.Identity.Name
-                    });
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
-                    {
-                        Date = DateTime.Now,
-                        Source = "storages",
-                        Id = repair.StorageId.ToString(),
-                        Text = "Ремонт устройства [device" + old.DeviceId + "] перемещен c другой позиции: [storage" + old.StorageId + "]",
-                        Username = User.Identity.Name
-                    });
+                    conn.Log(User, "storages", old.StorageId, "Ремонт устройства перемещен на другую позицию: [storage" + repair.StorageId + "]");
+                    conn.Log(User, "storages", repair.StorageId, "Добавлен ремонт c другой позиции: [storage" + old.StorageId + "]");
 
                     // Полная отмена изменений склада от ремонта
                     if (old.IsOff)
@@ -253,7 +225,6 @@ namespace Devin.Controllers
 
                 if (changes.Count > 0)
                 {
-                    // Сохранение в базе
                     conn.Execute(@"UPDATE Repairs SET 
                         DeviceId          = @DeviceId
                         ,StorageId        = @StorageId
@@ -265,16 +236,8 @@ namespace Devin.Controllers
                         ,FolderId         = @FolderId
                     WHERE Id = @Id", repair);
 
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
-                    {
-                        Date = DateTime.Now,
-                        Source = "repairs",
-                        Id = repair.Id.ToString(),
-                        Text = "Ремонт изменен. Изменения: " + string.Join(",\n", changes.ToArray()),
-                        Username = User.Identity.Name
-                    });
-
-                    return Json(new { Good = "Запись о ремонте сохранена!<br/>Изменены поля:<br />" + string.Join(",<br />", changes.ToArray()) });
+                    conn.Log(User, "repairs", repair.Id, "Ремонт изменен. Изменения: " + changes.ToLog());
+                    return Json(new { Good = "Ремонт изменен. Изменения:<br />" + changes.ToHtml() });
                 }
                 else
                 {
@@ -310,23 +273,11 @@ namespace Devin.Controllers
                         conn.Execute("UPDATE Storages SET Nstorage = Nstorage + @Number, Nrepairs = Nrepairs - @Number WHERE Id = @StorageId", repair);
                     }
                 }
-                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
-                {
-                    Date = DateTime.Now,
-                    Source = "storages",
-                    Id = repair.StorageId.ToString(),
-                    Text = "Отменен ремонт [repair" + Id + "]. Исп. кол-во возвращено",
-                    Username = User.Identity.Name
-                });
-                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
-                {
-                    Date = DateTime.Now,
-                    Source = "repairs",
-                    Id = Id.ToString(),
-                    Text = "Ремонт удален",
-                    Username = User.Identity.Name
-                });
+
                 conn.Execute("DELETE FROM Repairs WHERE Id = @Id", new { Id });
+
+                conn.Log(User, "storages", repair.StorageId, "Отменен ремонт [repair" + Id + "]. Исп. кол-во возвращено");
+                conn.Log(User, "repairs", Id, "Ремонт удален");
 
                 return Json(new { Good = "Ремонт удален<br />Использованные позиции возвращены на склад" });
             }
@@ -367,19 +318,14 @@ namespace Devin.Controllers
                                 ? "Ремонт [repair" + Id + "] перемещен в списание [off" + WriteoffId + "]"
                                 : "Ремонт [repair" + Id + "] перемещен в группу [group" + FolderId + "]";
 
-                        conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
-                        {
-                            Date = DateTime.Now,
-                            Source = "repairs",
-                            Id = Id.ToString(),
-                            Text = text,
-                            Username = User.Identity.Name
-                        });
+                        conn.Log(User, "repairs", Id, text);
+
+                        
                     }
                 }
-            }
 
-            return Json(new { Good = "Перемещение выполнено успешно" });
+                return Json(new { Good = "Перемещение выполнено успешно" });
+            }
         }
 
         public JsonResult Off(string Id)
@@ -393,18 +339,9 @@ namespace Devin.Controllers
                 {
                     conn.Execute("UPDATE Storages SET Noff = Noff + @Number, Nrepairs = Nrepairs - @Number WHERE Inventory = @StorageInventory", repair);
                     conn.Execute("UPDATE Repairs SET IsOff = 1 WHERE Id = @Id", repair);
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageId, @Text, @Name)", new
-                    {
-                        repair.StorageId,
-                        Text = "Обновлена позиция [storage" + repair.StorageId + "] при переводе ремонта [repair" + repair.Id + "] в списанный: " + repair.Number + " шт. деталей перемещены из используемых в списанные",
-                        User.Identity.Name
-                    });
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'repairs', @Id, @Text, @Name)", new
-                    {
-                        repair.Id,
-                        Text = "Ремонт помечен как списанный",
-                        User.Identity.Name
-                    });
+
+                    conn.Log(User, "storages", repair.StorageId, "Обновлена позиция [storage" + repair.StorageId + "] при переводе ремонта [repair" + repair.Id + "] в списанный: " + repair.Number + " шт. деталей перемещены из используемых в списанные");
+                    conn.Log(User, "repairs", repair.Id, "Ремонт помечен как списанный");
                 }
             }
 
@@ -426,17 +363,9 @@ namespace Devin.Controllers
                         {
                             conn.Execute("UPDATE Storages SET Noff = Noff + @Number, Nrepairs = Nrepairs - @Number WHERE Id = @StorageId", repair);
                             conn.Execute("UPDATE Repairs SET IsOff = 1 WHERE Id = @Id", repair);
-                            conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageId, @Text, @Author)", new {
-                                repair.StorageId,
-                                repair.Author,
-                                Text = "Обновлена позиция при переводе ремонта [repair" + repair.Id + "] в списанные: " + repair.Number + " шт. деталей перемещены из используемых в списанные"
-                            });
-                            conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageId, @Text, @Author)", new
-                            {
-                                repair.StorageId,
-                                repair.Author,
-                                Text = "Ремонт помечен как списанный"
-                            });
+
+                            conn.Log(User, "storages", repair.StorageId, "Обновлена позиция при переводе ремонта [repair" + repair.Id + "] в списанные: " + repair.Number + " шт. деталей перемещены из используемых в списанные");
+                            conn.Log(User, "repairs", repair.Id, "Ремонт помечен как списанный");
                         }
                     }
                 }
@@ -456,18 +385,9 @@ namespace Devin.Controllers
                 {
                     conn.Execute("UPDATE Storages SET Noff = Noff - @Number, Nrepairs = Nrepairs + @Number WHERE Id = @StorageId", repair);
                     conn.Execute("UPDATE Repairs SET IsOff = 0 WHERE Id = @Id", repair);
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageId, @Text, @Name)", new
-                    {
-                        repair.StorageId,
-                        Text = "Обновлена позиция при переводе ремонта [repair" + repair.Id + "] в активное состояние: " + repair.Number + " шт. деталей перемещены из списанных в используемые",
-                        User.Identity.Name
-                    });
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'repairs', @Id, @Text, @Name)", new
-                    {
-                        repair.Id,
-                        Text = "Ремонт переведен в активное состояние",
-                        User.Identity.Name
-                    });
+
+                    conn.Log(User, "storages", repair.StorageId, "Обновлена позиция при переводе ремонта [repair" + repair.Id + "] в активное состояние: " + repair.Number + " шт. деталей перемещены из списанных в используемые");
+                    conn.Log(User, "repairs", repair.Id, "Ремонт переведен в активное состояние");
                 }
             }
 
@@ -489,18 +409,9 @@ namespace Devin.Controllers
                         {
                             conn.Execute("UPDATE Storages SET Noff = Noff - @Number, Nrepairs = Nrepairs + @Number WHERE Id = @StorageId", repair);
                             conn.Execute("UPDATE Repairs SET IsOff = 0 WHERE Id = @Id", repair);
-                            conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'storages', @StorageId, @Text, @Author)", new
-                            {
-                                repair.StorageId,
-                                repair.Author,
-                                Text = "Обновлена позиция при переводе ремонта [repair" + repair.Id + "] в активное состояние: " + repair.Number + " шт. деталей из списанных в используемые"
-                            });
-                            conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'repairs', @StorageId, @Text, @Author)", new
-                            {
-                                repair.StorageId,
-                                repair.Author,
-                                Text = "Ремонт помечен как активный"
-                            });
+
+                            conn.Log(User, "storages", repair.StorageId, "Обновлена позиция при переводе ремонта [repair" + repair.Id + "] в активное состояние: " + repair.Number + " шт. деталей из списанных в используемые");
+                            conn.Log(User, "repairs", repair.Id, "Ремонт помечен как активный");
                         }
                     }
                 }
@@ -512,7 +423,9 @@ namespace Devin.Controllers
         public JsonResult EndCreateFromDevice(string Id, string[] Repairs, string Writeoff)
         {
             List<Repair> repairs = new List<Repair>();
+
             int id = int.Parse(Id.Replace("device", ""));
+
             foreach (string s in Repairs)
             {
                 string[] sub = s.Split(':');
@@ -527,6 +440,7 @@ namespace Devin.Controllers
                     Date = DateTime.Now,
                     IsOff = false
                 };
+
                 if (r.StorageId != 0 && r.Number != 0) repairs.Add(r);
             }
 
@@ -538,12 +452,8 @@ namespace Devin.Controllers
                     conn.Execute("INSERT INTO Writeoffs (Name, Type, Date, FolderId, CostArticle) VALUES (@Writeoff, 'mat', GetDate(), 0, 0)", new { Writeoff });
                     WriteoffId = conn.QueryFirst<int>("SELECT Max(Id) FROM Writeoffs");
                     foreach (var repair in repairs) repair.WriteoffId = WriteoffId;
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'writeoffs', @WriteoffId, @Text, @Name)", new
-                    {
-                        WriteoffId,
-                        User.Identity.Name,
-                        Text = "Автоматически создано списание при ремонте устройства [device" + Id + "]"
-                    });
+
+                    conn.Log(User, "writeoffs", WriteoffId, "Автоматически создано списание при ремонте устройства [device" + Id + "]");
                 }
 
                 foreach (var repair in repairs)
@@ -553,19 +463,10 @@ namespace Devin.Controllers
 
                     repair.Id = conn.QueryFirst<int>("SELECT Max(Id) FROM Repairs");
 
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'repairs', @Id, @Text, @Name)", new
-                    {
-                        repair.Id,
-                        User.Identity.Name,
-                        Text = "Ремонт: использована позиция с инвентарным № [storage" + repair.StorageId + "] в количестве " + repair.Number + " шт." + (repair.IsVirtual ? " (виртуальный)" : "")
-                    });
+                    conn.Log(User, "repairs", repair.Id, "Ремонт: использована позиция с инвентарным № [storage" + repair.StorageId + "] в количестве " + repair.Number + " шт." + (repair.IsVirtual ? " (виртуальный)" : ""));
                 }
 
-                return Json(new
-                {
-                    Good = "Ремонты успешно созданы",
-                    WriteoffId
-                });
+                return Json(new { Good = "Ремонты успешно созданы", WriteoffId });
             }
         }
 
@@ -600,12 +501,8 @@ namespace Devin.Controllers
                     conn.Execute("INSERT INTO Writeoffs (Name, Type, Date, FolderId, CostArticle) VALUES (@Writeoff, 'expl', GetDate(), 0, 0)", new { Writeoff });
                     WriteoffId = conn.QueryFirst<int>("SELECT Max(Id) FROM Writeoffs");
                     foreach (var repair in repairs) repair.WriteoffId = WriteoffId;
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'writeoffs', @WriteoffId, @Text, @Name)", new
-                    {
-                        WriteoffId,
-                        User.Identity.Name,
-                        Text = "Автоматически создано списание при создании группы ремонтов на складе"
-                    });
+
+                    conn.Log(User, "writeoffs", WriteoffId, "Автоматически создано списание при создании группы ремонтов на складе");
                 }
 
                 foreach (var repair in repairs)
@@ -615,19 +512,10 @@ namespace Devin.Controllers
 
                     repair.Id = conn.QueryFirst<int>("SELECT Max(Id) FROM Repairs");
 
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'repairs', @Id, @Text, @Name)", new
-                    {
-                        repair.Id,
-                        User.Identity.Name,
-                        Text = "Ремонт: использована позиция с инвентарным № [storage" + repair.StorageId + "] в количестве " + repair.Number + " шт." + (repair.IsVirtual ? " (виртуальный)" : "")
-                    });
+                    conn.Log(User, "repairs", repair.Id, "Ремонт: использована позиция с инвентарным № [storage" + repair.StorageId + "] в количестве " + repair.Number + " шт." + (repair.IsVirtual ? " (виртуальный)" : ""));
                 }
 
-                return Json(new
-                {
-                    Good = "Ремонты успешно созданы",
-                    WriteoffId
-                });
+                return Json(new { Good = "Ремонты успешно созданы", WriteoffId });
             }
         }
     }

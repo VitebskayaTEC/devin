@@ -79,6 +79,12 @@ namespace Devin.Controllers
 
                 conn.Execute("INSERT INTO Devices (Inventory, PublicName, Mol, DateInstall, Location, IsOff, IsDeleted) VALUES (@Inventory, @Description, @Mol, @Date, @Location, 0, 0)", obj);
                 conn.Execute("UPDATE Objects1C SET IsChecked = 1 WHERE Inventory = @Id", new { Id });
+
+                int id = conn.QueryFirst<int>("SELECT Max(Id) FROM Devices");
+
+                conn.Log(User, "devices", id, "Создано устройство по данным из 1С [object" + Id + "]");
+                conn.Log(User, "objects1c", Id, "С данной записи создана карточка устройства [device" + id + "]. Запись отмечена как проверенная");
+
                 return Json(new { Good = "Карточка устройства успешно создана" });
             }
         }
@@ -146,6 +152,11 @@ namespace Devin.Controllers
 
                 conn.Execute("INSERT INTO Storages (Inventory, Name, Type, Cost, Nall, Nstorage, Nrepairs, Noff, Date, IsDeleted, Account) VALUES (@Inventory, @Name, @Type, @Cost, @Nall, @Nstorage, @Nrepairs, @Noff, @Date, @IsDeleted, @Account)", storage);
                 conn.Execute("UPDATE Objects1C SET IsChecked = 1 WHERE Inventory = @Id", new { Id });
+
+                int id = conn.QueryFirst<int>("SELECT Max(Id) FROM Storages");
+                conn.Log(User, "devices", id, "Создана позиция на складе по данным из 1С [object" + Id + "]");
+                conn.Log(User, "objects1c", Id, "С данной записи создана карточка позиции [storage" + id + "]. Запись отмечена как проверенная");
+
                 return Json(new { Good = "Позиция успешно добавлена на склад" });
             }
         }
@@ -155,7 +166,9 @@ namespace Devin.Controllers
             using (var conn = Database.Connection())
             {
                 conn.Execute("UPDATE Objects1C SET IsChecked = 1 WHERE Inventory = @Id", new { Id });
-                return Json(new { Good = "Позиция отмечена как проверенная" });
+                conn.Log(User, "objects1c", Id, "Запись отмечена как проверенная");
+
+                return Json(new { Good = "Запись отмечена как проверенная" });
             }
         }
 
@@ -164,7 +177,9 @@ namespace Devin.Controllers
             using (var conn = Database.Connection())
             {
                 conn.Execute("UPDATE Objects1C SET IsChecked = 1, IsHide = 1 WHERE Inventory = @Id", new { Id });
-                return Json(new { Good = "Позиция отмечена как скрытая" });
+                conn.Log(User, "objects1c", Id, "Запись отмечена как скрытая");
+
+                return Json(new { Good = "Запись отмечена как скрытая" });
             }
         }
     }

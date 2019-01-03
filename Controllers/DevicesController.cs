@@ -72,91 +72,36 @@ namespace Devin.Controllers
 
         public ActionResult Inventory() => View();
 
-
         public JsonResult Update(int Id, [Bind(Include = "Id,Name,Inventory,Type,Description,PublicName,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,IsOff")] Device device)
         {
-            // Валидация 
             if (!DateTime.TryParse(Request.Form.Get("DateInstall"), out DateTime d)) return Json(new { Error = "Дата установки введена в неверном формате" }); else device.DateInstall = d;
 
             if (DateTime.TryParse(Request.Form.Get("DateLastRepair"), out d)) device.DateLastRepair = d;
             else device.DateLastRepair = null;
 
-
             using (var conn = Database.Connection())
             {
-                // Логирование изменений
                 var old = conn.QueryFirst<Device>(@"SELECT * FROM Devices WHERE Id = @Id", new { device.Id });
 
                 List<string> changes = new List<string>();
 
-                if (device.Inventory != old.Inventory)
-                {
-                    changes.Add($"инвентарный номер [{old.Inventory} => {device.Inventory}]");
-                }
-                if (device.Name != old.Name)
-                {
-                    changes.Add($"наименование [{old.Name} => {device.Name}]");
-                }
-                if (device.Type != old.Type)
-                {
-                    changes.Add($"класс [{old.Type} => {device.Type}]");
-                }
-                if (device.Description != old.Description)
-                {
-                    changes.Add($"описание [{old.Description} => {device.Description}]");
-                }
-                if (device.Location != old.Location)
-                {
-                    changes.Add($"расположение [{old.Location} => {device.Location}]");
-                }
-                if (device.PlaceId != old.PlaceId)
-                {
-                    changes.Add($"помещение [{old.PlaceId} => {device.PlaceId}]");
-                }
-                if (device.SerialNumber != old.SerialNumber)
-                {
-                    changes.Add($"серийный номер [{old.SerialNumber} => {device.SerialNumber}]");
-                }
-                if (device.PassportNumber != old.PassportNumber)
-                {
-                    changes.Add($"паспортный номер [{old.PassportNumber} => {device.PassportNumber}]");
-                }
-                if (device.ServiceTag != old.ServiceTag)
-                {
-                    changes.Add($"сервис-тег [{old.ServiceTag} => {device.ServiceTag}]");
-                }
-                if (device.OS != old.OS)
-                {
-                    changes.Add($"операционная система [{old.OS} => {device.OS}]");
-                }
-                if (device.OSKey != old.OSKey)
-                {
-                    changes.Add($"ключ ОС [{old.OSKey} => {device.OSKey}]");
-                }
-                if (device.PrinterId != old.PrinterId)
-                {
-                    changes.Add($"типовой принтер [{old.PrinterId} => {device.PrinterId}]");
-                }
-                if (device.IsOff != old.IsOff)
-                {
-                    changes.Add($"списан [{old.IsOff} => {device.IsOff}]");
-                }
-                if (device.DateInstall != old.DateInstall)
-                {
-                    changes.Add($"дата установки [{old.DateInstall} => {device.DateInstall}]");
-                }
-                if (device.DateLastRepair != old.DateLastRepair)
-                {
-                    changes.Add($"дата последнего ремонта [{old.DateLastRepair} => {device.DateLastRepair}]");
-                }
-                if (device.Mol != old.Mol)
-                {
-                    changes.Add($"дата последнего ремонта [{old.Mol} => {device.Mol}]");
-                }
-                if (device.PublicName != old.PublicName)
-                {
-                    changes.Add($"имя для печати [{old.PublicName} => {device.PublicName}]");
-                }
+                if (device.Inventory != old.Inventory) changes.Add($"инвентарный номер [{old.Inventory} => {device.Inventory}]");
+                if (device.Name != old.Name) changes.Add($"наименование [{old.Name} => {device.Name}]");
+                if (device.Type != old.Type) changes.Add($"класс [{old.Type} => {device.Type}]");
+                if (device.Description != old.Description)  changes.Add($"описание [{old.Description} => {device.Description}]");
+                if (device.Location != old.Location) changes.Add($"расположение [{old.Location} => {device.Location}]");
+                if (device.PlaceId != old.PlaceId) changes.Add($"помещение [{old.PlaceId} => {device.PlaceId}]");
+                if (device.SerialNumber != old.SerialNumber) changes.Add($"серийный номер [{old.SerialNumber} => {device.SerialNumber}]");
+                if (device.PassportNumber != old.PassportNumber) changes.Add($"паспортный номер [{old.PassportNumber} => {device.PassportNumber}]");
+                if (device.ServiceTag != old.ServiceTag) changes.Add($"сервис-тег [{old.ServiceTag} => {device.ServiceTag}]");
+                if (device.OS != old.OS) changes.Add($"операционная система [{old.OS} => {device.OS}]");
+                if (device.OSKey != old.OSKey) changes.Add($"ключ ОС [{old.OSKey} => {device.OSKey}]");
+                if (device.PrinterId != old.PrinterId) changes.Add($"типовой принтер [{old.PrinterId} => {device.PrinterId}]");
+                if (device.IsOff != old.IsOff) changes.Add($"списан [{old.IsOff} => {device.IsOff}]");
+                if (device.DateInstall != old.DateInstall) changes.Add($"дата установки [{old.DateInstall} => {device.DateInstall}]");
+                if (device.DateLastRepair != old.DateLastRepair) changes.Add($"дата последнего ремонта [{old.DateLastRepair} => {device.DateLastRepair}]");
+                if (device.Mol != old.Mol) changes.Add($"дата последнего ремонта [{old.Mol} => {device.Mol}]");
+                if (device.PublicName != old.PublicName) changes.Add($"имя для печати [{old.PublicName} => {device.PublicName}]");
 
                 string destination = Request.Form.Get("Destination");
                 device.ComputerId = old.ComputerId;
@@ -200,7 +145,6 @@ namespace Devin.Controllers
 
                 if (changes.Count > 0)
                 {
-                    // Сохранение в базе
                     conn.Execute(@"UPDATE Devices SET
                         Inventory       = @Inventory
                         ,Name           = @Name
@@ -223,16 +167,8 @@ namespace Devin.Controllers
                         ,PublicName     = @PublicName
                     WHERE Id = @Id", device);
 
-                    conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
-                    {
-                        Date = DateTime.Now,
-                        Source = "devices",
-                        Id = device.Id.ToString(),
-                        Text = "Позиция изменена. Изменения: " + string.Join(",\n", changes.ToArray()),
-                        Username = User.Identity.Name
-                    });
-
-                    return Json(new { Good = "Позиция успешно обновлена!<br />Изменены поля:<br />" + string.Join(",<br />", changes.ToArray()) });
+                    conn.Log(User, "devices", device.Id, "Позиция изменена. Изменения: " + changes.ToLog());
+                    return Json(new { Good = "Позиция успешно обновлена!<br />Изменены поля:<br />" + changes.ToHtml() });
                 }
                 else
                 {
@@ -256,14 +192,7 @@ namespace Devin.Controllers
 
                 int newid = conn.QueryFirst<int>("SELECT Max(Id) FROM Devices");
 
-                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
-                {
-                    Date = DateTime.Now,
-                    Source = "devices",
-                    Id = newid.ToString(),
-                    Text = "Позиция скопирована из [device" + Id + "]",
-                    Username = User.Identity.Name
-                });
+                conn.Log(User, "devices", newid, "Позиция скопирована из [device" + Id + "]");
 
                 return Json(new { Id = "device" + newid, Good = "Карточка устройства успешно скопирована" });
             }
@@ -286,14 +215,7 @@ namespace Devin.Controllers
 
                 int id = conn.QueryFirst<int>("SELECT Max(Id) FROM Devices");
 
-                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
-                {
-                    Date = DateTime.Now,
-                    Source = "devices",
-                    Id = id.ToString(),
-                    Text = "Создано новое устройство",
-                    Username = User.Identity.Name
-                });
+                conn.Log(User, "devices", id, "Создано новое устройство");
 
                 return Json(new { Id = "device" + id, Good = "Создано новое устройство" });
             }
@@ -307,15 +229,7 @@ namespace Devin.Controllers
             using (var conn = Database.Connection())
             {
                 conn.Execute("UPDATE Devices SET IsDeleted = 1 WHERE id = @id", new { id });
-
-                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
-                {
-                    Date = DateTime.Now,
-                    Source = "devices",
-                    Id = id.ToString(),
-                    Text = "Устройство удалено",
-                    Username = User.Identity.Name
-                });
+                conn.Log(User, "devices", id, "Устройство удалено");
 
                 return Json(new { Good = "Устройство удалено" });
             }
@@ -340,12 +254,7 @@ namespace Devin.Controllers
                     if (Id != 0)
                     {
                         conn.Execute("UPDATE Devices SET ComputerId = @ComputerId, FolderId = @FolderId WHERE Id = @Id", new { ComputerId, FolderId, Id });
-                        conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'devices', @Id, @Text, @Name)", new
-                        {
-                            Id,
-                            Text = message,
-                            User.Identity.Name
-                        });
+                        conn.Log(User, "devices", Id, message);
                     }
                 }
             }
@@ -357,7 +266,13 @@ namespace Devin.Controllers
         {
             using (var conn = Database.Connection())
             {
+                int folderId = conn.Query<int>("SELECT FolderId FROM Devices WHERE Id = @Id", new { Id }).FirstOrDefault();
+                string oldText = folderId == 0 ? "" : "из папки [folder" + folderId + "] ";
+                string newText = FolderId == 0 ? "и размещен отдельно" : "в папку [folder" + FolderId + "]";
+
                 conn.Execute("UPDATE Devices SET FolderId = @FolderId WHERE Id = @Id", new { Id, FolderId });
+                conn.Log(User, "devices", Id, "Компьютер успешно перемещен " + oldText + newText);
+
                 return Json(new { Good = "Компьютер успешно перемещен" });
             }
         }
@@ -367,6 +282,7 @@ namespace Devin.Controllers
             using (var conn = Database.Connection())
             {
                 conn.Execute("UPDATE Objects1C SET IsHide = @Hide WHERE Inventory = @Id", new { Id, Hide });
+                conn.Log(User, "objects1c", Id, "Объект скрыт");
             }
         }
 
@@ -615,11 +531,14 @@ namespace Devin.Controllers
             {
                 conn.Execute("INSERT INTO WorkPlaces (Location) VALUES ('')");
                 int Id = conn.QueryFirst<int>("SELECT Max(Id) FROM WorkPlaces");
+
                 conn.Execute("UPDATE WorkPlaces SET Location = @location WHERE Id = @Id", new WorkPlace
                 {
                     Id = Id,
                     Location = "Новое рабочее место #" + Id
                 });
+                conn.Log(User, "workplaces", Id, "Создано новое рабочее место");
+
                 return Json(new { Good = "Новое рабочее место создано" });
             }
         }
@@ -628,8 +547,22 @@ namespace Devin.Controllers
         {
             using (var conn = Database.Connection())
             {
-                conn.Execute("UPDATE WorkPlaces SET Location = @Location, Guild = @Guild WHERE Id = @Id", workPlace);
-                return Json(new { Good = "Рабочее место обновлено" });
+                WorkPlace wp = conn.Query<WorkPlace>("SELECT * FROM WorkPlaces WHERE Id = @Id", workPlace).FirstOrDefault() ?? new WorkPlace();
+                List<string> changes = new List<string>();
+
+                if (workPlace.Location != wp.Location) changes.Add("расположение [\"" + wp.Location + "\" => \"" + workPlace.Location + "\"]");
+                if (workPlace.Guild != wp.Guild) changes.Add("подразделение [\"" + wp.Guild + "\" => \"" + workPlace.Guild + "\"]");
+
+                if (changes.Count > 0)
+                {
+                    conn.Execute("UPDATE WorkPlaces SET Location = @Location, Guild = @Guild WHERE Id = @Id", workPlace);
+                    conn.Log(User, "workplaces", workPlace.Id, "Рабочее место изменено. Изменения: " + changes.ToLog());
+                    return Json(new { Good = "Рабочее место изменено. Изменены поля:<br />" + changes.ToHtml() });
+                }
+                else
+                {
+                    return Json(new { Warning = "Изменений не было" });
+                }
             }
         }
 
@@ -638,6 +571,7 @@ namespace Devin.Controllers
             using (var conn = Database.Connection())
             {
                 conn.Execute("DELETE FROM WorkPlaces WHERE Id = @Id", new { Id });
+                conn.Log(User, "workplaces", Id, "Рабочее место удалено");
                 return Json(new { Good = "Рабочее место удалено" });
             }
         }
@@ -672,12 +606,7 @@ namespace Devin.Controllers
                 string changed = old + ";;" + name;
 
                 conn.Execute("UPDATE Devices SET Files = @changed WHERE Id = @id", new { id, changed });
-                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'devices', @Id, @Text, @Name)", new
-                {
-                    Id = id,
-                    Text = "К списку файлов добавлен файл [" + name + "]",
-                    User.Identity.Name
-                });
+                conn.Log(User, "devices", id, "К списку файлов добавлен файл [" + name + "]");
 
                 return Json(new { Good = "К списку файлов добавлен файл [" + name + "]" });
             }
@@ -695,12 +624,7 @@ namespace Devin.Controllers
                 string changed = old.Replace(File, "").Replace(";;;;", ";;");
 
                 conn.Execute("UPDATE Devices SET Files = @changed WHERE Id = @id", new { id, changed });
-                conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (GetDate(), 'devices', @Id, @Text, @Name)", new
-                {
-                    Id = id,
-                    Text = "Из списка файлов удален файл [" + File + "]",
-                    User.Identity.Name
-                });
+                conn.Log(User, "devices", id, "Из списка файлов удален файл [" + File + "]");
 
                 return Json(new { Good = "Из списка файлов удален файл [" + File + "]" });
             }
