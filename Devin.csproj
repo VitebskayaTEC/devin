@@ -186,6 +186,7 @@
     <Content Include="Content\exl\mat_org.xls" />
     <Content Include="Content\exl\test.xls" />
     <Content Include="Content\exl\ReportCart.xls" />
+    <Content Include="Content\exl\expl-1.xls" />
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\Local Publish.pubxml" />
     <None Include="Properties\PublishProfiles\WEB Publish.pubxml" />
