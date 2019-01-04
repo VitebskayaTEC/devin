@@ -5,6 +5,10 @@
 
 @section menu {
     <li>
+        <form method="get" action="@Url.Action(null, "objects1c")">
+            <input name="search" id="search" placeholder="Поиск" value="@Request.QueryString.Get("search")" />
+        </form>
+    </li><li>
         <a class="has-icon" onmousedown="_menu(this)" menu="main"><div class="icon ic-menu"></div></a>
     </li>
 }
@@ -17,3 +21,12 @@
 
 <script>let search = '@Request.QueryString.Get("search")';</script>
 @Html.Action("Load", new { Search = Request.QueryString.Get("search") })
+
+<div id="selected" class="panel">
+    <div>Выбрано позиций: <b></b></div>
+    <div><a onclick="Objects1C.processSelected('check')">Отметить как проверенные</a></div>
+    <div><a onclick="Objects1C.processSelected('uncheck')">Отметить как непроверенные</a></div>
+    <div><a onclick="Objects1C.processSelected('hide')">Отметить как скрытые</a></div>
+    <div><a onclick="Objects1C.processSelected('visible')">Отметить как видимые</a></div>
+    <div><a onclick="removeAllSelection()">Сбросить выбор</a></div>
+</div>

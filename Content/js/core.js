@@ -1245,6 +1245,23 @@ var Objects1C = {
     },
     setHided(inventory) {
         Objects1C.fetch('objects1c/hide/', inventory);
+    },
+
+    processSelected(mode) {
+        let form = new FormData();
+        form.append('Select', selected.join(','));
+        form.append('Mode', mode);
+        fetch(host + 'objects1c/processSelected', { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Error) message(json.Error, 'error');
+                if (json.Warning) message(json.Warning, 'warning');
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    removeAllSelection();
+                    restore();
+                }
+            });
     }
 };
 

@@ -50,17 +50,15 @@ namespace Devin.Controllers
                     }
                 }
             }
+            else if (!string.IsNullOrEmpty(Search))
+            {
+                var model = new Objects1CViewModel(Search);
+                return View("Search", model.SearchResults);
+            }
             else
             {
                 var model = new Objects1CViewModel();
-                if (!string.IsNullOrEmpty(Search))
-                {
-                    return View("Search", model.SearchResults);
-                }
-                else
-                {
-                    return View("List", model);
-                }
+                return View("List", model);
             }
         }
 
@@ -180,6 +178,59 @@ namespace Devin.Controllers
                 conn.Log(User, "objects1c", Id, "Запись отмечена как скрытая");
 
                 return Json(new { Good = "Запись отмечена как скрытая" });
+            }
+        }
+
+        public JsonResult ProcessSelected(string Select, string Mode)
+        {
+            try
+            {
+                Select = Select.Replace("object", "");
+                string[] inventories = (Select ?? "").Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (inventories.Length == 0) return Json(new { Warning = "Не передано ни одного объекта для обработки" });
+
+                using (var conn = Database.Connection())
+                {
+                    string sql = "", text = "", message = "";
+
+                    if (Mode == "check")
+                    {
+                        sql = "UPDATE Objects1C SET IsChecked = 1 WHERE Inventory IN (" + Select + ")";
+                        text = "Объект отмечен как проверенный";
+                        message = "проверенные";
+                    }
+                    if (Mode == "uncheck")
+                    {
+                        sql = "UPDATE Objects1C SET IsChecked = 0 WHERE Inventory IN (" + Select + ")";
+                        text = "Объект отмечен как непроверенный";
+                        message = "непроверенные";
+                    }
+                    if (Mode == "hide")
+                    {
+                        sql = "UPDATE Objects1C SET IsHide = 1 WHERE Inventory IN (" + Select + ")";
+                        text = "Объект отмечен как скрытый";
+                        message = "скрытые";
+                    }
+                    if (Mode == "visible")
+                    {
+                        sql = "UPDATE Objects1C SET IsHide = 0 WHERE Inventory IN (" + Select + ")";
+                        text = "Объект отмечен как отображаемый";
+                        message = "отображаемые";
+                    }
+
+                    conn.Execute(sql);
+                    foreach (var inventory in inventories)
+                    {
+                        conn.Log(User, "objects1c", inventory, text);
+                    }
+
+                    return Json(new { Good = "Выбранные записи успешно отмечены как " + message });
+                }
+            }
+            catch (Exception e)
+            {
+                return Json(new { Error = "Ошибка при выполнении кода на сервере<br />" + e.Message });
             }
         }
     }
