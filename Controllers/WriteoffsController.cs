@@ -398,6 +398,7 @@ namespace Devin.Controllers
 
                     sheet.GetRow(66).GetCell(59).SetCellValue((mpg + palladium).ToString("0.000000").Replace('.', ','));
 
+                    sheet.ForceFormulaRecalculation = true;
                 }
 
                 /* Ремонт основного средства (оргтехника) */

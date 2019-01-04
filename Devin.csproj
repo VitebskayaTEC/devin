@@ -177,16 +177,36 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Content Include="Content\exl\analyze.xls" />
-    <Content Include="Content\exl\defect.xls" />
-    <Content Include="Content\exl\expl.backup.xls" />
-    <Content Include="Content\exl\expl.xls" />
-    <Content Include="Content\exl\labels.xls" />
-    <Content Include="Content\exl\mat.xls" />
-    <Content Include="Content\exl\mat_org.xls" />
-    <Content Include="Content\exl\test.xls" />
-    <Content Include="Content\exl\ReportCart.xls" />
-    <Content Include="Content\exl\expl-1.xls" />
+    <Content Include="Content\exl\analyze.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\exl\defect.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\exl\expl.backup.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\exl\expl.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\exl\labels.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\exl\mat.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\exl\test.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\exl\ReportCart.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\exl\expl-1.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\exl\mat-org.xls">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
     <None Include="Properties\PublishProfiles\Local Publish.pubxml" />
     <None Include="Properties\PublishProfiles\WEB Publish.pubxml" />
@@ -257,6 +277,8 @@
     <Content Include="Views\Objects1C\List.cshtml" />
     <Content Include="Views\Objects1C\Search.cshtml" />
     <Content Include="Views\Devices\Inventory.cshtml" />
+    <Content Include="Views\Aida\Computer.cshtml" />
+    <Content Include="Views\Aida\ComputerData.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

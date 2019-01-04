@@ -1,85 +1,14 @@
 ﻿@using (var conn = Database.Connection())
 {
-    string sql = @"SELECT
-        Report.RHost,
-        Report.ID,
-        Report.RUser,
-        Report.RDateTime,
-        Item.IField,
-        Item.IValue
-    FROM Report
-    INNER JOIN Item ON Report.ID = Item.ReportID
-    WHERE Report.ID IN (SELECT Max(ID) FROM Report GROUP BY RHost) 
-	    AND (Item.IPage = 'Суммарная информация') 
-	    AND (Report.RHostComment <> 'deleted')
-    ORDER BY Report.RHost, Report.ID, Item.IField DESC";
+    string sql = @"SELECT ID, RVersion, RHost, RUser, RDateTime 
+        FROM Report 
+        WHERE ID IN (SELECT Max(ID) FROM Report GROUP BY RHost) 
+        ORDER BY RHost";
 
-    var model = conn.Query(sql).AsList();
-    var computers = new List<AidaComputer>();
+    var computers = conn.Query<Aida>(sql);
 
-    string rhost = "";
-    var computer = new AidaComputer();
-
-    foreach (var row in model)
+    foreach (var computer in computers)
     {
-        if (rhost != row.RHost)
-        {
-            computers.Add(computer = new AidaComputer
-            {
-                RHost = row.RHost,
-                ID = row.ID,
-                RUser = row.RUser,
-                RDateTime = DateTime.Parse(row.RDateTime),
-            });
-
-            rhost = row.RHost;
-        }
-        else
-        {
-            computer.Items.Add(new AidaField
-            {
-                IField = row.IField,
-                IValue = row.IValue
-            });
-        }
+        @Html.Partial("Computer", computer)
     }
-
-    foreach (var comp in computers)
-    {
-        @RenderComputer(comp)
-    }
-
-}
-
-@helper RenderComputer(AidaComputer computer)
-{
-    string open = Request.Cookies.Get(computer.RHost)?.Value ?? "";
-    string id = "aida" + computer.ID;
-
-    <div class="unit @open" data-id="@id">
-        <table class="caption">
-            <tr>
-                <th width="30px">
-                    <div class="icon ic-computer"></div>
-                </th>
-                <td width="150px"><b>@computer.RHost</b></td>
-                <td width="150px">@computer.RUser</td>
-                <td>@computer.RDateTime.ToString("dd.MM.yyyy") (@((DateTime.Now - computer.RDateTime).Days) дней)</td>
-            </tr>
-        </table>
-        <div class="itemsBlock @(open == "open" ? "itemsBlock_expanded" : "")">
-            <div class="title-wrapper" id="@id">
-                <a class="title" href="##@(id)">Открыть карточку компьютера</a>
-            </div>
-            <table class="items">
-                @foreach (var item in computer.Items)
-                {
-                    <tr>
-                        <td width="250px">@item.IField</td>
-                        <td>@item.IValue</td>
-                    </tr>
-                }
-            </table>
-        </div>
-        </div>
 }

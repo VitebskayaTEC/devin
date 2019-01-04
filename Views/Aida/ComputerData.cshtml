@@ -1,0 +1,79 @@
+﻿@model Aida
+
+@using (var conn = Database.Connection())
+{
+    string id = "aida" + Model.ID;
+
+    <div class="title-wrapper" id="@id">
+        <a class="title" href="##@(id)">Открыть карточку компьютера</a>
+    </div>
+
+
+    string sql = @"
+    SELECT IGroup, IField, IValue
+    FROM (SELECT IGroup, IField, IValue 
+        FROM Item 
+        WHERE ReportID = @ID AND IPage = 'Суммарная информация') 
+    AS T1
+    WHERE IGroup NOT IN ('DMI', 'Ввод')
+    AND IField NOT IN (
+	    'Коммуникационный порт', 
+	    'Контроллер хранения данных', 
+	    'USB-устройство', 
+	    'Дата / Время', 
+	    'DirectX', 
+	    'Edge', 
+	    'Вход в домен', 
+	    'Имя компьютера', 
+	    'Пакет обновления ОС', 
+	    'Тип компьютера')
+    AND IValue NOT IN (
+	    'Microsoft Print to PDF',
+	    'Microsoft XPS Document Writer',
+	    'Отправить в OneNote 16',
+	    'Fax',
+	    'Microsoft Office Document Image Writer')
+    GROUP BY IGroup, IField, IValue
+    ORDER BY IGroup, IField, IValue";
+
+    var rs = conn.Query<AidaField>(sql, Model);
+    var groups = new Dictionary<string, Dictionary<string, string>>();
+    int i = 1;
+
+    foreach (var row in rs)
+    {
+        if (groups.ContainsKey(row.IGroup))
+        {
+            if (groups[row.IGroup].ContainsKey(row.IField))
+            {
+                row.IField = row.IField + " " + i++;
+            }
+            else
+            {
+                i = 0;
+            }
+            groups[row.IGroup].Add(row.IField, row.IValue);
+        }
+        else
+        {
+            var dict = new Dictionary<string, string> { { row.IField, row.IValue } };
+            groups.Add(row.IGroup, dict);
+        }
+    }
+
+    foreach (var group in groups.Keys)
+    {
+        <div class="aida__group">
+            <b class="aida__group_header">@group</b>
+            <table class="items">
+                @foreach (var field in groups[group].Keys)
+                {
+                    <tr>
+                        <td width="300px">@field</td>
+                        <td>@groups[group][field]</td>
+                    </tr>
+                }
+            </table>
+        </div>
+    }
+}

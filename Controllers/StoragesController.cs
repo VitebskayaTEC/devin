@@ -149,6 +149,7 @@ namespace Devin.Controllers
         public JsonResult Labels(string Select)
         {
             List<Storage> Storages;
+            Select = Select.Replace("storage", "");
 
             using (var conn = Database.Connection())
             {

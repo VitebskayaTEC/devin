@@ -416,6 +416,16 @@ textarea.cart__field {
 
 /* #endregion */
 
+
+.aida__group {
+    padding: 0 6px;
+}
+
+.aida__group_header {
+    padding-left: 15px;
+    font-size: 13px;
+}
+
 /* #region Context menu */
 
 .context-menu {

@@ -1207,6 +1207,16 @@ var Aida = {
                     restore();
                 }
             });
+    },
+
+    removeOldRecords() {
+        fetch(host + 'aida/deleteOldRecords/', { method: 'POST' })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Error) message(json.Error, 'error');
+                if (json.Warning) message(json.Warning, 'warning');
+                if (json.Good)  message(json.Good, 'good');
+            });
     }
 };
 
