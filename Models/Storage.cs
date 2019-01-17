@@ -1,36 +1,52 @@
-﻿using System;
+﻿using LinqToDB.Mapping;
+using System;
 
 namespace Devin.Models
 {
+    [Table(Name = "Storages")]
     public class Storage
     {
         [Slapper.AutoMapper.Id]
+        [Column, PrimaryKey, Identity, NotNull]
         public int Id { get; set; }
 
+        [Column]
         public string Name { get; set; }
 
+        [Column, NotNull]
         public string Inventory { get; set; }
 
+        [Column]
         public string Type { get; set; }
 
+        [Column]
         public float Cost { get; set; }
 
+        [Column, NotNull]
         public int Nall { get; set; }
 
+        [Column, NotNull]
         public int Nstorage { get; set; }
 
+        [Column, NotNull]
         public int Nrepairs { get; set; }
 
+        [Column, NotNull]
         public int Noff { get; set; }
 
+        [Column, NotNull, DataType("datetime")]
         public DateTime Date { get; set; }
 
+        [Column, NotNull]
         public bool IsDeleted { get; set; }
 
+        [Column]
         public string Account { get; set; }
 
+        [Column]
         public int CartridgeId { get; set; }
 
+        [Column]
         public int FolderId { get; set; }
 
         public bool IsOff() => (Nall == Noff) && (Nstorage + Nrepairs == 0);

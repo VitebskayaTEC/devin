@@ -1,18 +1,25 @@
-﻿using System;
+﻿using LinqToDB.Mapping;
+using System;
 using System.Collections.Generic;
 
 namespace Devin.Models
 {
+    [Table(Name = "Report")]
     public class Aida
     {
+        [Column, PrimaryKey, NotNull]
         public int ID { get; set; }
 
+        [Column]
         public string RHost { get; set; }
 
+        [Column]
         public string RUser { get; set; }
 
+        [Column]
         public string RLocation { get; set; }
 
+        [Column, DataType("datetime")]
         public DateTime RDateTime { get; set; }
     }
 

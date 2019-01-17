@@ -1,21 +1,29 @@
-﻿using System.Collections.Generic;
+﻿using LinqToDB.Mapping;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Devin.Models
 {
+    [Table(Name = "Cartridges")]
     public class Cartridge
     {
         [Slapper.AutoMapper.Id]
+        [Column, PrimaryKey, Identity, NotNull]
         public int Id { get; set; }
 
+        [Column]
         public string Name { get; set; }
 
+        [Column]
         public float Cost { get; set; }
 
+        [Column]
         public string Type { get; set; }
 
+        [Column]
         public string Color { get; set; }
 
+        [Column]
         public string Description { get; set; }
 
 

@@ -19,10 +19,10 @@
     </div>
 }
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
-    var printers = conn.Query<Printer>("SELECT Id, Name FROM Printers ORDER BY Name");
-    var cartridges = conn.Query<Cartridge>("SELECT Id, Name FROM Cartridges ORDER BY Name");
+    var printers = db.Printers.Select(x => new Printer { Id = x.Id, Name = x.Name }).ToList();
+    var cartridges = db.Cartridges.Select(x => new Cartridge { Id = x.Id, Name = x.Name }).ToList();
 
     <table>
         <tr>

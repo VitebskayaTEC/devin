@@ -1,4 +1,6 @@
 ﻿using Dapper;
+using LinqToDB;
+using LinqToDB.Data;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -31,5 +33,43 @@ namespace Devin.Models
         public static string ToHtml(this List<string> list) => string.Join(",<br />", list.ToArray());
 
         public static string ToLog(this List<string> list) => string.Join(",\n", list.ToArray());
+    }
+
+    public class DbDevin : DataConnection
+    {
+        public DbDevin() : base("Devin") { }
+
+        public ITable<Activity> Activity 
+            => GetTable<Activity>();
+
+        public ITable<Aida> Aida 
+            => GetTable<Aida>();
+
+        public ITable<Cartridge> Cartridges 
+            => GetTable<Cartridge>();
+
+        public ITable<Device> Devices 
+            => GetTable<Device>();
+
+        public ITable<Folder> Folders
+            => GetTable<Folder>();
+
+        public ITable<Object1C> Objects1C 
+            => GetTable<Object1C>();
+
+        public ITable<Printer> Printers 
+            => GetTable<Printer>();
+
+        public ITable<Repair> Repairs 
+            => GetTable<Repair>();
+
+        public ITable<Storage> Storages 
+            => GetTable<Storage>();
+
+        public ITable<WorkPlace> WorkPlaces 
+            => GetTable<WorkPlace>();
+
+        public ITable<Writeoff> Writeoffs 
+            => GetTable<Writeoff>();
     }
 }

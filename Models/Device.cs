@@ -1,65 +1,95 @@
-﻿using System;
+﻿using LinqToDB.Mapping;
+using System;
 using System.Collections.Generic;
 
 namespace Devin.Models
 {
+    [Table(Name = "Devices")]
     public class Device
     {
         [Slapper.AutoMapper.Id]
+        [Column, PrimaryKey, Identity, NotNull]
         public int Id { get; set; }
 
+        [Column]
         public string Inventory { get; set; }
 
+        [Column]
         public string Type { get; set; }
-        
+
+        [Column]
         public string Name { get; set; }
 
+        [Column]
         public string PublicName { get; set; }
 
+        [Column]
         public int ComputerId { get; set; }
 
+        [Column]
         public string Description { get; set; }
 
+        [Column]
         public string Description1C { get; set; }
 
+        [Column, DataType("datetime")]
         public DateTime DateInstall { get; set; }
 
+        [Column, DataType("datetime")]
         public DateTime? DateLastRepair { get; set; }
 
+        [Column]
         public string Mol { get; set; }
 
+        [Column]
         public string SerialNumber { get; set; }
 
+        [Column]
         public string PassportNumber { get; set; }
 
+        [Column]
         public string Location { get; set; }
 
+        [Column]
         public string OS { get; set; }
 
+        [Column]
         public string OSKey { get; set; }
 
+        [Column]
         public int PrinterId { get; set; }
 
+        [Column]
         public int FolderId { get; set; }
 
+        [Column]
         public bool IsOff { get; set; }
 
+        [Column, NotNull]
         public bool IsDeleted { get; set; }
 
+        [Column]
         public string ServiceTag { get; set; }
 
+        [Column]
         public string Gold { get; set; }
 
+        [Column]
         public string Silver { get; set; }
 
+        [Column]
         public string Platinum { get; set; }
 
+        [Column]
         public string Palladium { get; set; } = "";
 
+        [Column]
         public string MPG { get; set; }
 
+        [Column]
         public int PlaceId { get; set; }
 
+        [Column]
         public string NetworkName { get; set; }
 
 

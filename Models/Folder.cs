@@ -1,14 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using LinqToDB.Mapping;
+using System.Collections.Generic;
 
 namespace Devin.Models
 {
+    [Table(Name = "Folders")]
     public class Folder
     {
+        [Column, PrimaryKey, Identity, NotNull]
         public int Id { get; set; }
 
+        [Column, NotNull]
         public int FolderId { get; set; }
 
+        [Column]
         public string Name { get; set; }
+
+        [Column, NotNull]
+        public string Type { get; set; }
 
         public List<Folder> SubFolders { get; set; } = new List<Folder>();
 

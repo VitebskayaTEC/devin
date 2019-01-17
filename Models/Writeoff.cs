@@ -1,33 +1,47 @@
-﻿using Dapper;
+﻿using LinqToDB.Mapping;
+using Dapper;
 using System;
 using System.Collections.Generic;
 
 namespace Devin.Models
 {
+    [Table(Name = "WorkPlaces")]
     public class Writeoff
     {
+        [Column, PrimaryKey, Identity, NotNull]
         public int Id { get; set; }
 
+        [Column]
         public int CostArticle { get; set; }
 
+        [Column, DataType("datetime")]
         public DateTime Date { get; set; }
 
+        [Column, DataType("datetime")]
         public DateTime LastExcelDate { get; set; }
 
+        [Column]
         public string LastExcel { get; set; }
 
+        [Column]
         public string Params { get; set; }
 
+        [Column]
         public string Type { get; set; }
 
+        [Column]
         public string Name { get; set; }
 
+        [Column]
         public string Description { get; set; }
 
+        [Column]
         public string Template { get; set; }
 
+        [Column]
         public string DefaultData { get; set; }
 
+        [Column]
         public int FolderId { get; set; }
 
         public List<Repair> Repairs { get; set; } = new List<Repair>();
