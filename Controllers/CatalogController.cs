@@ -51,7 +51,7 @@ namespace Devin.Controllers
                     cartridge.Cost = 0;
                 }
 
-                Cartridge old = conn.Query<Cartridge>("SELECT * FROM Cartridge WHERE Id = @Id", cartridge).FirstOrDefault() ?? new Cartridge();
+                Cartridge old = conn.Query<Cartridge>("SELECT * FROM Cartridges WHERE Id = @Id", cartridge).FirstOrDefault() ?? new Cartridge();
                 List<string> changes = new List<string>();
 
                 if (old.Name != cartridge.Name) changes.Add("наименование [\"" + old.Name + "\" => \"" + cartridge.Name + "\"]");
