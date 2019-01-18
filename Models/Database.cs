@@ -71,5 +71,10 @@ namespace Devin.Models
 
         public ITable<Writeoff> Writeoffs 
             => GetTable<Writeoff>();
+
+        // relationship tables
+
+        public ITable<PrinterCartridge> _PrinterCartridge
+            => GetTable<PrinterCartridge>();
     }
 }
