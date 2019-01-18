@@ -76,5 +76,17 @@ namespace Devin.Models
 
         public ITable<PrinterCartridge> _PrinterCartridge
             => GetTable<PrinterCartridge>();
+
+        public ITable<TypeCartridge> _CartridgeTypes
+            => GetTable<TypeCartridge>();
+
+        public ITable<TypeDevice> _DeviceTypes
+            => GetTable<TypeDevice>();
+
+        public ITable<TypeSystem> _SystemTypes
+            => GetTable<TypeSystem>();
+
+        public ITable<TypeWriteoff> _WriteoffTypes
+            => GetTable<TypeWriteoff>();
     }
 }
