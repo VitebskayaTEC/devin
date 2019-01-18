@@ -30,6 +30,18 @@ namespace Devin.Models
             });
         }
 
+        public static void Log(this DataConnection db, IPrincipal user, string source, object id, string text)
+        {
+            db.Insert(new Activity
+            {
+                Date = DateTime.Now,
+                Source = source,
+                Id = id.ToString(),
+                Text = text,
+                Username = user.Identity.Name
+            });
+        }
+
         public static string ToHtml(this List<string> list) => string.Join(",<br />", list.ToArray());
 
         public static string ToLog(this List<string> list) => string.Join(",\n", list.ToArray());

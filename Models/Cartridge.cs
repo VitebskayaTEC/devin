@@ -14,7 +14,7 @@ namespace Devin.Models
         [Column]
         public string Name { get; set; }
 
-        [Column]
+        [Column, NotNull]
         public float Cost { get; set; }
 
         [Column]
