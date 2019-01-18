@@ -33,7 +33,7 @@
     float calculateCost = storages
         .Select(x => x.Cost == 0
             ? baseValue
-            : x.Account == "10.5.1." 
+            : x.Account.Contains("10.5.1") 
                 ? (x.Cost * 1.2F) 
                 : (x.Cost * 2.4F))
         .DefaultIfEmpty(0)
