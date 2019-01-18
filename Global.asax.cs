@@ -1,4 +1,6 @@
-﻿using System.Web.Mvc;
+﻿using LinqToDB.Data;
+using System.Diagnostics;
+using System.Web.Mvc;
 using System.Web.Routing;
 
 namespace Devin
@@ -9,6 +11,11 @@ namespace Devin
         {
             RouteTable.Routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
             RouteTable.Routes.MapRoute("Default", "{controller}/{action}/{id}", defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional });
+
+            #if DEBUG
+            DataConnection.TurnTraceSwitchOn();
+            DataConnection.WriteTraceLine = (s, s1) => Debug.WriteLine(s);
+            #endif
         }
     }
 }
