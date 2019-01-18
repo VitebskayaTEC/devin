@@ -133,6 +133,7 @@
     </Compile>
     <Compile Include="Models\Activity.cs" />
     <Compile Include="Models\Aida.cs" />
+    <Compile Include="Models\PrinterCartridge.cs" />
     <Compile Include="Models\Cartridge.cs" />
     <Compile Include="Models\Database.cs" />
     <Compile Include="Models\Computer.cs" />
@@ -143,6 +144,10 @@
     <Compile Include="Models\Printer.cs" />
     <Compile Include="Models\Repair.cs" />
     <Compile Include="Models\Storage.cs" />
+    <Compile Include="Models\TypeWriteoff.cs" />
+    <Compile Include="Models\TypeSystem.cs" />
+    <Compile Include="Models\TypeDevice.cs" />
+    <Compile Include="Models\TypeCartridge.cs" />
     <Compile Include="Models\WorkPlace.cs" />
     <Compile Include="Models\Writeoff.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

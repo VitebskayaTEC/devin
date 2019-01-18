@@ -1,8 +1,8 @@
 ﻿@model int
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
-    var cartridge = conn.Query<Cartridge>("SELECT * FROM Cartridges WHERE Id = @Model", new { Model }).FirstOrDefault();
+    var cartridge = db.Cartridges.FirstOrDefault(x => x.Id == Model);
     if (cartridge == null)
     {
         <div class="cart__header">
@@ -22,21 +22,22 @@
         </div>
     </div>
 
-    var storages = conn.Query<Storage>(@"SELECT Id, Inventory, Name, Nstorage
-        FROM Storages
-        WHERE CartridgeId = @Model AND IsDeleted = 0 AND Nstorage > 0 
-        ORDER BY Inventory, Name", new { Model });
+    var storages = db.Storages
+        .Where(x => x.CartridgeId == Model)
+        .OrderBy(x => x.Inventory)
+            .ThenBy(x => x.Name)
+        .ToList();
 
-    float calculateCost = conn.Query<float?>(@"SELECT AVG(Cost) FROM (
-	    SELECT 
-		    CASE Cost WHEN 0 THEN @BaseCost
-		    ELSE
-			    CASE Account WHEN '10.5.1' THEN Cost * 1.2 
-			    ELSE Cost * 2.4 END
-		    END AS Cost
-	    FROM Storages
-	    WHERE CartridgeId = @Model) AS x", new { Model, BaseCost = 24.5F }).FirstOrDefault() ?? 0;
+    float baseValue = 24.5F;
 
+    float calculateCost = storages
+        .Select(x => x.Cost == 0
+            ? baseValue
+            : x.Account == "10.5.1." 
+                ? (x.Cost * 1.2F) 
+                : (x.Cost * 2.4F))
+        .DefaultIfEmpty(0)
+        .Average();
 
     <div class="cart__body">
 
@@ -61,7 +62,11 @@
                 <td>
                     <select class="cart__field" name="Type">
                         @{ 
-                            var types = conn.Query("SELECT Id, Name FROM TypesCartridges WHERE Type = 'type' ORDER BY Name");
+                            var types = db._CartridgeTypes
+                                .Where(x => x.Type == "type")
+                                .OrderBy(x => x.Name)
+                                .ToList();
+
                             foreach (var type in types)
                             {
                                 <option value="@type.Id" @(type.Id == cartridge.Type ? "selected" : "")>@type.Name</option>
@@ -75,7 +80,11 @@
                 <td>
                     <select class="cart__field" name="Color">
                         @{
-                            var colors = conn.Query("SELECT Id, Name FROM TypesCartridges WHERE Type = 'color' ORDER BY Name");
+                            var colors = db._CartridgeTypes
+                                .Where(x => x.Type == "color")
+                                .OrderBy(x => x.Name)
+                                .ToList();
+
                             foreach (var color in colors)
                             {
                                 <option value="@color.Id" @(color.Id == cartridge.Color ? "selected" : "")>@color.Name</option>
@@ -93,7 +102,12 @@
                 </td>
             </tr>
             @{
-                var compared = conn.Query<Printer>("SELECT Id, Name FROM PrintersCartridges INNER JOIN Printers ON Printers.Id = PrintersCartridges.PrinterId WHERE PrintersCartridges.CartridgeId = @Model ORDER BY Name", new { Model });
+                var compared = db.Printers
+                    .Where(p => db._PrinterCartridge
+                        .Where(x => x.CartridgeId == Model)
+                        .Select(x => x.PrinterId)
+                        .Contains(p.Id))
+                    .ToList();
 
                 if (compared.Count() == 0)
                 {
@@ -121,16 +135,9 @@
                     <select class="cart__field" id="new-compare">
                         <option value="0">?</option>
                         @{
-                            var notCompared = conn.Query<Printer>(@"SELECT Printers.Id, Printers.Name 
-                            FROM Printers
-                            WHERE Printers.Id NOT IN (
-                                SELECT Printers.Id
-                                FROM Printers
-                                INNER JOIN PrintersCartridges ON PrintersCartridges.PrinterId = Printers.Id
-                                INNER JOIN Cartridges ON PrintersCartridges.CartridgeId = Cartridges.Id
-                                WHERE (Cartridges.Id = @Model)
-                                GROUP BY Printers.Id
-                            ) ORDER BY Printers.Name", new { Model });
+                            var notCompared = db.Printers
+                                .Where(p => !compared.Select(x => x.Id).Contains(p.Id))
+                                .ToList();
 
                             foreach (var printer in notCompared)
                             {
@@ -149,7 +156,7 @@
 
         <br /><b class="cart__caption">Позиции со склада, связанные с этим картриджем:</b>
         <div class="catalogLinks">
-            @foreach (var storage in storages)
+            @foreach (var storage in storages.Where(x => x.Nstorage > 0))
             {
                 <div>
                     <a class="cart__link" href="##storage@(storage.Id)"><b>@storage.Inventory</b> @storage.Name</a> @storage.Nstorage шт.

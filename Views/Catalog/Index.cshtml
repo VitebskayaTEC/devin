@@ -21,8 +21,15 @@
 
 @using (var db = new DbDevin())
 {
-    var printers = db.Printers.Select(x => new Printer { Id = x.Id, Name = x.Name }).ToList();
-    var cartridges = db.Cartridges.Select(x => new Cartridge { Id = x.Id, Name = x.Name }).ToList();
+    var printers = db.Printers
+        .Select(x => new Printer { Id = x.Id, Name = x.Name })
+        .OrderBy(x => x.Name)
+        .ToList();
+
+    var cartridges = db.Cartridges
+        .Select(x => new Cartridge { Id = x.Id, Name = x.Name })
+        .OrderBy(x => x.Name)
+        .ToList();
 
     <table>
         <tr>
