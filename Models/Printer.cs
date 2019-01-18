@@ -2,7 +2,7 @@
 
 namespace Devin.Models
 {
-    [Table(Name = "Cartridges")]
+    [Table(Name = "Printers")]
     public class Printer
     {
         [Slapper.AutoMapper.Id]
