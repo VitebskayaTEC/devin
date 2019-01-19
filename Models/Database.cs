@@ -54,6 +54,9 @@ namespace Devin.Models
         public ITable<Activity> Activity 
             => GetTable<Activity>();
 
+        public ITable<Elm> Elm
+            => GetTable<Elm>();
+
         public ITable<Report> Report 
             => GetTable<Report>();
 
