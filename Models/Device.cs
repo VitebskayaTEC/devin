@@ -71,20 +71,19 @@ namespace Devin.Models
         [Column]
         public string ServiceTag { get; set; }
 
-        [Column]
+        [Column(Name = "PassportGold")]
         public string Gold { get; set; }
 
-        [Column]
+        [Column(Name = "PassportSilver")]
         public string Silver { get; set; }
 
-        [Column]
+        [Column(Name = "PassportPlatinum")]
         public string Platinum { get; set; }
 
-        [Column]
-        public string Palladium { get; set; } = "";
-
-        [Column]
+        [Column(Name = "PassportMPG")]
         public string MPG { get; set; }
+
+        public string Palladium { get; set; } = "";
 
         [Column]
         public int PlaceId { get; set; }
