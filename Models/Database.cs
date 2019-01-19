@@ -54,8 +54,11 @@ namespace Devin.Models
         public ITable<Activity> Activity 
             => GetTable<Activity>();
 
-        public ITable<Aida> Aida 
-            => GetTable<Aida>();
+        public ITable<Report> Report 
+            => GetTable<Report>();
+
+        public ITable<Item> Item
+            => GetTable<Item>();
 
         public ITable<Cartridge> Cartridges 
             => GetTable<Cartridge>();

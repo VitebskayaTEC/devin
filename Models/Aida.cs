@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Devin.Models
 {
     [Table(Name = "Report")]
-    public class Aida
+    public class Report
     {
         [Column, PrimaryKey, NotNull]
         public int ID { get; set; }
@@ -39,21 +39,37 @@ namespace Devin.Models
 
         public string IValue { get; set; }
 
-        public List<AidaField> Items { get; set; } = new List<AidaField>();
+        public List<Item> Items { get; set; } = new List<Item>();
     }
 
-    public class AidaField
+    [Table(Name = "Item")]
+    public class Item
     {
+        [Column]
         public int INum { get; set; }
 
+        [Column]
         public string IPage { get; set; }
 
+        [Column]
         public string IDevice { get; set; }
 
+        [Column]
         public string IGroup { get; set; }
 
+        [Column]
         public string IField { get; set; }
 
+        [Column]
         public string IValue { get; set; }
+
+        [Column]
+        public int IIcon { get; set; }
+
+        [Column]
+        public int IID { get; set; }
+
+        [Column, NotNull]
+        public int ReportID { get; set; }
     }
 }

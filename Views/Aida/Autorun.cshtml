@@ -2,14 +2,18 @@
 
 <button class="cart__button" onclick="Devices.Cart.backToAddons()">Вернуться</button>
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
     if (!int.TryParse(Model, out int Id))
     {
-        Id = conn.Query<int>("SELECT ID FROM Report WHERE RHost = @Model ORDER BY RDateTime DESC", new { Model }).FirstOrDefault();
+        Id = db.Report.FirstOrDefault(x => x.RHost == Model)?.ID ?? 0;
     }
 
-    var model = conn.Query(@"SELECT IDevice, IField, IValue FROM Item WHERE (ReportID  = @Id AND IPage = 'Автозагрузка') ORDER BY IDevice", new { Id });
+    var model = db.Item
+        .Where(x => x.ReportID == Id && x.IPage == "Автозагрузка")
+        .Select(x => new { x.IDevice, x.IField, x.IValue })
+        .OrderBy(x => x.IDevice)
+        .ToList();
 
     if (model.Count() == 0)
     {
@@ -27,7 +31,8 @@
 		        </tr>
 		    </thead>
             <tbody>
-                @foreach (var row in model) {
+                @foreach (var row in model)
+                {
 			        <tr>
 			            <td>@row.IDevice</td>
                         <td>@row.IField</td>

@@ -15,7 +15,7 @@ namespace Devin.Controllers
             if ((Item ?? "").Contains("aida"))
             {
                 int Id = int.TryParse((Item ?? "").Replace("aida", ""), out int i) ? i : 0;
-                return View("ComputerData", new Aida { ID = Id });
+                return View("ComputerData", new Report { ID = Id });
             }
             else if (!string.IsNullOrEmpty(Search))
             {
