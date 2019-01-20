@@ -91,6 +91,9 @@ namespace Devin.Models
         [Column]
         public string NetworkName { get; set; }
 
+        [Column]
+        public string Files { get; set; } = "";
+
 
         public Printer Printer { get; set; }
 
