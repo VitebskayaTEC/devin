@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Devin.Models
 {
-    [Table(Name = "WorkPlaces")]
+    [Table(Name = "Writeoffs")]
     public class Writeoff
     {
         [Column, PrimaryKey, Identity, NotNull]
@@ -14,11 +14,11 @@ namespace Devin.Models
         [Column]
         public int CostArticle { get; set; }
 
-        [Column, DataType("datetime")]
+        [Column, NotNull, DataType("datetime")]
         public DateTime Date { get; set; }
 
         [Column, DataType("datetime")]
-        public DateTime LastExcelDate { get; set; }
+        public DateTime? LastExcelDate { get; set; }
 
         [Column]
         public string LastExcel { get; set; }
