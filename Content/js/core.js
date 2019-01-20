@@ -24,7 +24,7 @@ function toggle(node) {
         setCookie(name, '', { expires: 9999999999 });
     }
     else {
-        if (!block.querySelector('div')) {
+        if (!block.querySelector('table')) {
             fetch(host + pageName + '/load?Item=' + name + '&r=' + Math.random())
                 .then(res => res.text())
                 .then(text => {
