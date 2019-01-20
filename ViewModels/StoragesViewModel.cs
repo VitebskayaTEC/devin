@@ -1,6 +1,7 @@
-﻿using Dapper;
-using Devin.Models;
+﻿using Devin.Models;
+using LinqToDB;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Devin.ViewModels
 {
@@ -12,36 +13,45 @@ namespace Devin.ViewModels
 
         public StoragesViewModel(string Search = "")
         {
-            using (var conn = Database.Connection())
+            using (var db = new DbDevin())
             {
                 if (!string.IsNullOrEmpty(Search))
                 {
-                    Storages = conn.Query<Storage>($@"SELECT * FROM Storages WHERE IsDeleted <> 1 AND (
-                        Inventory LIKE '%{Search}%'
-                        OR Name LIKE '%{Search}%'
-                        OR Date LIKE '%{Search}%'
-                        OR Account LIKE '%{Search}%'
-                    ) ORDER BY Inventory").AsList();
+                    Storages = db.Storages
+                        .Where(x => !x.IsDeleted && (
+                            x.Inventory.Contains(Search)
+                            || x.Name.Contains(Search)
+                            || x.Account.Contains(Search)
+                        ))
+                        .OrderBy(x => x.Inventory)
+                        .ToList();
                 }
                 else
                 {
-                    List<Folder> _folders = conn.Query<Folder>(@"SELECT 
-	                    Folders.Id,
-	                    CASE WHEN Parents.Id IS NULL THEN 0 ELSE Parents.Id END AS FolderId,
-	                    Folders.Name
-                    FROM Folders
-	                LEFT OUTER JOIN Folders AS Parents ON Folders.FolderId = Parents.Id
-                    WHERE Folders.Type = 'storage'
-                    ORDER BY Folders.Name").AsList();
+                    var foldersQuery = from f in db.Folders
+                                       from p in db.Folders.Where(x => x.Id == f.FolderId).DefaultIfEmpty(new Folder { Id = 0 })
+                                       where f.Type == "storage"
+                                       orderby f.Name
+                                       select new Folder
+                                       {
+                                           Id = f.Id,
+                                           Name = f.Name,
+                                           FolderId = p.Id,
+                                       };
 
-                    List<Storage> storages = conn.Query<Storage>("SELECT * FROM Storages WHERE IsDeleted <> 1 ORDER BY Date DESC").AsList();
+                    var _folders = foldersQuery.ToList();
+
+                    var storages = db.Storages
+                        .Where(x => !x.IsDeleted)
+                        .OrderBy(x => x.Inventory)
+                        .ToList(); ;
 
                     bool found = false;
 
-                    foreach (Storage storage in storages)
+                    foreach (var storage in storages)
                     {
                         found = false;
-                        foreach (Folder folder in _folders)
+                        foreach (var folder in _folders)
                         {
                             if (storage.FolderId == folder.Id)
                             {
@@ -54,7 +64,7 @@ namespace Devin.ViewModels
                         if (!found) Storages.Add(storage);
                     }
 
-                    foreach (Folder folder in _folders)
+                    foreach (var folder in _folders)
                     {
                         if (folder.FolderId == 0)
                         {

@@ -1,6 +1,7 @@
-﻿using Dapper;
-using Devin.Models;
+﻿using Devin.Models;
+using LinqToDB;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Devin.ViewModels
 {
@@ -14,67 +15,79 @@ namespace Devin.ViewModels
 
         public DevicesViewModel(string Search = "")
         {
-            using (var conn = Database.Connection())
+            using (var db = new DbDevin())
             {
                 if (!string.IsNullOrEmpty(Search))
                 {
-                    Devices = conn.Query<Device>($@"SELECT
-                        Devices.Inventory,
-                        Devices.Type,
-                        Devices.Id,
-                        Devices.Name,
-                        Devices.ComputerId,
-                        Devices.PublicName,
-                        Devices.Mol,
-                        WorkPlaces.Location,
-                        Devices.IsOff,
-                        Folders.Id         AS FolderId
-                    FROM Devices
-                    LEFT OUTER JOIN Folders    ON Folders.Id  = Devices.FolderId
-	                LEFT OUTER JOIN WorkPlaces ON WorkPlaces.Id = Devices.PlaceId
-                    WHERE Devices.IsDeleted = 0 AND (
-                           Devices.Inventory LIKE '%{Search}%'
-                        OR Devices.Type LIKE '%{Search}%'
-                        OR Devices.Name LIKE '%{Search}%'
-                        OR Devices.PublicName LIKE '%{Search}%'
-                        OR Devices.Description LIKE '%{Search}%'
-                        OR Devices.Mol LIKE '%{Search}%'
-                        OR Devices.SerialNumber LIKE '%{Search}%'
-                        OR Devices.PassportNumber LIKE '%{Search}%'
-                        OR Devices.Location LIKE '%{Search}%')
-                    ORDER BY Name, Type").AsList();
+                    var query = from d in db.Devices
+                                from f in db.Folders.Where(x => x.Id == d.FolderId).DefaultIfEmpty()
+                                from p in db.WorkPlaces.Where(x => x.Id == d.PlaceId).DefaultIfEmpty()
+                                where !d.IsDeleted && (
+                                    d.Inventory.Contains(Search)
+                                    || d.Type.Contains(Search)
+                                    || d.Name.Contains(Search)
+                                    || d.PublicName.Contains(Search)
+                                    || d.Description.Contains(Search)
+                                    || d.Mol.Contains(Search)
+                                    || d.SerialNumber.Contains(Search)
+                                    || d.PassportNumber.Contains(Search)
+                                    || d.Location.Contains(Search)
+                                )
+                                orderby d.Name, d.Type
+                                select new Device {
+                                    Id = d.Id,
+                                    Type = d.Type,
+                                    Inventory = d.Inventory,
+                                    Name = d.Name,
+                                    ComputerId = d.ComputerId,
+                                    PublicName = d.PublicName,
+                                    Mol = d.Mol,
+                                    Location = p.Location,
+                                    IsOff = d.IsOff,
+                                    FolderId = f.Id
+                                };
+
+                    Devices = query.ToList();
                 }
                 else
                 {
-                    List<Device> __devices = conn.Query<Device>(@"SELECT
-                        Devices.Inventory,
-                        Devices.Type,
-                        Devices.Id,
-                        Devices.Name,
-                        Devices.ComputerId,
-                        Devices.PublicName,
-                        Devices.Mol,
-                        WorkPlaces.Location,
-                        Devices.IsOff,
-                        Folders.Id         AS FolderId
-                    FROM Devices
-                    LEFT OUTER JOIN Folders    ON Folders.Id  = Devices.FolderId
-	                LEFT OUTER JOIN WorkPlaces ON WorkPlaces.Id = Devices.PlaceId
-                    WHERE (Devices.IsDeleted = 0) ORDER BY Name, Type").AsList();
-                    
-                    List<Folder> _folders = conn.Query<Folder>(@"SELECT 
-	                    Folders.Id,
-	                    CASE WHEN Parents.Id IS NULL THEN 0 ELSE Parents.Id END AS FolderId,
-	                    Folders.Name
-                    FROM Folders
-	                LEFT OUTER JOIN Folders AS Parents ON Folders.FolderId = Parents.Id
-                    WHERE Folders.Type = 'device'
-                    ORDER BY Folders.Name").AsList();
+                    var devicesQuery = from d in db.Devices
+                                       from f in db.Folders.Where(x => x.Id == d.FolderId).DefaultIfEmpty()
+                                       from p in db.WorkPlaces.Where(x => x.Id == d.PlaceId).DefaultIfEmpty()
+                                       where !d.IsDeleted
+                                       orderby d.Name, d.Type
+                                       select new Device
+                                       {
+                                           Id = d.Id,
+                                           Type = d.Type,
+                                           Inventory = d.Inventory,
+                                           Name = d.Name,
+                                           ComputerId = d.ComputerId,
+                                           PublicName = d.PublicName,
+                                           Mol = d.Mol,
+                                           Location = p.Location,
+                                           IsOff = d.IsOff,
+                                           FolderId = f.Id
+                                       };
 
-                    List<Device> _devices = new List<Device>();
-                    List<Computer> _computers = new List<Computer>();
+                    var foldersQuery = from f in db.Folders
+                                       from p in db.Folders.Where(x => x.Id == f.FolderId).DefaultIfEmpty(new Folder { Id = 0 })
+                                       where f.Type == "device"
+                                       orderby f.Name
+                                       select new Folder
+                                       {
+                                           Id = f.Id,
+                                           Name = f.Name,
+                                           FolderId = p.Id,
+                                       };
 
-                    foreach (Device d in __devices)
+                    var __devices = devicesQuery.ToList();
+                    var _folders = foldersQuery.ToList();
+
+                    var _devices = new List<Device>();
+                    var _computers = new List<Computer>();
+
+                    foreach (var d in __devices)
                     {
                         if (d.Type == "CMP")
                         {
@@ -96,10 +109,10 @@ namespace Devin.ViewModels
                             _devices.Add(d);
                         }
                     }
-                    
+
                     bool found = false;
 
-                    foreach (Device d in _devices)
+                    foreach (var d in _devices)
                     {
                         found = false;
                         foreach (Computer computer in _computers)
@@ -114,7 +127,7 @@ namespace Devin.ViewModels
 
                         if (!found)
                         {
-                            foreach (Folder folder in _folders)
+                            foreach (var folder in _folders)
                             {
                                 if (d.FolderId == folder.Id)
                                 {
@@ -130,8 +143,8 @@ namespace Devin.ViewModels
                             }
                         }
                     }
-                    
-                    foreach (Computer computer in _computers)
+
+                    foreach (var computer in _computers)
                     {
                         found = false;
                         foreach (Folder folder in _folders)
@@ -149,8 +162,8 @@ namespace Devin.ViewModels
                             Computers.Add(computer);
                         }
                     }
-                    
-                    foreach (Folder folder in _folders)
+
+                    foreach (var folder in _folders)
                     {
                         if (folder.FolderId == 0)
                         {

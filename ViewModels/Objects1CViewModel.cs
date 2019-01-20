@@ -1,5 +1,5 @@
-﻿using Dapper;
-using Devin.Models;
+﻿using Devin.Models;
+using LinqToDB;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -17,43 +17,73 @@ namespace Devin.ViewModels
 
         public Objects1CViewModel(string Search = "")
         {
-            using (var conn = Database.Connection())
+            using (var db = new DbDevin())
             {
-                List<Object1C> objects = conn.Query<Object1C>("SELECT * FROM Objects1C ORDER BY Account, Guild, Inventory").AsList();
-
                 if (!string.IsNullOrEmpty(Search))
                 {
-                    SearchResults = conn.Query<Object1C>($@"SELECT *
-                    FROM Objects1C
-                    WHERE Inventory   LIKE '%{Search}%'
-                       OR Description LIKE '%{Search}%'
-                       OR Guild       LIKE '%{Search}%'
-                       OR SubDivision LIKE '%{Search}%'
-                       OR Mol         LIKE '%{Search}%'
-                       OR Account     LIKE '%{Search}%'
-                       OR Location    LIKE '%{Search}%'
-                    ORDER BY Inventory").AsList();
+                    SearchResults = db.Objects1C
+                        .Where(x => x.Inventory.Contains(Search)
+                            || x.Description.Contains(Search)
+                            || x.Guild.Contains(Search)
+                            || x.SubDivision.Contains(Search)
+                            || x.Mol.Contains(Search)
+                            || x.Account.Contains(Search)
+                            || x.Location.Contains(Search)
+                        )
+                        .OrderBy(x => x.Inventory)
+                        .ToList();
                 }
                 else
                 {
+                    var objects = db.Objects1C
+                        .OrderBy(x => x.Account)
+                        .ThenBy(x => x.Guild)
+                        .ThenBy(x => x.Inventory)
+                        .ToList();
+
                     Hided = new Folder { Id = 0, Name = "Скрытые объекты" };
                     Materials = new Folder { Id = 1, Name = "Материалы" };
                     OS = new Folder { Id = 2, Name = "Основные средства" };
-                    
-                    Materials.SubFolders = conn.Query<Folder>("SELECT (100 + ROW_NUMBER() OVER(ORDER BY Account ASC)) AS Id, Account AS Name FROM Objects1C WHERE Account IS NOT NULL AND IsHide = 0 GROUP BY Account ORDER BY Account").AsList();
-                    OS.SubFolders = conn.Query<Folder>("SELECT (200 + ROW_NUMBER() OVER(ORDER BY Guild ASC)) AS Id, Guild AS Name FROM Objects1C WHERE Account IS NULL AND IsHide = 0 GROUP BY Guild ORDER BY Guild").AsList();
+
+                    var groups = db.Objects1C
+                        .Where(x => x.Account != null && !x.IsHide)
+                        .OrderBy(x => x.Account)
+                        .GroupBy(x => x.Account)
+                        .Select(x => x.Key)
+                        .ToArray();
+
+                    Materials.SubFolders = new List<Folder>();
+
+                    for (int i = 0; i < groups.Length; i++)
+                    {
+                        Materials.SubFolders.Add(new Folder { Id = 100 + i, Name = groups[i] });
+                    }
+
+                    groups = db.Objects1C
+                        .Where(x => x.Account == null && !x.IsHide)
+                        .OrderBy(x => x.Guild)
+                        .GroupBy(x => x.Guild)
+                        .Select(x => x.Key)
+                        .ToArray();
+
+                    OS.SubFolders = new List<Folder>();
+
+                    for (int i = 0; i < groups.Length; i++)
+                    {
+                        OS.SubFolders.Add(new Folder { Id = 200 + i, Name = groups[i] });
+                    }
 
                     foreach (var folder in Materials.SubFolders)
                     {
-                        folder.Objects = objects.Where(x => x.Account == folder.Name).AsList();
+                        folder.Objects = objects.Where(x => x.Account == folder.Name).ToList();
                     }
 
                     foreach (var folder in OS.SubFolders)
                     {
-                        folder.Objects = objects.Where(x => string.IsNullOrEmpty(x.Account) && (x.Guild == folder.Name)).AsList();
+                        folder.Objects = objects.Where(x => string.IsNullOrEmpty(x.Account) && (x.Guild == folder.Name)).ToList();
                     }
 
-                    Hided.Objects = objects.Where(x => x.IsHide).AsList();
+                    Hided.Objects = objects.Where(x => x.IsHide).ToList();
                 }
             }
         }
