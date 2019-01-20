@@ -1,8 +1,20 @@
 ﻿@model int
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
-    var logs = conn.Query(@"SELECT Repairs.Date, Repairs.Author, Storages.Name, Repairs.Number FROM Repairs INNER JOIN Storages ON Repairs.StorageId = Storages.Id WHERE Repairs.DeviceId = @Model ORDER BY Repairs.Date DESC", new { Model });
+    var query = from r in db.Repairs
+                from s in db.Storages.Where(x => x.Id == r.StorageId)
+                where r.DeviceId == Model
+                orderby r.Date descending
+                select new Repair
+                {
+                    Date = r.Date,
+                    Author = r.Author,
+                    Storage = new Storage { Name = s.Name },
+                    Number = r.Number
+                };
+
+    var logs = query.ToList();
 
     <button class="cart__button" onclick="Devices.Cart.backToAddons()">Вернуться</button>
 
@@ -21,7 +33,7 @@
                     <tr>
                         <td>@log.Date.ToString("dd.MM.yyyy HH:mm")</td>
                         <td>@log.Author</td>
-                        <td>@log.Name (@log.Number шт.)</td>
+                        <td>@(log.Storage?.Name) (@log.Number шт.)</td>
                     </tr>
                 }
             </tbody>

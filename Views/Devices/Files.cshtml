@@ -1,9 +1,9 @@
 ﻿@model string
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
     int id = int.Parse(Model.Replace("device", ""));
-    var raw = conn.Query<string>(@"SELECT Files FROM Devices WHERE Id = @id", new { id }).FirstOrDefault() ?? "";
+    var raw = db.Devices.Where(x => x.Id == id).Select(x => x.Files).FirstOrDefault() ?? "";
 
     string[] files = raw.Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
 

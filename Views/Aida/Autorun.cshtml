@@ -6,7 +6,7 @@
 {
     if (!int.TryParse(Model, out int Id))
     {
-        Id = db.Report.FirstOrDefault(x => x.RHost == Model)?.ID ?? 0;
+        Id = db.Report.Where(x => x.RHost == Model).OrderByDescending(x => x.RDateTime).Select(x => x.ID).FirstOrDefault();
     }
 
     var model = db.Item

@@ -1,7 +1,7 @@
 ﻿@model int
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
-    var writeoff = conn.Query<Writeoff>("SELECT * FROM Writeoffs WHERE Id = @Model", new { Model }).FirstOrDefault();
+    var writeoff = db.Writeoffs.FirstOrDefault(x => x.Id == Model);
 
     if (writeoff == null)
     {
@@ -45,7 +45,8 @@
                         <select class="cart__field" name="@nameof(writeoff.Type)">
                             <option value="0">не определен</option>
                             @{
-                                var types = conn.Query("SELECT Id, Name, Captions, DefaultData FROM TypesWriteoffs ORDER BY Name");
+                                var types = db._WriteoffTypes.Select(x => new { x.Id, x.Name, x.Captions, x.DefaultData }).OrderBy(x => x.Name).ToList();
+
                                 foreach (var row in types)
                                 {
                                     if (row.Id == writeoff.Type)
@@ -116,7 +117,8 @@
                         <select class="cart__field" name="@nameof(writeoff.FolderId)" v_select>
                             <option value="0">Отдельно</option>
                             @{
-                                var folders = conn.Query<Folder>("SELECT Id, Name FROM Folders WHERE Type = 'repair' ORDER BY Name");
+                                var folders = db.Folders.Where(x => x.Type == "repair").Select(x => new { x.Id, x.Name }).OrderBy(x => x.Name).ToList();
+
                                 foreach (var row in folders)
                                 {
                                     <option value="@row.Id" @(row.Id == writeoff.FolderId ? "selected" : "")>@row.Name</option>
@@ -133,7 +135,7 @@
                     </tr>
                     <tr>
                         <td>Последняя печать</td>
-                        <td>@writeoff.LastExcelDate</td>
+                        <td>@(writeoff.LastExcelDate?.ToString("dd.MM.yyyy") ?? "Дата не была сохранена")</td>
                     </tr>
                 }
             </table>

@@ -1,9 +1,10 @@
 ﻿@model string
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
     int Id = int.Parse(Model.Replace("device", ""));
-    var device = conn.Query<Device>(@"SELECT * FROM Devices WHERE Id = @Id", new { Id }).FirstOrDefault();
+    var device = db.Devices.Where(x => x.Id == Id).Select(x => new { x.Name, x.PublicName }).FirstOrDefault();
+
     if (device == null)
     {
          <div class="cart__header">
@@ -16,7 +17,7 @@
         return;
     }
 
-    var folders = conn.Query<Folder>("SELECT Id, Name FROM Folders WHERE Type = 'storage' ORDER BY Name");
+    var folders = db.Folders.Where(x => x.Type == "storage").OrderBy(x => x.Name).Select(x => new { x.Id, x.Name }).ToList();
 
     <div class="cart__header">
         <div>Создание ремонта: @device.Name @device.PublicName</div>

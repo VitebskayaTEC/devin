@@ -1,34 +1,44 @@
-﻿@{ 
+﻿*@{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewBag.Title = "DEVIN | Устройства | Сравнение с 1С";
 }
 
 @section styles {
     <style>
-        .compare_outline {border: 1px solid #333;}
+        .compare_outline {
+            border: 1px solid #333;
+        }
 
         .compare {
             width: 100%;
             background: #fff;
         }
 
-        .compare thead {
-            background: #ddd;
-            border-bottom: 2px solid #333;
+            .compare thead {
+                background: #ddd;
+                border-bottom: 2px solid #333;
+            }
+
+            .compare th,
+            .compare td {
+                font-size: 12px;
+                border: 1px solid #ccc;
+                text-align: left;
+                vertical-align: top;
+                padding: 3px 5px;
+            }
+
+            .compare tbody tr:hover td {
+                color: #1a6094;
+            }
+
+        th.right-border, td.right-border {
+            border-right-color: #333 !important;
         }
 
-        .compare th,
-        .compare td {
-            font-size: 12px;
-            border: 1px solid #ccc;
-            text-align: left;
-            vertical-align: top;
-            padding: 3px 5px;
+        th.bottom-border, td.bottom-border {
+            border-bottom-color: #333 !important;
         }
-
-        .compare tbody tr:hover td {color: #1a6094;}
-        th.right-border, td.right-border {border-right-color: #333 !important;}
-        th.bottom-border, td.bottom-border {border-bottom-color: #333 !important;}
     </style>
 }
 
@@ -40,7 +50,7 @@
             if (event.button === 1) window.open(url);
         }
         document.getElementById('inv').click();
-    </script>    
+    </script>
 }
 
 @section menu {
@@ -49,24 +59,7 @@
     </li>
 }
 
-@{ 
-    string devicesSQL = @"SELECT
-	    Devices.Inventory
-	    ,Devices.Type
-	    ,Devices.Id
-	    ,Devices.PublicName
-	    ,Devices.Mol
-	    ,Devices.Location
-	    ,CASE 
-		    WHEN Computers.Name IS NULL THEN 
-			    CASE WHEN Devices.Type = 'CMP' THEN Devices.Name ELSE NULL END
-		    ELSE Computers.Name
-	    END AS NetworkName
-    FROM Devices
-	    LEFT OUTER JOIN Devices AS Computers ON Devices.ComputerId = Computers.Id
-    WHERE (Devices.IsDeleted IS NULL OR Devices.IsDeleted <> 1) AND (Devices.IsOff <> 1)
-    ORDER BY Devices.Inventory";
-
+@{
     var types = new Dictionary<string, string>
     {
         { "CMP", "Компьютеры" },
@@ -77,21 +70,35 @@
         { "SCN", "Сканеры" },
         { "SWT", "Коммутаторы" },
         { "UPS", "ИБП" },
-		{ "ALL", "Устройство общего назначения" },
+        { "ALL", "Устройство общего назначения" },
     };
 
-    using (var conn = Database.Connection())
+    using (var db = new DbDevin())
     {
-        var devices = conn.Query<Device>(devicesSQL);
-        var objects1c = conn.Query<Object1C>(@"SELECT 
-	        Inventory
-            ,Description
-            ,Guild
-            ,SubDivision
-            ,Mol
-        FROM Objects1C
-        WHERE IsHide IS NULL OR IsHide = 0
-        ORDER BY Inventory");
+        var objects1c = db.Objects1C
+            .Where(x => !x.IsHide)
+            .Select(x => new { x.Inventory, x.Description, x.Guild, x.SubDivision, x.Mol })
+            .OrderBy(x => x.Inventory)
+            .ToList();
+
+        var query = from d in db.Devices
+                    from c in db.Devices.Where(x => x.Type == "CMP").Where(x => x.Id == d.ComputerId).DefaultIfEmpty()
+                    where !d.IsDeleted && !d.IsOff
+                    orderby d.Inventory
+                    select new Device
+                    {
+                        Id = d.Id,
+                        Inventory = d.Inventory,
+                        Type = d.Type ?? "",
+                        PublicName = d.PublicName,
+                        Mol = d.Mol,
+                        Location = d.Location,
+                        NetworkName = c.Name == null
+                          ? d.Type == "CMP" ? d.Name : null
+                          : c.Name
+                    };
+
+        var devices = query.ToList();
 
         <div class="compare_outline">
             <table class="compare items" id="data">
@@ -114,64 +121,64 @@
                     </tr>
                 </thead>
                 <tbody>
-                @foreach (var device in devices)
-                {
-                    bool found = false;
-                    <tr>
-                        <td class="right-border">@device.Inventory</td>
-                        <td><a href="##device@(device.Id)">@types[device.Type]</a></td>
-                        <td><a href="##device@(device.Id)">@device.PublicName</a></td>
-                        <td><a href="##device@(device.Id)">@device.Mol</a></td>
-                        <td><a href="##device@(device.Id)">@device.Location</a></td>
-                        <td class="right-border"><a href="##device@(device.Id)">@device.NetworkName</a></td>
-                        @foreach (var object1C in objects1c)
-                        {
-                            if (object1C.Inventory == device.Inventory)
+                    @foreach (var device in devices)
+                    {
+                        bool found = false;
+                        <tr>
+                            <td class="right-border">@device.Inventory</td>
+                            <td><a href="##device@(device.Id)">@(types.ContainsKey(device.Type) ? types[device.Type] : "Неизвестный тип")</a></td>
+                            <td><a href="##device@(device.Id)">@device.PublicName</a></td>
+                            <td><a href="##device@(device.Id)">@device.Mol</a></td>
+                            <td><a href="##device@(device.Id)">@device.Location</a></td>
+                            <td class="right-border"><a href="##device@(device.Id)">@device.NetworkName</a></td>
+                            @foreach (var object1C in objects1c)
                             {
-                                <td>@object1C.Description</td>
-                                <td>@object1C.Guild</td>
-                                <td>@object1C.SubDivision</td>
-                                <td>@object1C.Mol</td>
+                                if (object1C.Inventory == device.Inventory)
+                                {
+                                    <td>@object1C.Description</td>
+                                    <td>@object1C.Guild</td>
+                                    <td>@object1C.SubDivision</td>
+                                    <td>@object1C.Mol</td>
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            @if (!found)
+                            {
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            }
+                        </tr>
+                    }
+                    @foreach (var object1C in objects1c)
+                    {
+                        bool found = false;
+                        foreach (var device in devices)
+                        {
+                            if (device.Inventory == object1C.Inventory)
+                            {
                                 found = true;
                                 break;
                             }
                         }
-                        @if (!found)
+                        if (!found)
                         {
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        }
-                    </tr>
-                }
-                @foreach (var object1C in objects1c)
-                {
-                    bool found = false;
-                    foreach (var device in devices)
-                    {
-                        if (device.Inventory == object1C.Inventory)
-                        {
-                            found = true;
-                            break;
+                            <tr>
+                                <td class="right-border">@object1C.Inventory</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td class="right-border"></td>
+                                <td>@object1C.Description</td>
+                                <td>@object1C.Guild</td>
+                                <td>@object1C.SubDivision</td>
+                                <td>@object1C.Mol</td>
+                            </tr>
                         }
                     }
-                    if (!found)
-                    {
-                        <tr>
-                            <td class="right-border">@object1C.Inventory</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td class="right-border"></td>
-                            <td>@object1C.Description</td>
-                            <td>@object1C.Guild</td>
-                            <td>@object1C.SubDivision</td>
-                            <td>@object1C.Mol</td>
-                        </tr>
-                    }
-                }
                 </tbody>
             </table>
         </div>

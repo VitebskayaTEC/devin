@@ -5,41 +5,68 @@
         <i class="icon ic-clear icon_white icon_no-hover"></i>
     </div>
 </div>
+
 @if (string.IsNullOrEmpty(Model))
 {
     <div class="cart__body">Не получен список выбранных элементов</div>
     return;
 }
-@using (var conn = Database.Connection())
+
+@using (var db = new DbDevin())
 {
-    var storages = conn.Query<Storage>("SELECT Id, Inventory, Name, Nstorage FROM Storages WHERE Id IN (" + Model + ") AND Nstorage > 0 ORDER BY Inventory");
-    if (storages.Count() == 0)
+    var storagesId = Model.Split(',').Select(x => int.TryParse(x, out int i) ? i : 0).ToArray();
+
+    var storages = db.Storages
+        .Where(x => storagesId.Contains(x.Id) && x.Nstorage > 0)
+        .OrderBy(x => x.Inventory)
+        .Select(x => new Storage { Id = x.Id, Inventory = x.Inventory, Name = x.Name, Nstorage = x.Nstorage })
+        .ToList();
+    
+    if (storages.Count == 0)
     {
         <div class="cart__body">Нет элементов для оформления ремонтов</div>
         return;
     }
 
-    var computers = AutoMapper.MapDynamic<Computer>(conn.Query(@"SELECT
-        Computers.Id,
-        Computers.Name,
-        Computers.PublicName,
-        Devices.Id         AS Devices_Id,
-        Devices.Name       AS Devices_Name,
-        Devices.PublicName AS Devices_PublicName
-    FROM Devices
-    LEFT OUTER JOIN Devices AS Computers ON Devices.ComputerId = Computers.Id AND Computers.IsDeleted = 0
-    WHERE Devices.IsDeleted = 0 AND Devices.IsOff = 0 AND (
-        Devices.Type <> 'CMP' OR (
-            Devices.Type = 'CMP' AND Devices.Id NOT IN (SELECT ComputerId FROM Devices WHERE ComputerId IS NOT NULL AND ComputerId <> 0 GROUP BY ComputerId)
-        )
-    )
-    ORDER BY Computers.Name, Devices.Name"));
+    var computersRawQuery = from d in db.Devices
+                            from c in db.Devices.Where(x => x.Type == "CMP" && x.Id == d.ComputerId).DefaultIfEmpty()
+                            where !d.IsDeleted && !d.IsOff && (
+                               d.Type != "CMP" || (
+                                   d.Type == "CMP" && !db.Devices.Where(x => x.ComputerId != 0).Select(x => x.ComputerId).Contains(d.Id)
+                               )
+                            )
+                            orderby c.Name, d.Name
+                            select new {
+                                c = new { c.Id, c.Name, c.PublicName },
+                                d = new { d.Id, d.Name, d.PublicName }
+                            };
+
+    var computersRaw = computersRawQuery.ToList();
+
+    var computersQuery = from raw in computersRaw
+                         group raw by raw.c into g
+                         select new Computer
+                         {
+                             Id = g.Key.Id,
+                             Name = g.Key.Name,
+                             PublicName = g.Key.PublicName,
+                             Devices = g.Select(x => new Device { Id = x.d.Id, Name = x.d.Name, PublicName = x.d.PublicName }).AsList()
+                         };
+
+    var computers = computersQuery.ToList();
 
     string select = "<select class=\"computers cart__field\"><option value=\"0\">? Не выбрано</option>";
     foreach (var computer in computers)
     {
-        select += "<optgroup label=\"" + computer.Name + "\">"
-            + "<option value=\"" + computer.Id + "\">[компьютер] " + computer.Name + " | " + computer.PublicName + "</option>";
+        if (computer.Id == 0)
+        {
+            select += "<optgroup label=\"Устройства, расположенные отдельно\">";
+        }
+        else
+        {
+            select += "<optgroup label=\"" + computer.Name + "\">"
+                + "<option value=\"" + computer.Id + "\">[компьютер] " + computer.Name + " | " + computer.PublicName + "</option>";
+        }
 
         foreach (var device in computer.Devices)
         {

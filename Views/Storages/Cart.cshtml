@@ -1,7 +1,8 @@
 ﻿@model int
-@using (var conn = Database.Connection())
+
+@using (var db = new DbDevin())
 {
-    var storage = conn.Query<Storage>("SELECT * FROM Storages WHERE Id = @Model", new { Model }).FirstOrDefault();
+    var storage = db.Storages.FirstOrDefault(x => x.Id == Model);
 
     if (storage == null)
     {
@@ -50,8 +51,7 @@
                         <select class="cart__field" name="@nameof(storage.Type)">
                             <option value="">не определен</option>
                             @{
-                                sql = "SELECT Id, StorageText FROM TypesDevices";
-                                var types = conn.Query(sql);
+                                var types = db._DeviceTypes.Select(x => new { x.Id, x.StorageText }).ToList();
                                 foreach (var row in types)
                                 {
                                     <option value="@row.Id" @(row.Id == storage.Type ? "selected" : "")>@row.StorageText</option>
@@ -65,11 +65,10 @@
                     <td>
                         <select class="cart__field" name="@nameof(storage.Account)">
                             @{
-                                sql = "SELECT Account FROM Storages GROUP BY Account ORDER BY Account";
-                                var accounts = conn.Query(sql);
-                                foreach (var row in accounts)
+                                var accounts = db.Storages.Select(x => x.Account).GroupBy(x => x).Select(x => x.Key).ToList();
+                                foreach (var account in accounts)
                                 {
-                                    <option value="@row.Account" @(row.Account == storage.Account ? "selected" : "")>@row.Account</option>
+                                    <option value="@account" @(account == storage.Account ? "selected" : "")>@account</option>
                                 }
                             }
                         </select>
@@ -107,8 +106,7 @@
                             <select class="cart__field" name="@nameof(storage.CartridgeId)">
                                 <option value="0">не сопоставлен</option>
                                 @{
-                                    sql = "SELECT Id, Name FROM Cartridges ORDER BY Name";
-                                    var cartridges = conn.Query<Cartridge>(sql);
+                                    var cartridges = db.Cartridges.Select(x => new { x.Id, x.Name }).OrderBy(x => x.Name).ToList();
                                     foreach (var row in cartridges)
                                     {
                                         <option value="@row.Id" @(row.Id == storage.CartridgeId ? "selected" : "")>@row.Name</option>
@@ -124,8 +122,7 @@
                         <select class="cart__field" name="@nameof(storage.FolderId)" v_select>
                             <option value="0">@(storage.IsOff() ? "Списанные позиции" : "Не распределенные позиции")</option>
                             @{
-                                sql = "SELECT Id, Name FROM Folders WHERE Type = 'storage' ORDER BY Name";
-                                var folders = conn.Query<Folder>(sql);
+                                var folders = db.Folders.Where(x => x.Type == "storage").Select(x => new { x.Id, x.Name }).OrderBy(x => x.Name).ToList();
                                 foreach (var row in folders)
                                 {
                                     <option value="@row.Id" @(row.Id == storage.FolderId ? "selected" : "")>@row.Name</option>

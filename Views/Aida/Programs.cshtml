@@ -2,35 +2,49 @@
 
 <button class="cart__button" onclick="Devices.Cart.backToAddons()">Вернуться</button>
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
     if (!int.TryParse(Model, out int Id))
     {
-        Id = conn.Query<int>("SELECT ID FROM Report WHERE RHost = @Model ORDER BY RDateTime DESC", new { Model }).FirstOrDefault();
+        Id = db.Report.Where(x => x.RHost == Model).OrderByDescending(x => x.RDateTime).Select(x => x.ID).FirstOrDefault();
     }
 
-    var about = conn.Query(@"SELECT IField, IValue FROM Item
-    WHERE ReportId = @Id
-        AND IPage = 'Операционная система' 
-        AND ((IGroup = 'Свойства операционной системы' AND IField = 'Название ОС')
-            OR (IGroup = 'Свойства операционной системы' AND IField = 'Версия ОС')
-            OR (IGroup = 'Лицензионная информация' AND IField = 'Ключ продукта'))", new { Id });
-
-    if (about.Count() == 0)
+    if (Id == 0)
     {
         <div>Компьютер не найден в базе Aida</div>
         return;
     }
 
-    var model = conn.Query<string>(@"SELECT IDevice FROM Item 
-    WHERE ReportId = @Id
-        AND IPage = 'Установленные программы'
-        AND IDevice NOT LIKE '%Microsoft Visual C++%'
-        AND IDevice NOT LIKE '%.NET F%'
-        AND IDevice NOT LIKE '%vs_%'
-        AND IDevice NOT LIKE '%Update%'
-        AND IDevice NOT LIKE '%icecap_%'
-    GROUP BY IDevice", new { Id });
+    var about = db.Item
+        .Where(x => x.ReportID == Id && x.IPage == "Операционная система")
+        .Select(x => new Item { IGroup = x.IGroup, IField = x.IField, IValue = x.IValue })
+        .ToList();
+
+    about = about
+        .Where(x => (x.IGroup == "Свойства операционной системы" && x.IField == "Название ОС")
+            || (x.IGroup == "Свойства операционной системы" && x.IField == "Версия ОС")
+            || (x.IGroup == "Лицензионная информация" && x.IField == "Ключ продукта"))
+        .ToList();
+
+    if (about.Count == 0)
+    {
+        <div>Компьютер не найден в базе Aida</div>
+        return;
+    }
+
+    var programs = db.Item
+        .Where(x => x.ReportID == Id && x.IPage == "Установленные программы")
+        .GroupBy(x => x.IDevice)
+        .Select(x => x.Key)
+        .ToList();
+
+    programs = programs
+        .Where(x => !x.Contains("Microsoft Visual C++")
+            && !x.Contains(".NET F")
+            && !x.Contains("vs_")
+            && !x.Contains("Update")
+            && !x.Contains("icecap_"))
+        .ToList();
 
     <div class="cartHistory">
         <b>Операционная система</b>
@@ -45,7 +59,7 @@
         </table>
         <b>Установленное ПО</b>
         <table class="cartHistory__table">
-            @foreach (string row in model)
+            @foreach (string row in programs)
             {
                 <tr><td>@row</td></tr>
             }

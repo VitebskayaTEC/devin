@@ -28,24 +28,31 @@
 <div>
     @if (!string.IsNullOrEmpty(inventory))
     {
-        using (var conn = Database.Connection())
+        using (var db = new DbDevin())
         {
-            var devices = AutoMapper.MapDynamic<Device>(conn.Query(@"SELECT
-                    Devices.Id,
-                    Devices.Inventory,
-                    Devices.Description,
-                    Objects1C.Description AS Description1C,
-                    Devices.SerialNumber,
-                    Devices.PublicName,
-                    CASE WHEN Objects1C.Mol IS NULL THEN Devices.Mol ELSE Objects1C.Mol END AS Mol,
-                    Devices.DateInstall,
-                    WorkPlaces.Id       AS Place_Id,
-                    WorkPlaces.Location AS Place_Location
-                FROM Devices
-                LEFT OUTER JOIN Objects1C ON Objects1C.Inventory = Devices.Inventory
-                LEFT OUTER JOIN WorkPlaces ON WorkPlaces.Id = Devices.PlaceId
-                WHERE Devices.Inventory = @Inventory AND Devices.IsDeleted <> 1 AND Devices.IsOff <> 1
-                ORDER BY Devices.Inventory, Description1C", new { Inventory = inventory }));
+            var query = from d in db.Devices
+                        from o in db.Objects1C.Where(x => x.Inventory == d.Inventory).DefaultIfEmpty()
+                        from p in db.WorkPlaces.Where(x => x.Id == d.PlaceId).DefaultIfEmpty()
+                        where d.Inventory == inventory && !d.IsDeleted && !d.IsOff
+                        orderby d.Inventory, o.Description
+                        select new Device
+                        {
+                            Id = d.Id,
+                            Inventory = d.Inventory,
+                            Description = d.Description,
+                            SerialNumber = d.SerialNumber,
+                            PublicName = d.PublicName,
+                            DateInstall = d.DateInstall,
+                            Mol = o.Mol == null ? d.Mol : o.Mol,
+                            Place = new WorkPlace
+                            {
+                                Id = p.Id,
+                                Location = p.Location
+                            }
+                        };
+
+            var devices = query.ToList();
+
 
             var csv = new StringBuilder();
             csv.AppendLine("Инв. номер;Наименование;Заводской номер;Состав;М.О.Л.;Дата ввода в экспл.;Рабочее место");
@@ -84,12 +91,16 @@
                                 <td><a href="@link" class="view__link">@(device.Place?.Location ?? "Рабочее место не задано")</a></td>
                             </tr>
 
-                            csv.AppendLine($"{device.Inventory};{(device.Description1C ?? device.Description).Trim()};{(device.SerialNumber ?? "")};{device.PublicName};{device.Mol};{device.DateInstall.ToString("dd.MM.yyyy")};{(device.Place?.Location ?? "Рабочее место не задано")}");
+                            csv.AppendLine($"{device.Inventory};{(device.Description1C ?? device.Description ?? "").Trim()};{(device.SerialNumber ?? "")};{device.PublicName ?? ""};{device.Mol ?? ""};{device.DateInstall.ToString("dd.MM.yyyy")};{(device.Place?.Location ?? "Рабочее место не задано")}");
                         }
                     </tbody>
                 </table>
 
-                File.WriteAllText(@"\\web\c$\DevinFiles\inventory\" + inventory + ".csv", csv.ToString(), Encoding.GetEncoding(1251));
+                try
+                {
+                    File.WriteAllText(@"\\web\c$\DevinFiles\inventory\" + inventory + ".csv", csv.ToString(), Encoding.GetEncoding(1251));
+                }
+                catch (Exception) { }
             }
             else
             {

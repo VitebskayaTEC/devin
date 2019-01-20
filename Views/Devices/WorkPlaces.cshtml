@@ -68,10 +68,10 @@
     </script>
 }
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
-    var guilds = conn.Query<string>("SELECT Guild FROM Objects1C GROUP BY Guild ORDER BY Guild");
-    var places = conn.Query<WorkPlace>("SELECT * FROM WorkPlaces ORDER BY [Location]");
+    var guilds = db.Objects1C.GroupBy(x => x.Guild).Select(x => x.Key).OrderBy(x => x).ToList();
+    var places = db.WorkPlaces.OrderBy(x => x.Location).ToList();
 
     <button class="cart__button" onclick="WorkPlaces.Create()">Добавить рабочее место</button>
     <br /><br />

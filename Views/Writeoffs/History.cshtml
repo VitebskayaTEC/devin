@@ -1,8 +1,8 @@
 ﻿@model string
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
-    var logs = conn.Query<Activity>(@"SELECT * FROM Activity WHERE Source = 'writeoffs' AND Id = @Id ORDER BY Date DESC", new { Id = Model });
+    var logs = db.Activity.Where(x => x.Source == "writeoffs" && x.Id == Model).OrderByDescending(x => x.Date).ToList();
 
     <div class="cartHistory">
         <table class="cartHistory__table">

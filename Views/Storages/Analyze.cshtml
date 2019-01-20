@@ -47,28 +47,30 @@
     </script>
 }
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
     int minBaseValue = 23;
 
-    string sql = @"SELECT
-        Cartridges.Id                  AS Cartridge,
-        Cartridges.Type                AS [Type],
-        Cartridges.Name                AS Caption,
-        Storages.Nstorage              AS [Count],
-        Storages.Account               AS Account,
-        Storages.Cost                  AS Price,
-        CAST(Cartridges.Cost as float) AS DefPrice,
-        Storages.CartridgeId           AS ID,
-        Cartridges.Type                AS AltType,
-        Cartridges.Color               AS Color
-    FROM Cartridges
-    INNER JOIN Storages ON Cartridges.Id = Storages.CartridgeId
-    ORDER BY Cartridges.Type, Cartridges.Name";
+    var cartridgesQuery = from c in db.Cartridges
+                          from s in db.Storages.Where(x => x.CartridgeId == c.Id).DefaultIfEmpty()
+                          orderby c.Type, c.Name
+                          select new
+                          {
+                              Cartridge = c.Id,
+                              Type = c.Type,
+                              Caption = c.Name,
+                              DefPrice = c.Cost,
+                              Count = s.Nstorage,
+                              Account = s.Account,
+                              Price = s.Cost,
+                              ID = s.CartridgeId,
+                              AltType = c.Type,
+                              Color = c.Color
+                          };
+
+    var rs = cartridgesQuery.ToList();
 
     var cartridge = new Cartridge { Id = 0 };
-
-    var rs = conn.Query(sql).AsList();
 
     foreach (var row in rs)
     {
@@ -101,36 +103,36 @@
                 InStorage = row.Count,
                 Count = 0,
                 Type = row.Type,
-                Color = row.Color
+                Color = row.Color,
+                DefPrice = row.DefPrice,
+                Cost = row.DefPrice == 0F ? cost : row.DefPrice
             });
-
-            cartridge.DefPrice = Convert.ToSingle(row.DefPrice);
-
-            cartridge.Cost = Convert.ToSingle(row.DefPrice == 0 ? cost : (row.DefPrice ?? 0));
         }
     }
 
-    sql = @"SELECT
-        Devices.Id           AS ID_P,
-        Storages.CartridgeId AS ID_C,
-        Computers.Name       AS Computer,
-        Devices.Description  AS Device,
-        Printers.Name        AS Printer,
-        Repairs.Date         AS Date,
-        Repairs.Number       AS N,
-        Cartridges.Name      AS Cartridge,
-        Storages.Cost        AS Price,
-        Storages.Account     AS Account
-    FROM Repairs
-        INNER JOIN Devices              ON Repairs.DeviceId     = Devices.Id
-        INNER JOIN Devices AS Computers ON Devices.ComputerId   = Computers.Id
-        INNER JOIN Storages             ON Repairs.StorageId    = Storages.Id
-        INNER JOIN Printers             ON Devices.PrinterId    = Printers.Id
-        INNER JOIN Cartridges           ON Storages.CartridgeId = Cartridges.Id
-    WHERE Devices.Type = 'PRN' AND Repairs.IsVirtual = 0
-    ORDER BY ID_P, ID_C, Date";
+    var repairsQuery = from r in db.Repairs
+                       from d in db.Devices.Where(x => x.Id == r.DeviceId)
+                       from C in db.Devices.Where(x => x.Type == "CMP" && d.ComputerId == x.Id)
+                       from s in db.Storages.Where(x => x.Id == r.StorageId)
+                       from p in db.Printers.Where(x => x.Id == d.PrinterId)
+                       from c in db.Cartridges.Where(x => x.Id == s.CartridgeId)
+                       where d.Type == "PRN" && !r.IsVirtual
+                       orderby d.Id, s.CartridgeId, r.Date
+                       select new
+                       {
+                           ID_P = d.Id,
+                           ID_C = s.CartridgeId,
+                           Computer = C.Name,
+                           Device = d.PublicName,
+                           Printer = p.Name,
+                           Date = r.Date,
+                           N = r.Number,
+                           Cartridge = c.Name,
+                           Price = s.Cost,
+                           Account = s.Account
+                       };
 
-    var repairs = conn.Query(sql).AsList();
+    var repairs = repairsQuery.ToList();
 
     var buffer = new List<dynamic>();
     int activePrinter = 0;

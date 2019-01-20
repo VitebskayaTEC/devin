@@ -2,18 +2,28 @@
 
 <button class="cart__button" onclick="Devices.Cart.backToAddons()">Вернуться</button>
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
     if (!int.TryParse(Model, out int Id))
     {
-        Id = conn.Query<int>("SELECT ID FROM Report WHERE RHost = @Model ORDER BY RDateTime DESC", new { Model }).FirstOrDefault();
+        Id = db.Report.Where(x => x.RHost == Model).Select(x => x.ID).FirstOrDefault();
     }
 
-    var model = conn.Query(@"SELECT 
-        IPage, IDevice, IGroup, IField, IValue
-    FROM Item
-    WHERE (ReportID = @Id) AND (IPage = 'Монитор' OR IPage = 'Принтеры')
-    ORDER BY IPage, IDevice, IGroup, IField, IValue", new { Id });
+    if (Id == 0)
+    {
+        <div>Компьютер не найден в базе Aida</div>
+        return;
+    }
+
+    var model = db.Item
+        .Where(x => x.ReportID == Id && new string[] { "Монитор", "Принтеры" }.Contains(x.IPage))
+        .Select(x => new Item { IPage = x.IPage, IDevice = x.IDevice, IGroup = x.IGroup, IField = x.IField, IValue = x.IValue })
+        .OrderBy(x => x.IPage)
+        .ThenBy(x => x.IDevice)
+        .ThenBy(x => x.IGroup)
+        .ThenBy(x => x.IField)
+        .ThenBy(x => x.IValue)
+        .ToList();
 
     if (model.Count() == 0)
     {
@@ -40,17 +50,18 @@
                     }
                     else
                     {
-                        if (device != "") { @Html.Raw("</div></td></tr>") }
+                        if (device != "")
+                        { @Html.Raw("</div></td></tr>") }
 
-                        device = row.IDevice;
-                        @Html.Raw("<tr>" +
-                           "<td>" + device + "</td>" +
-                           "<td>" +
-                           "<a onclick=\"this.parentNode.querySelector('.cart-info-block').classList.toggle('hide')\">Показать/скрыть</a>" +
-                           "<div class='cart-info-block hide'>" +
-                           "<div><b>" + row.IField + "</b>: " + row.IValue + "</div>")
-                    }
+                    device = row.IDevice;
+                    @Html.Raw("<tr>" +
+                       "<td>" + device + "</td>" +
+                       "<td>" +
+                       "<a onclick=\"this.parentNode.querySelector('.cart-info-block').classList.toggle('hide')\">Показать/скрыть</a>" +
+                       "<div class='cart-info-block hide'>" +
+                       "<div><b>" + row.IField + "</b>: " + row.IValue + "</div>")
                 }
+            }
             </tbody>
         </table>
     </div>

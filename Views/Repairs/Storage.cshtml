@@ -1,8 +1,11 @@
 ﻿@model int
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
-    var storage = conn.Query<Storage>(@"SELECT * FROM Storages WHERE Id = @Model", new { Model }).FirstOrDefault();
+    var storage = db.Storages
+        .Where(x => x.Id == Model)
+        .FirstOrDefault();
+
     if (storage == null)
     {
         <div class="cart__body">Позиция не найдено</div>
@@ -34,8 +37,11 @@
                 </tr>
                 @if (storage.Type == "PRN")
                 {
-                    storage.Cartridge = conn.Query<Cartridge>("SELECT * FROM Cartridges WHERE Id = @CartridgeId", new { storage.CartridgeId }).FirstOrDefault();
-                    if (storage.Cartridge == null)
+                    var cartridge = db.Cartridges
+                        .Where(x => x.Id == storage.CartridgeId)
+                        .FirstOrDefault();
+
+                    if (cartridge == null)
                     {
                         <tr>
                             <td>Типовой картридж</td>
@@ -46,7 +52,7 @@
                     {
                         <tr>
                             <td>Типовой картридж</td>
-                            <td>@storage.Cartridge.Name</td>
+                            <td>@cartridge.Name</td>
                         </tr>
                     }
                 }

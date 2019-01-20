@@ -11,11 +11,22 @@
     </style>
 }
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
-    var objects = conn.Query<Object1C>("SELECT * FROM Objects1C WHERE IsChecked = 0 ORDER BY Inventory");
-    var devices = conn.Query<Device>("SELECT Id, Name, PublicName, Inventory FROM Devices WHERE IsDeleted = 0");
-    var storages = conn.Query<Storage>("SELECT Id, Name, Inventory FROM Storages WHERE IsDeleted = 0");
+    var objects = db.Objects1C
+        .Where(x => !x.IsChecked)
+        .OrderBy(x => x.Inventory)
+        .ToList();
+
+    var devices = db.Devices
+        .Where(x => !x.IsDeleted)
+        .Select(x => new Device { Id = x.Id, Name = x.Name, PublicName = x.PublicName, Inventory = x.Inventory })
+        .ToList();
+
+    var storages = db.Storages
+        .Where(x => !x.IsDeleted)
+        .Select(x => new Storage { Id = x.Id, Name = x.Name, Inventory = x.Inventory })
+        .ToList();
 
     <div class="unit unit-nohover">
         <table class="caption">

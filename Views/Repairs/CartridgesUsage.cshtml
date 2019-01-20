@@ -2,7 +2,7 @@
     ViewBag.Title = "DEVIN | Годовой отчет по заменам картриджей";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-    DateTime date = DateTime.TryParse("01.01." + (Request.QueryString.Get("year") ?? ""), out DateTime d) ? d : DateTime.Now;
+    DateTime date = DateTime.TryParse("01.01." + (Request.QueryString.Get("year") ?? ""), out DateTime _date) ? _date : DateTime.Now;
 }
 
 <form action="@Url.Action("cartridgesUsage", "repairs")" method="get" class="filter">
@@ -18,24 +18,37 @@
 </form>
 <br />
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
-    var cartridges = AutoMapper.MapDynamic<Cartridge>(conn.Query(@"SELECT
-		Cartridges.Id,
-        Cartridges.Name,
-		Repairs.Id     AS Repairs_Id,
-        Repairs.Date   AS Repairs_Date,
-        Repairs.Number AS Repairs_Number
-    FROM Repairs
-    LEFT OUTER JOIN Storages
-		LEFT OUTER JOIN Cartridges ON Cartridges.Id = Storages.CartridgeId
-    ON Storages.Id = Repairs.StorageId
-    WHERE Storages.Type = 'PRN' AND Year(Repairs.Date) = @Year
-    ORDER BY Cartridges.Name", new { date.Year }));
+    var cartridgesRawQuery = from r in db.Repairs
+                             from s in db.Storages.Where(x => x.Id == r.StorageId).DefaultIfEmpty()
+                             from c in db.Cartridges.Where(x => x.Id == s.CartridgeId).DefaultIfEmpty()
+                             where s.Type == "PRN" && r.Date.Year == date.Year
+                             orderby c.Name
+                             select new {
+                                 Id = c.Id,
+                                 Name = c.Name,
+                                 Repairs_Id = r.Id,
+                                 Repairs_Date = r.Date,
+                                 Repairs_Number = r.Number
+                             };
+
+    var cartridgesRaw = cartridgesRawQuery.ToList();
+
+    var cartridgesQuery = from r in cartridgesRaw
+                  group r by new { r.Id, r.Name } into c
+                  select new Cartridge
+                  {
+                      Id = c.Key.Id,
+                      Name = c.Key.Name,
+                      Repairs = c.Select(x => new Repair { Id = x.Repairs_Id, Date = x.Repairs_Date, Number = x.Repairs_Number })
+                  };
+    
+    var cartridges = cartridgesQuery.ToList();
 
     if (cartridges.Count() > 0)
     {
-        int[] countsByMonths = new int[12] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        int[] countsByMonths = new [] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
         <table class="stats">
 			<thead>
@@ -90,21 +103,38 @@
         <br />
     }
 
-    var devices = AutoMapper.MapDynamic<Device>(conn.Query(@"SELECT
-	    Devices.Id,
-	    Devices.Description,
-	    Devices.Location,
-	    Repairs.Id     AS Repairs_Id,
-	    Repairs.Date   AS Repairs_Date,
-	    Repairs.Number AS Repairs_Number
-    FROM Repairs
-    LEFT OUTER JOIN Devices ON Devices.Id = Repairs.DeviceId
-    WHERE Devices.Type = 'PRN' AND Year(Repairs.Date) = @Year
-    ORDER BY Devices.Description", new { date.Year }));
+
+    var devicesRawQuery = from r in db.Repairs
+                          from d in db.Devices.Where(x => x.Id == r.DeviceId).DefaultIfEmpty()
+                          where d.Type == "PRN" && r.Date.Year == date.Year
+                          orderby d.PublicName
+                          select new
+                          {
+                              Id = d.Id,
+                              PublicName = d.PublicName,
+                              Location = d.Location,
+                              Repairs_Id = r.Id,
+                              Repairs_Date = r.Date,
+                              Repairs_Number = r.Number
+                          };
+
+    var devicesRaw = devicesRawQuery.ToList();
+
+    var devicesQuery = from r in devicesRaw
+                       group r by new { r.Id, r.PublicName, r.Location } into g
+                       select new Device
+                       {
+                           Id = g.Key.Id,
+                           PublicName = g.Key.PublicName,
+                           Location = g.Key.Location,
+                           Repairs = g.Select(x => new Repair { Id = x.Repairs_Id, Date = x.Repairs_Date, Number = x.Repairs_Number })
+                       };
+
+    var devices = devicesQuery.ToList();
 
     if (devices.Count() > 0)
     {
-        int[] countsByMonths = new int[12] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        int[] countsByMonths = new [] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
         <table class="stats">
             <thead>
@@ -135,8 +165,8 @@
 
                     <tr>
                         <td>
-                            <a href="~/devices/##@(device.Id)">
-                                @device.Description
+                            <a href="~/devices/##device@(device.Id)">
+                                @device.PublicName
                                 <br />
                                 <small>@device.Location</small>
                             </a>

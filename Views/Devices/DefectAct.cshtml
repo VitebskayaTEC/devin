@@ -1,21 +1,25 @@
 ﻿@model int
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
-    var data = conn.Query(@"SELECT
-        Devices.Type,
-        Objects1C.Description AS Description1C,
-        Objects1C.Mol         AS Mol1C,
-        Devices.Description    AS Description,
-        Devices.Inventory,
-        Devices.Name,
-        Computers.Name        AS ComputerName,
-        Devices.DateInstall,
-        Devices.Mol
-    FROM Devices
-    LEFT OUTER JOIN Objects1C ON Devices.Inventory = Objects1C.Inventory
-    LEFT OUTER JOIN Devices AS Computers ON Devices.ComputerId = Computers.Id
-    WHERE Devices.Id = @Model", new { Model }).FirstOrDefault();
+    var query = from d in db.Devices
+                from c in db.Devices.Where(x => x.Type == "CMP").Where(x => x.Id == d.ComputerId).DefaultIfEmpty()
+                from o in db.Objects1C.Where(x => x.Inventory == d.Inventory).DefaultIfEmpty()
+                where d.Id == Model
+                select new Device
+                {
+                    Type = d.Type,
+                    Description1C = o.Description,
+                    Object1C = new Object1C { Description = o.Description, Mol = o.Mol },
+                    Description = d.Description,
+                    Inventory = d.Inventory,
+                    Name = d.Name,
+                    DateInstall = d.DateInstall,
+                    Mol = d.Mol,
+                    NetworkName = c.Name
+                };
+
+    var data = query.FirstOrDefault();
 
     if (data == null)
     {
@@ -40,7 +44,7 @@
                     </tr>
                     <tr>
                         <td>Наименование по 1С</td>
-                        <td><textarea class="cart__field" name="Description">@(string.IsNullOrEmpty(data.Description1C) ? data.Description : data.Description1C)</textarea></td>
+                        <td><textarea class="cart__field" name="Description">@(string.IsNullOrEmpty(data.Object1C?.Description) ? data.Description : data.Object1C?.Description)</textarea></td>
                     </tr>
                     <tr>
                         <td>Инвентарный номер</td>
@@ -48,7 +52,7 @@
                     </tr>
                     <tr>
                         @if (data.Type == "CMP")
-                        {
+    {
                             <td>Сетевое имя</td>
                         }
                         else
@@ -63,7 +67,7 @@
                     </tr>
                     <tr>
                         <td>М.О.Л. (фамилия и.о.)</td>
-                        <td><input class="cart__field" name="Mol" value="@(string.IsNullOrEmpty(data.Mol1C) ? data.Mol : data.Mol1C)" /></td>
+                        <td><input class="cart__field" name="Mol" value="@(string.IsNullOrEmpty(data.Object1C?.Mol) ? data.Mol : data.Object1C?.Mol)" /></td>
                     </tr>
                     <tr>
                         <td>Время наработки</td>
@@ -87,7 +91,7 @@
                         <td width="250px">
                             <select class="cart__field" id="defect_position" onchange="Devices.DefectAct.check(this)">
                                 @if (data.Type == "CMP")
-                                {
+{
                                     <option value="motherboard">Материнская плата</option>
                                     <option value="cpu">Процессор</option>
                                     <option value="power">Блок питания</option>

@@ -1,16 +1,28 @@
 ﻿@model int
-@using (var conn = Database.Connection())
+
+@using (var db = new DbDevin())
 {
-    var computer = conn.Query<AidaComputer>("SELECT * FROM Report WHERE ID = @Model", new { Model }).FirstOrDefault();
-
-    <div class="cart__header">
-        <div>@computer.RHost</div>
-        <div class="cart__closeButton" title="Закрыть карточку" onclick="Cart.close()">
-            <i class="icon ic-clear icon_white icon_no-hover"></i>
+    var rhost = db.Report.Where(x => x.ID == Model).Select(x => x.RHost).FirstOrDefault();
+    if (rhost == null)
+    {
+        <div class="cart__header">
+            <div>Компьютер с таким идентификатором не найден в базе данных</div>
+            <div class="cart__closeButton" title="Закрыть карточку" onclick="Cart.close()">
+                <i class="icon ic-clear icon_white icon_no-hover"></i>
+            </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="cart__header">
+            <div>@rhost</div>
+            <div class="cart__closeButton" title="Закрыть карточку" onclick="Cart.close()">
+                <i class="icon ic-clear icon_white icon_no-hover"></i>
+            </div>
+        </div>
 
-    @Html.Action("Data", "Aida", new { Id = computer.RHost }); ;
+        @Html.Action("Data", "Aida", new { Id = rhost });
+    }
 }
 <div class="cart__menu">
     <button class="cart__button" onclick="Aida.del()">Удалить из базы</button>

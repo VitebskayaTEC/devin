@@ -147,10 +147,12 @@
                 <tbody>
                     @while (reader.Read())
                     {
-                        <tr>
-                            @for (int i = 0; i < len; i++)
+                    <tr>
+                        @for (int i = 0; i < len; i++)
+                        {
+                            if (reader.GetDataTypeName(i) == "datetime")
                             {
-                                if (reader.GetDataTypeName(i) == "datetime")
+                                try
                                 {
                                     DateTime d = (DateTime)reader[i];
                                     if (d.Year <= 1990)
@@ -162,12 +164,17 @@
                                         <td>@d.ToString("yyyy.MM.dd")</td>
                                     }
                                 }
-                                else
+                                catch (Exception)
                                 {
-                                    <td>@reader[i]</td>
+                                    <td></td>
                                 }
                             }
-                        </tr>
+                            else
+                            {
+                                <td>@reader[i]</td>
+                            }
+                        }
+                    </tr>
                     }
                 </tbody>
             }

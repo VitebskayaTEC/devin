@@ -1,9 +1,9 @@
 ﻿@model string
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
     int Id = int.Parse(Model.Replace("repair", ""));
-    var repair = conn.Query<Repair>(@"SELECT * FROM Repairs WHERE Id = @Id", new { Id }).FirstOrDefault();
+    var repair = db.Repairs.FirstOrDefault(x => x.Id == Id);
 
     if (repair == null)
     {
@@ -40,7 +40,12 @@
                     <td>
                         <select class="cart__field" name="@nameof(repair.DeviceId)" v_select>
                             @{ 
-                                var devices = conn.Query<Device>("SELECT Id, Type, Name, Description FROM Devices ORDER BY Type, Name");
+                                var devices = db.Devices
+                                    .OrderBy(x => x.Type)
+                                    .ThenBy(x => x.Name)
+                                    .Select(x => new { x.Id, x.Name, x.Description })
+                                    .ToList();
+
                                 foreach (var device in devices)
                                 {
                                     <option value="@device.Id" @(device.Id == repair.DeviceId ? "selected" : "")>@device.Name @device.Description</option>
@@ -55,7 +60,11 @@
                     <td>
                         <select class="cart__field" name="@nameof(repair.StorageId)" v_select>
                             @{ 
-                                var storages = conn.Query<Storage>("SELECT Id, Name FROM Storages ORDER BY Inventory");
+                                var storages = db.Storages
+                                    .OrderBy(x => x.Inventory)
+                                    .Select(x => new { x.Id, x.Name })
+                                    .ToList();
+                                
                                 foreach (var storage in storages)
                                 {
                                     <option value="@storage.Id" @(storage.Id == repair.StorageId ? "selected" : "")>@storage.Name</option>
@@ -106,12 +115,22 @@
                         <select class="cart__field" name="Destination">
                             <option value="0">Не распределен</option>
                             @{
-                                var writeoffs = conn.Query<Writeoff>("SELECT Id, Name FROM Writeoffs ORDER BY Date DESC");
+                                var writeoffs = db.Writeoffs
+                                    .OrderByDescending(x => x.Date)
+                                    .Select(x => new { x.Id, x.Name })
+                                    .ToList();
+
                                 foreach (var writeoff in writeoffs)
                                 {
                                     <option value="off@(writeoff.Id)" @(writeoff.Id == repair.WriteoffId ? "selected" : "")>[списание] @writeoff.Name</option>
                                 }
-                                var folders = conn.Query<Folder>("SELECT Id, Name FROM Folders WHERE Type = 'repair' ORDER BY Name");
+
+                                var folders = db.Folders
+                                    .Where(x => x.Type == "repair")
+                                    .OrderBy(x => x.Name)
+                                    .Select(x => new { x.Id, x.Name })
+                                    .ToList();
+
                                 foreach (var folder in folders)
                                 {
                                     <option value="folder@(folder.Id)" @(folder.Id == repair.FolderId ? "selected" : "")>[папка] @folder.Name</option>

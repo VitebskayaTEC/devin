@@ -1,6 +1,6 @@
-﻿@model Aida
+﻿@model Report
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
     string id = "aida" + Model.ID;
 
@@ -8,56 +8,71 @@
         <a class="title" href="##@(id)">Открыть карточку компьютера</a>
     </div>
 
-
     string sql = @"
-    SELECT IGroup, IField, IValue
-    FROM (SELECT IGroup, IField, IValue 
-        FROM Item 
-        WHERE ReportID = @ID AND IPage = 'Суммарная информация') 
-    AS T1
-    WHERE IGroup NOT IN ('DMI', 'Ввод')
-    AND IField NOT IN (
-	    'Коммуникационный порт', 
-	    'Контроллер хранения данных', 
-	    'USB-устройство', 
-	    'Дата / Время', 
-	    'DirectX', 
-	    'Edge', 
-	    'Вход в домен', 
-	    'Имя компьютера', 
-	    'Пакет обновления ОС', 
-	    'Тип компьютера')
-    AND IValue NOT IN (
-	    'Microsoft Print to PDF',
-	    'Microsoft XPS Document Writer',
-	    'Отправить в OneNote 16',
-	    'Fax',
-	    'Microsoft Office Document Image Writer')
-    GROUP BY IGroup, IField, IValue
-    ORDER BY IGroup, IField, IValue";
+        SELECT IGroup, IField, IValue
+        FROM (SELECT IGroup, IField, IValue
+        FROM Item
+        WHERE ReportID = @ID AND IPage = 'Суммарная информация')
+        AS T1
+        WHERE IGroup NOT IN ('DMI', 'Ввод')
+        AND IField NOT IN (
+        'Коммуникационный порт',
+        'Контроллер хранения данных',
+        'USB-устройство',
+        'Дата / Время',
+        'DirectX',
+        'Edge',
+        'Вход в домен',
+        'Имя компьютера',
+        'Пакет обновления ОС',
+        'Тип компьютера')
+        AND IValue NOT IN (
+        'Microsoft Print to PDF',
+        'Microsoft XPS Document Writer',
+        'Отправить в OneNote 16',
+        'Fax',
+        'Microsoft Office Document Image Writer')
+        GROUP BY IGroup, IField, IValue
+        ORDER BY IGroup, IField, IValue";
 
-    var rs = conn.Query<AidaField>(sql, Model);
+    string[] excludeGroups = new[] { "DMI", "Ввод" };
+    string[] excludeFields = new[] { "DMI", "Ввод" };
+    string[] excludeValues = new[] { "DMI", "Ввод" };
+
+    var items = db.Item
+        .Where(x => x.ReportID == Model.ID && x.IPage == "Суммарная информация")
+        .Select(x => new { x.IGroup, x.IField, x.IValue })
+        .Where(x => !excludeFields.Contains(x.IGroup))
+        .Where(x => !excludeFields.Contains(x.IField))
+        .Where(x => !excludeValues.Contains(x.IValue))
+        .GroupBy(x => new { x.IGroup, x.IField, x.IValue })
+        .Select(x => new Item { IGroup = x.Key.IGroup, IField = x.Key.IField, IValue = x.Key.IValue })
+        .OrderBy(x => x.IGroup)
+        .ThenBy(x => x.IField)
+        .ThenBy(x => x.IValue)
+        .ToList();
+
     var groups = new Dictionary<string, Dictionary<string, string>>();
     int i = 1;
 
-    foreach (var row in rs)
+    foreach (var item in items)
     {
-        if (groups.ContainsKey(row.IGroup))
+        if (groups.ContainsKey(item.IGroup))
         {
-            if (groups[row.IGroup].ContainsKey(row.IField))
+            if (groups[item.IGroup].ContainsKey(item.IField))
             {
-                row.IField = row.IField + " " + i++;
+                item.IField = item.IField + " " + i++;
             }
             else
             {
                 i = 0;
             }
-            groups[row.IGroup].Add(row.IField, row.IValue);
+            groups[item.IGroup].Add(item.IField, item.IValue);
         }
         else
         {
-            var dict = new Dictionary<string, string> { { row.IField, row.IValue } };
-            groups.Add(row.IGroup, dict);
+            var dict = new Dictionary<string, string> { { item.IField, item.IValue } };
+            groups.Add(item.IGroup, dict);
         }
     }
 

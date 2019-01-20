@@ -1,4 +1,4 @@
-﻿@using (var conn = Database.Connection())
+﻿@using (var db = new DbDevin())
 {
     int Id = int.TryParse((Request.Form.Get("Id") ?? "").Replace("device", ""), out int i) ? i : 0;
     int FolderId = int.TryParse(Request.Form.Get("Folder"), out i) ? i : 0;
@@ -8,20 +8,21 @@
 
     if (OnlyCompared)
     {
-        Storages = conn.Query<Storage>(@"SELECT Storages.*
-            FROM Devices
-	            LEFT OUTER JOIN PrintersCartridges
-		            LEFT OUTER JOIN Storages ON PrintersCartridges.CartridgeId = Storages.CartridgeId
-	            ON PrintersCartridges.PrinterId = Devices.PrinterId
-            WHERE Devices.Id = @Id AND Storages.Nstorage > 0 AND Storages.IsDeleted = 0
-            ORDER BY Storages.Inventory", new { Id }).AsList();
+        var query = from d in db.Devices
+                    from t in db._PrinterCartridge.Where(x => x.PrinterId == d.PrinterId).DefaultIfEmpty()
+                    from s in db.Storages.Where(x => x.CartridgeId == t.CartridgeId).DefaultIfEmpty()
+                    where d.Id == Id && s.Nstorage > 0 && !s.IsDeleted
+                    orderby s.Inventory
+                    select s;
+
+        Storages = query.ToList();
     }
     else
     {
-        string where = FolderId != -1 ? " AND FolderId = @FolderId " : " ";
-        string sql = "SELECT * FROM Storages WHERE Nstorage > 0 AND IsDeleted = 0" + where + "ORDER BY Storages.Inventory";
-
-        Storages = conn.Query<Storage>(sql, new { FolderId }).AsList();
+        Storages = db.Storages
+            .Where(x => x.Nstorage > 0 && !x.IsDeleted && (FolderId != -1 && x.FolderId == FolderId))
+            .OrderBy(x => x.Inventory)
+            .ToList();
     }
 
     if (Storages.Count == 0)

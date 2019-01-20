@@ -1,11 +1,9 @@
-﻿@using (var conn = Database.Connection())
+﻿@using (var db = new DbDevin())
 {
-    string sql = @"SELECT ID, RVersion, RHost, RUser, RDateTime 
-        FROM Report 
-        WHERE ID IN (SELECT Max(ID) FROM Report GROUP BY RHost) 
-        ORDER BY RHost";
-
-    var computers = conn.Query<Aida>(sql);
+    var computers = db.Report
+        .Select(x => new Report { ID = x.ID, RHost = x.RHost, RDateTime = x.RDateTime, RUser = x.RUser })
+        .OrderBy(x => x.RHost)
+        .ToList();
 
     foreach (var computer in computers)
     {

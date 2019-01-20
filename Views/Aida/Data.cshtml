@@ -1,22 +1,26 @@
 ﻿@model string
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
     if (!int.TryParse(Model, out int Id))
     {
-        Id = conn.Query<int>("SELECT ID FROM Report WHERE RHost = @Model ORDER BY RDateTime DESC", new { Model }).FirstOrDefault();
+        Id = db.Report.Where(x => x.RHost == Model).OrderByDescending(x => x.RDateTime).Select(x => x.ID).FirstOrDefault();
     }
 
-    var model = conn.Query(@"SELECT
-        INum,
-        IPage,
-        IDevice,
-        IGroup,
-        IField,
-        IValue
-    FROM Item
-    WHERE ReportID = @Id
-    ORDER BY IPage, IDevice, IGroup, IField", new { Id });
+    if (Id == 0)
+    {
+        <div class="cart__body">Компьютер не найден в базе Aida</div>
+        return;
+    }
+
+    var model = db.Item
+        .Where(x => x.ReportID == Id)
+        .Select(x => new Item { IPage = x.IPage, IDevice = x.IDevice, IGroup = x.IGroup,IField = x.IField, IValue = x.IValue })
+        .OrderBy(x => x.IPage)
+        .ThenBy(x => x.IDevice)
+        .ThenBy(x => x.IGroup)
+        .ThenBy(x => x.IField)
+        .ToList();
 
     if (model.Count() == 0)
     {

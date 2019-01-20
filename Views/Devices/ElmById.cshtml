@@ -1,14 +1,11 @@
 ﻿@model string
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
-    var logs = conn.Query<Activity>(@"SELECT
-	    EDATE  AS [Date],
-	    EVGR   AS [Id],
-	    --CUSER  AS [Username],
-	    EVENTS AS [Text] 
-    FROM ELMEVENTS WHERE CNAME = @Model
-    ORDER BY EDATE DESC", new { Model });
+    var logs = db.Elm
+        .Where(x => x.CNAME == Model)
+        .OrderByDescending(x => x.EDATE)
+        .ToList();
 
     <div class="cartHistory">
         <table class="cartHistory__table">
@@ -23,9 +20,9 @@
                 @foreach (var log in logs)
                 {
                     <tr>
-                        <td>@log.Date.ToString("dd.MM.yyyy HH:mm")</td>
-                        <td>@log.Id</td>
-                        <td>@log.Text.Replace(",", ", ")</td>
+                        <td>@log.EDATE.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>@log.EVGR</td>
+                        <td>@log.EVENTS.Replace(",", ", ")</td>
                     </tr>
                 }
             </tbody>

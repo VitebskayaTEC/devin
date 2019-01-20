@@ -1,8 +1,8 @@
 ﻿@model int
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
-    var device = conn.Query<Device>(@"SELECT * FROM Devices WHERE Id = @Model", new { Model }).FirstOrDefault();
+    var device = db.Devices.FirstOrDefault(x => x.Id == Model);
 
     if (device == null)
     {
@@ -16,7 +16,7 @@
         return;
     }
 
-    device.Object1C = conn.Query<Object1C>("SELECT * FROM Objects1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
+    device.Object1C = db.Objects1C.FirstOrDefault(x => x.Inventory == device.Inventory);
 
     <div class="cart__header">
         <div>@device.Name | @device.PublicName</div>
@@ -58,7 +58,8 @@
                         <select class="cart__field" name="@nameof(device.Type)">
                             <option value="0">? не определен</option>
                             @{
-                                var classes = conn.Query("SELECT Id, DeviceText FROM TypesDevices ORDER BY DeviceText");
+                                var classes = db._DeviceTypes.Select(x => new { x.Id, x.DeviceText }).OrderBy(x => x.DeviceText).ToList();
+
                                 foreach (var cls in classes)
                                 {
                                     <option value="@cls.Id" @(cls.Id == device.Type ? "selected" : "")>@cls.DeviceText</option>
@@ -74,15 +75,25 @@
                         <select class="cart__field" name="Destination">
                             <option value="0">отдельно</option>
                             @{
-                                var folders = conn.Query<Folder>("SELECT Id, Name FROM Folders WHERE Type = 'device' ORDER BY Name");
+                                var folders = db.Folders
+                                    .Where(x => x.Type =="device")
+                                    .Select(x => new { x.Id, x.Name })
+                                    .OrderBy(x => x.Name)
+                                    .ToList();
 
                                 foreach (var folder in folders)
                                 {
                                     <option value="folder@(folder.Id)" @(folder.Id == device.FolderId ? "selected" : "")>[папка] @folder.Name</option>
                                 }
+
                                 if (device.Type != "CMP")
                                 {
-                                    var computers = conn.Query<Computer>("SELECT Id, Name FROM Devices WHERE Type = 'CMP' AND IsOff = 0 AND IsDeleted = 0 ORDER BY Name");
+                                    var computers = db.Devices
+                                        .Where(x => x.Type == "CMP" && !x.IsOff && !x.IsDeleted)
+                                        .Select(x => new { x.Id, x.Name })
+                                        .OrderBy(x => x.Name)
+                                        .ToList();
+
                                     foreach (var computer in computers)
                                     {
                                         <option value="computer@(computer.Id)" @(computer.Id == device.ComputerId ? "selected" : "")>[компьютер] @computer.Name</option>
@@ -119,12 +130,12 @@
                         <select class="cart__field" name="@nameof(device.PlaceId)">
                             <option value="0">? не определен</option>
                             @{
-                                var places = conn.Query<WorkPlace>("SELECT * FROM WorkPlaces ORDER BY Location");
+                                var places = db.WorkPlaces.OrderBy(x => x.Location).ToList();
                                 foreach (var place in places)
                                 {
                                     <option value="@place.Id" @(place.Id == device.PlaceId ? "selected" : "")>@place.Location</option>
+                                    }
                                 }
-                            }
                         </select>
                     </td>
                 </tr>
@@ -157,14 +168,15 @@
                     <td>
                         <input class="cart__field" name="@nameof(device.DateLastRepair)" style="width: 100px;" value="@(device.DateLastRepair?.ToString("dd.MM.yyyy"))" />
                         @{
-                            var lastRepairDate = conn.Query("SELECT Max(Date) FROM Repairs WHERE DeviceId = @Model", new { Model }).FirstOrDefault();
-                            if (lastRepairDate == null)
+                            var repairsDates = db.Repairs.Where(x => x.DeviceId == Model).Select(x => x.Date).ToList();
+
+                            if (repairsDates.Count == 0)
                             {
                                 @: Ремонты не проводились
                             }
                             else
                             {
-                                <a><b>@lastRepairDate.ToString("dd.MM.yyyy")</b></a>
+                                <a><b>@repairsDates.Max().ToString("dd.MM.yyyy")</b></a>
                             }
                         }
                     </td>
@@ -178,7 +190,7 @@
                             <select class="cart__field" name="@nameof(device.OS)">
                                 <option value="0">? не выбрана</option>
                                 @{
-                                    var systems = conn.Query("SELECT Id, Name FROM TypesSystems");
+                                    var systems = db._SystemTypes.ToList();
                                     foreach (var sys in systems)
                                     {
                                         <option value="@sys.Id" @(sys.Id == device.OS ? "selected" : "")>@sys.Name</option>
@@ -202,7 +214,7 @@
                             <select class="cart__field" name="@nameof(device.PrinterId)">
                                 <option value="0">? не определен</option>
                                 @{
-                                    var printers = conn.Query("SELECT Id, Name FROM Printers ORDER BY Name");
+                                    var printers = db.Printers.Select(x => new { x.Id, x.Name }).OrderBy(x => x.Name).ToList();
                                     foreach (var printer in printers)
                                     {
                                         <option value="@printer.Id" @(printer.Id == device.PrinterId ? "selected" : "")>@printer.Name</option>

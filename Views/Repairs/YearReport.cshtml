@@ -6,29 +6,66 @@
 <div id="summary"></div>
 <br />
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
-    var writeoffs = AutoMapper.MapDynamic<Writeoff>(conn.Query(@"SELECT
-        Writeoffs.Id ,
-        Writeoffs.Date,
-        Writeoffs.Name,
-        Repairs.Id                       AS Repairs_Id,
-        Repairs.Number                   AS Repairs_Units,
-        (Repairs.Number * Storages.Cost) AS Repairs_StoragePrice,
-        Repairs.Date                     AS Repairs_Date,
-        Repairs.Author                   AS Repairs_Author,
-        Devices.Id                       AS Repairs_Device_Id,
-        Devices.Name                     AS Repairs_Device_Name,
-        Devices.Description              AS Repairs_Device_Description,
-        Storages.Id                      AS Repairs_Storage_Id,
-        Storages.Inventory               AS Repairs_Storage_Inventory,
-        Storages.Name                    AS Repairs_Storage_Name
-    FROM Writeoffs
-    LEFT OUTER JOIN Repairs  ON Writeoffs.Id      = Repairs.WriteoffId
-    LEFT OUTER JOIN Devices  ON Repairs.DeviceId  = Devices.Id
-    LEFT OUTER JOIN Storages ON Repairs.StorageId = Storages.Id
-    WHERE Year(Writeoffs.Date) = Year(GetDate()) AND Repairs.IsOff = 1
-    ORDER BY [Date], Id, Repairs_Date, Repairs_Device_Id"));
+    var rawQuery = from w in db.Writeoffs
+                   from r in db.Repairs.Where(x => x.WriteoffId == w.Id).DefaultIfEmpty()
+                   from d in db.Devices.Where(x => x.Id == r.DeviceId).DefaultIfEmpty()
+                   from s in db.Storages.Where(x => x.Id == r.StorageId).DefaultIfEmpty()
+                   where w.Date.Year == DateTime.Now.Year && r.IsOff
+                   orderby w.Date, w.Id, r.Date, d.Id
+                   select new
+                   {
+                       w.Id,
+                       w.Date,
+                       w.Name,
+                       Repairs_Id = r.Id,
+                       Repairs_Number = r.Number,
+                       Repairs_StoragePrice = r.Number * s.Cost,
+                       Repairs_Date = r.Date,
+                       Repairs_Author = r.Author,
+                       Repairs_Device_Id = d.Id,
+                       Repairs_Device_Name = d.Name,
+                       Repairs_Device_PublicName = d.PublicName,
+                       Repairs_Storage_Id = s.Id,
+                       Repairs_Storage_Inventory = s.Inventory,
+                       Repairs_Storage_Name = s.Name
+                   };
+
+    var raw = rawQuery.ToList();
+
+    var writeoffsQuery = from r in raw
+                         group r by new { r.Id, r.Date, r.Name } into g
+                         select new Writeoff
+                         {
+                             Id = g.Key.Id,
+                             Date = g.Key.Date,
+                             Name = g.Key.Name,
+                             Repairs = g
+                             .Select(x => new Repair
+                             {
+                                 Id = x.Repairs_Id,
+                                 Number = x.Repairs_Number,
+                                 StoragePrice = x.Repairs_StoragePrice,
+                                 Date = x.Repairs_Date,
+                                 Author = x.Repairs_Author,
+                                 Device = new Device
+                                 {
+                                     Id = x.Repairs_Device_Id,
+                                     Name = x.Repairs_Device_Name,
+                                     PublicName = x.Repairs_Device_PublicName
+                                 },
+                                 Storage = new Storage
+                                 {
+                                     Id = x.Repairs_Storage_Id,
+                                     Inventory = x.Repairs_Storage_Inventory,
+                                     Name = x.Repairs_Storage_Name
+                                 }
+                             })
+                             .AsList()
+                         };
+
+    var writeoffs = writeoffsQuery.ToList();
 
     if (writeoffs.Count() == 0)
     {
@@ -42,7 +79,7 @@
 
     foreach (var writeoff in writeoffs)
     {
-        <div class="unit">
+        <div class="unit" data-id="yearReport@(writeoff.Id)">
             <table class="caption">
                 <tr>
                     <td width="80px">@writeoff.Date.ToString("dd.MM.yyyy")</td>
@@ -67,7 +104,7 @@
                         @foreach (var repair in writeoff.Repairs)
                         {
                             <tr>
-                                <td><b>@repair.Device.Name</b> @repair.Device.Description</td>
+                                <td><b>@repair.Device.Name</b> @repair.Device.PublicName</td>
                                 <td>@repair.Storage.Name</td>
                                 <td>@repair.Number</td>
                                 <td>@repair.StoragePrice.ToString("0.00") р.</td>

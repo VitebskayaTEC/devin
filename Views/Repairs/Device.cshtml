@@ -1,8 +1,12 @@
 ﻿@model int
 
-@using (var conn = Database.Connection())
+@using (var db = new DbDevin())
 {
-    var device = conn.Query<Device>(@"SELECT * FROM Devices WHERE Id = @Model", new { Model }).FirstOrDefault();
+    var device = db.Devices
+        .Where(x => x.Id == Model)
+        .Select(x => new { x.Id, x.Inventory, x.Name, x.Description, x.Location, x.Mol, x.DateInstall, x.Type, x.PrinterId })
+        .FirstOrDefault();
+
     if (device == null)
     {
         <div class="cart__body">Устройство не найдено</div>
@@ -38,8 +42,9 @@
                 </tr>
                 @if (device.Type == "PRN")
                 {
-                    device.Printer = conn.Query<Printer>("SELECT * FROM Printers WHERE Id = @PrinterId", new { device.PrinterId }).FirstOrDefault();
-                    if (device.Printer == null)
+                    var printer = db.Printers.Where(x => x.Id == device.PrinterId).FirstOrDefault();
+
+                    if (printer == null)
                     {
                         <tr>
                             <td>Типовой принтер</td>
@@ -50,7 +55,7 @@
                     {
                         <tr>
                             <td>Типовой принтер</td>
-                            <td>@device.Printer.Name</td>
+                            <td>@printer.Name</td>
                         </tr>
                     }
                 }
