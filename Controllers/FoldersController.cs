@@ -1,5 +1,6 @@
-﻿using Dapper;
-using Devin.Models;
+﻿using Devin.Models;
+using LinqToDB;
+using System.Linq;
 using System.Web.Mvc;
 
 namespace Devin.Controllers
@@ -8,13 +9,12 @@ namespace Devin.Controllers
     {
         public JsonResult Create(string Type, string Name)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DbDevin())
             {
                 Type = Type.Substring(0, Type.Length - 1);
-                conn.Execute("INSERT INTO Folders (Type, Name, FolderId) VALUES (@Type, @Name, 0)", new { Type, Name });
-                int Id = conn.QueryFirst<int>("SELECT Max(Id) FROM Folders");
 
-                conn.Log(User, "folders", Id, "Создана папка \"" + Name + "\" для страницы \"" + Type + "\"");
+                int Id = db.InsertWithInt32Identity(new Folder { Type = Type, Name = Name, FolderId = 0 });
+                db.Log(User, "folders", Id, "Создана папка \"" + Name + "\" для страницы \"" + Type + "\"");
 
                 return Json(new { Good = "Создана новая папка \"" + Name + "\"" });
             }
@@ -22,13 +22,12 @@ namespace Devin.Controllers
 
         public JsonResult CreateInner(string Type, string Name, int FolderId)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DbDevin())
             {
                 Type = Type.Substring(0, Type.Length - 1);
-                conn.Execute("INSERT INTO Folders (Type, Name, FolderId) VALUES (@Type, @Name, @FolderId)", new { Type, Name, FolderId });
-                int Id = conn.QueryFirst<int>("SELECT Max(Id) FROM Folders");
 
-                conn.Log(User, "folders", Id, "Создана папка \"" + Name + "\" для страницы \"" + Type + "\"");
+                int Id = db.InsertWithInt32Identity(new Folder { Type = Type, Name = Name, FolderId = FolderId });
+                db.Log(User, "folders", Id, "Создана папка \"" + Name + "\" для страницы \"" + Type + "\"");
 
                 return Json(new { Good = "Создана новая папка \"" + Name + "\"" });
             }
@@ -36,18 +35,18 @@ namespace Devin.Controllers
 
         public JsonResult Delete(string Type, int Id)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DbDevin())
             {
-                string name = conn.QueryFirst<string>("SELECT Name FROM Folders WHERE Id = @Id", new { Id });
+                string name = db.Folders.Where(x => x.Id == Id).Select(x => x.Name).FirstOrDefault();
                 switch (Type)
                 {
-                    case "devices": conn.Execute("UPDATE Devices SET FolderId = 0 WHERE FolderId = @Id", new { Id }); break;
-                    case "storages": conn.Execute("UPDATE Storages SET FolderId = 0 WHERE FolderId = @Id", new {Id }); break;
-                    case "repairs": conn.Execute("UPDATE Writeoffs SET FolderId = 0 WHERE FolderId = @Id", new { Id }); break;
+                    case "devices": db.Devices.Where(x => x.FolderId == Id).Set(x => x.FolderId, 0).Update(); break;
+                    case "storages": db.Storages.Where(x => x.FolderId == Id).Set(x => x.FolderId, 0).Update(); break;
+                    case "repairs": db.Writeoffs.Where(x => x.FolderId == Id).Set(x => x.FolderId, 0).Update(); break;
                 }
 
-                conn.Execute("DELETE FROM Folders WHERE Id = @Id", new { Id });
-                conn.Log(User, "folders", Id, "Удалена папка \"" + name + "\"");
+                db.Folders.Where(x => x.Id == Id).Delete();
+                db.Log(User, "folders", Id, "Удалена папка \"" + name + "\"");
 
                 return Json(new { Good = "Папка \"" + name + "\" удалена" });
             }
@@ -55,39 +54,40 @@ namespace Devin.Controllers
 
         public JsonResult Update(string Name, int Id)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DbDevin())
             {
-                string old = conn.QueryFirst<string>("SELECT Name FROM Folders WHERE Id = @Id", new { Id });
-                conn.Execute("UPDATE Folders SET Name = @Name WHERE Id = @Id", new { Name, Id });
-                conn.Log(User, "folders", Id, "Папка \"" + old + "\" переименована в \"" + Name + "\"");
+                string oldName = db.Folders.Where(x => x.Id == Id).Select(x => x.Name).FirstOrDefault();
+                db.Folders.Where(x => x.Id == Id).Set(x => x.Name, Name).Update();
+                db.Log(User, "folders", Id, "Папка \"" + oldName + "\" переименована в \"" + Name + "\"");
 
-                return Json(new { Good = "Папка \"" + old + "\" переименована в \"" + Name + "\"" });
+                return Json(new { Good = "Папка \"" + oldName + "\" переименована в \"" + Name + "\"" });
             }
         }
 
         public JsonResult Clear(string Type, int Id)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DbDevin())
             {
-                string name = conn.QueryFirst<string>("SELECT Name FROM Folders WHERE Id = @Id", new { Id });
+                string name = db.Folders.Where(x => x.Id == Id).Select(x => x.Name).FirstOrDefault();
                 switch (Type)
                 {
-                    case "devices": conn.Execute("UPDATE Devices SET FolderId = 0 WHERE FolderId = @Id", new { Id }); break;
-                    case "storages": conn.Execute("UPDATE Storages SET FolderId = 0 WHERE FolderId = @Id", new { Id }); break;
-                    case "repairs": conn.Execute("UPDATE Writeoffs SET FolderId = 0 WHERE FolderId = @Id", new { Id }); break;
+                    case "devices": db.Devices.Where(x => x.FolderId == Id).Set(x => x.FolderId, 0).Update(); break;
+                    case "storages": db.Storages.Where(x => x.FolderId == Id).Set(x => x.FolderId, 0).Update(); break;
+                    case "repairs": db.Writeoffs.Where(x => x.FolderId == Id).Set(x => x.FolderId, 0).Update(); break;
                 }
 
-                conn.Log(User, "folders", Id, "Из папки \"" + name + "\" вынесены все вложенные элементы");
+                db.Log(User, "folders", Id, "Из папки \"" + name + "\" вынесены все вложенные элементы");
+
                 return Json(new { Good = "Из папки \"" + name + "\" вынесены все вложенные элементы" });
             }
         }
 
         public JsonResult Move(int FolderId, int Id)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DbDevin())
             {
-                string name = conn.QueryFirst<string>("SELECT Name FROM Folders WHERE Id = @Id", new { Id });
-                conn.Execute("UPDATE Folders SET FolderId = @FolderId WHERE Id = @Id", new { Id, FolderId });
+                string name = db.Folders.Where(x => x.Id == Id).Select(x => x.Name).FirstOrDefault();
+                db.Folders.Where(x => x.Id == Id).Set(x => x.FolderId, FolderId).Update();
 
                 string text = "";
                 if (FolderId == 0)
@@ -96,11 +96,12 @@ namespace Devin.Controllers
                 }
                 else
                 {
-                    string parentName = conn.QueryFirst<string>("SELECT Name FROM Folders WHERE Id = @FolderId", new { FolderId });
+                    string parentName = db.Folders.Where(x => x.Id == FolderId).Select(x => x.Name).FirstOrDefault();
                     text = "Папка \"" + name + "\" перенесена в папку \"" + parentName + "\"";
                 }
 
-                conn.Log(User, "folders", Id, text);
+                db.Log(User, "folders", Id, text);
+
                 return Json(new { Good = text });
             }
         }

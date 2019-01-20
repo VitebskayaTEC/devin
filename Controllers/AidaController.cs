@@ -1,5 +1,5 @@
-﻿using Dapper;
-using Devin.Models;
+﻿using Devin.Models;
+using LinqToDB;
 using System;
 using System.Linq;
 using System.Web.Mvc;
@@ -38,18 +38,19 @@ namespace Devin.Controllers
 
         public ActionResult Programs(string Id) => View(model: Id);
 
+
         public JsonResult Delete(string Id)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DbDevin())
             {
                 int id = int.TryParse((Id ?? "").Replace("aida", ""), out int i) ? i : 0;
                 if (id == 0) return Json(new { Warning = "Идентификатор не был передан" });
 
-                string name = conn.Query<string>("SELECT RHost FROM Report WHERE ID = @Id", new { Id = id }).FirstOrDefault() ?? "";
+                string name = db.Report.Where(x => x.ID == id).Select(x => x.RHost).FirstOrDefault() ?? "Наименование не определено";
 
-                conn.Execute("DELETE FROM Report WHERE ID = @Id", new { Id = id });
-                conn.Execute("DELETE FROM Item WHERE ReportID = @Id", new { Id = id });
-                conn.Log(User, "aida", id, "Отчет по компьютеру \"" + name + "\" удален из базы данных");
+                db.Report.Where(x => x.ID == id).Delete();
+                db.Item.Where(x => x.ReportID == id).Delete();
+                db.Log(User, "aida", id, "Отчет по компьютеру \"" + name + "\" удален из базы данных");
 
                 return Json(new { Good = "Отчет о компьютере удален из базы" });
             }
@@ -59,21 +60,27 @@ namespace Devin.Controllers
         {
             try
             {
-                using (var conn = Database.Connection())
+                using (var db = new DbDevin())
                 {
-                    var oldRecordsCount = conn.QueryFirst<int>("SELECT Count(ID) FROM Report WHERE ID NOT IN (SELECT Max(ID) FROM Report GROUP BY RHost)");
+                    var maxIdentifiers = db.Report
+                        .GroupBy(x => x.RHost)
+                        .Select(x => x.Select(g => g.ID).Max())
+                        .ToList();
+                    
+                    var oldIdentifiers = db.Report
+                        .Where(x => !maxIdentifiers.Contains(x.ID))
+                        .Select(x => x.ID)
+                        .ToList();
 
-                    if (oldRecordsCount == 0)
+                    if (oldIdentifiers.Count() == 0)
                     {
                         return Json(new { Good = "База не содержит устаревших отчетов" });
                     }
 
-                    int oldRowsCount = conn.QueryFirst<int>("SELECT Count(*) FROM Item WHERE ReportID IN (SELECT ID FROM Report WHERE ID NOT IN (SELECT Max(ID) FROM Report GROUP BY RHost))");
+                    int recordsDeleted = db.Item.Where(x => oldIdentifiers.Contains(x.ReportID)).Delete();
+                    int itemsDeleted = db.Report.Where(x => oldIdentifiers.Contains(x.ID)).Delete();
 
-                    conn.Execute("DELETE FROM Item WHERE ReportID IN (SELECT ID FROM Report WHERE ID NOT IN (SELECT Max(ID) FROM Report GROUP BY RHost))");
-                    conn.Execute("DELETE FROM Report WHERE ID NOT IN (SELECT Max(ID) FROM Report GROUP BY RHost)");
-
-                    return Json(new { Good = "База обновлена. Удалено устаревших:<br />отчетов => " + oldRecordsCount + "<br />строк данных => " + oldRowsCount });
+                    return Json(new { Good = "Удалено:<br />Отчеты: " + recordsDeleted + "<br />Строки данных: " + itemsDeleted });
                 }
             }
             catch (Exception e)
