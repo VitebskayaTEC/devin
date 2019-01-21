@@ -5,7 +5,6 @@ namespace Devin.Models
     [Table(Name = "Printers")]
     public class Printer
     {
-        [Slapper.AutoMapper.Id]
         [Column, PrimaryKey, Identity, NotNull]
         public int Id { get; set; }
 

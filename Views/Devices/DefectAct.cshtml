@@ -1,6 +1,6 @@
 ﻿@model int
 
-@using (var db = new DbDevin())
+@using (var db = new DevinContext())
 {
     var query = from d in db.Devices
                 from c in db.Devices.Where(x => x.Type == "CMP").Where(x => x.Id == d.ComputerId).DefaultIfEmpty()

@@ -18,7 +18,7 @@
 </form>
 <br />
 
-@using (var db = new DbDevin())
+@using (var db = new DevinContext())
 {
     var cartridgesRawQuery = from r in db.Repairs
                              from s in db.Storages.Where(x => x.Id == r.StorageId).DefaultIfEmpty()

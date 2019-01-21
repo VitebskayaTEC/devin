@@ -1,6 +1,6 @@
-﻿using Dapper;
-using Devin.Models;
+﻿using Devin.Models;
 using Devin.ViewModels;
+using LinqToDB;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.SS.Util;
@@ -43,28 +43,64 @@ namespace Devin.Controllers
 
         public ActionResult History(int Id) => View(model: Id);
 
+
         public JsonResult Create()
         {
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                conn.Execute("INSERT INTO Storages (Inventory, Name, Nall, Nstorage, Nrepairs, Noff, Date, CartridgeId, IsDeleted) VALUES ('', '', 1, 1, 0, 0, @Date, 0, 0)", new { DateTime.Now.Date });
-                int Id = conn.QueryFirst<int>("SELECT Max(Id) FROM Storages");
-                conn.Log(User, "storages", Id, "Создана новая позиция");
+                int id = db.InsertWithInt32Identity(new Storage
+                {
+                    Inventory = "",
+                    Name = "",
+                    Nall = 1,
+                    Nstorage = 1,
+                    Nrepairs = 0,
+                    Noff = 0,
+                    Date = DateTime.Now,
+                    CartridgeId = 0,
+                    IsDeleted = false,
+                    Cost = 0, 
+                    FolderId = 0,
+                    Type = ""
+                });
+                
+                db.Log(User, "storages", id, "Создана новая позиция");
 
-                return Json(new { Good = "Создана новая позиция", Id = "storage" + Id });
+                return Json(new { Good = "Создана новая позиция", Id = "storage" + id });
             }
         }
 
-        public JsonResult Update(int Id, [Bind(Include = "Id,Inventory,Name,Nall,Nstorage,Nrepairs,Noff,CartridgeId,Type,Account,FolderId")] Storage storage)
+        public JsonResult Update(
+            [Bind(Include = "Id,Inventory,Name,Nall,Nstorage,Nrepairs,Noff,CartridgeId,Type,Account,FolderId")] Storage storage, 
+            string Date, 
+            string Cost
+        )
         {
-            if (!DateTime.TryParse(Request.Form.Get("Date"), out DateTime d)) return Json(new { Error = "Дата прихода введена в неверном формате" }); else storage.Date = d;
-            if (!float.TryParse(Request.Form.Get("Cost"), out float f)) return Json(new { Error = "Стоимость введена в неверном формате" }); else storage.Cost = f;
+            if (!DateTime.TryParse(Date, out DateTime d))
+            {
+                return Json(new { Error = "Дата прихода введена в неверном формате" });
+            }
+            else
+            {
+                storage.Date = d;
+            }
+
+            if (!float.TryParse(Cost, out float f))
+            {
+                return Json(new { Error = "Стоимость введена в неверном формате" });
+            }
+            else
+            {
+                storage.Cost = f;
+            }
+
             if (storage.Cost < 0) return Json(new { Error = "Стоимость не может быть отрицательной" });
             if (storage.Nall < 0) return Json(new { Error = "Количество прихода не может быть отрицательным" });
 
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                var old = conn.Query<Storage>("SELECT * FROM Storages WHERE Id = @Id", new { Id }).FirstOrDefault() ?? new Storage();
+                var old = db.Storages.Where(x => x.Id == storage.Id).FirstOrDefault() ?? new Storage();
+
                 var changes = new List<string>();
 
                 if (old.Inventory != storage.Inventory) changes.Add($"инвентарный номер [{ old.Inventory} => {storage.Inventory}]");
@@ -82,22 +118,23 @@ namespace Devin.Controllers
 
                 if (changes.Count > 0)
                 {
-                    conn.Execute(@"UPDATE Storages SET
-                        Inventory   = @Inventory,
-                        Name        = @Name,
-                        Type        = @Type,
-                        Cost        = @Cost,
-                        Nall        = @Nall,
-                        Nstorage    = @Nstorage,
-                        Nrepairs    = @Nrepairs,
-                        Noff        = @Noff,
-                        Date        = @Date,
-                        Account     = @Account,
-                        CartridgeId = @CartridgeId,
-                        FolderId    = @FolderId
-                    WHERE Id = @Id", storage);
+                    db.Storages
+                        .Where(x => x.Id == storage.Id)
+                        .Set(x => x.Inventory, storage.Inventory)
+                        .Set(x => x.Name, storage.Name)
+                        .Set(x => x.Type, storage.Type)
+                        .Set(x => x.Cost, storage.Cost)
+                        .Set(x => x.Nall, storage.Nall)
+                        .Set(x => x.Nstorage, storage.Nstorage)
+                        .Set(x => x.Nrepairs, storage.Nrepairs)
+                        .Set(x => x.Noff, storage.Noff)
+                        .Set(x => x.Date, storage.Date)
+                        .Set(x => x.Account, storage.Account)
+                        .Set(x => x.CartridgeId, storage.CartridgeId)
+                        .Set(x => x.FolderId, storage.FolderId)
+                        .Update();
 
-                    conn.Log(User, "storages", storage.Id, "Позиция изменена. Изменения: " + changes.ToLog());
+                    db.Log(User, "storages", storage.Id, "Позиция изменена. Изменения: " + changes.ToLog());
 
                     return Json(new { Good = "Позиция успешно обновлена! Изменены поля: <br />" + changes.ToHtml() });
                 }
@@ -110,10 +147,10 @@ namespace Devin.Controllers
 
         public JsonResult Delete(int Id)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                conn.Execute("DELETE FROM Storages WHERE Id = @Id", new { Id });
-                conn.Log(User, "storages", Id, "Позиция удалена");
+                db.Storages.Delete(x => x.Id == Id);
+                db.Log(User, "storages", Id, "Позиция удалена");
 
                 return Json(new { Good = "Позиция удалена" });
             }
@@ -121,102 +158,110 @@ namespace Devin.Controllers
 
         public JsonResult Move(string Select, int FolderId)
         {
-            string[] Storages = Select.Replace("storage", "").Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
+            var Storages = Select.Replace("storage", "").Split(new [] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
 
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                string folder = conn.Query<string>("SELECT Name FROM Folders WHERE Id = @FolderId", new { FolderId }).FirstOrDefault() ?? "<не определено>";
+                string folder = db.Folders
+                    .Where(x => x.Id == FolderId)
+                    .Select(x => x.Name)
+                    .FirstOrDefault();
+
+                string message = folder == null 
+                    ? ("в папку \"" + folder + "\" [folder" + FolderId + "]") 
+                    : "отдельно";
 
                 foreach (string storage in Storages)
                 {
                     int id = int.TryParse(storage, out int i) ? i : 0;
-                    conn.Execute("UPDATE Storages SET FolderId = @FolderId WHERE Id = @Id", new { FolderId, Id = id });
-                    conn.Log(User, "storages", id, "Позиция перемещена в папку \"" + folder + "\" [folder" + FolderId + "]");
+
+                    db.Storages
+                        .Where(x => x.Id == id)
+                        .Set(x => x.FolderId, FolderId)
+                        .Update();
+                    
+                    db.Log(User, "storages", id, "Позиция перемещена " + message);
                 }
 
-                string name = conn.Query<string>("SELECT Name FROM Folders WHERE Id = @FolderId", new { FolderId }).FirstOrDefault();
-                if (string.IsNullOrEmpty(name))
-                {
-                    return Json(new { Good = "Выбранные позиции размещены отдельно" });
-                }
-                else
-                {
-                    return Json(new { Good = "Выбранные позиции перемещены в папку \"" + name + "\"" });
-                }
+                return Json(new { Good = "Выбранные позиции перемещены " + message });
             }
         }
 
         public JsonResult Labels(string Select)
         {
-            List<Storage> Storages;
-            Select = Select.Replace("storage", "");
+            var selectedIdentifiers = Select.Replace("storage", "").Split(',').Select(x => int.TryParse(x, out int i) ? i : 0).ToList();
 
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                Storages = conn.Query<Storage>(@"SELECT
-                    Storages.Id,
-                    Storages.Nstorage,
-                    Storages.Inventory,
-                    Cartridges.Name AS [Type],
-                    Storages.Date,
-                    Storages.Name
-                FROM Storages
-                LEFT OUTER JOIN Cartridges ON Storages.CartridgeId = Cartridges.Id
-                WHERE Storages.Id IN (" + Select + ") ORDER BY Storages.Date DESC").AsList();
-            }
+                var query = from s in db.Storages
+                            from c in db.Cartridges.Where(x => x.Id == s.CartridgeId).DefaultIfEmpty(new Cartridge { Name = s.Name })
+                            where selectedIdentifiers.Contains(s.Id)
+                            orderby s.Date descending
+                            select new Storage
+                            {
+                                Id = s.Id,
+                                Nstorage = s.Nstorage,
+                                Inventory = s.Inventory,
+                                Type = c.Name,
+                                Date = s.Date,
+                                Name = s.Name
+                            };
 
-            if (Storages.Count == 0) return Json(new { Warning = "Нечего печатать" });
-            if (Storages.Select(x => x.Nstorage).Sum() == 0) return Json(new { Warning = "На складе нет выбранных позиций" });
+                var storages = query.ToList();
 
-            HSSFWorkbook book;
-            using (var fs = new FileStream(Server.MapPath("../content/exl/") + "labels.xls", FileMode.Open, FileAccess.Read))
-            {
-                book = new HSSFWorkbook(fs);
-            }
+                if (storages.Count == 0) return Json(new { Warning = "Нечего печатать" });
+                if (storages.Select(x => x.Nstorage).Sum() == 0) return Json(new { Warning = "На складе нет выбранных позиций" });
 
-            var sheet = book.GetSheetAt(0);
-
-            bool isLeft = true;
-            int rowCount = 1;
-
-            for (int i = 0; i < Storages.Count; i++)
-            {
-                for (int j = 0; j < Storages[i].Nstorage; j++)
+                HSSFWorkbook book;
+                using (var fs = new FileStream(Server.MapPath("../content/exl/") + "labels.xls", FileMode.Open, FileAccess.Read))
                 {
-                    if (isLeft)
+                    book = new HSSFWorkbook(fs);
+                }
+
+                var sheet = book.GetSheetAt(0);
+
+                bool isLeft = true;
+                int rowCount = 1;
+
+                for (int i = 0; i < storages.Count; i++)
+                {
+                    for (int j = 0; j < storages[i].Nstorage; j++)
                     {
-                        sheet.GetRow(rowCount * 3 - 3).GetCell(0).SetCellValue("№");
-                        sheet.GetRow(rowCount * 3 - 2).GetCell(0).SetCellValue("Тип:");
-                        sheet.GetRow(rowCount * 3 - 1).GetCell(0).SetCellValue("Приход:");
+                        if (isLeft)
+                        {
+                            sheet.GetRow(rowCount * 3 - 3).GetCell(0).SetCellValue("№");
+                            sheet.GetRow(rowCount * 3 - 2).GetCell(0).SetCellValue("Тип:");
+                            sheet.GetRow(rowCount * 3 - 1).GetCell(0).SetCellValue("Приход:");
 
-                        sheet.GetRow(rowCount * 3 - 3).GetCell(1).SetCellValue(Storages[i].Inventory);
-                        sheet.GetRow(rowCount * 3 - 2).GetCell(1).SetCellValue(Storages[i].Type ?? Storages[i].Name);
-                        sheet.GetRow(rowCount * 3 - 1).GetCell(1).SetCellValue(Storages[i].Date.ToString("dd.MM.yyyy"));
+                            sheet.GetRow(rowCount * 3 - 3).GetCell(1).SetCellValue(storages[i].Inventory);
+                            sheet.GetRow(rowCount * 3 - 2).GetCell(1).SetCellValue(storages[i].Type);
+                            sheet.GetRow(rowCount * 3 - 1).GetCell(1).SetCellValue(storages[i].Date.ToString("dd.MM.yyyy"));
 
-                        isLeft = false;
-                    }
-                    else
-                    {
-                        sheet.GetRow(rowCount * 3 - 3).GetCell(2).SetCellValue("№");
-                        sheet.GetRow(rowCount * 3 - 2).GetCell(2).SetCellValue("Тип:");
-                        sheet.GetRow(rowCount * 3 - 1).GetCell(2).SetCellValue("Приход:");
+                            isLeft = false;
+                        }
+                        else
+                        {
+                            sheet.GetRow(rowCount * 3 - 3).GetCell(2).SetCellValue("№");
+                            sheet.GetRow(rowCount * 3 - 2).GetCell(2).SetCellValue("Тип:");
+                            sheet.GetRow(rowCount * 3 - 1).GetCell(2).SetCellValue("Приход:");
 
-                        sheet.GetRow(rowCount * 3 - 3).GetCell(3).SetCellValue(Storages[i].Inventory);
-                        sheet.GetRow(rowCount * 3 - 2).GetCell(3).SetCellValue(Storages[i].Type ?? Storages[i].Name);
-                        sheet.GetRow(rowCount * 3 - 1).GetCell(3).SetCellValue(Storages[i].Date.ToString("dd.MM.yyyy"));
-                        
-                        rowCount = rowCount + 1;
-                        isLeft = true;
+                            sheet.GetRow(rowCount * 3 - 3).GetCell(3).SetCellValue(storages[i].Inventory);
+                            sheet.GetRow(rowCount * 3 - 2).GetCell(3).SetCellValue(storages[i].Type);
+                            sheet.GetRow(rowCount * 3 - 1).GetCell(3).SetCellValue(storages[i].Date.ToString("dd.MM.yyyy"));
+
+                            rowCount = rowCount + 1;
+                            isLeft = true;
+                        }
                     }
                 }
-            }
 
-            using (var fs = new FileStream(Server.MapPath("../content/excels/") + "Бирки.xls", FileMode.OpenOrCreate, FileAccess.Write))
-            {
-                book.Write(fs);
-            }
+                using (var fs = new FileStream(Server.MapPath("../content/excels/") + "Бирки.xls", FileMode.OpenOrCreate, FileAccess.Write))
+                {
+                    book.Write(fs);
+                }
 
-            return Json(new { Good = "Создание файла с бирками завершено", Link = Url.Action("excels", "content") + "/Бирки.xls" });
+                return Json(new { Good = "Создание файла с бирками завершено", Link = Url.Action("excels", "content") + "/Бирки.xls" });
+            }
         }
 
         public JsonResult AnalyzePrint(string Data)
@@ -228,11 +273,11 @@ namespace Devin.Controllers
             var lastType = new List<Cartridge>();
             string lastName = "";
 
-            string[] DataSplit = (Data ?? "").Split(new string[] { "----" }, StringSplitOptions.RemoveEmptyEntries);
+            var DataSplit = (Data ?? "").Split(new [] { "----" }, StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (string data in DataSplit)
+            foreach (var data in DataSplit)
             {
-                string[] raw = data.Split(new string[] { "|" }, StringSplitOptions.RemoveEmptyEntries);
+                var raw = data.Split(new [] { "|" }, StringSplitOptions.RemoveEmptyEntries);
 
                 var cartridge = new Cartridge
                 {
@@ -241,7 +286,8 @@ namespace Devin.Controllers
                     Cost = float.Parse(raw[3])
                 };
 
-                switch (raw[2]) {
+                switch (raw[2])
+                {
                     case "flow": cartridge.Type = "Картридж струйный"; break;
                     case "laser": cartridge.Type = "Тонер-картридж"; break;
                     case "matrix": cartridge.Type = "Матричная лента"; break;

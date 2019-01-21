@@ -1,6 +1,6 @@
 ﻿@model int
 
-@using (var db = new DbDevin())
+@using (var db = new DevinContext())
 {
     var rhost = db.Report.Where(x => x.ID == Model).Select(x => x.RHost).FirstOrDefault();
     if (rhost == null)

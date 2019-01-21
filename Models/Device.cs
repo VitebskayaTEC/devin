@@ -7,7 +7,6 @@ namespace Devin.Models
     [Table(Name = "Devices")]
     public class Device
     {
-        [Slapper.AutoMapper.Id]
         [Column, PrimaryKey, Identity, NotNull]
         public int Id { get; set; }
 

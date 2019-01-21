@@ -1,11 +1,10 @@
-﻿using Dapper;
-using Devin.Models;
+﻿using Devin.Models;
 using Devin.ViewModels;
+using LinqToDB;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
-using LinqToDB;
 
 namespace Devin.Controllers
 {
@@ -89,7 +88,7 @@ namespace Devin.Controllers
                 repair.WriteoffId = 0;
             }
 
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 var old = db.Repairs.Where(x => x.Id == Id).FirstOrDefault();
 
@@ -306,7 +305,7 @@ namespace Devin.Controllers
 
         public JsonResult Delete(int Id)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 var repair = db.Repairs.Where(x => x.Id == Id).FirstOrDefault();
 
@@ -357,7 +356,7 @@ namespace Devin.Controllers
 
         public JsonResult DeleteAll(int Id)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 var repairs = db.Repairs
                     .Where(x => x.WriteoffId == Id)
@@ -375,7 +374,7 @@ namespace Devin.Controllers
 
         public JsonResult Move(string Repairs, string Key)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 int WriteoffId = int.TryParse(Key.Replace("w", ""), out int i) ? i : 0;
                 int FolderId = int.TryParse(Key.Replace("g", ""), out i) ? i : 0;
@@ -411,7 +410,7 @@ namespace Devin.Controllers
 
         public JsonResult Off(string Id)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 int id = int.TryParse(Id.Replace("writeoff", ""), out int i) ? i : 0;
 
@@ -444,7 +443,7 @@ namespace Devin.Controllers
         {
             var repairs = Repairs.Split(new [] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
 
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 foreach (string r in repairs)
                 {
@@ -481,7 +480,7 @@ namespace Devin.Controllers
 
         public JsonResult On(string Id)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 int id = int.TryParse(Id.Replace("writeoff", ""), out int i) ? i : 0;
 
@@ -514,7 +513,7 @@ namespace Devin.Controllers
         {
             var repairs = Repairs.Split(new [] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
 
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 foreach (string r in repairs)
                 {
@@ -574,7 +573,7 @@ namespace Devin.Controllers
                 if (r.StorageId != 0 && r.Number != 0) repairs.Add(r);
             }
 
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 int writeoffId = 0;
 
@@ -635,7 +634,7 @@ namespace Devin.Controllers
             repairs = repairs.Where(x => x.DeviceId != 0).ToList();
             if (repairs.Count == 0) return Json(new { Warning = "Нет выбранных объектов для создания ремонтов" });
 
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 int writeoffId = 0;
                 if (!string.IsNullOrEmpty(Writeoff))

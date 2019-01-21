@@ -1,8 +1,7 @@
-﻿using Dapper;
-using Devin.Models;
+﻿using Devin.Models;
+using LinqToDB;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
-using Slapper;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,33 +16,49 @@ namespace Devin.Controllers
 
         public ActionResult History(string Id) => View(model: Id);
 
+
         public JsonResult Create()
         {
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                conn.Execute("INSERT INTO Writeoffs (Name, Date, Type, FolderId, CostArticle) VALUES ('Новое списание', GetDate(), 'expl', 0, 0)");
-                int Id = conn.QueryFirst<int>("SELECT Max(Id) FROM Writeoffs");
-                conn.Execute("UPDATE Writeoffs SET Name = Name + @Text WHERE Id = @Id", new { Id, Text = " #" + Id });
-                conn.Log(User, "writeoffs", Id, "Создано списание");
+                int id = db.InsertWithInt32Identity(new Writeoff
+                {
+                    Name = "Новое списание",
+                    Date = DateTime.Now,
+                    Type = "expl",
+                    FolderId = 0,
+                    CostArticle = 0
+                });
 
-                return Json(new { Id = "off" + Id, Good = "Создано новое списание" });
+                db.Writeoffs.Where(x => x.Id == id).Set(x => x.Name, x => x.Name + " #" + id).Update();
+                db.Log(User, "writeoffs", id, "Создано списание");
+
+                return Json(new { Id = "off" + id, Good = "Создано новое списание" });
             }
         }
 
-        public JsonResult Update(int Id, [Bind(Include = "Id,Name,Type,Description,CostArticle,FolderId")] Writeoff writeoff, string[] Params, string Date)
+        public JsonResult Update(
+            [Bind(Include = "Id,Name,Type,Description,CostArticle,FolderId")] Writeoff writeoff, 
+            string[] Params, 
+            string Date
+        )
         {
             writeoff.Params = string.Join(";;", Params);
+
             if (!DateTime.TryParse(Date, out DateTime d))
             {
                 return Json(new { Error = "Дата введена в неверном формате. Ожидается формат \"дд.ММ.гггг чч:мм\"" });
             }
-            else writeoff.Date = d;
-
-            using (var conn = Database.Connection())
+            else
             {
-                var old = conn.QueryFirst<Writeoff>("SELECT * FROM Writeoffs WHERE Id = @Id", new { Id });
+                writeoff.Date = d;
+            }
 
-                List<string> changes = new List<string>();
+            using (var db = new DevinContext())
+            {
+                var old = db.Writeoffs.Where(x => x.Id == writeoff.Id).FirstOrDefault();
+
+                var changes = new List<string>();
                 if (writeoff.Name != old.Name) changes.Add("наименование [\"" + old.Name + "\" => \"" + writeoff.Name + "\"]");
                 if (writeoff.Type != old.Type) changes.Add("тип [\"" + old.Type + "\" => \"" + writeoff.Type + "\"]");
                 if ((writeoff.Description ?? "") != (old.Description ?? "")) changes.Add("описание [\"" + old.Description + "\" => \"" + writeoff.Description + "\"]");
@@ -54,17 +69,18 @@ namespace Devin.Controllers
 
                 if (changes.Count > 0)
                 {
-                    conn.Execute(@"UPDATE Writeoffs SET
-                        Name        = @Name,
-                        Type        = @Type,
-                        Description = @Description,
-                        CostArticle = @CostArticle,
-                        FolderId    = @FolderId,
-                        Params      = @Params,
-                        Date        = @Date
-                    WHERE Id = @Id", writeoff);
+                    db.Writeoffs
+                        .Where(x => x.Id == writeoff.Id)
+                        .Set(x => x.Name, writeoff.Name)
+                        .Set(x => x.Type, writeoff.Type)
+                        .Set(x => x.Description, writeoff.Description)
+                        .Set(x => x.CostArticle, writeoff.CostArticle)
+                        .Set(x => x.FolderId, writeoff.FolderId)
+                        .Set(x => x.Params, writeoff.Params)
+                        .Set(x => x.Date, writeoff.Date)
+                        .Update();
 
-                    conn.Log(User, "writeoffs", Id, "Списание обновлено. Изменения: " + changes.ToLog());
+                    db.Log(User, "writeoffs", writeoff.Id, "Списание обновлено. Изменения: " + changes.ToLog());
 
                     return Json(new { Good = "Списание обновлено. Изменения:<br />" + changes.ToHtml() });
                 }
@@ -77,11 +93,15 @@ namespace Devin.Controllers
 
         public JsonResult Move(int Id, int FolderId)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                string folder = conn.Query<string>("SELECT Name FROM Folders WHERE Id = @FolderId", new { FolderId }).FirstOrDefault() ?? "<не определено>";
-                conn.Execute("UPDATE Writeoffs SET FolderId = @FolderId WHERE Id = @Id", new { Id, FolderId });
-                conn.Log(User, "writeoffs", Id, "Списание перемещено в папку \"" + folder + "\" [folder" + FolderId + "]");
+                string folder = db.Folders.Where(x => x.Id == FolderId).Select(x => x.Name).FirstOrDefault() ?? "<не определено>";
+
+                db.Writeoffs
+                    .Where(x => x.Id == Id)
+                    .Set(x => x.FolderId, FolderId)
+                    .Update();
+                db.Log(User, "writeoffs", Id, "Списание перемещено в папку \"" + folder + "\" [folder" + FolderId + "]");
 
                 return Json(new { Good = "Списание перемещено" });
             }
@@ -91,10 +111,10 @@ namespace Devin.Controllers
         {
             int id = int.TryParse(Id.Replace("off", ""), out int i) ? i : 0;
 
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                conn.Execute("DELETE FROM Writeoffs WHERE Id = @Id", new { Id = id });
-                conn.Log(User, "writeoffs", id, "Списание удалено без отмены вложенных ремонтов");
+                db.Writeoffs.Delete(x => x.Id == id);
+                db.Log(User, "writeoffs", id, "Списание удалено без отмены вложенных ремонтов");
             }
 
             return Json(new { Good = "Списание удалено без отмены вложенных ремонтов" });
@@ -102,17 +122,25 @@ namespace Devin.Controllers
 
         public JsonResult Print(int Id)
         {
-            string[] months = new string[] { "январе", "феврале", "марте", "апреле", "мае", "июне", "июле", "августе", "сентябре", "октябре", "ноябре", "декабре" };
+            var months = new [] { "январе", "феврале", "марте", "апреле", "мае", "июне", "июле", "августе", "сентябре", "октябре", "ноябре", "декабре" };
 
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                var writeoff = conn.QueryFirst<Writeoff>(@"SELECT 
-                    Writeoffs.*,
-                    TypesWriteoffs.Template    AS [Template],
-                    TypesWriteoffs.DefaultData AS [DefaultData]
-                FROM Writeoffs
-                LEFT OUTER JOIN TypesWriteoffs ON Writeoffs.Type = TypesWriteoffs.Id 
-                WHERE (Writeoffs.Id = @Id)", new { Id });
+                var query = from w in db.Writeoffs
+                            from t in db._WriteoffTypes.Where(x => x.Id == w.Type).DefaultIfEmpty()
+                            where w.Id == Id
+                            select new
+                            {
+                                w.Name,
+                                w.Date,
+                                w.Params,
+                                w.Type,
+                                w.CostArticle,
+                                t.Template,
+                                t.DefaultData
+                            };
+
+                var writeoff = query.FirstOrDefault();
 
                 string template = Server.MapPath(Url.Action("exl", "content")) + "\\" + writeoff.Type + ".xls";
                 string output = writeoff.Name + " " + DateTime.Now.ToLongDateString() + ".xls";
@@ -126,7 +154,7 @@ namespace Devin.Controllers
 
                 if (string.IsNullOrEmpty(writeoff.Params)) return Json(new { Error = "В списании не были заданы параметры" });
 
-                string[] props = writeoff.Params.Split(new string[] { ";;" }, StringSplitOptions.None);
+                var props = writeoff.Params.Split(new [] { ";;" }, StringSplitOptions.None);
 
                 using (var fs = new FileStream(template, FileMode.Open, FileAccess.Read))
                 {
@@ -147,20 +175,30 @@ namespace Devin.Controllers
 
                     try
                     {
-                        repairs = AutoMapper.MapDynamic<Repair>(conn.Query(@"SELECT
-                                Repairs.Id,
-                                Repairs.Number,
-                                Storages.Id        AS Storage_Id,
-                                Storages.Inventory AS Storage_Inventory,
-                                Storages.Name      AS Storage_Name,
-                                Storages.Cost      AS Storage_Cost,
-                                Storages.Account   AS Storage_Account,
-                                Devices.Id         AS Device_Id,
-                                Devices.Inventory  AS Device_Inventory
-                            FROM Repairs 
-                            LEFT OUTER JOIN Storages  ON Repairs.StorageId = Storages.Id
-                            LEFT OUTER JOIN Devices   ON Repairs.DeviceId  = Devices.Id 
-                            WHERE Repairs.WriteoffId = @Id", new { Id }));
+                        var repairsQuery = from r in db.Repairs
+                                           from d in db.Devices.Where(x => x.Id == r.DeviceId).DefaultIfEmpty()
+                                           from s in db.Storages.Where(x => x.Id == r.StorageId).DefaultIfEmpty()
+                                           where r.WriteoffId == Id
+                                           select new Repair
+                                           {
+                                               Id = r.Id,
+                                               Number = r.Number,
+                                               Device = new Device
+                                               {
+                                                   Id = d.Id,
+                                                   Inventory = d.Inventory
+                                               },
+                                               Storage = new Storage
+                                               {
+                                                   Id = s.Id,
+                                                   Inventory = s.Inventory,
+                                                   Name = s.Name,
+                                                   Cost = s.Cost,
+                                                   Account = s.Account
+                                               }
+                                           };
+
+                        repairs = repairsQuery.ToList();
                     }
                     catch (Exception)
                     {
@@ -213,20 +251,30 @@ namespace Devin.Controllers
 
                     try
                     {
-                        repairs = AutoMapper.MapDynamic<Repair>(conn.Query(@"SELECT
-                                Repairs.Id,
-                                Repairs.Number,
-                                Storages.Id        AS Storage_Id,
-                                Storages.Inventory AS Storage_Inventory,
-                                Storages.Name      AS Storage_Name,
-                                Storages.Cost      AS Storage_Cost,
-                                Storages.Account   AS Storage_Account,
-                                Devices.Id         AS Device_Id,
-                                Devices.Inventory  AS Device_Inventory
-                            FROM Repairs 
-                            LEFT OUTER JOIN Storages  ON Repairs.StorageId = Storages.Id
-                            LEFT OUTER JOIN Devices   ON Repairs.DeviceId  = Devices.Id 
-                            WHERE Repairs.WriteoffId = @Id", new { Id }));
+                        var repairsQuery = from r in db.Repairs
+                                           from d in db.Devices.Where(x => x.Id == r.DeviceId).DefaultIfEmpty()
+                                           from s in db.Storages.Where(x => x.Id == r.StorageId).DefaultIfEmpty()
+                                           where r.WriteoffId == Id
+                                           select new Repair
+                                           {
+                                               Id = r.Id,
+                                               Number = r.Number,
+                                               Device = new Device
+                                               {
+                                                   Id = d.Id,
+                                                   Inventory = d.Inventory
+                                               },
+                                               Storage = new Storage
+                                               {
+                                                   Id = s.Id,
+                                                   Inventory = s.Inventory,
+                                                   Name = s.Name,
+                                                   Cost = s.Cost,
+                                                   Account = s.Account
+                                               }
+                                           };
+
+                        repairs = repairsQuery.ToList();
                     }
                     catch (Exception)
                     {
@@ -282,24 +330,39 @@ namespace Devin.Controllers
                     sheet.GetRow(28).GetCell(16).SetCellValue(writeoff.Date.ToString("MMMM yyyy") + " г.");
                     sheet.GetRow(27).GetCell(39).SetCellValue(writeoff.Date.ToString("yyyy") + " г.");
 
-                    var rs = conn.QueryFirst(@"SELECT 
-                            TOP (1) DeviceId AS [DeviceNumber], 
-                            COUNT(Id)        AS [RepairsCount] 
-                        FROM Repairs
-                        WHERE WriteoffId = @Id
-                        GROUP BY DeviceId", new { Id });
+                    var repairsQuery = from raw in db.Repairs
+                                           .Where(x => x.WriteoffId == Id)
+                                           .Select(x => new { x.Id, x.DeviceId })
+                                           .ToList()
+                                       group raw by raw.DeviceId into g
+                                       select new
+                                       {
+                                           DeviceNumber = g.Key,
+                                           RepairsCount = g.Count()
+                                       };
+
+                    var rs = repairsQuery.FirstOrDefault();
 
                     if (rs == null) return Json(new { Error = "В ремонтах не найден идентификатор основного средства, либо списание не содержит ремонтов" });
 
-                    int DeviceId = (int)rs.DeviceNumber;
-                    int RepairsCount = (int)rs.RepairsCount;
+                    int DeviceId = rs.DeviceNumber;
+                    int RepairsCount = rs.RepairsCount;
 
-                    Device device = conn.QueryFirst<Device>(@"SELECT * FROM Devices WHERE Id = @DeviceId", new { DeviceId });
+                    var device = db.Devices.Where(x => x.Id == DeviceId).FirstOrDefault();
                     if (device == null) return Json(new { Error = "Устройство не найдено" });
 
-                    var metals = conn.Query<Object1C>("SELECT Description, Gold, Silver, Platinum, Palladium, Mpg, SubDivision FROM Objects1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
-
-                    if (metals == null) metals = new Object1C();
+                    var metals = db.Objects1C
+                        .Where(x => x.Inventory == device.Inventory)
+                        .Select(x => new Object1C {
+                            Description = x.Description,
+                            Gold = x.Gold,
+                            Silver = x.Silver,
+                            Platinum = x.Platinum,
+                            Palladium = x.Palladium,
+                            Mpg = x.Mpg,
+                            SubDivision = x.SubDivision
+                        })
+                        .FirstOrDefault() ?? new Object1C();
 
                     if ((device.Gold ?? "") == "") device.Gold = metals.Gold.ToString();
                     if ((device.Silver ?? "") == "") device.Silver = metals.Silver.ToString();
@@ -336,15 +399,18 @@ namespace Devin.Controllers
                         case 1: book.GetSheetAt(2).GetRow(14).GetCell(2).SetCellValue("Эксплуатационные расходы"); break;
                     }
 
-                    var storages = conn.Query<Storage>(@"SELECT 
-                            Repairs.Number     AS Nall, 
-                            Storages.Name, 
-                            Storages.Cost,
-                            Storages.Inventory
-                        FROM Repairs 
-                        LEFT OUTER JOIN Storages ON Repairs.StorageId = Storages.Id
-                        WHERE Repairs.WriteoffId = @Id", new { Id });
+                    var storagesQuery = from r in db.Repairs
+                                        from s in db.Storages.Where(x => x.Id == r.StorageId).DefaultIfEmpty()
+                                        where r.WriteoffId == Id
+                                        select new Storage
+                                        {
+                                            Name = s.Name,
+                                            Inventory = s.Inventory,
+                                            Cost = s.Cost,
+                                            Nall = r.Number
+                                        };
 
+                    var storages = storagesQuery.ToList();
 
                     foreach (var storage in storages)
                     {
@@ -357,15 +423,15 @@ namespace Devin.Controllers
                         step++;
                     }
 
-                    DragMetal drags;
+                    dynamic drags;
 
-                    using (var c = Database.Connection("Site"))
+                    using (var _db = new SiteContext())
                     {
-                        drags = new DragMetal
+                        drags = new
                         {
-                            Gold = c.QueryFirst<string>("SELECT Value FROM Constants WHERE Keyword = 'Gold'"),
-                            Silver = c.QueryFirst<string>("SELECT Value FROM Constants WHERE Keyword = 'Silver'"),
-                            MPG = c.QueryFirst<string>("SELECT Value FROM Constants WHERE Keyword = 'MPG'")
+                            Gold = _db.Constants.Where(x => x.Keyword == "Gold").Select(x => x.Value).FirstOrDefault(),
+                            Silver = _db.Constants.Where(x => x.Keyword == "Silver").Select(x => x.Value).FirstOrDefault(),
+                            MPG = _db.Constants.Where(x => x.Keyword == "MPG").Select(x => x.Value).FirstOrDefault()
                         };
                     }
 
@@ -411,24 +477,40 @@ namespace Devin.Controllers
                     sheet.GetRow(28).GetCell(16).SetCellValue(writeoff.Date.ToString("MMMM yyyy") + " г.");
                     sheet.GetRow(27).GetCell(39).SetCellValue(writeoff.Date.ToString("yyyy") + " г.");
 
-                    var rs = conn.QueryFirst(@"SELECT 
-                            TOP (1) DeviceId AS [DeviceNumber], 
-                            COUNT(Id)        AS [RepairsCount] 
-                        FROM Repairs
-                        WHERE WriteoffId = @Id
-                        GROUP BY DeviceId", new { Id });
+                    var repairsQuery = from raw in db.Repairs
+                                           .Where(x => x.WriteoffId == Id)
+                                           .Select(x => new { x.Id, x.DeviceId })
+                                           .ToList()
+                                       group raw by raw.DeviceId into g
+                                       select new
+                                       {
+                                           DeviceNumber = g.Key,
+                                           RepairsCount = g.Count()
+                                       };
+
+                    var rs = repairsQuery.FirstOrDefault();
 
                     if (rs == null) return Json(new { Error = "В ремонтах не найден идентификатор основного средства, либо списание не содержит ремонтов" });
 
-                    int DeviceId = (int)rs.DeviceNumber;
-                    int RepairsCount = (int)rs.RepairsCount;
+                    int DeviceId = rs.DeviceNumber;
+                    int RepairsCount = rs.RepairsCount;
 
-                    Device device = conn.QueryFirst<Device>(@"SELECT * FROM Devices WHERE Id = @DeviceId", new { DeviceId });
+                    var device = db.Devices.Where(x => x.Id == DeviceId).FirstOrDefault();
                     if (device == null) return Json(new { Error = "Устройство не найдено" });
 
-                    var metals = conn.Query<Object1C>("SELECT Description, Gold, Silver, Platinum, Palladium, Mpg, SubDivision FROM Objects1C WHERE Inventory = @Inventory", new { device.Inventory }).FirstOrDefault();
-
-                    if (metals == null) metals = new Object1C();
+                    var metals = db.Objects1C
+                        .Where(x => x.Inventory == device.Inventory)
+                        .Select(x => new Object1C
+                        {
+                            Description = x.Description,
+                            Gold = x.Gold,
+                            Silver = x.Silver,
+                            Platinum = x.Platinum,
+                            Palladium = x.Palladium,
+                            Mpg = x.Mpg,
+                            SubDivision = x.SubDivision
+                        })
+                        .FirstOrDefault() ?? new Object1C();
 
                     if ((device.Gold ?? "") == "") device.Gold = metals.Gold.ToString();
                     if ((device.Silver ?? "") == "") device.Silver = metals.Silver.ToString();
@@ -465,15 +547,18 @@ namespace Devin.Controllers
                         default: book.GetSheetAt(2).GetRow(14).GetCell(2).SetCellValue("Эксплуатационные расходы"); break;
                     }
 
-                    var storages = conn.Query<Storage>(@"SELECT 
-                            Repairs.Number     AS Nall, 
-                            Storages.Name, 
-                            Storages.Cost,
-                            Storages.Inventory
-                        FROM Repairs 
-                        LEFT OUTER JOIN Storages ON Repairs.StorageId = Storages.Id
-                        WHERE Repairs.WriteoffId = @Id", new { Id });
+                    var storagesQuery = from r in db.Repairs
+                                        from s in db.Storages.Where(x => x.Id == r.StorageId).DefaultIfEmpty()
+                                        where r.WriteoffId == Id
+                                        select new Storage
+                                        {
+                                            Name = s.Name,
+                                            Inventory = s.Inventory,
+                                            Cost = s.Cost,
+                                            Nall = r.Number
+                                        };
 
+                    var storages = storagesQuery.ToList();
 
                     foreach (var storage in storages)
                     {
@@ -486,15 +571,15 @@ namespace Devin.Controllers
                         step++;
                     }
 
-                    DragMetal drags;
+                    dynamic drags;
 
-                    using (var c = Database.Connection("Site"))
+                    using (var _db = new SiteContext())
                     {
-                        drags = new DragMetal
+                        drags = new
                         {
-                            Gold = c.QueryFirst<string>("SELECT Value FROM Constants WHERE Keyword = 'Gold'"),
-                            Silver = c.QueryFirst<string>("SELECT Value FROM Constants WHERE Keyword = 'Silver'"),
-                            MPG = c.QueryFirst<string>("SELECT Value FROM Constants WHERE Keyword = 'MPG'")
+                            Gold = _db.Constants.Where(x => x.Keyword == "Gold").Select(x => x.Value).FirstOrDefault(),
+                            Silver = _db.Constants.Where(x => x.Keyword == "Silver").Select(x => x.Value).FirstOrDefault(),
+                            MPG = _db.Constants.Where(x => x.Keyword == "MPG").Select(x => x.Value).FirstOrDefault()
                         };
                     }
 

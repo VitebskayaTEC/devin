@@ -1,4 +1,4 @@
-﻿@using (var db = new DbDevin())
+﻿@using (var db = new DevinContext())
 {
     var computers = db.Report
         .Select(x => new Report { ID = x.ID, RHost = x.RHost, RDateTime = x.RDateTime, RUser = x.RUser })

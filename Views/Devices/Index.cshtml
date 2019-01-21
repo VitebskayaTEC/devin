@@ -19,7 +19,7 @@
         <div>
             <select id="moveKey" class="cart__field cart__field_autoWidth">
                 <option value="0">Не распределенные</option>
-                @using (var db = new DbDevin())
+                @using (var db = new DevinContext())
                 {
                     var computers = db.Devices
                         .Where(x => x.Type == "CMP" && !x.IsDeleted && !x.IsOff)

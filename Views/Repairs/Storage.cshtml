@@ -1,6 +1,6 @@
 ﻿@model int
 
-@using (var db = new DbDevin())
+@using (var db = new DevinContext())
 {
     var storage = db.Storages
         .Where(x => x.Id == Model)

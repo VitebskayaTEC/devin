@@ -11,7 +11,7 @@
     </style>
 }
 
-@using (var db = new DbDevin())
+@using (var db = new DevinContext())
 {
     var objects = db.Objects1C
         .Where(x => !x.IsChecked)

@@ -1,5 +1,6 @@
 ﻿using LinqToDB.Mapping;
-using Dapper;
+using LinqToDB;
+using System.Linq;
 using System;
 using System.Collections.Generic;
 
@@ -60,66 +61,47 @@ namespace Devin.Models
 
         public void Load()
         {
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                Repairs = new List<Repair>();
+                var query = from r in db.Repairs
+                            from d in db.Devices.Where(x => x.Id == r.DeviceId).DefaultIfEmpty()
+                            from s in db.Storages.Where(x => x.Id == r.StorageId).DefaultIfEmpty()
+                            where r.WriteoffId == Id
+                            orderby r.FolderId, r.WriteoffId, r.Date descending
+                            select new Repair
+                            {
+                                Id = r.Id,
+                                DeviceId = r.DeviceId,
+                                StorageId = r.StorageId,
+                                Number = r.Number,
+                                Date = r.Date,
+                                Author = r.Author,
+                                FolderId = r.FolderId,
+                                WriteoffId = r.WriteoffId,
+                                IsOff = r.IsOff,
+                                IsVirtual = r.IsVirtual,
+                                Device = new Device
+                                {
+                                    Id = d.Id,
+                                    Inventory = d.Inventory,
+                                    Name = d.Name,
+                                    PublicName = d.PublicName,
+                                    Type = d.Type
+                                },
+                                Storage = new Storage
+                                {
+                                    Id = s.Id,
+                                    Inventory = s.Inventory,
+                                    Name = s.Name,
+                                    Nall = s.Nall,
+                                    Nstorage = s.Nstorage,
+                                    Nrepairs = s.Nrepairs,
+                                    Noff = s.Noff,
+                                    Cost = s.Cost
+                                }
+                            };
 
-                IEnumerable<dynamic> raw = conn.Query($@"SELECT
-                        Repairs.*
-                        ,Devices.Id          AS Device_Id
-                        ,Devices.Inventory   AS Device_Inventory
-                        ,Devices.Name        AS Device_Name
-                        ,Devices.PublicName  AS Device_PublicName
-                        ,Devices.Type        AS Device_Type
-                        ,Storages.Id         AS Storage_Id
-                        ,Storages.Inventory  AS Storage_Inventory
-                        ,Storages.Name       AS Storage_Name
-                        ,Storages.Nall       AS Storage_Nall
-                        ,Storages.Nstorage   AS Storage_Nstorage
-                        ,Storages.Nrepairs   AS Storage_Nrepairs
-                        ,Storages.Noff       AS Storage_Noff
-                        ,Storages.Cost       AS Storage_Cost
-                    FROM Repairs
-                    LEFT OUTER JOIN Devices  ON Repairs.DeviceId  = Devices.Id
-                    LEFT OUTER JOIN Storages ON Repairs.StorageId = Storages.Id
-                    WHERE Repairs.WriteoffId = @Id
-                    ORDER BY Repairs.FolderId, Repairs.WriteoffId, Repairs.Date DESC", new { Id });
-
-                foreach (dynamic row in raw)
-                {
-                    Repairs.Add(new Repair
-                    {
-                        Id = row.Id,
-                        DeviceId = Convert.ToInt32(row.DeviceId),
-                        StorageId = Convert.ToInt32(row.StorageId),
-                        Date = row.Date,
-                        Author = row.Author,
-                        FolderId = Convert.ToInt32(row.FolderId),
-                        WriteoffId = Convert.ToInt32(row.WriteoffId),
-                        IsOff = row.IsOff,
-                        IsVirtual = row.IsVirtual,
-                        Number = Convert.ToInt32(row.Number),
-                        Device = new Device
-                        {
-                            Id = Convert.ToInt32(row.Device_Id),
-                            Inventory = row.Device_Inventory,
-                            Name = row.Device_Name,
-                            PublicName = row.Device_PublicName,
-                            Type = row.Device_Type
-                        },
-                        Storage = new Storage
-                        {
-                            Id = Convert.ToInt32(row.Storage_Id),
-                            Inventory = row.Storage_Inventory,
-                            Name = row.Storage_Name,
-                            Nall = Convert.ToInt32(row.Storage_Nall),
-                            Nstorage = Convert.ToInt32(row.Storage_Nstorage),
-                            Nrepairs = Convert.ToInt32(row.Storage_Nrepairs),
-                            Noff = Convert.ToInt32(row.Storage_Noff),
-                            Cost = Convert.ToSingle(row.Storage_Cost)
-                        }
-                    });
-                }
+                Repairs = query.ToList();
             }
         }
     }

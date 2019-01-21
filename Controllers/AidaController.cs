@@ -41,7 +41,7 @@ namespace Devin.Controllers
 
         public JsonResult Delete(string Id)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 int id = int.TryParse((Id ?? "").Replace("aida", ""), out int i) ? i : 0;
                 if (id == 0) return Json(new { Warning = "Идентификатор не был передан" });
@@ -60,7 +60,7 @@ namespace Devin.Controllers
         {
             try
             {
-                using (var db = new DbDevin())
+                using (var db = new DevinContext())
                 {
                     var maxIdentifiers = db.Report
                         .GroupBy(x => x.RHost)

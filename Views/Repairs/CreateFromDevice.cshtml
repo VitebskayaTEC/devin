@@ -1,6 +1,6 @@
 ﻿@model string
 
-@using (var db = new DbDevin())
+@using (var db = new DevinContext())
 {
     int Id = int.Parse(Model.Replace("device", ""));
     var device = db.Devices.Where(x => x.Id == Id).Select(x => new { x.Name, x.PublicName }).FirstOrDefault();

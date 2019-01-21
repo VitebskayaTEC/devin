@@ -1,5 +1,5 @@
 ﻿@model int
-@using (var db = new DbDevin())
+@using (var db = new DevinContext())
 {
     var writeoff = db.Writeoffs.FirstOrDefault(x => x.Id == Model);
 

@@ -6,7 +6,7 @@
 <div id="summary"></div>
 <br />
 
-@using (var db = new DbDevin())
+@using (var db = new DevinContext())
 {
     var rawQuery = from w in db.Writeoffs
                    from r in db.Repairs.Where(x => x.WriteoffId == w.Id).DefaultIfEmpty()

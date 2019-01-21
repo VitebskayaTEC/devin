@@ -13,7 +13,7 @@ namespace Devin.ViewModels
 
         public StoragesViewModel(string Search = "")
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 if (!string.IsNullOrEmpty(Search))
                 {

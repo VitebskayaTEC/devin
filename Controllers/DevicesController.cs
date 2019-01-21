@@ -1,6 +1,6 @@
-﻿using Dapper;
-using Devin.Models;
+﻿using Devin.Models;
 using Devin.ViewModels;
+using LinqToDB;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using System;
@@ -72,18 +72,36 @@ namespace Devin.Controllers
 
         public ActionResult Inventory() => View();
 
-        public JsonResult Update(int Id, [Bind(Include = "Id,Name,Inventory,Type,Description,PublicName,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,IsOff")] Device device)
+
+        public JsonResult Update(
+            [Bind(Include = "Id,Name,Inventory,Type,Description,PublicName,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,IsOff")] Device device,
+            string DateInstall,
+            string DateLastRepair
+        )
         {
-            if (!DateTime.TryParse(Request.Form.Get("DateInstall"), out DateTime d)) return Json(new { Error = "Дата установки введена в неверном формате" }); else device.DateInstall = d;
-
-            if (DateTime.TryParse(Request.Form.Get("DateLastRepair"), out d)) device.DateLastRepair = d;
-            else device.DateLastRepair = null;
-
-            using (var conn = Database.Connection())
+            if (!DateTime.TryParse(DateInstall, out DateTime d))
             {
-                var old = conn.QueryFirst<Device>(@"SELECT * FROM Devices WHERE Id = @Id", new { device.Id });
+                return Json(new { Error = "Дата установки введена в неверном формате" });
+            }
+            else
+            {
+                device.DateInstall = d;
+            }
 
-                List<string> changes = new List<string>();
+            if (DateTime.TryParse(Request.Form.Get("DateLastRepair"), out d))
+            {
+                device.DateLastRepair = d;
+            }
+            else
+            {
+                device.DateLastRepair = null;
+            }
+
+            using (var db = new DevinContext())
+            {
+                var old = db.Devices.Where(x => x.Id == device.Id).FirstOrDefault();
+
+                var changes = new List<string>();
 
                 if (device.Inventory != old.Inventory) changes.Add($"инвентарный номер [{old.Inventory} => {device.Inventory}]");
                 if (device.Name != old.Name) changes.Add($"наименование [{old.Name} => {device.Name}]");
@@ -145,29 +163,31 @@ namespace Devin.Controllers
 
                 if (changes.Count > 0)
                 {
-                    conn.Execute(@"UPDATE Devices SET
-                        Inventory       = @Inventory
-                        ,Name           = @Name
-                        ,Description    = @Description
-                        ,OS             = @OS
-                        ,OSKey          = @OSKey
-                        ,PlaceId        = @PlaceId
-                        ,Type           = @Type
-                        ,ComputerId     = @ComputerId
-                        ,DateInstall    = @DateInstall
-                        ,SerialNumber   = @SerialNumber
-                        ,PassportNumber = @PassportNumber
-                        ,Location       = @Location
-                        ,PrinterId      = @PrinterId
-                        ,FolderId       = @FolderId
-                        ,ServiceTag     = @ServiceTag
-                        ,IsOff          = @IsOff
-                        ,Mol            = @Mol
-                        ,DateLastRepair = @DateLastRepair
-                        ,PublicName     = @PublicName
-                    WHERE Id = @Id", device);
+                    db.Devices
+                        .Where(x => x.Id == device.Id)
+                        .Set(x => x.Type, device.Type)
+                        .Set(x => x.Inventory, device.Inventory)
+                        .Set(x => x.Name, device.Name)
+                        .Set(x => x.PublicName, device.PublicName)
+                        .Set(x => x.Description, device.Description)
+                        .Set(x => x.Location, device.Location)
+                        .Set(x => x.ServiceTag, device.ServiceTag)
+                        .Set(x => x.OS, device.OS)
+                        .Set(x => x.OSKey, device.OSKey)
+                        .Set(x => x.SerialNumber, device.SerialNumber)
+                        .Set(x => x.PassportNumber, device.PassportNumber)
+                        .Set(x => x.DateInstall, device.DateInstall)
+                        .Set(x => x.DateLastRepair, device.DateLastRepair)
+                        .Set(x => x.ComputerId, device.ComputerId)
+                        .Set(x => x.FolderId, device.FolderId)
+                        .Set(x => x.PlaceId, device.PlaceId)
+                        .Set(x => x.PrinterId, device.PrinterId)
+                        .Set(x => x.IsOff, device.IsOff)
+                        .Set(x => x.Mol, device.Mol)
+                        .Update();
 
-                    conn.Log(User, "devices", device.Id, "Позиция изменена. Изменения: " + changes.ToLog());
+                    db.Log(User, "devices", device.Id, "Позиция изменена. Изменения: " + changes.ToLog());
+
                     return Json(new { Good = "Позиция успешно обновлена!<br />Изменены поля:<br />" + changes.ToHtml() });
                 }
                 else
@@ -180,42 +200,60 @@ namespace Devin.Controllers
         public JsonResult Copy(string Id)
         {
             int id = int.Parse(Id.Replace("device", ""));
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                Device device = conn.QueryFirst<Device>("SELECT * FROM Devices WHERE id = @id", new { id });
+                var device = db.Devices.Where(x => x.Id == id).FirstOrDefault();
+                if (device == null)
+                {
+                    return Json(new { Error = "Устройство, которое необходимо скопировать, не найдено в базе данных" });
+                }
+                
                 device.Name += " (копия)";
-                conn.Execute(@"INSERT INTO Devices (
-                    [Inventory], [Type], [Name], [NetworkName], [Description], [DateInstall], [DateLastRepair], [Mol], [SerialNumber], [PassportNumber], [Location], [OS], [OSKey], [PrinterId], [FolderId], [IsOff], [IsDeleted], [ServiceTag], [PlaceId], [ComputerId]
-                ) VALUES (
-                    @Inventory, @Type, @Name, @NetworkName, @Description, @DateInstall, @DateLastRepair, @Mol, @SerialNumber, @PassportNumber, @Location, @OS, @OSKey, @PrinterId, @FolderId, @IsOff, @IsDeleted, @ServiceTag, @PlaceId, @ComputerId
-                )", device);
 
-                int newid = conn.QueryFirst<int>("SELECT Max(Id) FROM Devices");
+                int newId = db.InsertWithInt32Identity(device);
+                db.Log(User, "devices", newId, "Позиция скопирована из [device" + Id + "]");
 
-                conn.Log(User, "devices", newid, "Позиция скопирована из [device" + Id + "]");
-
-                return Json(new { Id = "device" + newid, Good = "Карточка устройства успешно скопирована" });
+                return Json(new { Id = "device" + newId, Good = "Карточка устройства успешно скопирована" });
             }
         }
 
         public JsonResult Create()
         {
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                conn.Execute("INSERT INTO Devices (Inventory, ComputerId, FolderId, Name, Description, DateInstall, IsOff, IsDeleted) VALUES (@Inventory, @ComputerId, @FolderId, @Name, @Description, @DateInstall, @IsOff, @IsDeleted)", new Device {
+                int id = db.InsertWithInt32Identity(new Device
+                {
                     Inventory = "000000",
-                    ComputerId = 0,
-                    FolderId = 0, 
                     Name = "Новое устройство",
+                    Type = "ALL",
                     Description = "",
+                    Description1C = "",
+                    Location = "",
+                    PublicName = "",
+                    NetworkName = "",
+                    PassportNumber = "",
+                    SerialNumber = "",
+                    ServiceTag = "",
+                    Mol = "",
+                    OS = "",
+                    OSKey = "",
+                    Gold = "",
+                    Silver = "",
+                    MPG = "",
+                    Palladium = "",
+                    Platinum = "",
+                    Files = "",
                     DateInstall = DateTime.Now.Date,
+                    DateLastRepair = null,
+                    ComputerId = 0,
+                    FolderId = 0,
+                    PlaceId = 0,
+                    PrinterId = 0,
                     IsDeleted = false,
                     IsOff = false
                 });
 
-                int id = conn.QueryFirst<int>("SELECT Max(Id) FROM Devices");
-
-                conn.Log(User, "devices", id, "Создано новое устройство");
+                db.Log(User, "devices", id, "Создано новое устройство");
 
                 return Json(new { Id = "device" + id, Good = "Создано новое устройство" });
             }
@@ -226,10 +264,10 @@ namespace Devin.Controllers
         {
             int id = int.Parse(Id.Replace("device", ""));
 
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                conn.Execute("UPDATE Devices SET IsDeleted = 1 WHERE id = @id", new { id });
-                conn.Log(User, "devices", id, "Устройство удалено");
+                db.Devices.Delete(x => x.Id == id);
+                db.Log(User, "devices", id, "Устройство удалено");
 
                 return Json(new { Good = "Устройство удалено" });
             }
@@ -237,9 +275,9 @@ namespace Devin.Controllers
 
         public JsonResult MoveSelected(string Devices, string Key)
         {
-            string[] devices = Devices.Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
+            var selectedIdentifiers = Devices.Split(new [] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
 
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
                 int ComputerId = int.TryParse(Key.Replace("computer", ""), out int i) ? i : 0;
                 int FolderId = int.TryParse(Key.Replace("folder", ""), out i) ? i : 0;
@@ -248,13 +286,17 @@ namespace Devin.Controllers
                 if (Key.Contains("computer")) message = "Устройство перемещено в компьютер [device" + ComputerId + "]";
                 if (Key.Contains("folder")) message = "Устройство перемещено в папку [folder" + FolderId + "]";
 
-                foreach (string device in devices)
+                foreach (string identifier in selectedIdentifiers)
                 {
-                    int Id = int.TryParse(device, out i) ? i : 0;
-                    if (Id != 0)
+                    int id = int.TryParse(identifier, out i) ? i : 0;
+                    if (id != 0)
                     {
-                        conn.Execute("UPDATE Devices SET ComputerId = @ComputerId, FolderId = @FolderId WHERE Id = @Id", new { ComputerId, FolderId, Id });
-                        conn.Log(User, "devices", Id, message);
+                        db.Devices
+                            .Where(x => x.Id == id)
+                            .Set(x => x.ComputerId, ComputerId)
+                            .Set(x => x.FolderId, FolderId)
+                            .Update();
+                        db.Log(User, "devices", id, message);
                     }
                 }
             }
@@ -264,14 +306,17 @@ namespace Devin.Controllers
 
         public JsonResult Move(int Id, int FolderId)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                int folderId = conn.Query<int>("SELECT FolderId FROM Devices WHERE Id = @Id", new { Id }).FirstOrDefault();
+                int folderId = db.Folders.Where(x => x.Id == Id).Select(x => x.FolderId).FirstOrDefault();
                 string oldText = folderId == 0 ? "" : "из папки [folder" + folderId + "] ";
                 string newText = FolderId == 0 ? "и размещен отдельно" : "в папку [folder" + FolderId + "]";
 
-                conn.Execute("UPDATE Devices SET FolderId = @FolderId WHERE Id = @Id", new { Id, FolderId });
-                conn.Log(User, "devices", Id, "Компьютер успешно перемещен " + oldText + newText);
+                db.Devices
+                    .Where(x => x.Id == Id)
+                    .Set(x => x.FolderId, FolderId)
+                    .Update();
+                db.Log(User, "devices", Id, "Компьютер успешно перемещен " + oldText + newText);
 
                 return Json(new { Good = "Компьютер успешно перемещен" });
             }
@@ -279,10 +324,13 @@ namespace Devin.Controllers
 
         public void HideObject1C(string Id, bool Hide)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                conn.Execute("UPDATE Objects1C SET IsHide = @Hide WHERE Inventory = @Id", new { Id, Hide });
-                conn.Log(User, "objects1c", Id, "Объект скрыт");
+                db.Objects1C
+                    .Where(x => x.Inventory == Id)
+                    .Set(x => x.IsHide, Hide)
+                    .Update();
+                db.Log(User, "objects1c", Id, "Объект скрыт");
             }
         }
 
@@ -308,11 +356,11 @@ namespace Devin.Controllers
                 { "videocard", "Ремонт видеокарты" },
             };
 
-            string[] months = new string[] { "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря" };
+            var months = new [] { "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря" };
 
 
             DateTime Date = DateTime.TryParse(Request.Form.Get("DateInstall"), out DateTime d) ? d : DateTime.Now;
-            string[] Positions = Request.Form.Get("positions").Split(new string[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
+            var Positions = Request.Form.Get("positions").Split(new [] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
 
             string output = Url.Action("excels", "content") + "defect.xls";
 
@@ -342,7 +390,7 @@ namespace Devin.Controllers
             {
                 if (position != "")
                 {
-                    var param = position.Split(new string[] { "::" }, StringSplitOptions.RemoveEmptyEntries);
+                    var param = position.Split(new [] { "::" }, StringSplitOptions.RemoveEmptyEntries);
 
                     if (defects != "") defects += ", ";
                     defects += keys.ContainsKey(param[0]) ? keys[param[0]] : param[0];
@@ -365,21 +413,24 @@ namespace Devin.Controllers
 
         public JsonResult PrintRecordCartByIp(string Ip)
         {
-            IPAddress addr = IPAddress.Parse(Ip);
-            IPHostEntry entry = Dns.GetHostEntry(addr);
-            string Name = entry.HostName.Substring(0, entry.HostName.IndexOf('.'));
+            var addr = IPAddress.Parse(Ip);
+            var entry = Dns.GetHostEntry(addr);
+            string name = entry.HostName.Substring(0, entry.HostName.IndexOf('.'));
 
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                int Id = conn.Query<int>("SELECT Id FROM Devices WHERE Name = @Name", new { Name }).FirstOrDefault();
-                if (Id == 0) return Json(new { Error = "Компьютер с именем \"" + Name + "\" не найден в базе." });
-                return PrintRecordCart(Id.ToString());
+                int id = db.Devices.Where(x => x.Type == "CMP" && x.Name == name).Select(x => x.Id).FirstOrDefault();
+                if (id == 0) return Json(new { Error = "Компьютер с именем \"" + name + "\" не найден в базе." });
+
+                return PrintRecordCart(id.ToString());
             }
         }
 
         public JsonResult PrintRecordCart(string Id)
         {
-            Id = Id.Replace("device", "");
+            int id = int.TryParse(Id.Replace("device", ""), out int i) ? i : 0;
+            if (id == 0) return Json(new { Error = "Компьютер с идентификатором \"" + Id + "\" не найден в базе." });
+
             string template = Server.MapPath(Url.Action("exl", "content") + "/ReportCart.xls");
 
             HSSFWorkbook book;
@@ -388,64 +439,68 @@ namespace Devin.Controllers
                 book = new HSSFWorkbook(fs);
             }
 
-            ISheet sheet = book.GetSheetAt(0);
+            var sheet = book.GetSheetAt(0);
 
-            string cabinet;
-            List<Device> devices;
-            string name;
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                cabinet = conn.QueryFirst<string>(@"SELECT WorkPlaces.Location FROM Devices LEFT OUTER JOIN WorkPlaces ON WorkPlaces.Id = Devices.PlaceId WHERE Devices.Id = @Id", new { Id });
+                var cabinetQuery = from d in db.Devices
+                                   from w in db.WorkPlaces.Where(x => x.Id == d.PlaceId).DefaultIfEmpty()
+                                   where d.Id == id
+                                   select w.Location;
 
-                devices = conn.Query<Device>(@"SELECT
-	                Devices.Inventory,
-	                Devices.Name,
-	                Devices.Description,
-	                Devices.PublicName,
-	                Objects1C.Description AS Description1C,
-	                Devices.SerialNumber,
-	                CASE WHEN Objects1C.Mol IS NULL THEN Devices.Mol ELSE Objects1C.Mol END AS Mol,
-	                Devices.DateInstall
-                FROM Devices
-                LEFT OUTER JOIN Objects1C ON Objects1C.Inventory = Devices.Inventory
-                WHERE Devices.Id = @Id OR Devices.ComputerId = @Id AND Devices.IsDeleted <> 1
-                ORDER BY Devices.Inventory, Description1C", new { Id }).AsList();
+                var cabinet = cabinetQuery.FirstOrDefault();
 
-                name = conn.QueryFirst<string>("SELECT Name FROM Devices WHERE Id = @Id", new { Id });
+                var devicesQuery = from d in db.Devices
+                                   from o in db.Objects1C.Where(x => x.Inventory == d.Inventory)
+                                   where (d.Id == id || d.ComputerId == id) && !d.IsDeleted
+                                   orderby d.Inventory, o.Description
+                                   select new {
+                                       d.Inventory,
+                                       d.Description,
+                                       d.PublicName,
+                                       Description1C = o.Description ?? d.Description,
+                                       SerialNumber = d.SerialNumber ?? "",
+                                       Mol = o.Mol ?? d.Mol ?? "",
+                                       d.DateInstall
+                                   };
+
+                var devices = devicesQuery.ToList();
+
+                var name = db.Devices.Where(x => x.Id == id).Select(x => x.Name).FirstOrDefault();
+
+                string now = DateTime.Now.ToString("dd.MM.yyyy");
+                sheet.GetRow(4).GetCell(9).SetCellValue(cabinet);
+                sheet.GetRow(12).GetCell(0).SetCellValue(now);
+
+                int step = 0;
+                foreach (var device in devices)
+                {
+                    sheet.CopyRow(8, 9 + step);
+                    IRow row = sheet.GetRow(9 + step);
+                    row.GetCell(0).SetCellValue(device.Inventory);
+                    row.GetCell(1).SetCellValue(device.Description1C);
+                    row.GetCell(2).SetCellValue(device.SerialNumber);
+                    row.GetCell(3).SetCellValue(device.PublicName);
+                    row.GetCell(4).SetCellValue(device.DateInstall.ToString("dd.MM.yyyy"));
+                    row.GetCell(5).SetCellValue(device.Mol);
+                    row.GetCell(6).SetCellValue(now);
+                    step++;
+                }
+
+                sheet.GetRow(8).Height = 0;
+                string output = @"\\backup\pub\web\devin\Карточка_учета_оргтехники_" + name.Replace("/", "-").Replace(".", "") + ".xls";
+
+                using (var fs = new FileStream(output, FileMode.OpenOrCreate, FileAccess.Write))
+                {
+                    book.Write(fs);
+                }
+
+                return Json(new
+                {
+                    Good = "Карточка учета вычислительной техники на рабочем месте \"" + name + "\" создана",
+                    Link = "http://www.vst.vitebsk.energo.net/files/devin/Карточка_учета_оргтехники_" + name.Replace("/", "-").Replace(".", "") + ".xls?r=" + (new Random()).Next()
+                }, JsonRequestBehavior.AllowGet);
             }
-
-            string now = DateTime.Now.ToString("dd.MM.yyyy");
-            sheet.GetRow(4).GetCell(9).SetCellValue(cabinet);
-            sheet.GetRow(12).GetCell(0).SetCellValue(now);
-
-            int step = 0;
-            foreach (Device device in devices)
-            {
-                sheet.CopyRow(8, 9 + step);
-                IRow row = sheet.GetRow(9 + step);
-                row.GetCell(0).SetCellValue(device.Inventory);
-                row.GetCell(1).SetCellValue(device.Description1C ?? device.Description);
-                row.GetCell(2).SetCellValue(device.SerialNumber ?? "");
-                row.GetCell(3).SetCellValue(device.PublicName);
-                row.GetCell(4).SetCellValue(device.DateInstall.ToString("dd.MM.yyyy"));
-                row.GetCell(5).SetCellValue(device.Mol ?? "");
-                row.GetCell(6).SetCellValue(now);
-                step++;
-            }
-
-            sheet.GetRow(8).Height = 0;
-            string output = @"\\backup\pub\web\devin\Карточка_учета_оргтехники_" + name.Replace("/", "-").Replace(".", "") + ".xls";
-
-            using (var fs = new FileStream(output, FileMode.OpenOrCreate, FileAccess.Write))
-            {
-                book.Write(fs);
-            }
-
-            return Json(new
-            {
-                Good = "Карточка учета вычислительной техники на рабочем месте \"" + name + "\" создана",
-                Link = "http://www.vst.vitebsk.energo.net/files/devin/Карточка_учета_оргтехники_" + name.Replace("/", "-").Replace(".", "") + ".xls?r=" + (new Random()).Next()
-            }, JsonRequestBehavior.AllowGet);
         }
 
         public JsonResult PrintRecordCartByFolder(int Id)
@@ -458,105 +513,108 @@ namespace Devin.Controllers
                 book = new HSSFWorkbook(fs);
             }
 
-            ISheet sheet = book.GetSheetAt(0);
+            var sheet = book.GetSheetAt(0);
 
-            Folder cabinet;
-            List<Device> devices;
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                cabinet = conn.QueryFirst<Folder>(@"SELECT * FROM Folders WHERE Id = @Id", new { Id });
+                var cabinet = db.Folders.Where(x => x.Id == Id).FirstOrDefault();
 
-                devices = conn.Query<Device>(@"SELECT
-					Devices.Inventory,
-	                Devices.Name,
-	                Devices.Description,
-	                Devices.PublicName,
-	                Objects1C.Description AS Description1C,
-	                Devices.SerialNumber,
-	                CASE WHEN Objects1C.Mol IS NULL THEN Devices.Mol ELSE Objects1C.Mol END AS Mol,
-	                Devices.DateInstall
-                FROM Devices
-				LEFT OUTER JOIN Devices AS Computers ON Computers.Id        = Devices.ComputerId
-                LEFT OUTER JOIN Objects1C            ON Objects1C.Inventory = Devices.Inventory
-                WHERE Devices.FolderId = @Id OR Computers.FolderId = @Id AND Devices.IsDeleted <> 1
-                GROUP BY Devices.Inventory,
-	                Devices.Name,
-	                Devices.Description,
-	                Devices.PublicName,
-	                Objects1C.Description,
-	                Devices.SerialNumber,
-	                CASE WHEN Objects1C.Mol IS NULL THEN Devices.Mol ELSE Objects1C.Mol END,
-	                Devices.DateInstall
-                ORDER BY Devices.Inventory, Description1C", new { Id }).AsList();
+                var devicesQuery = from d in db.Devices
+                                   from c in db.Devices.Where(x => x.Type == "CMP" && x.Id == d.ComputerId).DefaultIfEmpty()
+                                   from o in db.Objects1C.Where(x => x.Inventory == d.Inventory).DefaultIfEmpty()
+                                   where (d.FolderId == Id || c.FolderId == Id) && !d.IsDeleted
+                                   orderby d.Inventory, o.Description
+                                   select new
+                                   {
+                                       Inventory = d.Inventory ?? "",
+                                       Name = d.Name ?? "",
+                                       Description = d.Description ?? "",
+                                       PublicName = d.PublicName ?? "",
+                                       SerialNumber = d.SerialNumber ?? "",
+                                       d.DateInstall,
+                                       Mol = o.Mol ?? d.Mol ?? "",
+                                       Description1C = o.Description ?? d.Description ?? ""
+                                   };
+
+                var devices = devicesQuery.ToList().GroupBy(x => x).Select(x => x.Key).ToList();
+
+                string now = DateTime.Now.ToString("dd.MM.yyyy");
+                sheet.GetRow(4).GetCell(9).SetCellValue(cabinet.Name);
+                sheet.GetRow(12).GetCell(0).SetCellValue(now);
+
+                int step = 0;
+                foreach (var device in devices)
+                {
+                    sheet.CopyRow(8, 9 + step);
+
+                    var row = sheet.GetRow(9 + step);
+                    row.GetCell(0).SetCellValue(device.Inventory);
+                    row.GetCell(1).SetCellValue(device.Description1C ?? device.Description);
+                    row.GetCell(2).SetCellValue(device.SerialNumber ?? "");
+                    row.GetCell(3).SetCellValue(device.PublicName);
+                    row.GetCell(4).SetCellValue(device.DateInstall.ToString("dd.MM.yyyy"));
+                    row.GetCell(5).SetCellValue(device.Mol ?? "");
+                    row.GetCell(6).SetCellValue(now);
+
+                    step++;
+                }
+
+                sheet.GetRow(8).Height = 0;
+
+                string output = @"\\backup\pub\web\devin\Карточка_учета_оргтехники_" + cabinet.Name.Replace("/", "-").Replace(".", "") + ".xls";
+
+                using (var fs = new FileStream(output, FileMode.OpenOrCreate, FileAccess.Write))
+                {
+                    book.Write(fs);
+                }
+
+                return Json(new
+                {
+                    Good = "Карточка учета вычислительной техники на рабочем месте \"" + cabinet.Name + "\" создана",
+                    Link = "http://www.vst.vitebsk.energo.net/files/devin/Карточка_учета_оргтехники_" + cabinet.Name.Replace("/", "-").Replace(".", "") + ".xls?r=" + (new Random()).Next()
+                }, JsonRequestBehavior.AllowGet);
             }
 
-            string now = DateTime.Now.ToString("dd.MM.yyyy");
-            sheet.GetRow(4).GetCell(9).SetCellValue(cabinet.Name);
-            sheet.GetRow(12).GetCell(0).SetCellValue(now);
-
-            int step = 0;
-            foreach (Device device in devices)
-            {
-                sheet.CopyRow(8, 9 + step);
-                IRow row = sheet.GetRow(9 + step);
-                row.GetCell(0).SetCellValue(device.Inventory);
-                row.GetCell(1).SetCellValue(device.Description1C ?? device.Description);
-                row.GetCell(2).SetCellValue(device.SerialNumber ?? "");
-                row.GetCell(3).SetCellValue(device.PublicName);
-                row.GetCell(4).SetCellValue(device.DateInstall.ToString("dd.MM.yyyy"));
-                row.GetCell(5).SetCellValue(device.Mol ?? "");
-                row.GetCell(6).SetCellValue(now);
-                step++;
-            }
-
-            sheet.GetRow(8).Height = 0;
             
-            string output = @"\\backup\pub\web\devin\Карточка_учета_оргтехники_" + cabinet.Name.Replace("/", "-").Replace(".", "") + ".xls";
-
-            using (var fs = new FileStream(output, FileMode.OpenOrCreate, FileAccess.Write))
-            {
-                book.Write(fs);
-            }
-
-            return Json(new
-            {
-                Good = "Карточка учета вычислительной техники на рабочем месте \"" + cabinet.Name + "\" создана",
-                Link = "http://www.vst.vitebsk.energo.net/files/devin/Карточка_учета_оргтехники_" + cabinet.Name.Replace("/", "-").Replace(".", "") + ".xls?r=" + (new Random()).Next()
-            }, JsonRequestBehavior.AllowGet);
         }
 
         public JsonResult CreateWorkPlace()
         {
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                conn.Execute("INSERT INTO WorkPlaces (Location) VALUES ('')");
-                int Id = conn.QueryFirst<int>("SELECT Max(Id) FROM WorkPlaces");
+                int id = db.InsertWithInt32Identity(new WorkPlace { Location = "" });
 
-                conn.Execute("UPDATE WorkPlaces SET Location = @location WHERE Id = @Id", new WorkPlace
-                {
-                    Id = Id,
-                    Location = "Новое рабочее место #" + Id
-                });
-                conn.Log(User, "workplaces", Id, "Создано новое рабочее место");
+                db.WorkPlaces
+                    .Where(x => x.Id == id)
+                    .Set(x => x.Location, "Новое рабочее место #" + id)
+                    .Update();
+                
+                db.Log(User, "workplaces", id, "Создано новое рабочее место");
 
                 return Json(new { Good = "Новое рабочее место создано" });
             }
         }
 
-        public JsonResult UpdateWorkPlace([Bind(Include = "Id,Location,Guild")] WorkPlace workPlace)
+        public JsonResult UpdateWorkPlace([Bind(Include = "Id,Location,Guild")] WorkPlace place)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                WorkPlace wp = conn.Query<WorkPlace>("SELECT * FROM WorkPlaces WHERE Id = @Id", workPlace).FirstOrDefault() ?? new WorkPlace();
-                List<string> changes = new List<string>();
+                var old = db.WorkPlaces.Where(x => x.Id == place.Id).FirstOrDefault();
 
-                if (workPlace.Location != wp.Location) changes.Add("расположение [\"" + wp.Location + "\" => \"" + workPlace.Location + "\"]");
-                if (workPlace.Guild != wp.Guild) changes.Add("подразделение [\"" + wp.Guild + "\" => \"" + workPlace.Guild + "\"]");
+                var changes = new List<string>();
+
+                if (place.Location != old.Location) changes.Add("расположение [\"" + old.Location + "\" => \"" + place.Location + "\"]");
+                if (place.Guild != old.Guild) changes.Add("подразделение [\"" + old.Guild + "\" => \"" + place.Guild + "\"]");
 
                 if (changes.Count > 0)
                 {
-                    conn.Execute("UPDATE WorkPlaces SET Location = @Location, Guild = @Guild WHERE Id = @Id", workPlace);
-                    conn.Log(User, "workplaces", workPlace.Id, "Рабочее место изменено. Изменения: " + changes.ToLog());
+                    db.WorkPlaces
+                        .Where(x => x.Id == place.Id)
+                        .Set(x => x.Location, place.Location)
+                        .Set(x => x.Guild, place.Guild)
+                        .Update();
+                    db.Log(User, "workplaces", place.Id, "Рабочее место изменено. Изменения: " + changes.ToLog());
+
                     return Json(new { Good = "Рабочее место изменено. Изменены поля:<br />" + changes.ToHtml() });
                 }
                 else
@@ -568,10 +626,10 @@ namespace Devin.Controllers
 
         public JsonResult DeleteWorkPlace(int Id)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                conn.Execute("DELETE FROM WorkPlaces WHERE Id = @Id", new { Id });
-                conn.Log(User, "workplaces", Id, "Рабочее место удалено");
+                db.WorkPlaces.Delete(x => x.Id == Id);
+                db.Log(User, "workplaces", Id, "Рабочее место удалено");
                 return Json(new { Good = "Рабочее место удалено" });
             }
         }
@@ -600,13 +658,17 @@ namespace Devin.Controllers
                 return Json(new { Error = "Ошибка при доступе к файловой системе, возможно, нет прав у учетной записи ASP.NET" });
             }
 
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                string old = conn.Query<string>("SELECT Files FROM Devices WHERE Id = @id", new { id }).FirstOrDefault() ?? "";
+                string old = db.Devices.Where(x => x.Id == id).Select(x => x.Files).FirstOrDefault() ?? "";
                 string changed = old + ";;" + name;
 
-                conn.Execute("UPDATE Devices SET Files = @changed WHERE Id = @id", new { id, changed });
-                conn.Log(User, "devices", id, "К списку файлов добавлен файл [" + name + "]");
+                db.Devices
+                    .Where(x => x.Id == id)
+                    .Set(x => x.Files, changed)
+                    .Update();
+
+                db.Log(User, "devices", id, "К списку файлов добавлен файл [" + name + "]");
 
                 return Json(new { Good = "К списку файлов добавлен файл [" + name + "]" });
             }
@@ -618,13 +680,17 @@ namespace Devin.Controllers
 
             System.IO.File.Delete(@"\\web\DevinFiles\devices\" + id + @"\" + File);
 
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                string old = conn.Query<string>("SELECT Files FROM Devices WHERE Id = @id", new { id }).FirstOrDefault() ?? "";
+                string old = db.Devices.Where(x => x.Id == id).Select(x => x.Files).FirstOrDefault() ?? "";
                 string changed = old.Replace(File, "").Replace(";;;;", ";;");
+                
+                db.Devices
+                    .Where(x => x.Id == id)
+                    .Set(x => x.Files, changed)
+                    .Update();
 
-                conn.Execute("UPDATE Devices SET Files = @changed WHERE Id = @id", new { id, changed });
-                conn.Log(User, "devices", id, "Из списка файлов удален файл [" + File + "]");
+                db.Log(User, "devices", id, "Из списка файлов удален файл [" + File + "]");
 
                 return Json(new { Good = "Из списка файлов удален файл [" + File + "]" });
             }

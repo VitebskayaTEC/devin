@@ -1,11 +1,14 @@
-﻿namespace Devin.Models
+﻿using LinqToDB.Mapping;
+
+namespace Devin.Models
 {
-    public class DragMetal
+    [Table(Name = "Constants")]
+    public class Constant
     {
-        public string Gold { get; set; }
+        [Column]
+        public string Keyword { get; set; }
 
-        public string Silver { get; set; }
-
-        public string MPG { get; set; }
+        [Column]
+        public string Value { get; set; }
     }
 }

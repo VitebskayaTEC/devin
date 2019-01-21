@@ -9,7 +9,7 @@ namespace Devin.Controllers
     {
         public JsonResult Create(string Type, string Name)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 Type = Type.Substring(0, Type.Length - 1);
 
@@ -22,7 +22,7 @@ namespace Devin.Controllers
 
         public JsonResult CreateInner(string Type, string Name, int FolderId)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 Type = Type.Substring(0, Type.Length - 1);
 
@@ -35,7 +35,7 @@ namespace Devin.Controllers
 
         public JsonResult Delete(string Type, int Id)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 string name = db.Folders.Where(x => x.Id == Id).Select(x => x.Name).FirstOrDefault();
                 switch (Type)
@@ -54,7 +54,7 @@ namespace Devin.Controllers
 
         public JsonResult Update(string Name, int Id)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 string oldName = db.Folders.Where(x => x.Id == Id).Select(x => x.Name).FirstOrDefault();
                 db.Folders.Where(x => x.Id == Id).Set(x => x.Name, Name).Update();
@@ -66,7 +66,7 @@ namespace Devin.Controllers
 
         public JsonResult Clear(string Type, int Id)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 string name = db.Folders.Where(x => x.Id == Id).Select(x => x.Name).FirstOrDefault();
                 switch (Type)
@@ -84,7 +84,7 @@ namespace Devin.Controllers
 
         public JsonResult Move(int FolderId, int Id)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 string name = db.Folders.Where(x => x.Id == Id).Select(x => x.Name).FirstOrDefault();
                 db.Folders.Where(x => x.Id == Id).Set(x => x.FolderId, FolderId).Update();

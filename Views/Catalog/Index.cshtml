@@ -19,7 +19,7 @@
     </div>
 }
 
-@using (var db = new DbDevin())
+@using (var db = new DevinContext())
 {
     var printers = db.Printers
         .Select(x => new Printer { Id = x.Id, Name = x.Name })

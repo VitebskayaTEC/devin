@@ -73,7 +73,7 @@
         { "ALL", "Устройство общего назначения" },
     };
 
-    using (var db = new DbDevin())
+    using (var db = new DevinContext())
     {
         var objects1c = db.Objects1C
             .Where(x => !x.IsHide)

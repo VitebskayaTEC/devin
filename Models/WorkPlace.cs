@@ -6,7 +6,6 @@ namespace Devin.Models
     [Table(Name = "WorkPlaces")]
     public class WorkPlace
     {
-        [Slapper.AutoMapper.Id]
         [Column, PrimaryKey, Identity, NotNull]
         public int Id { get; set; }
 

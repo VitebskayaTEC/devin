@@ -1,6 +1,6 @@
-﻿using Dapper;
-using Devin.Models;
+﻿using Devin.Models;
 using Devin.ViewModels;
+using LinqToDB;
 using System;
 using System.Linq;
 using System.Web.Mvc;
@@ -15,21 +15,61 @@ namespace Devin.Controllers
         {
             if (!string.IsNullOrEmpty(Item))
             {
-                using (var conn = Database.Connection())
+                using (var db = new DevinContext())
                 {
                     int id = int.Parse(Item.Replace("objects", ""));
                     if (id > 200)
                     {
-                        var folders = conn.Query<Folder>("SELECT (200 + ROW_NUMBER() OVER(ORDER BY Guild ASC)) AS Id, Guild AS Name FROM Objects1C WHERE Account IS NULL AND IsHide = 0 GROUP BY Guild ORDER BY Guild").AsList();
-                        var folder = folders.FirstOrDefault(x => x.Id == id);
-                        var model = conn.Query<Object1C>("SELECT * FROM Objects1C WHERE Account IS NULL AND Guild = @Name AND IsHide = 0 ORDER BY Inventory", new { folder.Name }).AsList();
+                        var foldersQuery = from o in db.Objects1C
+                                           where o.Account == null && !o.IsHide
+                                           orderby o.Guild
+                                           group o by o.Guild into g
+                                           select g.Key;
+
+                        var foldersNames = foldersQuery.ToArray();
+                        string guild = "";
+
+                        for (int i = 0; i < foldersNames.Length; i++)
+                        {
+                            if (200 + i == id)
+                            {
+                                guild = foldersNames[i];
+                                break;
+                            }
+                        }
+
+                        var model = db.Objects1C
+                            .Where(x => x.Account == null && x.Guild == guild && !x.IsHide)
+                            .OrderBy(x => x.Inventory)
+                            .ToList();
+
                         return View("Items", model);
                     }
                     else if (id > 100)
                     {
-                        var folders = conn.Query<Folder>("SELECT (100 + ROW_NUMBER() OVER(ORDER BY Account ASC)) AS Id, Account AS Name FROM Objects1C WHERE Account IS NOT NULL AND IsHide = 0 GROUP BY Account ORDER BY Account").AsList();
-                        var folder = folders.FirstOrDefault(x => x.Id == id);
-                        var model = conn.Query<Object1C>("SELECT * FROM Objects1C WHERE Account = @Name AND IsHide = 0 ORDER BY Inventory", new { folder.Name }).AsList();
+                        var foldersQuery = from o in db.Objects1C
+                                           where o.Account != null && !o.IsHide
+                                           orderby o.Account
+                                           group o by o.Account into g
+                                           select g.Key;
+
+                        var foldersNames = foldersQuery.ToArray();
+                        string account = "";
+
+                        for (int i = 0; i < foldersNames.Length; i++)
+                        {
+                            if (100 + i == id)
+                            {
+                                account = foldersNames[i];
+                                break;
+                            }
+                        }
+
+                        var model = db.Objects1C
+                             .Where(x => x.Account == account && !x.IsHide)
+                             .OrderBy(x => x.Inventory)
+                             .ToList();
+                        
                         return View("Items", model);
                     }
                     else
@@ -64,24 +104,34 @@ namespace Devin.Controllers
 
         public ActionResult Import() => View();
 
+
         public JsonResult CreateDevice(string Id)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                var obj = conn.QueryFirst<Object1C>("SELECT * FROM Objects1C WHERE Inventory = @Id", new { Id });
-                var device = conn.Query<Device>("SELECT Id FROM Devices WHERE Inventory = @Id", new { Id }).FirstOrDefault();
-                var storage = conn.Query<Storage>("SELECT Id FROM Storages WHERE Inventory = @Id", new { Id }).FirstOrDefault();
+                var obj = db.Objects1C.Where(x => x.Inventory == Id).FirstOrDefault();
 
-                if (device != null) return Json(new { Warning = "Уже существует устройство с таким инвентарным номером." });
-                if (storage != null) return Json(new { Error = "Уже существует позиция на складе с таким инвентарным номером." });
+                var device = db.Devices.Where(x => x.Inventory == Id).Select(x => x.Id).FirstOrDefault();
+                var storage = db.Storages.Where(x => x.Inventory == Id).Select(x => x.Id).FirstOrDefault();
 
-                conn.Execute("INSERT INTO Devices (Inventory, PublicName, Mol, DateInstall, Location, IsOff, IsDeleted) VALUES (@Inventory, @Description, @Mol, @Date, @Location, 0, 0)", obj);
-                conn.Execute("UPDATE Objects1C SET IsChecked = 1 WHERE Inventory = @Id", new { Id });
+                if (device != 0) return Json(new { Warning = "Уже существует устройство с таким инвентарным номером." });
+                if (storage != 0) return Json(new { Error = "Уже существует позиция на складе с таким инвентарным номером." });
 
-                int id = conn.QueryFirst<int>("SELECT Max(Id) FROM Devices");
+                int id = db.InsertWithInt32Identity(new Device
+                {
+                    Inventory = obj.Inventory,
+                    PublicName = obj.Description,
+                    Mol = obj.Mol,
+                    DateInstall = obj.Date ?? DateTime.Now,
+                    Location = obj.Location,
+                    IsOff = false,
+                    IsDeleted = false
+                });
 
-                conn.Log(User, "devices", id, "Создано устройство по данным из 1С [object" + Id + "]");
-                conn.Log(User, "objects1c", Id, "С данной записи создана карточка устройства [device" + id + "]. Запись отмечена как проверенная");
+                db.Objects1C.Where(x => x.Inventory == Id).Set(x => x.IsChecked, true).Update();
+
+                db.Log(User, "devices", id, "Создано устройство по данным из 1С [object" + Id + "]");
+                db.Log(User, "objects1c", Id, "С данной записи создана карточка устройства [device" + id + "]. Запись отмечена как проверенная");
 
                 return Json(new { Good = "Карточка устройства успешно создана" });
             }
@@ -89,16 +139,17 @@ namespace Devin.Controllers
 
         public JsonResult CreateStorage(string Id)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                var obj = conn.QueryFirst<Object1C>("SELECT * FROM Objects1C WHERE Inventory = @Id", new { Id });
-                var device = conn.Query<Device>("SELECT Id FROM Devices WHERE Inventory = @Id", new { Id }).FirstOrDefault();
-                var storage = conn.Query<Storage>("SELECT Id FROM Storages WHERE Inventory = @Id", new { Id }).FirstOrDefault();
+                var obj = db.Objects1C.Where(x => x.Inventory == Id).FirstOrDefault();
 
-                if (device != null) return Json(new { Error = "Уже существует устройство с таким инвентарным номером." });
-                if (storage != null) return Json(new { Warning = "Уже существует позиция на складе с таким инвентарным номером." });
+                var device = db.Devices.Where(x => x.Inventory == Id).Select(x => x.Id).FirstOrDefault();
+                var storage = db.Storages.Where(x => x.Inventory == Id).Select(x => x.Id).FirstOrDefault();
 
-                storage = new Storage
+                if (device != 0) return Json(new { Warning = "Уже существует устройство с таким инвентарным номером." });
+                if (storage != 0) return Json(new { Error = "Уже существует позиция на складе с таким инвентарным номером." });
+
+                var newStorage = new Storage
                 {
                     Inventory = obj.Inventory,
                     Name = obj.Description,
@@ -111,16 +162,17 @@ namespace Devin.Controllers
                     Account = obj.Account,
                     IsDeleted = false,
                     CartridgeId = 0,
-                    FolderId = 0
+                    FolderId = 0,
+                    Type = ""
                 };
 
-                string name = storage.Name.ToLower();
+                string name = newStorage.Name.ToLower();
 
                 // Картриджи
-                if (name.Contains("картридж") || name.Contains("тонер") || name.Contains("чернильница") || name.Contains("катридж")) storage.Type = "PRN";
+                if (name.Contains("картридж") || name.Contains("тонер") || name.Contains("чернильница") || name.Contains("катридж")) newStorage.Type = "PRN";
 
                 // Мониторы
-                else if (name.Contains("монитор")) storage.Type = "DIS";
+                else if (name.Contains("монитор")) newStorage.Type = "DIS";
 
                 // Комплектующие
                 else if (name.Contains("блок")
@@ -134,26 +186,26 @@ namespace Devin.Controllers
                     || name.Contains("процессор ")
                     || name.Contains("видеокарта")
                     || name.Contains("видеоплата")
-                    || name.Contains("привод")) storage.Type = "CMP";
+                    || name.Contains("привод")) newStorage.Type = "CMP";
 
                 // Периферия
-                else if (name.Contains("клави") || name.Contains("мыш")) storage.Type = "INP";
+                else if (name.Contains("клави") || name.Contains("мыш")) newStorage.Type = "INP";
 
                 // Коммутаторы
-                else if (name.Contains("коммутатор")) storage.Type = "SWT";
+                else if (name.Contains("коммутатор")) newStorage.Type = "SWT";
 
                 // Периферия
-                else if (name.Contains("батарея") || name.Contains("ибп") || name.Contains("элемент питания")) storage.Type = "UPS";
+                else if (name.Contains("батарея") || name.Contains("ибп") || name.Contains("элемент питания")) newStorage.Type = "UPS";
 
                 // Другое
-                else storage.Type = "RR";
+                else newStorage.Type = "RR";
 
-                conn.Execute("INSERT INTO Storages (Inventory, Name, Type, Cost, Nall, Nstorage, Nrepairs, Noff, Date, IsDeleted, Account) VALUES (@Inventory, @Name, @Type, @Cost, @Nall, @Nstorage, @Nrepairs, @Noff, @Date, @IsDeleted, @Account)", storage);
-                conn.Execute("UPDATE Objects1C SET IsChecked = 1 WHERE Inventory = @Id", new { Id });
+                int id = db.InsertWithInt32Identity(newStorage);
 
-                int id = conn.QueryFirst<int>("SELECT Max(Id) FROM Storages");
-                conn.Log(User, "devices", id, "Создана позиция на складе по данным из 1С [object" + Id + "]");
-                conn.Log(User, "objects1c", Id, "С данной записи создана карточка позиции [storage" + id + "]. Запись отмечена как проверенная");
+                db.Objects1C.Where(x => x.Inventory == Id).Set(x => x.IsChecked, true).Update();
+
+                db.Log(User, "devices", id, "Создана позиция на складе по данным из 1С [object" + Id + "]");
+                db.Log(User, "objects1c", Id, "С данной записи создана карточка позиции [storage" + id + "]. Запись отмечена как проверенная");
 
                 return Json(new { Good = "Позиция успешно добавлена на склад" });
             }
@@ -161,10 +213,13 @@ namespace Devin.Controllers
 
         public JsonResult Check(string Id)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                conn.Execute("UPDATE Objects1C SET IsChecked = 1 WHERE Inventory = @Id", new { Id });
-                conn.Log(User, "objects1c", Id, "Запись отмечена как проверенная");
+                db.Objects1C
+                    .Where(x => x.Inventory == Id)
+                    .Set(x => x.IsChecked, true)
+                    .Update();
+                db.Log(User, "objects1c", Id, "Запись отмечена как проверенная");
 
                 return Json(new { Good = "Запись отмечена как проверенная" });
             }
@@ -172,10 +227,14 @@ namespace Devin.Controllers
 
         public JsonResult Hide(string Id)
         {
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                conn.Execute("UPDATE Objects1C SET IsChecked = 1, IsHide = 1 WHERE Inventory = @Id", new { Id });
-                conn.Log(User, "objects1c", Id, "Запись отмечена как скрытая");
+                db.Objects1C
+                    .Where(x => x.Inventory == Id)
+                    .Set(x => x.IsChecked, true)
+                    .Set(x => x.IsHide, true)
+                    .Update();
+                db.Log(User, "objects1c", Id, "Запись отмечена как скрытая");
 
                 return Json(new { Good = "Запись отмечена как скрытая" });
             }
@@ -185,44 +244,56 @@ namespace Devin.Controllers
         {
             try
             {
-                Select = Select.Replace("object", "");
-                string[] inventories = (Select ?? "").Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                var inventories = (Select ?? "")
+                    .Replace("object", "")
+                    .Split(new [] { "," }, StringSplitOptions.RemoveEmptyEntries);
 
                 if (inventories.Length == 0) return Json(new { Warning = "Не передано ни одного объекта для обработки" });
 
-                using (var conn = Database.Connection())
+                using (var db = new DevinContext())
                 {
-                    string sql = "", text = "", message = "";
+                    string text = "", message = "";
 
                     if (Mode == "check")
                     {
-                        sql = "UPDATE Objects1C SET IsChecked = 1 WHERE Inventory IN (" + Select + ")";
+                        db.Objects1C
+                            .Where(x => inventories.Contains(x.Inventory))
+                            .Set(x => x.IsChecked, true)
+                            .Update();
                         text = "Объект отмечен как проверенный";
                         message = "проверенные";
                     }
                     if (Mode == "uncheck")
                     {
-                        sql = "UPDATE Objects1C SET IsChecked = 0 WHERE Inventory IN (" + Select + ")";
+                        db.Objects1C
+                            .Where(x => inventories.Contains(x.Inventory))
+                            .Set(x => x.IsChecked, false)
+                            .Update();
                         text = "Объект отмечен как непроверенный";
                         message = "непроверенные";
                     }
                     if (Mode == "hide")
                     {
-                        sql = "UPDATE Objects1C SET IsHide = 1 WHERE Inventory IN (" + Select + ")";
+                        db.Objects1C
+                            .Where(x => inventories.Contains(x.Inventory))
+                            .Set(x => x.IsHide, true)
+                            .Update();
                         text = "Объект отмечен как скрытый";
                         message = "скрытые";
                     }
                     if (Mode == "visible")
                     {
-                        sql = "UPDATE Objects1C SET IsHide = 0 WHERE Inventory IN (" + Select + ")";
+                        db.Objects1C
+                            .Where(x => inventories.Contains(x.Inventory))
+                            .Set(x => x.IsHide, false)
+                            .Update();
                         text = "Объект отмечен как отображаемый";
                         message = "отображаемые";
                     }
-
-                    conn.Execute(sql);
+                    
                     foreach (var inventory in inventories)
                     {
-                        conn.Log(User, "objects1c", inventory, text);
+                        db.Log(User, "objects1c", inventory, text);
                     }
 
                     return Json(new { Good = "Выбранные записи успешно отмечены как " + message });

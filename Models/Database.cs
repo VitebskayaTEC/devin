@@ -1,35 +1,13 @@
-﻿using Dapper;
-using LinqToDB;
+﻿using LinqToDB;
 using LinqToDB.Data;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Security.Principal;
-using System.Web.Configuration;
 
 namespace Devin.Models
 {
     public static class Database
     {
-        public static SqlConnection Connection(string name = "Devin")
-        {
-            SqlConnection conn = new SqlConnection(WebConfigurationManager.ConnectionStrings[name].ConnectionString);
-            conn.Open();
-            return conn;
-        }
-
-        public static void Log(this SqlConnection conn, IPrincipal user, string source, object id, string text)
-        {
-            conn.Execute("INSERT INTO Activity (Date, Source, Id, Text, Username) VALUES (@Date, @Source, @Id, @Text, @Username)", new Activity
-            {
-                Date = DateTime.Now,
-                Source = source,
-                Id = id.ToString(),
-                Text = text,
-                Username = user.Identity.Name
-            });
-        }
-
         public static void Log(this DataConnection db, IPrincipal user, string source, object id, string text)
         {
             db.Insert(new Activity
@@ -47,9 +25,17 @@ namespace Devin.Models
         public static string ToLog(this List<string> list) => string.Join(",\n", list.ToArray());
     }
 
-    public class DbDevin : DataConnection
+    public class SiteContext : DataConnection
     {
-        public DbDevin() : base("Devin") { }
+        public SiteContext() : base("Site") { }
+
+        public ITable<Constant> Constants
+            => GetTable<Constant>();
+    }
+
+    public class DevinContext : DataConnection
+    {
+        public DevinContext() : base("Devin") { }
 
         public ITable<Activity> Activity 
             => GetTable<Activity>();

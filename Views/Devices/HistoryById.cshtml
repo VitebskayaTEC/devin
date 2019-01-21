@@ -1,6 +1,6 @@
 ﻿@model string
 
-@using (var db = new DbDevin())
+@using (var db = new DevinContext())
 {
     var logs = db.Activity
         .Where(x => x.Source == "devices" && x.Id == Model)

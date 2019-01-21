@@ -68,7 +68,7 @@
     </script>
 }
 
-@using (var db = new DbDevin())
+@using (var db = new DevinContext())
 {
     var guilds = db.Objects1C.GroupBy(x => x.Guild).Select(x => x.Key).OrderBy(x => x).ToList();
     var places = db.WorkPlaces.OrderBy(x => x.Location).ToList();

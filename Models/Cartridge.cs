@@ -7,7 +7,6 @@ namespace Devin.Models
     [Table(Name = "Cartridges")]
     public class Cartridge
     {
-        [Slapper.AutoMapper.Id]
         [Column, PrimaryKey, Identity, NotNull]
         public int Id { get; set; }
 

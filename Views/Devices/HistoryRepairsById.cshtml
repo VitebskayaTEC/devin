@@ -1,6 +1,6 @@
 ﻿@model int
 
-@using (var db = new DbDevin())
+@using (var db = new DevinContext())
 {
     var query = from r in db.Repairs
                 from s in db.Storages.Where(x => x.Id == r.StorageId)

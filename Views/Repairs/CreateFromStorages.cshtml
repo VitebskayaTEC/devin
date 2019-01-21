@@ -12,7 +12,7 @@
     return;
 }
 
-@using (var db = new DbDevin())
+@using (var db = new DevinContext())
 {
     var storagesId = Model.Split(',').Select(x => int.TryParse(x, out int i) ? i : 0).ToArray();
 

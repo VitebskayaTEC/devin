@@ -2,7 +2,7 @@
 
 <button class="cart__button" onclick="Devices.Cart.backToAddons()">Вернуться</button>
 
-@using (var db = new DbDevin())
+@using (var db = new DevinContext())
 {
     if (!int.TryParse(Model, out int Id))
     {

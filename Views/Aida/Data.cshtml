@@ -1,6 +1,6 @@
 ﻿@model string
 
-@using (var db = new DbDevin())
+@using (var db = new DevinContext())
 {
     if (!int.TryParse(Model, out int Id))
     {

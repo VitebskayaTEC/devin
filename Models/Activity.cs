@@ -6,7 +6,6 @@ namespace Devin.Models
     [Table(Name = "Activity")]
     public class Activity
     {
-        [Slapper.AutoMapper.Id]
         [Column, NotNull, DataType("datetime")]
         public DateTime Date { get; set; }
 

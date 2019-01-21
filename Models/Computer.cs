@@ -1,5 +1,5 @@
-﻿using Dapper;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Devin.Models
 {
@@ -9,9 +9,9 @@ namespace Devin.Models
 
         public void Load()
         {
-            using (var conn = Database.Connection())
+            using (var db = new DevinContext())
             {
-                Devices = conn.Query<Device>("SELECT * FROM Devices WHERE IsDeleted = 0 AND ComputerId = @Id", new { Id }).AsList();
+                Devices = db.Devices.Where(x => !x.IsDeleted && x.ComputerId == Id).ToList();
             }
         }
     }

@@ -25,7 +25,7 @@ namespace Devin.Controllers
 
         public JsonResult CreateCartridge()
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 int Id = db.InsertWithInt32Identity(new Cartridge
                 {
@@ -53,7 +53,7 @@ namespace Devin.Controllers
                 cartridge.Cost = 0;
             }
 
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 var old = db.Cartridges.FirstOrDefault(x => x.Id == cartridge.Id);
                 if (old == null) return Json(new { Error = "Запись, которую нужно обновить, не найдена в базе данных" });
@@ -88,7 +88,7 @@ namespace Devin.Controllers
 
         public JsonResult DeleteCartridge(int Id)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 db.Cartridges.Where(x => x.Id == Id).Delete();
                 db.Log(User, "cartridges", Id, "Картридж удален");
@@ -100,7 +100,7 @@ namespace Devin.Controllers
 
         public JsonResult CreatePrinter()
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 int Id = db.InsertWithInt32Identity(new Printer { Name = "Новый типовой принтер" });
                 db.Log(User, "printers", Id, "Создан новый принтер");
@@ -111,7 +111,7 @@ namespace Devin.Controllers
 
         public JsonResult UpdatePrinter([Bind(Include = "Id,Name,Description")] Printer printer)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 var old = db.Printers.FirstOrDefault(x => x.Id == printer.Id);
                 if (old == null) return Json(new { Error = "Запись, которую необходимо обновить, не найдена в базе данных" });
@@ -142,7 +142,7 @@ namespace Devin.Controllers
 
         public JsonResult DeletePrinter(int Id)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 db.Printers.Where(x => x.Id == Id).Delete();
                 db.Log(User, "printers", Id, "Принтер удален");
@@ -154,7 +154,7 @@ namespace Devin.Controllers
 
         public JsonResult CreateCompare(int CartridgeId, int PrinterId)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 string cartName = db.Cartridges.First(x => x.Id == CartridgeId)?.Name ?? "";
                 string prnName = db.Printers.First(x => x.Id == PrinterId)?.Name ?? "";
@@ -174,7 +174,7 @@ namespace Devin.Controllers
 
         public JsonResult DeleteCompare(int CartridgeId, int PrinterId)
         {
-            using (var db = new DbDevin())
+            using (var db = new DevinContext())
             {
                 string cartName = db.Cartridges.First(x => x.Id == CartridgeId)?.Name ?? "";
                 string prnName = db.Printers.First(x => x.Id == PrinterId)?.Name ?? "";

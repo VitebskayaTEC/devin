@@ -6,7 +6,6 @@ namespace Devin.Models
     [Table(Name = "Objects1C")]
     public class Object1C
     {
-        [Slapper.AutoMapper.Id]
         [Column, NotNull]
         public string Inventory { get; set; }
 
