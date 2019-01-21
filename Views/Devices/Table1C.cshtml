@@ -4,6 +4,7 @@
 }
 
 @using System.Data.SqlClient
+@using System.Web.Configuration
 
 @section styles {
     <link rel="stylesheet" href="~/content/css/table.css" />
@@ -117,8 +118,9 @@
 </div>
 
 <table id="data" class="items">
-    @using (var conn = Database.Connection())
+    @using (var conn = new SqlConnection(WebConfigurationManager.ConnectionStrings["Devin"].ConnectionString))
     {
+        conn.Open();
         using (var command = new SqlCommand(sql, conn))
         {
             using (var reader = command.ExecuteReader())
@@ -170,7 +172,7 @@
                                             <td>@d.ToString("yyyy.MM.dd")</td>
                                         }
                                     }
-                                    catch(Exception)
+                                    catch (Exception)
                                     {
                                         <td></td>
                                     }

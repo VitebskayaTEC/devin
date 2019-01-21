@@ -50,7 +50,7 @@
                              Id = g.Key.Id,
                              Name = g.Key.Name,
                              PublicName = g.Key.PublicName,
-                             Devices = g.Select(x => new Device { Id = x.d.Id, Name = x.d.Name, PublicName = x.d.PublicName }).AsList()
+                             Devices = g.Select(x => new Device { Id = x.d.Id, Name = x.d.Name, PublicName = x.d.PublicName }).ToList()
                          };
 
     var computers = computersQuery.ToList();

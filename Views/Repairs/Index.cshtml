@@ -20,14 +20,24 @@
             <div id="move_select">
                 <select id="moveKey" class="cart__field cart__field_autoWidth">
                     <option value="0">Не распределенные</option>
-                    @using (var conn = Database.Connection())
+                    @using (var db = new DevinContext())
                     {
-                        var writeoffs = conn.Query<Writeoff>("SELECT Id, Name FROM Writeoffs ORDER BY Date DESC");
+                        var writeoffs = db.Writeoffs
+                            .OrderByDescending(x => x.Date)
+                            .Select(x => new { x.Id, x.Name })
+                            .ToList();
+
                         foreach (var item in writeoffs)
                         {
                             <option value="@item.Id">[списание] @item.Name</option>
                         }
-                        var folders = conn.Query<Folder>("SELECT Id, Name FROM Folders WHERE Type = 'repair' ORDER BY Name");
+
+                        var folders = db.Folders
+                            .Where(x => x.Type == "repair")
+                            .OrderBy(x => x.Name)
+                            .Select(x => new { x.Id, x.Name })
+                            .ToList();
+
                         foreach (var item in folders)
                         {
                             <option value="@item.Id">[папка] @item.Name</option>

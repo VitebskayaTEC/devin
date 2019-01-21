@@ -8,36 +8,9 @@
         <a class="title" href="##@(id)">Открыть карточку компьютера</a>
     </div>
 
-    string sql = @"
-        SELECT IGroup, IField, IValue
-        FROM (SELECT IGroup, IField, IValue
-        FROM Item
-        WHERE ReportID = @ID AND IPage = 'Суммарная информация')
-        AS T1
-        WHERE IGroup NOT IN ('DMI', 'Ввод')
-        AND IField NOT IN (
-        'Коммуникационный порт',
-        'Контроллер хранения данных',
-        'USB-устройство',
-        'Дата / Время',
-        'DirectX',
-        'Edge',
-        'Вход в домен',
-        'Имя компьютера',
-        'Пакет обновления ОС',
-        'Тип компьютера')
-        AND IValue NOT IN (
-        'Microsoft Print to PDF',
-        'Microsoft XPS Document Writer',
-        'Отправить в OneNote 16',
-        'Fax',
-        'Microsoft Office Document Image Writer')
-        GROUP BY IGroup, IField, IValue
-        ORDER BY IGroup, IField, IValue";
-
-    string[] excludeGroups = new[] { "DMI", "Ввод" };
-    string[] excludeFields = new[] { "DMI", "Ввод" };
-    string[] excludeValues = new[] { "DMI", "Ввод" };
+    var excludeGroups = new[] { "DMI", "Ввод" };
+    var excludeFields = new[] { "DMI", "Ввод" };
+    var excludeValues = new[] { "DMI", "Ввод" };
 
     var items = db.Item
         .Where(x => x.ReportID == Model.ID && x.IPage == "Суммарная информация")

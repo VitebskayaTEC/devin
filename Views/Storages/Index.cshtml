@@ -20,9 +20,14 @@
         <div>
             <select id="move_select" class="cart__field cart__field_autoWidth">
                 <option value="0">Разместить отдельно</option>
-                @using (var conn = Database.Connection())
+                @using (var db = new DevinContext())
                 {
-                    var folders = conn.Query<Folder>("SELECT * FROM Folders WHERE Type = 'storage' ORDER BY Name");
+                    var folders = db.Folders
+                            .Where(x => x.Type == "storage")
+                            .OrderBy(x => x.Name)
+                            .Select(x => new { x.Id, x.Name })
+                            .ToList();
+
                     foreach (var folder in folders)
                     {
                         <option value="@folder.Id">@folder.Name</option>
