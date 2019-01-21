@@ -1,8 +1,19 @@
 ﻿@using (var db = new DevinContext())
 {
+    var identifiers = db.Report
+        .GroupBy(x => x.RHost)
+        .Select(x => x.Select(g => g.ID).Max())
+        .ToList();
+
     var computers = db.Report
-        .Select(x => new Report { ID = x.ID, RHost = x.RHost, RDateTime = x.RDateTime, RUser = x.RUser })
+        .Where(x => identifiers.Contains(x.ID))
         .OrderBy(x => x.RHost)
+        .Select(x => new Report {
+            ID = x.ID,
+            RHost = x.RHost,
+            RDateTime = x.RDateTime,
+            RUser = x.RUser
+        })
         .ToList();
 
     foreach (var computer in computers)
