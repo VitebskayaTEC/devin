@@ -117,6 +117,7 @@
     <Compile Include="Controllers\CatalogController.cs" />
     <Compile Include="Controllers\DevicesController.cs" />
     <Compile Include="Controllers\FoldersController.cs" />
+    <Compile Include="Controllers\HardwareController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\Objects1CController.cs" />
     <Compile Include="Controllers\RepairsController.cs" />
@@ -128,6 +129,7 @@
     <Compile Include="Models\Elm.cs" />
     <Compile Include="Models\Activity.cs" />
     <Compile Include="Models\Aida.cs" />
+    <Compile Include="Models\Hardware.cs" />
     <Compile Include="Models\PrinterCartridge.cs" />
     <Compile Include="Models\Cartridge.cs" />
     <Compile Include="Models\Database.cs" />
@@ -282,6 +284,7 @@
     <Content Include="Views\Aida\Computer.cshtml" />
     <Content Include="Views\Aida\ComputerData.cshtml" />
     <Content Include="Views\Devices\Compare1C.cshtml" />
+    <Content Include="Views\Hardware\Index.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -58,6 +58,9 @@ namespace Devin.Models
         public ITable<Folder> Folders
             => GetTable<Folder>();
 
+        public ITable<Hardware> Hardware
+           => GetTable<Hardware>();
+
         public ITable<Object1C> Objects1C 
             => GetTable<Object1C>();
 
