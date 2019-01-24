@@ -599,13 +599,20 @@ namespace Devin.Controllers
                     db.Storages
                         .Where(x => x.Id == repair.StorageId)
                         .Set(x => x.Nrepairs, x => x.Nrepairs + repair.Number)
-                        .Set(x => x.Nstorage, x => repair.IsVirtual ? (x.Nstorage - repair.Number) : x.Nstorage)
+                        .Set(x => x.Nstorage, x => repair.IsVirtual ? x.Nstorage : (x.Nstorage - repair.Number))
                         .Update();
                     
                     db.Log(User, "repairs", repairId, "Ремонт: использована позиция с инвентарным № [storage" + repair.StorageId + "] в количестве " + repair.Number + " шт." + (repair.IsVirtual ? " (виртуальный)" : ""));
                 }
 
-                return Json(new { Good = "Ремонты успешно созданы", writeoffId });
+                if (writeoffId > 0)
+                {
+                    return Json(new { Good = "Ремонты успешно созданы", writeoffId });
+                }
+                else
+                {
+                    return Json(new { Good = "Ремонты успешно созданы" });
+                }
             }
         }
 

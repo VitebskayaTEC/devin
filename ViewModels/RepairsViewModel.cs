@@ -66,46 +66,41 @@ namespace Devin.ViewModels
                 else
                 {
                     var repairsQuery = from r in db.Repairs
-                                from d in db.Devices.Where(x => x.Id == r.DeviceId).DefaultIfEmpty()
-                                from s in db.Storages.Where(x => x.Id == r.StorageId).DefaultIfEmpty()
-                                where d.Name.Contains(Search)
-                                    || d.Description.Contains(Search)
-                                    || d.Inventory.Contains(Search)
-                                    || s.Name.Contains(Search)
-                                    || s.Inventory.Contains(Search)
-                                orderby r.FolderId ascending, r.WriteoffId ascending, r.Date descending
-                                select new Repair
-                                {
-                                    Id = r.Id,
-                                    FolderId = r.FolderId,
-                                    WriteoffId = r.WriteoffId,
-                                    Date = r.Date,
-                                    Author = r.Author,
-                                    DeviceId = r.DeviceId,
-                                    StorageId = r.StorageId,
-                                    Number = r.Number,
-                                    IsOff = r.IsOff,
-                                    IsVirtual = r.IsVirtual,
-                                    Device = new Device
-                                    {
-                                        Id = d.Id,
-                                        Inventory = d.Inventory,
-                                        Name = d.Name,
-                                        PublicName = d.PublicName,
-                                        Type = d.Type,
-                                    },
-                                    Storage = new Storage
-                                    {
-                                        Id = s.Id,
-                                        Inventory = s.Inventory,
-                                        Name = s.Name,
-                                        Nall = s.Nall,
-                                        Nstorage = s.Nstorage,
-                                        Nrepairs = s.Nrepairs,
-                                        Noff = s.Noff,
-                                        Cost = s.Cost,
-                                    },
-                                };
+                                       from d in db.Devices.Where(x => x.Id == r.DeviceId).DefaultIfEmpty()
+                                       from s in db.Storages.Where(x => x.Id == r.StorageId).DefaultIfEmpty()
+                                       orderby r.FolderId ascending, r.WriteoffId ascending, r.Date descending
+                                       select new Repair
+                                       {
+                                           Id = r.Id,
+                                           FolderId = r.FolderId,
+                                           WriteoffId = r.WriteoffId,
+                                           Date = r.Date,
+                                           Author = r.Author,
+                                           DeviceId = r.DeviceId,
+                                           StorageId = r.StorageId,
+                                           Number = r.Number,
+                                           IsOff = r.IsOff,
+                                           IsVirtual = r.IsVirtual,
+                                           Device = new Device
+                                           {
+                                               Id = d.Id,
+                                               Inventory = d.Inventory,
+                                               Name = d.Name,
+                                               PublicName = d.PublicName,
+                                               Type = d.Type,
+                                           },
+                                           Storage = new Storage
+                                           {
+                                               Id = s.Id,
+                                               Inventory = s.Inventory,
+                                               Name = s.Name,
+                                               Nall = s.Nall,
+                                               Nstorage = s.Nstorage,
+                                               Nrepairs = s.Nrepairs,
+                                               Noff = s.Noff,
+                                               Cost = s.Cost,
+                                           },
+                                       };
 
                     var _repairs = repairsQuery.ToList();
 
