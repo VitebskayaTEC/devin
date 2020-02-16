@@ -59,11 +59,5 @@ namespace Devin.Models
 
         [Column]
         public float Mpg { get; set; } = 0;
-
-        [Column]
-        public bool IsHide { get; set; }
-
-        [Column]
-        public bool IsChecked { get; set; }
     }
 }

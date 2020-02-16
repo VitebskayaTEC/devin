@@ -14,7 +14,7 @@
 
 @using (var db = new DevinContext())
 {
-    var storagesId = Model.Split(',').Select(x => int.TryParse(x, out int i) ? i : 0).ToArray();
+    var storagesId = Model.Replace("storage", "").Split(',').Select(x => int.TryParse(x, out int i) ? i : 0).ToArray();
 
     var storages = db.Storages
         .Where(x => storagesId.Contains(x.Id) && x.Nstorage > 0)
@@ -55,7 +55,7 @@
 
     var computers = computersQuery.ToList();
 
-    string select = "<select class=\"computers cart__field\"><option value=\"0\">? Не выбрано</option>";
+    string select = "<select id=\"deviceId\" class=\"computers cart__field\"><option value=\"0\">? Не выбрано</option>";
     foreach (var computer in computers)
     {
         if (computer.Id == 0)
@@ -78,34 +78,52 @@
     select += "</select>";
 
     <div class="cart__body cart__body_expanded">
+        <table class="cart__table">
+            <tr>
+                <td>Объект ремонта</td>
+                <td>@Html.Raw(select)</td>
+            </tr>
+        </table>
         <table class="repairs__table">
             <thead>
                 <tr>
                     <th>позиция</th>
-                    <th width="400px">на какое устройство</th>
                     <th width="100px">кол-во</th>
                     <th width="50px">вирт.</th>
                 </tr>
             </thead>
             <tbody id="repairsData">
-                @foreach (var storage in storages)
+                <tr class="repairs__row" data-id="@storages[0].Id">
+                    <td>
+                        <button class="cart__button" onclick="Repairs.Storage.add(this)"><i class="icon ic-content-copy icon_no-hover"></i></button>
+                        <button class="cart__button" onclick="Repairs.Storage.remove(this)"><i class="icon ic-clear icon_no-hover"></i></button>
+                        <b>@storages[0].Inventory</b> @storages[0].Name [<b>@storages[0].Nstorage</b> шт.]
+                    </td>
+                    <td>
+                        <input class="cart__field" type="number" value="0" />
+                    </td>
+                    <td>
+                        <input type="checkbox" />
+                    </td>
+                </tr>
+                @if (storages.Count > 1)
                 {
-                    <tr class="repairs__row" data-id="@storage.Id">
-                        <td>
-                            <button class="cart__button" onclick="Repairs.Storage.add(this)"><i class="icon ic-content-copy icon_no-hover"></i></button>
-                            <button class="cart__button" onclick="Repairs.Storage.remove(this)"><i class="icon ic-clear icon_no-hover"></i></button> 
-                            <b>@storage.Inventory</b> @storage.Name [<b>@storage.Nstorage</b> шт.]
-                        </td>
-                        <td class="computers-container">
-                            @Html.Raw(select)
-                        </td>
-                        <td>
-                            <input class="cart__field" type="number" value="0" />
-                        </td>
-                        <td>
-                            <input type="checkbox" />
-                        </td>
-                    </tr>
+                    for (int i = 1; i < storages.Count; i++)
+                    {
+                        <tr class="repairs__row" data-id="@storages[i].Id">
+                            <td>
+                                <button class="cart__button" onclick="Repairs.Storage.add(this)"><i class="icon ic-content-copy icon_no-hover"></i></button>
+                                <button class="cart__button" onclick="Repairs.Storage.remove(this)"><i class="icon ic-clear icon_no-hover"></i></button>
+                                <b>@storages[i].Inventory</b> @storages[i].Name [<b>@storages[i].Nstorage</b> шт.]
+                            </td>
+                            <td>
+                                <input class="cart__field" type="number" value="0" />
+                            </td>
+                            <td>
+                                <input type="checkbox" />
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>

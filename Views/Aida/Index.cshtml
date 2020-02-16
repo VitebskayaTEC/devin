@@ -1,21 +1,20 @@
 ﻿@{
-    ViewBag.Title = "DEVIN | Aida";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_LayoutNext.cshtml";
 }
 
-@section menu {
-    <li>
-        <form method="get" action="@Url.Action(null, "aida")">
-            <input name="search" id="search" placeholder="Поиск" value="@Request.QueryString.Get("search")" />
-        </form>
-    </li><li>
-        <a class="has-icon" onmousedown="_menu(this)" menu="main"><div class="icon ic-menu"></div></a>
-    </li>
+@section nav {
+    <select name="type">
+        <option value="computers">Компьютеры</option>
+        <option value="summaries">Сводная информация</option>
+        <option value="apps">Программы</option>
+        <option value="fulltext">Полнотекстовый поиск</option>
+    </select>
 }
 
-<script>let search = '@Request.QueryString.Get("search")';</script>
-@Html.Action("Load", new { Search = Request.QueryString.Get("search") })
+@section html {
+    <div class="menu" id="main">
+        <a href="~/aida/fact">Список компьютеров</a>
+    </div>
+}
 
-<div class="context-menu" id="main">
-    <a onclick="Aida.removeOldRecords()">Удаление устаревших отчетов</a>
-</div>
+@Html.Action("Load")

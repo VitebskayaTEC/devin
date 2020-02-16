@@ -16,6 +16,9 @@ namespace Devin.Models
         public string Inventory { get; set; }
 
         [Column]
+        public string Description { get; set; }
+
+        [Column]
         public string Type { get; set; }
 
         [Column, NotNull]

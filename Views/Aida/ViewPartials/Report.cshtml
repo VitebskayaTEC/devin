@@ -1,0 +1,28 @@
+﻿@model Report
+
+@{
+    string version = Model.Windows;
+    if (version.Contains("WinXP")) { version = "Windows XP"; }
+    if (version.Contains("6.1.7600")) { version = "Windows 7"; }
+    if (version.Contains("Win7")) { version = "Windows 7"; }
+    if (version.Contains("16299")) { version = "Windows 10 1709"; }
+    if (version.Contains("17134")) { version = "Windows 10 1803"; }
+    if (version.Contains("17763")) { version = "Windows 10 1809"; }
+    if (version.Contains("18362")) { version = "Windows 10 1903"; }
+    if (version.Contains("18363")) { version = "Windows 10 1909"; }
+    if (version.Contains("Win2003")) { version = "Windows Server 2003"; }
+    if (version.Contains("Win2012")) { version = "Windows Server 2012"; }
+    if (version.Contains("14393")) { version = "Windows Server 2016"; }
+}
+
+<table class="entry item" id="report|@Model.ID" menu="entry">
+    <tr card="aida|@Model.ID">
+        <td>
+            <i class="ic-computer handle"></i>
+        </td>
+        <th width="150px">@Model.RHost</th>
+        <td width="100px">@Model.RUser</td>
+        <td width="250px" title="@Model.Windows">@version</td>
+        <td width="110px">@Model.RDateTime.ToString("dd.MM.yyyy HH:mm")</td>
+    </tr>
+</table>

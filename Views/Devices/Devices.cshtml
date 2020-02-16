@@ -7,9 +7,9 @@
             <tr>
                 <td width="20px"><input type="checkbox" class="selecter-all" /></td>
                 <th width="20px" data-type="type"></th>
-                <th width="100px" data-type="string">название</th>
-                <th width="80px" data-type="number">инв. номер</th>
-                <th width="140px" data-type="string">м.о.л.</th>
+                <th width="120px" data-type="number">инв. номер</th>
+                <th width="120px" data-type="string">название</th>
+                <th width="200px" data-type="string">МОЛ</th>
                 <th data-type="string">описание</th>
             </tr>
         </thead>
@@ -22,8 +22,8 @@
                 <tr id="@id" class="item">
                     <td><input type="checkbox" class="selecter" /></td>
                     <td><a class="view__link" href="@href"><div class="led @(device.IsOff ? "off" : "on")"></div></a></td>
-                    <td><a class="view__link" href="@href">@device.Name</a></td>
                     <td><a class="view__link" href="@href">@device.Inventory</a></td>
+                    <td><a class="view__link" href="@href">@device.Name</a></td>
                     <td><a class="view__link" href="@href">@device.Mol</a></td>
                     <td><a class="view__link" href="@href">@device.PublicName</a></td>
                 </tr>

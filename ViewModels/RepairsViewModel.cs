@@ -119,7 +119,7 @@ namespace Devin.ViewModels
 
                     var writeoffsQuery = from w in db.Writeoffs
                                          from t in db._WriteoffTypes.Where(x => x.Id == w.Type).DefaultIfEmpty()
-                                         from f in db.Folders.Where(x => x.Id == w.FolderId)
+                                         from f in db.Folders.Where(x => x.Id == w.FolderId).DefaultIfEmpty()
                                          orderby w.Date descending
                                          select new Writeoff
                                          {
@@ -127,7 +127,8 @@ namespace Devin.ViewModels
                                              Name = w.Name,
                                              Date = w.Date,
                                              Type = t.Name,
-                                             FolderId = f.Id
+                                             FolderId = f.Id,
+                                             Mark = w.Mark,
                                          };
 
                     var _writeoffs = writeoffsQuery.ToList();

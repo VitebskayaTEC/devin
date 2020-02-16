@@ -1,0 +1,25 @@
+﻿@{
+    ViewBag.Title = "Скрипты";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div>
+    <textarea id="form">eventcreate /T error /id 777 /L system /d "abirvalg-test"</textarea>
+    <button onclick="exec()">Execute</button>
+    <div id="answer"></div>
+</div>
+
+<script>
+    function exec() {
+
+        let formData = new FormData();
+        formData.append('cmdText', document.querySelector('#form').value);
+
+        fetch(host + 'admin/exec', {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => res.text())
+            .then(text => document.querySelector('#answer').innerHTML = text);
+    }
+</script>

@@ -14,7 +14,6 @@
                 <th width="90px" data-type="date">Дата прихода</th>
                 <th width="150px" data-type="string">Подразделение</th>
                 <th width="70px" data-type="string">Счет учета</th>
-                <th width="60px" data-type="string">Проверено</th>
             </tr>
         </thead>
         <tbody>
@@ -28,7 +27,6 @@
                     <td><a class="view__link">@(obj.Date?.ToString("dd.MM.yyyy"))</a></td>
                     <td><a class="view__link">@obj.Guild</a></td>
                     <td><a class="view__link">@obj.Account</a></td>
-                    <td><a class="view__link"><input type="checkbox" disabled @(obj.IsChecked ? "checked" : "") /></a></td>
                 </tr>
             }
         </tbody>

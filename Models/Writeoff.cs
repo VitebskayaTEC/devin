@@ -36,10 +36,17 @@ namespace Devin.Models
         [Column]
         public string Description { get; set; }
 
-        [Column]
-        public string Template { get; set; }
+		[Column]
+		public int? BoardsCount { get; set; }
+
+		[Column]
+		public float? BoardsWeight { get; set; }
+
+		public string Template { get; set; }
 
         [Column]
+        public string Mark { get; set; }
+
         public string DefaultData { get; set; }
 
         [Column]

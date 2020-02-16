@@ -1,0 +1,65 @@
+﻿@model int
+
+
+@using (var db = new DevinContext())
+{
+    var device = db.Devices
+        .Where(x => x.Id == Model && x.Type == "PRN")
+        .FirstOrDefault();
+
+    if (device == null)
+    {
+        <div>Принтер не найден</div>
+        return;
+    }
+
+    <b class="cart__caption">Закреплённые пользователи</b>
+    <table>
+        @using (var site = new SiteContext())
+        {
+            var users = site.Users
+                .OrderBy(x => x.UName)
+                .ToList();
+
+            var picked = (device.Users ?? "").Split(';');
+
+            <tbody>
+                @foreach (var user in users)
+                {
+                    if (picked.Contains(user.UName))
+                    {
+                        <tr>
+                            <td>(@user.UName) @user.DisplayName</td>
+                            <td width="30px">
+                                <button class="cart__button" onclick="Devices.removeUser({ User: '@user.UName', Id: @device.Id  })">
+                                    <div class="icon ic-clear"></div>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>
+                        <select id="new-user">
+                            <option value="0">не выбран</option>
+                            @foreach (var user in users)
+                            {
+                                if (!picked.Contains(user.UName))
+                                {
+                                    <option value="@user.UName">(@user.UName) @user.DisplayName</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                    <td width="30px">
+                        <button class="cart__button" onclick="Devices.addUser({ User: document.getElementById('new-user').value, Id: @device.Id })">
+                            <div class="icon ic-add"></div>
+                        </button>
+                    </td>
+                </tr>
+            </tfoot>
+        }
+    </table>
+}

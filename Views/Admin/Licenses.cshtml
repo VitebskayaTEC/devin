@@ -1,0 +1,91 @@
+﻿@{
+    ViewBag.Title = "Лицензии ОС";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Лицензии операционных систем филиала</h2>
+
+<style>
+    .lic thead {background: #eee;}
+    .lic tbody {background: #fff;}
+    .lic td, .lic th {
+        border: 1px solid #808080;
+        padding: 4px;
+        vertical-align: top;
+    }
+</style>
+
+@using (var db = new DevinContext())
+{
+    var hosts = db.Report
+        .GroupBy(x => x.RHost)
+        .Select(x => new
+        {
+            RHost = x.Key,
+            Ids = x.Select(y => new { y.ID, y.RDateTime })
+        })
+        .ToList()
+        .Select(x => new
+        {
+            x.RHost,
+            Id = x.Ids.OrderByDescending(y => y.RDateTime).Select(y => y.ID).FirstOrDefault(),
+        })
+        .ToList();
+
+    var licenses = db.Item
+        .Where(x => hosts.Select(y => y.Id).Contains(x.ReportID))
+        .Where(x => x.IPage == "Операционная система")
+        .Where(x => x.IField == "Название ОС" || x.IField == "Ключ продукта")
+        .Select(x => new { x.ReportID, x.IField, x.IValue });
+
+    var keys = licenses
+        .Where(x => x.IField == "Ключ продукта")
+        .GroupBy(x => x.IValue)
+        .Select(x => x.Key)
+        .ToList();
+
+    <table class="lic">
+        <thead>
+            <tr>
+                <th rowspan="2">Ключ</th>
+                <th colspan="2">Объекты</th>
+            </tr>
+            <tr>
+                <th>Операционная система</th>
+                <th>Компьютер</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var key in keys)
+            {
+                var objects = licenses
+                    .Where(x => x.IValue == key)
+                    .Select(x => x.ReportID)
+                    .ToList()
+                    .Select(x => new
+                    {
+                        Host = hosts.Where(y => y.Id == x).Select(y => y.RHost).FirstOrDefault(),
+                        OS = licenses.Where(y => y.ReportID == x).Where(y => y.IField == "Название ОС").Select(y => y.IValue).FirstOrDefault(),
+                    })
+                    .OrderBy(x => x.OS)
+                        .ThenBy(x => x.Host)
+                    .ToList();
+
+                <tr>
+                    <td rowspan="@objects.Count">@key</td>
+                    <td>@objects[0].OS</td>
+                    <td>@objects[0].Host</td>
+                </tr>
+
+                for (int i = 1; i < objects.Count; i++)
+                {
+                    <tr>
+                        <td>@objects[i].OS</td>
+                        <td>@objects[i].Host</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    
+}

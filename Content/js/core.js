@@ -140,11 +140,11 @@ function setCookie(name, value, options) {
 
 let when, menuId;
 
-function _menu(obj) {
+function _menu(obj, name) {
     document.querySelectorAll('.contextMenu_visible').forEach(el => el.classList.remove('contextMenu_visible'));
     clearTimeout(when);
 
-    let menu = document.getElementById(obj.getAttribute('menu'));
+    let menu = document.getElementById(name || obj.getAttribute('menu'));
     menu.onmouseleave = () => when = setTimeout(() => menu.classList.remove('contextMenu_visible'), 1000);
     menu.onmouseenter = () => clearTimeout(when);
     menu.onclick = () => menu.classList.remove('contextMenu_visible');
@@ -197,6 +197,7 @@ var Cart = {
     },
 
     reopen() {
+        if (!this.id) return Cart.close()
         fetch(host + 'home/cart/' + this.id)
             .then(res => res.text())
             .then(text => {
@@ -443,20 +444,6 @@ var Devices = {
                 });
         },
 
-        moveSelected() {
-            let form = new FormData();
-            form.append('Key', document.getElementById('moveKey').value);
-            form.append('Devices', selected.join(';;'));
-            fetch(host + 'devices/moveSelected', { method: 'POST', body: form })
-                .then(res => res.json())
-                .then(json => {
-                    if (json.Good) {
-                        message(json.Good, 'good');
-                        restore();
-                    }
-                });
-        },
-
         selectAddon(url) {
             fetch(url)
                 .then(res => {
@@ -568,6 +555,20 @@ var Devices = {
         }
     },
 
+    move() {
+        let form = new FormData();
+        form.append('Key', document.getElementById('moveKey').value);
+        form.append('Devices', selected.join(';;'));
+        fetch(host + 'devices/moveSelected', { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Good) {
+                    message(json.Good, 'good');
+                    restore();
+                }
+            });
+    },
+
     printReport() {
         fetch(host + 'devices/printRecordCart/' + menuId, { method: 'POST' })
             .then(res => res.json())
@@ -617,7 +618,59 @@ var Devices = {
                     restore();
                 }
             });
-    }
+    },
+    
+    addUser(obj) {
+        let form = new FormData();
+        form.append('Id', obj.Id);
+        form.append('user', obj.User);
+        fetch(host + 'devices/addUser', { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Error) message(json.Error, 'error')
+                if (json.Warning) message(json.Error, 'warning')
+                if (json.Good) {
+                    message(json.Good, 'good');
+
+                    fetch(host + 'devices/users/' + obj.Id)
+                        .then(res => {
+                            if (res.ok) {
+                                let el = document.getElementById('users')
+                                if (!el) return
+                                res.text().then(text => el.innerHTML = text)
+                            } else {
+                                Cart.reopen()
+                            }
+                        })
+                }
+            });
+    },
+
+    removeUser(obj) {
+        let form = new FormData();
+        form.append('Id', obj.Id);
+        form.append('user', obj.User);
+        fetch(host + 'devices/removeUser', { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Error) message(json.Error, 'error')
+                if (json.Warning) message(json.Error, 'warning')
+                if (json.Good) {
+                    message(json.Good, 'good');
+
+                    fetch(host + 'devices/users/' + obj.Id)
+                        .then(res => {
+                            if (res.ok) {
+                                let el = document.getElementById('users')
+                                if (!el) return
+                                res.text().then(text => el.innerHTML = text)
+                            } else {
+                                Cart.reopen()
+                            }
+                        })
+                }
+            });
+    },
 };
 
 var Storages = {
@@ -863,13 +916,13 @@ var Repairs = {
             let form = new FormData();
             form.append('Id', Cart.id);
             let rows = document.getElementById('repairsData').querySelectorAll('.repairs__row_checked');
+            let deviceId = document.getElementById('deviceId').value;
 
             rows.forEach(el => {
                 let inventory = el.getAttribute('data-id');
-                let device = el.querySelector('select').value;
                 let number = el.querySelector('input[type="number"]').value;
                 let virtual = el.querySelector('input[type="checkbox"]').checked;
-                form.append('Repairs[]', inventory + ':' + device + ':' + number + ':' + virtual);
+                form.append('Repairs[]', inventory + ':' + deviceId + ':' + number + ':' + virtual);
             });
 
             if (withWriteoff) {
@@ -883,10 +936,10 @@ var Repairs = {
                     if (json.Warning) message(json.Warning, 'warning');
                     if (json.Good) {
                         message(json.Good, 'good');
-                        if (json.WriteoffId !== 0) {
+                        if (withWriteoff && json.WriteoffId !== 0) {
                             message('<a href="' + host + 'repairs/##off' + json.WriteoffId + '">Перейти к созданному списанию</a>', 'good');
                         }
-                        rows.forEach(el => el.parentNode.removeChild(el));
+                        Cart.close()
                     }
                 });
         },
@@ -1056,6 +1109,9 @@ var Writeoffs = {
                     message(json.Good, 'good');
                     restore();
                     Cart.reopen();
+                    fetch(host + 'repairs/moveOptions/')
+                        .then(res => res.text())
+                        .then(text => document.getElementById('move_select').innerHTML = text);
                 }
                 if (json.Warning) message(json.Warning, 'warning');
                 if (json.Error) message(json.Error);
@@ -1068,8 +1124,6 @@ var Writeoffs = {
             .then(json => {
                 if (json.Error) message(json.Error);
                 if (json.Good) {
-                    console.log(json);
-                    console.log(json.Link)
                     message(json.Good, 'good');
                     let a = document.createElement('a');
                     document.body.appendChild(a);
@@ -1097,8 +1151,8 @@ var Writeoffs = {
     move() {
         let form = new FormData();
         form.append('Id', menuId.replace(/\D+/g, ''))
-        form.append('FolderId', document.querySelector('#modal select').value);
-        fetch(host + 'writeoff/move', { method: 'POST', body: form })
+        form.append('FolderId', document.querySelector('#modal select').value.replace(/\D+/g, ''));
+        fetch(host + 'writeoffs/move', { method: 'POST', body: form })
             .then(res => res.json())
             .then(json => {
                 if (json.Good) {
@@ -1106,8 +1160,33 @@ var Writeoffs = {
                     restore();
                 }
             });
+    },
+
+    marks() {
+        let el = document.querySelector('[data-id="' + menuId + '"]')
+        if (!el) return
+        _menu(el, 'marks')
+    },
+
+    mark(type) {
+        let form = new FormData()
+        form.append('Mark', type)
+        fetch(host + 'writeoffs/mark/' + menuId, { method: 'POST', body: form })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Done) {
+                    let container = document.querySelector('[data-id="' + menuId + '"]')
+                    if (container) {
+                        container.setAttribute('mark', type)
+                        message(json.Done, 'good')
+                    }
+                }
+                if (json.Error) {
+                    message(json.Error, 'error')
+                }
+            })
     }
-};
+}
 
 var Catalog = {
 
@@ -1297,7 +1376,6 @@ document.addEventListener('click', e => {
 });
 
 document.querySelector('.messages').addEventListener('click', e => {
-    console.log(e.target);
     if (e.target.classList.contains('messages__item')) {
         document.querySelector('.messages').removeChild(e.target);
     }
@@ -1322,3 +1400,11 @@ function message(text, type) {
         else return this.parentElement.closest(selector)
     };
 }(Element.prototype));
+
+
+// Вспомогательные функции
+
+function __aida(a, r) {
+    document.getElementById('aidablock' + r).classList.toggle('open');
+    a.classList.toggle('open')
+}

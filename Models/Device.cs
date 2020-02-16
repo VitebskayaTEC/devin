@@ -38,9 +38,6 @@ namespace Devin.Models
         public DateTime? DateLastRepair { get; set; }
 
         [Column]
-        public string Mol { get; set; }
-
-        [Column]
         public string SerialNumber { get; set; }
 
         [Column]
@@ -50,10 +47,7 @@ namespace Devin.Models
         public string Location { get; set; }
 
         [Column]
-        public string OS { get; set; }
-
-        [Column]
-        public string OSKey { get; set; }
+        public string Mol { get; set; }
 
         [Column]
         public int PrinterId { get; set; }
@@ -92,6 +86,9 @@ namespace Devin.Models
 
         [Column]
         public string Files { get; set; } = "";
+
+        [Column]
+        public string Users { get; set; } = "";
 
 
         public Printer Printer { get; set; }

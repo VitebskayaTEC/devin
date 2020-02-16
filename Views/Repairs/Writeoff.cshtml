@@ -5,7 +5,7 @@
     string open = Request.Cookies.Get(id)?.Value ?? "";
 }
 
-<div class="unit writeoff @open" data-id="@id">
+<div class="unit writeoff @open" data-id="@id" mark="@Model.Mark">
     <table class="caption">
         <tr>
             <td width="30px">

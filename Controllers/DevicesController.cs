@@ -60,6 +60,8 @@ namespace Devin.Controllers
 
         public ActionResult DefectAct(int Id) => View(model: Id);
 
+        public ActionResult Users(int Id) => View("CardPartials/Users", model: Id);
+
         public ActionResult Table() => View();
 
         public ActionResult Table1C() => View();
@@ -75,8 +77,7 @@ namespace Devin.Controllers
 
         public JsonResult Update(
             [Bind(Include = "Id,Name,Inventory,Type,Description,PublicName,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,IsOff")] Device device,
-            string DateInstall,
-            string DateLastRepair
+            string DateInstall
         )
         {
             if (!DateTime.TryParse(DateInstall, out DateTime d))
@@ -109,16 +110,14 @@ namespace Devin.Controllers
                 if (device.Description != old.Description)  changes.Add($"описание [{old.Description} => {device.Description}]");
                 if (device.Location != old.Location) changes.Add($"расположение [{old.Location} => {device.Location}]");
                 if (device.PlaceId != old.PlaceId) changes.Add($"помещение [{old.PlaceId} => {device.PlaceId}]");
+                if (device.Mol != old.Mol) changes.Add($"МОЛ [{old.Mol} => {device.Mol}]");
                 if (device.SerialNumber != old.SerialNumber) changes.Add($"серийный номер [{old.SerialNumber} => {device.SerialNumber}]");
                 if (device.PassportNumber != old.PassportNumber) changes.Add($"паспортный номер [{old.PassportNumber} => {device.PassportNumber}]");
                 if (device.ServiceTag != old.ServiceTag) changes.Add($"сервис-тег [{old.ServiceTag} => {device.ServiceTag}]");
-                if (device.OS != old.OS) changes.Add($"операционная система [{old.OS} => {device.OS}]");
-                if (device.OSKey != old.OSKey) changes.Add($"ключ ОС [{old.OSKey} => {device.OSKey}]");
                 if (device.PrinterId != old.PrinterId) changes.Add($"типовой принтер [{old.PrinterId} => {device.PrinterId}]");
                 if (device.IsOff != old.IsOff) changes.Add($"списан [{old.IsOff} => {device.IsOff}]");
                 if (device.DateInstall != old.DateInstall) changes.Add($"дата установки [{old.DateInstall} => {device.DateInstall}]");
                 if (device.DateLastRepair != old.DateLastRepair) changes.Add($"дата последнего ремонта [{old.DateLastRepair} => {device.DateLastRepair}]");
-                if (device.Mol != old.Mol) changes.Add($"дата последнего ремонта [{old.Mol} => {device.Mol}]");
                 if (device.PublicName != old.PublicName) changes.Add($"имя для печати [{old.PublicName} => {device.PublicName}]");
 
                 string destination = Request.Form.Get("Destination");
@@ -172,8 +171,7 @@ namespace Devin.Controllers
                         .Set(x => x.Description, device.Description)
                         .Set(x => x.Location, device.Location)
                         .Set(x => x.ServiceTag, device.ServiceTag)
-                        .Set(x => x.OS, device.OS)
-                        .Set(x => x.OSKey, device.OSKey)
+                        .Set(x => x.Mol, device.Mol)
                         .Set(x => x.SerialNumber, device.SerialNumber)
                         .Set(x => x.PassportNumber, device.PassportNumber)
                         .Set(x => x.DateInstall, device.DateInstall)
@@ -183,7 +181,6 @@ namespace Devin.Controllers
                         .Set(x => x.PlaceId, device.PlaceId)
                         .Set(x => x.PrinterId, device.PrinterId)
                         .Set(x => x.IsOff, device.IsOff)
-                        .Set(x => x.Mol, device.Mol)
                         .Update();
 
                     db.Log(User, "devices", device.Id, "Позиция изменена. Изменения: " + changes.ToLog());
@@ -234,14 +231,12 @@ namespace Devin.Controllers
                     PassportNumber = "",
                     SerialNumber = "",
                     ServiceTag = "",
-                    Mol = "",
-                    OS = "",
-                    OSKey = "",
                     Gold = "",
                     Silver = "",
                     MPG = "",
                     Palladium = "",
                     Platinum = "",
+                    Mol = "",
                     Files = "",
                     DateInstall = DateTime.Now.Date,
                     DateLastRepair = null,
@@ -288,15 +283,18 @@ namespace Devin.Controllers
 
                 foreach (string identifier in selectedIdentifiers)
                 {
-                    int id = int.TryParse(identifier, out i) ? i : 0;
-                    if (id != 0)
+                    if (identifier.Contains("device"))
                     {
-                        db.Devices
-                            .Where(x => x.Id == id)
-                            .Set(x => x.ComputerId, ComputerId)
-                            .Set(x => x.FolderId, FolderId)
-                            .Update();
-                        db.Log(User, "devices", id, message);
+                        int id = int.TryParse(identifier.Replace("device", ""), out i) ? i : 0;
+                        if (id != 0)
+                        {
+                            db.Devices
+                                .Where(x => x.Id == id)
+                                .Set(x => x.ComputerId, ComputerId)
+                                .Set(x => x.FolderId, FolderId)
+                                .Update();
+                            db.Log(User, "devices", id, message);
+                        }
                     }
                 }
             }
@@ -319,18 +317,6 @@ namespace Devin.Controllers
                 db.Log(User, "devices", Id, "Компьютер успешно перемещен " + oldText + newText);
 
                 return Json(new { Good = "Компьютер успешно перемещен" });
-            }
-        }
-
-        public void HideObject1C(string Id, bool Hide)
-        {
-            using (var db = new DevinContext())
-            {
-                db.Objects1C
-                    .Where(x => x.Inventory == Id)
-                    .Set(x => x.IsHide, Hide)
-                    .Update();
-                db.Log(User, "objects1c", Id, "Объект скрыт");
             }
         }
 
@@ -362,12 +348,10 @@ namespace Devin.Controllers
             DateTime Date = DateTime.TryParse(Request.Form.Get("DateInstall"), out DateTime d) ? d : DateTime.Now;
             var Positions = Request.Form.Get("positions").Split(new [] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
 
-            string output = Url.Action("excels", "content") + "defect.xls";
-
-            if (!System.IO.File.Exists(Server.MapPath("../content/exl/defect.xls"))) return Json(new { Error = "Файла шаблона не существует либо путь к нему неправильно прописан в исходниках" });
+            if (!System.IO.File.Exists(Server.MapPath("../content/templates/defect.xls"))) return Json(new { Error = "Файла шаблона не существует либо путь к нему неправильно прописан в исходниках" });
 
             HSSFWorkbook book;
-            using (var fs = new FileStream(Server.MapPath("../content/exl/defect.xls"), FileMode.Open, FileAccess.Read))
+            using (var fs = new FileStream(Server.MapPath("../content/templates/defect.xls"), FileMode.Open, FileAccess.Read))
             {
                 book = new HSSFWorkbook(fs);
             }
@@ -431,7 +415,7 @@ namespace Devin.Controllers
             int id = int.TryParse(Id.Replace("device", ""), out int i) ? i : 0;
             if (id == 0) return Json(new { Error = "Компьютер с идентификатором \"" + Id + "\" не найден в базе." });
 
-            string template = Server.MapPath(Url.Action("exl", "content") + "/ReportCart.xls");
+            string template = Server.MapPath(Url.Action("templates", "content") + "/ReportCart.xls");
 
             HSSFWorkbook book;
             using (var fs = new FileStream(template, FileMode.Open, FileAccess.Read))
@@ -443,34 +427,39 @@ namespace Devin.Controllers
 
             using (var db = new DevinContext())
             {
-                var cabinetQuery = from d in db.Devices
-                                   from w in db.WorkPlaces.Where(x => x.Id == d.PlaceId).DefaultIfEmpty()
-                                   where d.Id == id
-                                   select w.Location;
+				var _cabinet = from d in db.Devices
+							   from w in db.WorkPlaces.Where(x => x.Id == d.PlaceId).DefaultIfEmpty()
+							   where d.Id == id
+							   select w.Location;
 
-                var cabinet = cabinetQuery.FirstOrDefault();
+                var cabinet = _cabinet.FirstOrDefault();
 
-                var devicesQuery = from d in db.Devices
-                                   from o in db.Objects1C.Where(x => x.Inventory == d.Inventory)
-                                   where (d.Id == id || d.ComputerId == id) && !d.IsDeleted
-                                   orderby d.Inventory, o.Description
-                                   select new {
-                                       d.Inventory,
-                                       d.Description,
-                                       d.PublicName,
-                                       Description1C = o.Description ?? d.Description,
-                                       SerialNumber = d.SerialNumber ?? "",
-                                       Mol = o.Mol ?? d.Mol ?? "",
-                                       d.DateInstall
-                                   };
+				var _devices = from d in db.Devices
+							   from o in db.Objects1C.Where(x => x.Inventory == d.Inventory)
+							   where (d.Id == id || d.ComputerId == id) && !d.IsDeleted
+							   orderby d.Inventory, o.Description
+							   select new
+							   {
+								   d.Inventory,
+								   d.Description,
+								   d.PublicName,
+								   Description1C = o.Description ?? d.Description,
+								   SerialNumber = d.SerialNumber ?? "",
+								   d.DateInstall,
+								   Mol = o.Mol ?? "",
+							   };
 
-                var devices = devicesQuery.ToList();
+                var devices = _devices.ToList();
 
                 var name = db.Devices.Where(x => x.Id == id).Select(x => x.Name).FirstOrDefault();
 
                 string now = DateTime.Now.ToString("dd.MM.yyyy");
-                sheet.GetRow(4).GetCell(9).SetCellValue(cabinet);
-                sheet.GetRow(12).GetCell(0).SetCellValue(now);
+
+				// Место расположения (хранения)
+                sheet.GetRow(10).GetCell(7).SetCellValue(cabinet);
+
+				// Дата составления
+                sheet.GetRow(27).GetCell(0).SetCellValue("Дата составления: " + now);
 
                 int step = 0;
                 foreach (var device in devices)
@@ -505,7 +494,7 @@ namespace Devin.Controllers
 
         public JsonResult PrintRecordCartByFolder(int Id)
         {
-            string template = Server.MapPath(Url.Action("exl", "content") + "/ReportCart.xls");
+            string template = Server.MapPath(Url.Action("templates", "content") + "/ReportCart.xls");
 
             HSSFWorkbook book;
             using (var fs = new FileStream(template, FileMode.Open, FileAccess.Read))
@@ -532,7 +521,7 @@ namespace Devin.Controllers
                                        PublicName = d.PublicName ?? "",
                                        SerialNumber = d.SerialNumber ?? "",
                                        d.DateInstall,
-                                       Mol = o.Mol ?? d.Mol ?? "",
+                                       Mol = o.Mol ?? "",
                                        Description1C = o.Description ?? d.Description ?? ""
                                    };
 
@@ -582,16 +571,18 @@ namespace Devin.Controllers
         {
             using (var db = new DevinContext())
             {
-                int id = db.InsertWithInt32Identity(new WorkPlace { Location = "" });
+                int id = db.WorkPlaces
+                    .Value(x => x.Location, "")
+                    .InsertWithInt32Identity() ?? 0;
 
                 db.WorkPlaces
                     .Where(x => x.Id == id)
-                    .Set(x => x.Location, "Новое рабочее место #" + id)
+                    .Set(x => x.Location, "#" + id)
                     .Update();
                 
                 db.Log(User, "workplaces", id, "Создано новое рабочее место");
 
-                return Json(new { Good = "Новое рабочее место создано" });
+                return Json(new { Good = "Новое рабочее место создано" }, JsonRequestBehavior.AllowGet);
             }
         }
 
@@ -693,6 +684,85 @@ namespace Devin.Controllers
                 db.Log(User, "devices", id, "Из списка файлов удален файл [" + File + "]");
 
                 return Json(new { Good = "Из списка файлов удален файл [" + File + "]" });
+            }
+        }
+
+
+        public JsonResult AddUser(int Id, string user)
+        {
+            using (var db = new DevinContext())
+            {
+                if (string.IsNullOrEmpty(user) || user == "0") return Json(new { Warning = "Пользователь не выбран" });
+
+                var device = db.Devices
+                    .Where(x => x.Id == Id)
+                    .FirstOrDefault();
+
+                if (device == null) return Json(new { Error = "Не найден принтер" });
+
+                var users = (device.Users ?? "").Split(';').ToList();
+                if (!users.Contains(user)) users.Add(user);
+
+                db.Devices
+                    .Where(x => x.Id == Id)
+                    .Set(x => x.Users, string.Join(";", users.ToArray()))
+                    .Update();
+
+                using (var site = new SiteContext())
+                {
+                    var v = site.Constants.Where(x => x.Keyword == "UsersWithPrinters").Select(x => x.Value).FirstOrDefault();
+                    var all = (v ?? "").Split(';').ToList();
+
+                    if (!all.Contains(user)) all.Add(user);
+
+                    site.Constants
+                        .Where(x => x.Keyword == "UsersWithPrinters")
+                        .Set(x => x.Value, string.Join(";", all.ToArray()))
+                        .Update();
+                }
+
+                db.Log(User, "devices", Id, "Пользователь \"" + user + "\" привязан к принтеру [device" + Id + "]");
+
+                return Json(new { Good = "Пользователь привязан к принтеру" });
+            }
+        }
+
+        public JsonResult RemoveUser(int Id, string user)
+        {
+            using (var db = new DevinContext())
+            {
+                if (string.IsNullOrEmpty(user) || user == "0") return Json(new { Warning = "Пользователь не выбран" });
+
+                var device = db.Devices
+                    .Where(x => x.Id == Id)
+                    .FirstOrDefault();
+
+                if (device == null) return Json(new { Error = "Не найден принтер" });
+
+                var users = (device.Users ?? "").Split(';').ToList();
+                if (users.Contains(user)) users.Remove(user);
+
+                db.Devices
+                    .Where(x => x.Id == Id)
+                    .Set(x => x.Users, string.Join(";", users.ToArray()))
+                    .Update();
+
+                using (var site = new SiteContext())
+                {
+                    var v = site.Constants.Where(x => x.Keyword == "UsersWithPrinters").Select(x => x.Value).FirstOrDefault();
+                    var all = (v ?? "").Split(';').ToList();
+
+                    if (all.Contains(user)) all.Remove(user);
+
+                    site.Constants
+                        .Where(x => x.Keyword == "UsersWithPrinters")
+                        .Set(x => x.Value, string.Join(";", all.ToArray()))
+                        .Update();
+                }
+
+                db.Log(User, "devices", Id, "Пользователь \"" + user + "\" отвязан от принтера [device" + Id + "]");
+
+                return Json(new { Good = "Пользователь отвязан от принтера" });
             }
         }
     }

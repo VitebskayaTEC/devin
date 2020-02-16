@@ -7,27 +7,33 @@ namespace Devin.Controllers
 {
     public class FoldersController : Controller
     {
-        public JsonResult Create(string Type, string Name)
+        public JsonResult Create(string type, string name)
         {
             using (var db = new DevinContext())
             {
-                Type = Type.Substring(0, Type.Length - 1);
+                if (type != "aida") type = type.Substring(0, type.Length - 1);
 
-                int Id = db.InsertWithInt32Identity(new Folder { Type = Type, Name = Name, FolderId = 0 });
-                db.Log(User, "folders", Id, "Создана папка \"" + Name + "\" для страницы \"" + Type + "\"");
+                var id = db.Folders
+                    .Value(x => x.Type, type)
+                    .Value(x => x.Name, name)
+                    .Value(x => x.FolderId, 0)
+                    .InsertWithInt32Identity();
 
-                return Json(new { Good = "Создана новая папка \"" + Name + "\"" });
+                if (!id.HasValue) return Json(new { Error = "Ошибка при создании записи в БД" });
+
+                db.Log(User, "folders", id, "Создана папка \"" + name + "\" для страницы \"" + type + "\"");
+                return Json(new { Good = "Создана новая папка \"" + name + "\"" });
             }
         }
 
-        public JsonResult CreateInner(string Type, string Name, int FolderId)
+        public JsonResult CreateInner(string type, string Name, int FolderId)
         {
             using (var db = new DevinContext())
             {
-                Type = Type.Substring(0, Type.Length - 1);
+                if (type != "aida") type = type.Substring(0, type.Length - 1);
 
-                int Id = db.InsertWithInt32Identity(new Folder { Type = Type, Name = Name, FolderId = FolderId });
-                db.Log(User, "folders", Id, "Создана папка \"" + Name + "\" для страницы \"" + Type + "\"");
+                int Id = db.InsertWithInt32Identity(new Folder { Type = type, Name = Name, FolderId = FolderId });
+                db.Log(User, "folders", Id, "Создана папка \"" + Name + "\" для страницы \"" + type + "\"");
 
                 return Json(new { Good = "Создана новая папка \"" + Name + "\"" });
             }
@@ -43,6 +49,7 @@ namespace Devin.Controllers
                     case "devices": db.Devices.Where(x => x.FolderId == Id).Set(x => x.FolderId, 0).Update(); break;
                     case "storages": db.Storages.Where(x => x.FolderId == Id).Set(x => x.FolderId, 0).Update(); break;
                     case "repairs": db.Writeoffs.Where(x => x.FolderId == Id).Set(x => x.FolderId, 0).Update(); break;
+                    case "aida": db.Report.Where(x => x.PlaceId == Id).Set(x => x.PlaceId, 0).Update(); break;
                 }
 
                 db.Folders.Where(x => x.Id == Id).Delete();
@@ -56,8 +63,16 @@ namespace Devin.Controllers
         {
             using (var db = new DevinContext())
             {
-                string oldName = db.Folders.Where(x => x.Id == Id).Select(x => x.Name).FirstOrDefault();
-                db.Folders.Where(x => x.Id == Id).Set(x => x.Name, Name).Update();
+                string oldName = db.Folders
+                    .Where(x => x.Id == Id)
+                    .Select(x => x.Name)
+                    .FirstOrDefault();
+
+                db.Folders
+                    .Where(x => x.Id == Id)
+                    .Set(x => x.Name, Name)
+                    .Update();
+
                 db.Log(User, "folders", Id, "Папка \"" + oldName + "\" переименована в \"" + Name + "\"");
 
                 return Json(new { Good = "Папка \"" + oldName + "\" переименована в \"" + Name + "\"" });
@@ -74,6 +89,7 @@ namespace Devin.Controllers
                     case "devices": db.Devices.Where(x => x.FolderId == Id).Set(x => x.FolderId, 0).Update(); break;
                     case "storages": db.Storages.Where(x => x.FolderId == Id).Set(x => x.FolderId, 0).Update(); break;
                     case "repairs": db.Writeoffs.Where(x => x.FolderId == Id).Set(x => x.FolderId, 0).Update(); break;
+                    case "aida": db.Report.Where(x => x.PlaceId == Id).Set(x => x.PlaceId, 0).Update(); break;
                 }
 
                 db.Log(User, "folders", Id, "Из папки \"" + name + "\" вынесены все вложенные элементы");

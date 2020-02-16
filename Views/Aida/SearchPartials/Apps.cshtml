@@ -1,0 +1,42 @@
+﻿@model List<Item>
+
+<div class="view max">
+    <table class="view_table">
+        <thead>
+            <tr>
+                <th width="200px">Имя компьютера</th>
+                <th>Программа</th>
+                <th width="150px">Версия</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var app in Model)
+            {
+                <tr onclick="card('report|@app.ReportID')">
+                    <td>@app.ReportHost</td>
+                    <td>@app.IDevice</td>
+                    <td>@app.IValue</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>
+                    @Model.GroupBy(x => x.ReportHost).Count()
+                </td>
+                <td>
+                    @foreach (var device in Model.GroupBy(x => x.IDevice).Select(g => g.Key).ToList())
+                    {
+                        <div>@device</div>
+                    }
+                </td>
+                <td>
+                    @foreach (var value in Model.GroupBy(x => x.IValue).Select(g => g.Key).ToList())
+                    {
+                        <div>@value</div>
+                    }
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

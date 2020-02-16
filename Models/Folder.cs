@@ -32,6 +32,8 @@ namespace Devin.Models
 
         public List<Object1C> Objects { get; set; } = new List<Object1C>();
 
+        public List<Report> Reports { get; set; } = new List<Report>();
+
         public static Folder Build(Folder folder, List<Folder> folders)
         {
             foreach (var f in folders)

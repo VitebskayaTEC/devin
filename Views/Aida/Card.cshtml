@@ -1,0 +1,41 @@
+﻿@model int
+
+@using (var db = new DevinContext())
+{
+    var rhost = db.Report.Where(x => x.ID == Model).Select(x => x.RHost).FirstOrDefault();
+
+    if (rhost == null)
+    {
+        <div class="card_header">
+            <span>Компьютер с таким идентификатором не найден в базе данных</span>
+            <a card="" title="Закрыть карточку">
+                <i class="ic-clear"></i>
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="card_header">
+            <span>@rhost</span>
+            <a card="" title="Закрыть карточку">
+                <i class="ic-clear"></i>
+            </a>
+        </div>
+
+        <div class="tabs-panel">
+            <div tab="summary" class="active">Сводка</div>
+            <div tab="software">Программы</div>
+            <div tab="all">Полная информация</div>
+        </div>
+        <div class="tabs">
+            <div tab="summary" class="active" view="/aida/summary/@Model"></div>
+            <div tab="software" view="/aida/software/@Model"></div>
+            <div tab="all" view="/aida/all/@Model"></div>
+        </div>
+    }
+}
+
+<div class="card_buttons">
+    <a onclick="aida.delReport(@Model)">Удалить из базы</a>
+    <a card="">Закрыть</a>
+</div>

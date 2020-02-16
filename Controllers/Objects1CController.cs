@@ -21,7 +21,7 @@ namespace Devin.Controllers
                     if (id > 200)
                     {
                         var foldersQuery = from o in db.Objects1C
-                                           where o.Account == null && !o.IsHide
+                                           where o.Account == null
                                            orderby o.Guild
                                            group o by o.Guild into g
                                            select g.Key;
@@ -39,7 +39,7 @@ namespace Devin.Controllers
                         }
 
                         var model = db.Objects1C
-                            .Where(x => x.Account == null && x.Guild == guild && !x.IsHide)
+                            .Where(x => x.Account == null && x.Guild == guild)
                             .OrderBy(x => x.Inventory)
                             .ToList();
 
@@ -48,7 +48,7 @@ namespace Devin.Controllers
                     else if (id > 100)
                     {
                         var foldersQuery = from o in db.Objects1C
-                                           where o.Account != null && !o.IsHide
+                                           where o.Account != null
                                            orderby o.Account
                                            group o by o.Account into g
                                            select g.Key;
@@ -66,7 +66,7 @@ namespace Devin.Controllers
                         }
 
                         var model = db.Objects1C
-                             .Where(x => x.Account == account && !x.IsHide)
+                             .Where(x => x.Account == account)
                              .OrderBy(x => x.Inventory)
                              .ToList();
                         
@@ -79,13 +79,9 @@ namespace Devin.Controllers
                         {
                             return View("FolderData", model.OS);
                         }
-                        else if (id == 1)
-                        {
-                            return View("FolderData", model.Materials);
-                        }
                         else
                         {
-                            return View("Items", model.Hided.Objects);
+                            return View("FolderData", model.Materials);
                         }
                     }
                 }
@@ -104,6 +100,8 @@ namespace Devin.Controllers
 
         public ActionResult Import() => View();
 
+        public ActionResult Asutp() => View();
+
 
         public JsonResult CreateDevice(string Id)
         {
@@ -121,14 +119,11 @@ namespace Devin.Controllers
                 {
                     Inventory = obj.Inventory,
                     PublicName = obj.Description,
-                    Mol = obj.Mol,
                     DateInstall = obj.Date ?? DateTime.Now,
                     Location = obj.Location,
                     IsOff = false,
                     IsDeleted = false
                 });
-
-                db.Objects1C.Where(x => x.Inventory == Id).Set(x => x.IsChecked, true).Update();
 
                 db.Log(User, "devices", id, "Создано устройство по данным из 1С [object" + Id + "]");
                 db.Log(User, "objects1c", Id, "С данной записи создана карточка устройства [device" + id + "]. Запись отмечена как проверенная");
@@ -202,41 +197,10 @@ namespace Devin.Controllers
 
                 int id = db.InsertWithInt32Identity(newStorage);
 
-                db.Objects1C.Where(x => x.Inventory == Id).Set(x => x.IsChecked, true).Update();
-
                 db.Log(User, "devices", id, "Создана позиция на складе по данным из 1С [object" + Id + "]");
                 db.Log(User, "objects1c", Id, "С данной записи создана карточка позиции [storage" + id + "]. Запись отмечена как проверенная");
 
                 return Json(new { Good = "Позиция успешно добавлена на склад" });
-            }
-        }
-
-        public JsonResult Check(string Id)
-        {
-            using (var db = new DevinContext())
-            {
-                db.Objects1C
-                    .Where(x => x.Inventory == Id)
-                    .Set(x => x.IsChecked, true)
-                    .Update();
-                db.Log(User, "objects1c", Id, "Запись отмечена как проверенная");
-
-                return Json(new { Good = "Запись отмечена как проверенная" });
-            }
-        }
-
-        public JsonResult Hide(string Id)
-        {
-            using (var db = new DevinContext())
-            {
-                db.Objects1C
-                    .Where(x => x.Inventory == Id)
-                    .Set(x => x.IsChecked, true)
-                    .Set(x => x.IsHide, true)
-                    .Update();
-                db.Log(User, "objects1c", Id, "Запись отмечена как скрытая");
-
-                return Json(new { Good = "Запись отмечена как скрытая" });
             }
         }
 
@@ -256,37 +220,21 @@ namespace Devin.Controllers
 
                     if (Mode == "check")
                     {
-                        db.Objects1C
-                            .Where(x => inventories.Contains(x.Inventory))
-                            .Set(x => x.IsChecked, true)
-                            .Update();
                         text = "Объект отмечен как проверенный";
                         message = "проверенные";
                     }
                     if (Mode == "uncheck")
                     {
-                        db.Objects1C
-                            .Where(x => inventories.Contains(x.Inventory))
-                            .Set(x => x.IsChecked, false)
-                            .Update();
                         text = "Объект отмечен как непроверенный";
                         message = "непроверенные";
                     }
                     if (Mode == "hide")
                     {
-                        db.Objects1C
-                            .Where(x => inventories.Contains(x.Inventory))
-                            .Set(x => x.IsHide, true)
-                            .Update();
                         text = "Объект отмечен как скрытый";
                         message = "скрытые";
                     }
                     if (Mode == "visible")
                     {
-                        db.Objects1C
-                            .Where(x => inventories.Contains(x.Inventory))
-                            .Set(x => x.IsHide, false)
-                            .Update();
                         text = "Объект отмечен как отображаемый";
                         message = "отображаемые";
                     }

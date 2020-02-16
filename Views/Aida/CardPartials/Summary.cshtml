@@ -1,0 +1,71 @@
+﻿@model int
+
+<div class="card_body">
+    @using (var db = new DevinContext())
+    {
+        var data = db.Item
+            .Where(x => x.ReportID == Model)
+            .Where(x => x.IPage == "Суммарная информация")
+            .Select(x => new { x.IGroup, x.IField, x.IValue })
+            .ToList()
+            .Where(x => x.IGroup != "DMI" && x.IGroup != "Ввод" && x.IGroup != "Мультимедиа" && x.IGroup != "Сеть")
+            .Where(x => x.IGroup != "Компьютер" || x.IField == "Операционная система" || x.IField == "Имя пользователя" || x.IField == "Тип компьютера")
+            .Where(x => x.IGroup != "Системная плата" || (x.IField != "Коммуникационный порт" && x.IField != "Тип BIOS"))
+            .Where(x => x.IField != "Видеоадаптер")
+            .Where(x => x.IGroup != "Хранение данных" || (x.IField != "IDE-контроллер" && x.IField != "Контроллер хранения данных"))
+            .Where(x => x.IGroup != "Периферийные устройства" || !x.IField.Contains("USB"))
+            .Where(x => x.IField != "Батарея" && x.IField != "Оптический накопитель")
+            .Where(x => x.IField != "Принтер" || (!x.IValue.Contains("Microsoft") && !x.IValue.Contains("Fax")))
+            .GroupBy(x => x.IGroup)
+            .Select(g => new {
+                Group = g.Key,
+                Values = g
+                    .Select(x => new { 
+                        x.IField, 
+                        x.IValue
+                    })
+            })
+            .ToList();
+
+        bool first = true;
+
+        <table class="card_table">
+            <colgroup>
+                <col width="250" />
+                <col width="450" />
+            </colgroup>
+            @foreach (var g in data.OrderBy(x => x.Group))
+            {
+                if (!first)
+                {
+                    <tr>
+                        <td colspan="2"><hr /></td>
+                    </tr>
+                }
+                else
+                {
+                    first = false;
+                }
+
+                foreach (var x in g.Values)
+                {
+                    if (x.IField == "Тип компьютера")
+                    {
+                        <tr>
+                            <th>Разрядность</th>
+                            <td>@(x.IValue.Contains("x86") ? "x86" : "x64")</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <th>@x.IField</th>
+                            <td>@x.IValue</td>
+                        </tr>
+                    }
+                }
+                
+            }
+        </table>
+    }
+</div>

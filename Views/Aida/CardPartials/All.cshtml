@@ -1,0 +1,126 @@
+﻿@model int
+
+<div class="card_body">
+    <style>
+        .aida_block {
+            display: none;
+            padding-left: 10px;
+            padding: 10px;
+        }
+
+        .aida_block.open {
+            display: block;
+        }
+
+        .aida_link {
+            display: block;
+            font-family: Consolas, sans-serif;
+            cursor: pointer;
+        }
+
+        .aida_link:hover {
+            color: #fd9900;
+            font-weight: 600;
+        }
+
+            .aida_link:before {
+                content: "+ ";
+            }
+
+            .aida_link.open:before {
+                content: "- ";
+            }
+
+        .aida_block span {
+            font-weight: 600;
+        }
+    </style>
+    @using (var db = new DevinContext())
+    {
+        var model = db.Item
+            .Where(x => x.ReportID == Model)
+            .Select(x => new { x.IPage, x.IDevice, x.IGroup, x.IField, x.IValue })
+            .ToList();
+
+        if (model.Count == 0)
+        {
+            <div class="err">Отчёт Aida не получен. Возможно, он был удалён либо поврежден</div>
+            return;
+        }
+
+        var pages = model
+            .GroupBy(x => x.IPage)
+            .Select(g => new
+            {
+                Name = g.Key,
+                Devices = g
+                    .Select(x => new
+                    {
+                        x.IDevice,
+                        x.IGroup,
+                        x.IField,
+                        x.IValue,
+                    })
+                    .GroupBy(x => x.IDevice)
+                    .Select(g1 => new
+                    {
+                        Name = g1.Key,
+                        Groups = g1
+                            .Select(x => new
+                            {
+                                x.IGroup,
+                                x.IField,
+                                x.IValue,
+                            })
+                            .GroupBy(x => x.IGroup)
+                            .Select(g2 => new
+                            {
+                                Name = g2.Key,
+                                Fields = g2
+                                    .Select(x => new
+                                    {
+                                        x.IField,
+                                        x.IValue
+                                    })
+                            })
+                    })
+            })
+            .ToList();
+
+        int r = 0;
+
+        foreach (var page in pages.OrderBy(x => x.Name))
+        {
+            r++;
+
+            <a class="aida_link" onclick="__aida(this, @r)">@page.Name</a>
+            <div id="aidablock@(r)" class="aida_block">
+                @foreach (var device in page.Devices.OrderBy(x => x.Name))
+                {
+                    r++;
+
+                    <a class="aida_link" onclick="__aida(this, @r)">@device.Name</a>
+                    <div id="aidablock@(r)" class="aida_block">
+                        @foreach (var group in device.Groups.OrderBy(x => x.Name))
+                        {
+                            r++;
+
+                            <a class="aida_link" onclick="__aida(this, @r)">@group.Name</a>
+                            <div id="aidablock@(r)" class="aida_block">
+                                @foreach (var field in group.Fields.OrderBy(x => x.IField))
+                                {
+                                    <div>
+                                        <span>@field.IField</span>: @field.IValue
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    }
+    <script>
+        
+    </script>
+</div>

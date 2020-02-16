@@ -1,0 +1,45 @@
+﻿@{
+    ViewBag.Title = "Список сотрудников";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+	<div class="unit">
+		<table class="caption">
+			<tr>
+				<td>
+					<b>Список сотрудников</b>
+				</td>
+			</tr>
+		</table>
+		<div class="itemsBlock itemsBlock_expanded">
+			<div class="title-wrapper">
+				<a class="view__link title" href="~/employees/create">Добавить</a>
+			</div>
+			<table class="items">
+				<thead>
+					<tr>
+						<th>Подразделение</th>
+						<th>Фамилия</th>
+						<th>Инициалы</th>
+						<th>На работе</th>
+					</tr>
+				</thead>
+				<tbody>
+					@using (var db = new DevinContext())
+					{
+						var employees = db.Employees.ToList();
+
+						foreach (var employee in employees)
+						{
+							<tr>
+								<td><a href="~/employees/details/@employee.Id" class="view__link">@employee.Division</a></td>
+								<td><a href="~/employees/details/@employee.Id" class="view__link">@employee.Surname</a></td>
+								<td><a href="~/employees/details/@employee.Id" class="view__link">@employee.Initials</a></td>
+								<td><a href="~/employees/details/@employee.Id" class="view__link">@(employee.OnWork ? "Да" : "Нет")</a></td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>

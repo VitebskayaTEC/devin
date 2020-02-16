@@ -28,13 +28,13 @@ namespace Devin.ViewModels
                                     || d.Name.Contains(Search)
                                     || d.PublicName.Contains(Search)
                                     || d.Description.Contains(Search)
-                                    || d.Mol.Contains(Search)
                                     || d.SerialNumber.Contains(Search)
                                     || d.PassportNumber.Contains(Search)
                                     || d.Location.Contains(Search)
-                                )
+								)
                                 orderby d.Name, d.Type
-                                select new Device {
+                                select new Device
+								{
                                     Id = d.Id,
                                     Type = d.Type,
                                     Inventory = d.Inventory,
@@ -68,7 +68,7 @@ namespace Devin.ViewModels
                                            Location = p.Location,
                                            IsOff = d.IsOff,
                                            FolderId = f.Id
-                                       };
+									   };
 
                     var foldersQuery = from f in db.Folders
                                        from p in db.Folders.Where(x => x.Id == f.FolderId).DefaultIfEmpty(new Folder { Id = 0 })

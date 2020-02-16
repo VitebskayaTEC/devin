@@ -1,0 +1,51 @@
+﻿@{
+    int r = new Random().Next();
+    string url = Request.Url.AbsoluteUri.ToLower();
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Aida</title>
+    <link rel="shortcut icon" href="~/Content/img/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="~/Content/css/layout.css?@r" />
+    @RenderSection("css", false)
+</head>
+<body class="@(Request.Cookies.Get("theme")?.Value == "black" ? "dark" : "white")">
+    <div class="nav">
+        <a href="/"><i class="ic-exit-to-app"></i></a>
+        <a href="~/devices/#/" @(url.Contains("devices") ? "class=active" : "")>DEVIN</a>
+        <a href="~/storages/#/" @(url.Contains("storages") ? "class=active" : "")>Склад</a>
+        <a href="~/repairs/#/" @(url.Contains("repairs") ? "class=active" : "")>Ремонты</a>
+        <a href="~/aida/#/" @(url.Contains("aida") ? "class=active" : "")>AIDA</a>
+        <a href="~/objects1c/#/" @(url.Contains("objects1c") ? "class=active" : "")>1C</a>
+        <a href="~/catalog/#/" @(url.Contains("catalog") ? "class=active" : "")>Каталог</a>
+        <a href="~/admin/#/" @(url.Contains("admin") ? "class=active" : "")>Отчёты</a>
+        <div onclick="menu(this, 'main')"><i class="ic-menu"></i></div>
+        @if (ViewBag.NoSearch != true)
+        {
+            <input id="search" name="query" type="search" placeholder="поиск" />
+        }
+        @RenderSection("nav", false)
+    </div>
+
+    <div id="body" menu="view">
+        @RenderBody()
+    </div>
+
+    <div id="card" class="card hide"></div>
+    <div id="logs" class="logs"></div>
+
+    @RenderSection("html", false)
+
+    <script src="~/Content/js/layout.js?@r"></script>
+    <script src="~/Content/js/actions.js"></script>
+    <script>
+        var host = '@Url.Action("", "")'.slice(0, -1)
+    </script>
+    @RenderSection("js", false)
+
+    <img src="~/Content/img/devin_icons_yellow.png" class="hide" />
+</body>
+</html>

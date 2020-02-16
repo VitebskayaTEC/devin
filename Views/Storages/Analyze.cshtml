@@ -224,12 +224,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var c in cartridges)
+                    @foreach (var c in cartridges.OrderBy(x => x.Name))
                     {
                         int forecast = 0;
                         <tr>
                             <td>@c.Type</td>
-                            <td>@c.Name</td>
+                            <td><a class="view__link" href="##cart@(c.Id)">@c.Name</a></td>
                             <td>@c.Cost.ToString("0.00")</td>
                             <td>@c.InStorage</td>
                             <td>

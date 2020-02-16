@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using LinqToDB;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Devin.Models
@@ -11,7 +12,19 @@ namespace Devin.Models
         {
             using (var db = new DevinContext())
             {
-                Devices = db.Devices.Where(x => !x.IsDeleted && x.ComputerId == Id).ToList();
+				var _devices = from d in db.Devices
+							   where !d.IsDeleted && d.ComputerId == Id
+							   select new Device
+							   {
+								   Id = d.Id,
+								   Inventory = d.Inventory,
+								   Name = d.Name,
+								   IsOff = d.IsOff,
+								   PublicName = d.PublicName,
+								   Mol = d.Mol,
+							   };
+
+				Devices = _devices.ToList();
             }
         }
     }

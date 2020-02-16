@@ -6,7 +6,7 @@ namespace Devin.Models
     [Table(Name = "WorkPlaces")]
     public class WorkPlace
     {
-        [Column, PrimaryKey, Identity, NotNull]
+        [Column, Identity]
         public int Id { get; set; }
 
         [Column, NotNull]

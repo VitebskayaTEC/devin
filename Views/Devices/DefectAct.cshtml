@@ -15,7 +15,6 @@
                     Inventory = d.Inventory,
                     Name = d.Name,
                     DateInstall = d.DateInstall,
-                    Mol = d.Mol,
                     NetworkName = c.Name
                 };
 
@@ -67,7 +66,7 @@
                     </tr>
                     <tr>
                         <td>М.О.Л. (фамилия и.о.)</td>
-                        <td><input class="cart__field" name="Mol" value="@(string.IsNullOrEmpty(data.Object1C?.Mol) ? data.Mol : data.Object1C?.Mol)" /></td>
+                        <td><input class="cart__field" name="Mol" value="@data.Object1C.Mol" /></td>
                     </tr>
                     <tr>
                         <td>Время наработки</td>

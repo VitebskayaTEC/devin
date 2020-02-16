@@ -14,7 +14,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Devin</RootNamespace>
     <AssemblyName>Devin</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
@@ -25,6 +25,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -45,16 +46,19 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=1.1.0.145, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpZipLib.1.1.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=1.2.0.246, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpZipLib.1.2.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="linq2db, Version=2.6.3.0, Culture=neutral, PublicKeyToken=e41013125f9e410a, processorArchitecture=MSIL">
-      <HintPath>..\packages\linq2db.2.6.3\lib\net46\linq2db.dll</HintPath>
+    <Reference Include="linq2db, Version=2.9.4.0, Culture=neutral, PublicKeyToken=e41013125f9e410a, processorArchitecture=MSIL">
+      <HintPath>..\packages\linq2db.2.9.4\lib\net46\linq2db.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=2.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="NPOI, Version=2.4.1.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
       <HintPath>..\packages\NPOI.2.4.1\lib\net45\NPOI.dll</HintPath>
     </Reference>
@@ -69,13 +73,13 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.Helpers.dll</HintPath>
     </Reference>
@@ -94,9 +98,7 @@
     <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
     </Reference>
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Web" />
-    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Web.Abstractions" />
     <Reference Include="System.Web.Routing" />
     <Reference Include="System.Xml" />
@@ -111,35 +113,46 @@
     </Reference>
     <Reference Include="System.Net.Http.WebRequest">
     </Reference>
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\AidaController.cs" />
     <Compile Include="Controllers\CatalogController.cs" />
     <Compile Include="Controllers\DevicesController.cs" />
+    <Compile Include="Controllers\EmployeesController.cs" />
     <Compile Include="Controllers\FoldersController.cs" />
-    <Compile Include="Controllers\HardwareController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\Objects1CController.cs" />
+    <Compile Include="Controllers\OfficialsController.cs" />
     <Compile Include="Controllers\RepairsController.cs" />
     <Compile Include="Controllers\StoragesController.cs" />
     <Compile Include="Controllers\WriteoffsController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\DeviceSoftware.cs" />
     <Compile Include="Models\Elm.cs" />
     <Compile Include="Models\Activity.cs" />
     <Compile Include="Models\Aida.cs" />
+    <Compile Include="Models\Employee.cs" />
+    <Compile Include="Models\Official.cs" />
     <Compile Include="Models\Hardware.cs" />
     <Compile Include="Models\PrinterCartridge.cs" />
     <Compile Include="Models\Cartridge.cs" />
-    <Compile Include="Models\Database.cs" />
+    <Compile Include="Models\Relations\Relation_Official_Employee.cs" />
+    <Compile Include="Models\Request.cs" />
+    <Compile Include="Models\Site\Constant.cs" />
+    <Compile Include="Models\Site\User.cs" />
+    <Compile Include="Models\_Database.cs" />
     <Compile Include="Models\Computer.cs" />
     <Compile Include="Models\Device.cs" />
     <Compile Include="Models\Object1C.cs" />
-    <Compile Include="Models\DragMetal.cs" />
+    <Compile Include="Models\Site\MetalsCost.cs" />
     <Compile Include="Models\Folder.cs" />
     <Compile Include="Models\Printer.cs" />
     <Compile Include="Models\Repair.cs" />
+    <Compile Include="Models\Software.cs" />
     <Compile Include="Models\Storage.cs" />
     <Compile Include="Models\TypeWriteoff.cs" />
     <Compile Include="Models\TypeSystem.cs" />
@@ -155,8 +168,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\css\table.css" />
-    <Content Include="Content\excels\TextFile1.txt" />
+    <Content Include="Content\css\layout.css" />
+    <Content Include="Content\excels\_empty.txt" />
+    <Content Include="Content\img\baseline_desktop_windows_black_48dp.png" />
     <Content Include="Content\img\devin_icons_white.png" />
+    <Content Include="Content\img\devin_icons_yellow.png" />
+    <Content Include="Content\img\linedpaper.png" />
+    <Content Include="Content\img\p6.png" />
+    <Content Include="Content\js\actions.js" />
+    <Content Include="Content\js\fact.js" />
     <Content Include="Content\js\table.js" />
     <Content Include="Content\css\core.css" />
     <Content Include="Content\img\background.png" />
@@ -165,56 +185,35 @@
     <Content Include="Content\img\favicon.ico" />
     <Content Include="Content\img\white_carbonfiber.png" />
     <Content Include="Content\js\core.js" />
-    <Content Include="Content\lib\jquery-3.3.1.min.js" />
+    <Content Include="Content\js\layout.js" />
+    <Content Include="Content\lib\jqueryui\jquery-ui.min.css" />
+    <Content Include="Content\lib\jqueryui\jquery-ui.min.js" />
+    <Content Include="Content\lib\jquery\jquery-3.4.1.min.js" />
+    <Content Include="Content\lib\sortable\sortable.min.js" />
     <Content Include="Global.asax" />
     <Content Include="Web.config" />
-    <Content Include="Web.Debug.config">
-      <DependentUpon>Web.config</DependentUpon>
-    </Content>
-    <Content Include="Web.Release.config">
-      <DependentUpon>Web.config</DependentUpon>
-    </Content>
     <Content Include="Views\Web.config">
       <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Content Include="Content\exl\analyze.xls">
+    <Content Include="Content\templates\analyze.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\exl\defect.xls">
+    <Content Include="Content\templates\expl.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\exl\expl.backup.xls">
+    <Content Include="Content\templates\labels.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\exl\expl.xls">
+    <Content Include="Content\templates\expl-1.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\exl\labels.xls">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\exl\mat.xls">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\exl\test.xls">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\exl\ReportCart.xls">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\exl\expl-1.xls">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\exl\mat-org.xls">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Content\templates\mat.xlsx" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Properties\PublishProfiles\Local Publish.pubxml" />
-    <None Include="Properties\PublishProfiles\WEB Publish.pubxml" />
     <Content Include="Views\Devices\Table1C.cshtml" />
     <Content Include="Views\Devices\Table.cshtml" />
     <Content Include="Views\Devices\DefectAct.cshtml" />
@@ -226,9 +225,7 @@
     <Content Include="Views\Repairs\Index.cshtml" />
     <Content Include="Views\Repairs\List.cshtml" />
     <Content Include="Views\Aida\List.cshtml" />
-    <Content Include="Views\Aida\Index.cshtml" />
     <Content Include="Views\Shared\_LayoutCart.cshtml" />
-    <Content Include="Views\Aida\Cart.cshtml" />
     <Content Include="Views\Storages\Analyze.cshtml" />
     <Content Include="Views\Repairs\YearReport.cshtml" />
     <Content Include="Views\Repairs\CartridgesUsage.cshtml" />
@@ -241,11 +238,9 @@
     <Content Include="Views\Devices\Cart.cshtml" />
     <Content Include="Views\Devices\HistoryById.cshtml" />
     <Content Include="Views\Devices\ElmById.cshtml" />
-    <Content Include="Views\Aida\Data.cshtml" />
-    <Content Include="Views\Aida\Autorun.cshtml" />
-    <Content Include="Views\Aida\Devices.cshtml" />
-    <Content Include="Views\Aida\Programs.cshtml" />
-    <Content Include="README.md" />
+    <Content Include="Views\Aida\CardPartials\Autorun.cshtml" />
+    <Content Include="Views\Aida\CardPartials\Devices.cshtml" />
+    <Content Include="Views\Aida\CardPartials\Programs.cshtml" />
     <Content Include="Views\Devices\HistoryRepairsById.cshtml" />
     <Content Include="Views\Repairs\Cart.cshtml" />
     <Content Include="Views\Repairs\Device.cshtml" />
@@ -281,10 +276,33 @@
     <Content Include="Views\Objects1C\List.cshtml" />
     <Content Include="Views\Objects1C\Search.cshtml" />
     <Content Include="Views\Devices\Inventory.cshtml" />
-    <Content Include="Views\Aida\Computer.cshtml" />
-    <Content Include="Views\Aida\ComputerData.cshtml" />
     <Content Include="Views\Devices\Compare1C.cshtml" />
-    <Content Include="Views\Hardware\Index.cshtml" />
+    <Content Include="Views\Repairs\MoveOptions.cshtml" />
+    <Content Include="Views\Admin\Scripts.cshtml" />
+    <Content Include="Views\Objects1C\Asutp.cshtml" />
+    <Content Include="Views\Admin\Licenses.cshtml" />
+    <Content Include="Views\Admin\Index.cshtml" />
+    <Content Include="Views\Employees\Index.cshtml" />
+    <Content Include="Views\Employees\Create.cshtml" />
+    <Content Include="Views\Employees\Details.cshtml" />
+    <Content Include="Views\Officials\Create.cshtml" />
+    <Content Include="Views\Officials\Details.cshtml" />
+    <Content Include="Views\Officials\Index.cshtml" />
+    <Content Include="Views\Officials\Employees.cshtml" />
+    <None Include="Properties\PublishProfiles\WEB.pubxml" />
+    <Content Include="Views\Aida\Index.cshtml" />
+    <Content Include="Views\Aida\ViewPartials\Report.cshtml" />
+    <Content Include="Views\Shared\_LayoutNext.cshtml" />
+    <Content Include="Views\Aida\Card.cshtml" />
+    <Content Include="Views\Aida\CardPartials\All.cshtml" />
+    <Content Include="Views\Aida\CardPartials\Summary.cshtml" />
+    <Content Include="Views\Aida\CardPartials\Software.cshtml" />
+    <Content Include="Views\Aida\SearchPartials\Computers.cshtml" />
+    <Content Include="Views\Aida\SearchPartials\Apps.cshtml" />
+    <Content Include="Views\Aida\SearchPartials\Summary.cshtml" />
+    <Content Include="Views\Aida\SearchPartials\Fulltext.cshtml" />
+    <Content Include="Views\Aida\Pages\Fact.cshtml" />
+    <Content Include="Views\Devices\CardPartials\Users.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

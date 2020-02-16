@@ -1,0 +1,29 @@
+﻿@model List<Item>
+
+<div class="view max">
+    <table class="view_table">
+        <thead>
+            <tr>
+                <th width="150px">Имя компьютера</th>
+                <th width="200px">Раздел</th>
+                <th>Группа</th>
+                <th>Устройство</th>
+                <th>Поле</th>
+                <th>Значение</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr onclick="card('report|@item.ReportID')">
+                    <td>@item.ReportHost</td>
+                    <td>@item.IPage</td>
+                    <td>@item.IGroup</td>
+                    <td>@item.IDevice</td>
+                    <td>@item.IField</td>
+                    <td>@item.IValue</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

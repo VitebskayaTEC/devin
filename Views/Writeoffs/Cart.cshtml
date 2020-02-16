@@ -40,12 +40,20 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>Тип устройства</td>
+                    <td>Тип списания</td>
                     <td>
                         <select class="cart__field" name="@nameof(writeoff.Type)">
                             <option value="0">не определен</option>
                             @{
-                                var types = db._WriteoffTypes.Select(x => new { x.Id, x.Name, x.Captions, x.DefaultData }).OrderBy(x => x.Name).ToList();
+                                var types = db._WriteoffTypes
+									.Select(x => new { 
+										x.Id,
+										x.Name,
+										x.Captions,
+										x.DefaultData,
+									})
+									.OrderBy(x => x.Name)
+									.ToList();
 
                                 foreach (var row in types)
                                 {
@@ -68,32 +76,17 @@
                     <td>Дата создания</td>
                     <td><input class="cart__field" name="@nameof(writeoff.Date)" type="text" value="@writeoff.Date.ToString("dd.MM.yyyy")" style="width: 100px" /></td>
                 </tr>
-                @{
-                    string[] captions = Captions.Split(new string[] { ";;" }, StringSplitOptions.None);
-                    string[] defaults = DefaultData.Split(new string[] { ";;" }, StringSplitOptions.None);
-
-                    if (captions.Length > 0)
-                    {
-                        for (int i = 0; i < captions.Length; i++)
-                        {
-                            string value = writeoff.Parameters.Length > i ? writeoff.Parameters[i] : defaults.Length > i ? defaults[i] : "";
-
-                            <tr>
-                                <td>@captions[i]</td>
-                                <td>
-                                    <input class="cart__field" name="@(nameof(writeoff.Params))[]" value="@value" />
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td>Параметры экспорта</td>
-                            <td>В справочнике не определены поля для параметров</td>
-                        </tr>
-                    }
-                }
+				@if (writeoff.Type == "mat")
+				{
+					<tr>
+						<td>Количество плат</td>
+						<td><input class="cart__field" type="number" min="0" name="BoardsCount" value="@writeoff.BoardsCount" style="width: 100px" placeholder="0" /> шт.</td>
+					</tr>
+					<tr>
+						<td>Суммарный вес плат</td>
+						<td><input class="cart__field" type="number" min="0" name="BoardsWeight" value="@writeoff.BoardsWeight.ToString().Replace(',', '.')" style="width: 100px" placeholder="0,000" step="0.1" /> г.</td>
+					</tr>
+				}
                 <tr>
                     <td>Описание</td>
                     <td>

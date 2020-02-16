@@ -76,7 +76,6 @@
     using (var db = new DevinContext())
     {
         var objects1c = db.Objects1C
-            .Where(x => !x.IsHide)
             .Select(x => new { x.Inventory, x.Description, x.Guild, x.SubDivision, x.Mol })
             .OrderBy(x => x.Inventory)
             .ToList();
@@ -91,7 +90,6 @@
                         Inventory = d.Inventory,
                         Type = d.Type ?? "",
                         PublicName = d.PublicName,
-                        Mol = d.Mol,
                         Location = d.Location,
                         NetworkName = c.Name == null
                           ? d.Type == "CMP" ? d.Name : null
@@ -111,7 +109,6 @@
                     <tr>
                         <th data-type="string">Тип</th>
                         <th data-type="string">Наименование</th>
-                        <th data-type="string">М.О.Л.</th>
                         <th data-type="string">Расположение</th>
                         <th data-type="string" class="right-border">Сетевое имя</th>
                         <th data-type="string">Наименование</th>
@@ -128,7 +125,6 @@
                             <td class="right-border">@device.Inventory</td>
                             <td><a href="##device@(device.Id)">@(types.ContainsKey(device.Type) ? types[device.Type] : "Неизвестный тип")</a></td>
                             <td><a href="##device@(device.Id)">@device.PublicName</a></td>
-                            <td><a href="##device@(device.Id)">@device.Mol</a></td>
                             <td><a href="##device@(device.Id)">@device.Location</a></td>
                             <td class="right-border"><a href="##device@(device.Id)">@device.NetworkName</a></td>
                             @foreach (var object1C in objects1c)

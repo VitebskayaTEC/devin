@@ -2,13 +2,26 @@
 
 @using (var db = new DevinContext())
 {
-    var device = db.Devices
-        .Where(x => x.Id == Model)
-        .Select(x => new { x.Id, x.Inventory, x.Name, x.Description, x.Location, x.Mol, x.DateInstall, x.Type, x.PrinterId })
-        .FirstOrDefault();
+	var _device = from d in db.Devices
+				  from o in db.Objects1C.InnerJoin(x => x.Inventory == d.Inventory).DefaultIfEmpty()
+				  where d.Id == Model
+				  select new
+				  {
+					  d.Id,
+					  d.Inventory,
+					  d.Name,
+					  d.Description,
+					  d.Location,
+					  o.Mol,
+					  d.DateInstall,
+					  d.Type,
+					  d.PrinterId,
+				  };
 
-    if (device == null)
-    {
+	var device = _device.FirstOrDefault();
+
+	if (device == null)
+	{
         <div class="cart__body">Устройство не найдено</div>
         return;
     }

@@ -1,0 +1,73 @@
+﻿@model List<Storage>
+
+@{
+    ViewBag.Title = "DEVIN | 1С | Приход Соколова";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles {
+    <style>
+        .new {background: #8de088}
+    </style>
+}
+
+@using (var db = new DevinContext())
+{
+    var devices = db.Devices
+        .Where(x => !x.IsDeleted)
+        .Select(x => new Device { Id = x.Id, Name = x.Name, PublicName = x.PublicName, Inventory = x.Inventory })
+        .ToList();
+
+    var storages = db.Storages
+        .Where(x => !x.IsDeleted)
+        .Select(x => new Storage { Id = x.Id, Name = x.Name, Inventory = x.Inventory })
+        .ToList();
+
+    var objects = db.Objects1C
+        .Where(x => x.Location.ToLower().Contains("асу"))
+        .OrderBy(x => x.Inventory)
+        .ToList();
+
+    <div class="unit unit-nohover">
+        <table class="caption">
+            <tr>
+                <td><b>АСУ ПТ</b></td>
+            </tr>
+        </table>
+        <table class="items">
+            <thead>
+                <tr>
+                    <th width="100px">Инв. №</th>
+                    <th>Наименование</th>
+                    <th width="90px">Дата прихода</th>
+                    <th width="100px">Счет учета</th>
+                    <th>М.О.Л.</th>
+                    <th>Место</th>
+                    <th>Устройства</th>
+                    <th>Склад</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var obj in objects)
+                {
+                    var device = devices.FirstOrDefault(x => x.Inventory == obj.Inventory);
+                    var storage = storages.FirstOrDefault(x => x.Inventory == obj.Inventory);
+
+                    if (storage == null && device == null)
+                    {
+                        <tr data-inventory="@obj.Inventory">
+                            <td>@obj.Inventory</td>
+                            <td>@obj.Description</td>
+                            <td>@(obj.Date?.ToString("dd.MM.yyyy") ?? "")</td>
+                            <td>@obj.Account</td>
+                            <td>@obj.Mol</td>
+                            <td>@obj.Location</td>
+                            <td><button onclick="Objects1C.createDevice('@obj.Inventory')">Создать устройство</button></td>
+                            <td><button onclick="Objects1C.createStorage('@obj.Inventory')">Создать позицию</button></td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+}

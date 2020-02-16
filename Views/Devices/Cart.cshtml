@@ -4,6 +4,13 @@
 {
     var device = db.Devices.FirstOrDefault(x => x.Id == Model);
 
+    var reportId = db.Report
+        .Where(x => x.RHost.ToLower() == device.Name.ToLower())
+        .OrderByDescending(x => x.ID)
+        .Select(x => x.ID)
+        .DefaultIfEmpty(0)
+        .FirstOrDefault();
+
     if (device == null)
     {
         <div class="cart__header">
@@ -34,6 +41,10 @@
         {
             <div class="tabsSelector__item" data-tab="aida">Aida</div>
             <div class="tabsSelector__item" data-tab="elm">ELM</div>
+        }
+        @if (device.Type == "PRN")
+        {
+            <div class="tabsSelector__item" data-tab="users">Пользователи</div>
         }
         <div class="tabsSelector__item" data-tab="addons">Дополнительно</div>
     </div>
@@ -106,7 +117,7 @@
 
                 <tr>
                     <td>Имя для печати</td>
-                    <td><input class="cart__field" name="@nameof(device.PublicName)" value="@device.PublicName" /></td>
+                    <td><input class="cart__field" name="@nameof(device.PublicName)" value="@(device.PublicName ?? device.Object1C?.Description ?? "")" /></td>
                 </tr>
 
                 <tr>
@@ -116,7 +127,41 @@
 
                 <tr>
                     <td>М.О.Л.</td>
-                    <td><input class="cart__field" name="@nameof(device.Mol)" value="@device.Mol" /></td>
+                    <td>
+                        @{
+                            var mols = db.Objects1C
+                                .Where(x => x.Inventory == device.Inventory)
+                                .OrderBy(x => x.Mol)
+                                .Select(x => x.Mol.Trim())
+                                .ToList();
+
+                            if (mols.Count == 0)
+                            {
+                                @: устройство не найдено в 1С
+                            }
+                            else if (mols.Count == 1)
+                            {
+                                <input class="cart__field" name="@nameof(device.Mol)" disabled value="@mols[0]" />
+                            }
+                            else
+                            {
+                                <select class="cart__field" name="@nameof(device.Mol)">
+                                    <option value="">?</option>
+                                    @foreach (var mol in mols)
+                                    {
+                                        if (mol == device.Mol)
+                                        {
+                                            <option value="@mol" selected>@mol</option>
+                                }
+                                        else
+                                        {
+                                            <option value="@mol">@mol</option>
+                                        }
+                                    }
+                                </select>
+                            }
+                        }
+                    </td>
                 </tr>
 
                 <tr>
@@ -183,26 +228,27 @@
                 </tr>
 
                 @if (device.Type == "CMP")
-                {
-                    <tr>
-                        <td>Операционная система</td>
-                        <td>
-                            <select class="cart__field" name="@nameof(device.OS)">
-                                <option value="0">? не выбрана</option>
-                                @{
-                                    var systems = db._SystemTypes.ToList();
-                                    foreach (var sys in systems)
-                                    {
-                                        <option value="@sys.Id" @(sys.Id == device.OS ? "selected" : "")>@sys.Name</option>
-                                    }
-                                }
-                            </select>
-                        </td>
-                    </tr>
+				{
+					var _os = from i in db.Item
+							  from r in db.Report.InnerJoin(x => x.ID == i.ReportID)
+							  where r.RHost == device.Name
+								 && i.IPage == "Операционная система"
+								 && new[] { "Название ОС", "Ключ продукта" }.Contains(i.IField)
+							  select new
+							  {
+								  Field = i.IField,
+								  Value = i.IValue,
+							  };
+
+					var os = _os.ToList();
 
                     <tr>
-                        <td>Ключ ОС</td>
-                        <td><input class="cart__field" name="@nameof(device.OSKey)" value="@device.OSKey" /></td>
+						<td>Операционная система</td>
+						<td>
+							@(os.FirstOrDefault(x => x.Field == "Название ОС")?.Value ?? "")
+							<br />
+							<i>@(os.FirstOrDefault(x => x.Field == "Ключ продукта")?.Value ?? "")</i>
+						</td>
                     </tr>
                 }
 
@@ -229,8 +275,8 @@
                     <td>Списано</td>
                     <td>
                         <select class="cart__field" name="@nameof(device.IsOff)">
-                            <option value="0">Нет</option>
-                            <option value="1" @(device.IsOff ? "selected" : "")>Да</option>
+                            <option value="false">Нет</option>
+                            <option value="true" @(device.IsOff ? "selected" : "")>Да</option>
                         </select>
                     </td>
                 </tr>
@@ -265,7 +311,7 @@
                         </tr>
                         <tr>
                             <td>М.О.Л.</td>
-                            <td>@device.Object1C.Mol</td>
+                            <td>@(mols.FirstOrDefault(x => x == device.Mol) ?? "МОЛ не определён")</td>
                         </tr>
                         <tr>
                             <td>Балансная стоимость</td>
@@ -303,8 +349,12 @@
         <div class="tabsContainer__item" data-tab="history" data-tab-lazy="@Url.Action("historyById", "devices", new { Id = device.Id })"></div>
         @if (device.Type == "CMP")
         {
-            <div class="tabsContainer__item" data-tab="aida" data-tab-lazy="@Url.Action("data", "aida", new { Id = device.Name })"></div>
+            <div class="tabsContainer__item" data-tab="aida" data-tab-lazy="@Url.Action("all", "aida", new { Id = reportId })"></div>
             <div class="tabsContainer__item" data-tab="elm" data-tab-lazy="@Url.Action("elmById", "devices", new { Id = device.Name })"></div>
+        }
+        @if (device.Type == "PRN")
+        {
+            <div class="tabsContainer__item" data-tab="users" data-tab-lazy="@Url.Action("users", "devices", new { Id = device.Id })" id="users"></div>
         }
         <div class="tabsContainer__item" data-tab="addons" id="addons">
             <div class="addons">
@@ -312,9 +362,9 @@
 
                 @if (device.Type == "CMP")
                 {
-                    <button class="cart__button" onclick="Devices.Cart.selectAddon('@Url.Action("Autorun", "aida", new { Id = device.Name })')">Автозагрузка</button><br />
-                    <button class="cart__button" onclick="Devices.Cart.selectAddon('@Url.Action("Programs", "aida", new { Id = device.Name })')">Операционная система и установленное ПО</button><br />
-                    <button class="cart__button" onclick="Devices.Cart.selectAddon('@Url.Action("Devices", "aida", new { Id = device.Name })')">Оборудование</button><br />
+                    <button class="cart__button" onclick="Devices.Cart.selectAddon('@Url.Action("autorun", "aida", new { reportId })')">Автозагрузка</button><br />
+                    <button class="cart__button" onclick="Devices.Cart.selectAddon('@Url.Action("programs", "aida", new { reportId })')">Операционная система и установленное ПО</button><br />
+                    <button class="cart__button" onclick="Devices.Cart.selectAddon('@Url.Action("devices", "aida", new { reportId })')">Оборудование</button><br />
                 }
 
                 @if ("CMP DIS PRN".Contains(device.Type ?? "NOT"))

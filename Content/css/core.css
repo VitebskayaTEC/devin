@@ -106,6 +106,10 @@ a.has-icon {
     padding: 3px;
 }
 
+    .view__link:hover {
+        text-decoration: underline;
+    }
+
 .selected .view__link {color: #E6B451;}
 
 .panel {
@@ -154,12 +158,15 @@ a.has-icon {
     }
 
 .unit:hover .caption,
-.items tbody tr:hover,
+.items tbody tr:hover td,
+.items tbody tr:hover .view__link,
 .items th:hover {color: #007bd6;}
 
-.unit-nohover:hover .caption,
-.unit-nohover .items tbody tr:hover,
-.unit-nohover .items th:hover {color: #000;}
+    .unit-nohover:hover .caption,
+    .unit-nohover .items tbody tr:hover,
+    .unit-nohover .items th:hover {
+        color: #000;
+    }
 
 .unit.open {
     border-color: #FF5722;
@@ -185,6 +192,18 @@ a.has-icon {
 }
 
 .unit .unit {margin: 10px;}
+
+.unit[mark="green"] > .caption {
+    background: #d0f1bf;
+}
+
+.unit[mark="gray"] > .caption {
+    background: #c5c5c5;
+}
+
+.unit[mark="red"] > .caption {
+    background: #f5cdcd;
+}
 
 
 /* #endregion */
@@ -310,6 +329,14 @@ a.has-icon {
     overflow-y: auto;
     max-height: 700px;
 }
+
+.card_body {
+    overflow: auto;
+    max-height: 750px;
+    padding: 10px;
+    font-size: 14px;
+}
+
 .cart__body_expanded {width: 1350px;}
 .cart__closeButton {width: 40px;}
 
@@ -409,7 +436,10 @@ textarea.cart__field {
 
 
 .cart__table {max-width: 650px;}
-.cart__table tr td:first-child {width: 200px;}
+	.cart__table tr td:first-child {
+		width: 200px;
+		vertical-align: top;
+	}
 .cart__link {color: #0070c3;}
 .cart__link:hover {color: #0794da;}
 .cart__caption {font-weight: 500;}
@@ -568,12 +598,12 @@ textarea.cart__field {
     height: 24px;
     margin-bottom: -7px;
     margin-top: -2px;
+    background: url('../img/devin_icons_black.png') no-repeat;
 }
 
-.icon {background: url('../img/devin_icons_black.png') no-repeat}
-.icon_white {background: url('../img/devin_icons_white.png') no-repeat}
-
-.icon:not(.icon_no-hover):hover {background: url('../img/devin_icons_blue.png') no-repeat}
+.icon_white {
+    background: url('../img/devin_icons_white.png') no-repeat;
+}
 
 .ic-add {background-position: 0 0 !important}
 .ic-add-circle-outline {background-position: -24px 0 !important}
@@ -722,6 +752,10 @@ textarea.cart__field {
 }
 
 .repairs__row_hided {display: none;}
+
+.computers-container {
+    vertical-align: top;
+}
 
 .catalogLinks {
     overflow-y: auto;

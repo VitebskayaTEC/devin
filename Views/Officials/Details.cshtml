@@ -1,0 +1,110 @@
+﻿@model int
+
+<link rel="stylesheet" href="~/Content/css/core.css" />
+
+@using (var db = new DevinContext())
+{
+	var official = db.Officials
+		.Where(x => x.Id == Model)
+		.FirstOrDefault();
+
+	if (official == null)
+	{
+		<div class="error">Запись не найдена в базе данных</div>
+		return;
+	}
+
+	var divisions = db.Officials
+		.GroupBy(x => x.Division)
+		.Select(x => x.Key)
+		.ToList();
+
+	<div class="cart_visible">
+		<div class="cart__header">
+			<div>Редактирование должностного лица</div>
+		</div>
+		<div class="cart__body">
+			<table id="form" class="cart__table">
+				<tr>
+					<td>Подразделение</td>
+					<td>
+						<select class="cart__field" name="Division">
+							<option value="">? не выбрано</option>
+							@foreach (var division in divisions)
+							{
+								if (division == official.Division)
+								{
+									<option selected value="@division">@division</option>
+								}
+								else
+								{
+									<option value="@division">@division</option>
+								}
+							}
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td>Наименование</td>
+					<td>
+						<input class="cart__field" name="Name" placeholder="Введите наименование" value="@official.Name" />
+					</td>
+				</tr>
+				<tr>
+					<td>Должность для печати</td>
+					<td>
+						<input class="cart__field" name="Title" placeholder="Введите должность" value="@official.Title" />
+					</td>
+				</tr>
+				<tr>
+					<td>Должность для печати (в случае и.о.)</td>
+					<td>
+						<input class="cart__field" name="TitleReplace" placeholder="Введите должность" value="@official.ReplaceTitle" />
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div class="cart__menu">
+			<button class="cart__button" onclick="submit()">Обновить</button>
+			<button class="cart__button" onclick="del()">Удалить</button>
+			<button class="cart__button" onclick="back()">Закрыть</button>
+		</div>
+	</div>
+}
+
+<script>
+	function submit() {
+		let body = new FormData()
+		let form = document.getElementById('form')
+		let items = form.querySelectorAll('[name]')
+		items.forEach(el => body.append(el.name, el.value))
+
+		fetch('@Url.Action("Update", "Officials", new { Id = Model })', { method: 'POST', body: body })
+			.then(res => res.json())
+			.then(json => {
+				if (json.Error) alert(json.Error)
+				if (json.Done) {
+					alert(json.Done)
+					location = '@Url.Action("", "Officials")'
+				}
+			})
+			.catch(() => alert('Ошибка сервера'))
+	}
+
+	function del() {
+		fetch('@Url.Action("Delete", "Officials", new { Id = Model })', { method: 'POST' })
+			.then(res => res.json())
+			.then(json => {
+				if (json.Error) alert(json.Error)
+				if (json.Done) {
+					alert(json.Done)
+					location = '@Url.Action("", "Officials")'
+				}
+			})
+			.catch(() => alert('Ошибка сервера'))
+	}
+
+	function back() {
+		location = '@Url.Action("", "Officials")'
+	}
+</script>

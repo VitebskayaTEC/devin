@@ -11,8 +11,6 @@ namespace Devin.ViewModels
 
         public Folder Materials { get; set; }
 
-        public Folder Hided { get; set; }
-
         public List<Object1C> SearchResults { get; set; } = new List<Object1C>();
 
         public Objects1CViewModel(string Search = "")
@@ -36,17 +34,17 @@ namespace Devin.ViewModels
                 else
                 {
                     var objects = db.Objects1C
+                        .Where(x => x.Mol.ToLower().Contains("соколов"))
                         .OrderBy(x => x.Account)
                         .ThenBy(x => x.Guild)
                         .ThenBy(x => x.Inventory)
                         .ToList();
 
-                    Hided = new Folder { Id = 0, Name = "Скрытые объекты" };
                     Materials = new Folder { Id = 1, Name = "Материалы" };
                     OS = new Folder { Id = 2, Name = "Основные средства" };
 
                     var groups = db.Objects1C
-                        .Where(x => x.Account != null && !x.IsHide)
+                        .Where(x => x.Account != null)
                         .OrderBy(x => x.Account)
                         .GroupBy(x => x.Account)
                         .Select(x => x.Key)
@@ -60,7 +58,7 @@ namespace Devin.ViewModels
                     }
 
                     groups = db.Objects1C
-                        .Where(x => x.Account == null && !x.IsHide)
+                        .Where(x => x.Account == null)
                         .OrderBy(x => x.Guild)
                         .GroupBy(x => x.Guild)
                         .Select(x => x.Key)
@@ -82,8 +80,6 @@ namespace Devin.ViewModels
                     {
                         folder.Objects = objects.Where(x => string.IsNullOrEmpty(x.Account) && (x.Guild == folder.Name)).ToList();
                     }
-
-                    Hided.Objects = objects.Where(x => x.IsHide).ToList();
                 }
             }
         }

@@ -1,0 +1,121 @@
+﻿@model int
+
+<link rel="stylesheet" href="~/Content/css/core.css" />
+
+@using (var db = new DevinContext())
+{
+	var employee = db.Employees
+		.Where(x => x.Id == Model)
+		.FirstOrDefault();
+
+	if (employee == null)
+	{
+		<div class="error">Запись не найдена в базе данных</div>
+		return;
+	}
+
+	var divisions = db.Officials
+		.GroupBy(x => x.Division)
+		.Select(x => x.Key)
+		.ToList();
+
+	<div class="cart_visible">
+		<div class="cart__header">
+			<div>Редактирование сотрудника</div>
+		</div>
+		<div class="cart__body">
+			<table id="form" class="cart__table">
+				<tr>
+					<td>Подразделение</td>
+					<td>
+						<select class="cart__field" name="Division">
+							<option value="">? не выбрано</option>
+							@foreach (var division in divisions)
+							{
+								if (division == employee.Division)
+								{
+									<option selected value="@division">@division</option>
+								}
+								else
+								{
+									<option value="@division">@division</option>
+								}
+							}
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td>Фамилия</td>
+					<td>
+						<input class="cart__field" name="Surname" placeholder="Введите фамилию" value="@employee.Surname" />
+					</td>
+				</tr>
+				<tr>
+					<td>Инициалы</td>
+					<td>
+						<input class="cart__field" name="Initials" placeholder="Введите инициалы" value="@employee.Initials" />
+					</td>
+				</tr>
+				<tr>
+					<td>Присутствует на работе</td>
+					<td>
+						<select name="OnWork">
+							<option value="true">Да</option>
+							@if (employee.OnWork)
+							{
+								<option value="false">Нет</option>
+							}
+							else
+							{
+								<option selected value="false">Нет</option>
+							}
+						</select>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div class="cart__menu">
+			<button class="cart__button" onclick="submit()">Обновить</button>
+			<button class="cart__button" onclick="del()">Удалить</button>
+			<button class="cart__button" onclick="back()">Закрыть</button>
+		</div>
+	</div>
+}
+
+
+<script>
+	function submit() {
+		let body = new FormData()
+		let form = document.getElementById('form')
+		let items = form.querySelectorAll('[name]')
+		items.forEach(el => body.append(el.name, el.value))
+
+		fetch('@Url.Action("Update", "Employees", new { Id = Model })', { method: 'POST', body: body })
+			.then(res => res.json())
+			.then(json => {
+				if (json.Error) alert(json.Error)
+				if (json.Done) {
+					alert(json.Done)
+					location = '@Url.Action("", "Employees")'
+				}
+			})
+			.catch(() => alert('Ошибка сервера'))
+	}
+
+	function del() {
+		fetch('@Url.Action("Delete", "Employees", new { Id = Model })', { method: 'POST' })
+			.then(res => res.json())
+			.then(json => {
+				if (json.Error) alert(json.Error)
+				if (json.Done) {
+					alert(json.Done)
+					location = '@Url.Action("", "Employees")'
+				}
+			})
+			.catch(() => alert('Ошибка сервера'))
+	}
+
+	function back() {
+		location = '@Url.Action("", "Employees")'
+	}
+</script>

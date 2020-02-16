@@ -21,6 +21,12 @@ namespace Devin.Models
 
         [Column, DataType("datetime")]
         public DateTime RDateTime { get; set; }
+
+        [Column]
+        public int PlaceId { get; set; }
+
+
+        public virtual string Windows { get; set; }
     }
 
     public class AidaComputer
@@ -71,5 +77,7 @@ namespace Devin.Models
 
         [Column, NotNull]
         public int ReportID { get; set; }
+
+        public virtual string ReportHost { get; set; }
     }
 }

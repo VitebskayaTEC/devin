@@ -1,0 +1,42 @@
+﻿@model int
+
+<div class="card_body">
+    @using (var db = new DevinContext())
+    {
+        var model = db.Item
+            .Where(x => x.ReportID == Model)
+            .Where(x => x.IPage == "Установленные программы")
+            .Where(x => x.IField == "Версия")
+            .Select(x => new { x.IDevice, x.IValue })
+            .OrderBy(x => x.IDevice)
+            .ToList();
+
+        if (model.Count == 0)
+        {
+            <div class="err">Список установленных программ пуст. Возможно, отчёт по этому компьютеру был удалён или стал недостоверным</div>
+            return;
+        }
+
+        <table class="card_table hover">
+            <colgroup>
+                <col width="600" />
+                <col width="100" />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>Программа (обновление, дополнение)</th>
+                    <th>Версия</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in model)
+                {
+                    <tr>
+                        <td>@row.IDevice</td>
+                        <td>@row.IValue</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

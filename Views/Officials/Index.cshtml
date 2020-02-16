@@ -1,0 +1,79 @@
+﻿@{
+    ViewBag.Title = "Список должностных лиц";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+	<div class="unit">
+		<table class="caption">
+			<tr>
+				<td>
+					<b>Список должностных лиц для актов</b>
+				</td>
+			</tr>
+		</table>
+		<div class="itemsBlock itemsBlock_expanded">
+			<div class="title-wrapper">
+				<a class="view__link title" href="~/officials/create">Добавить</a>
+			</div>
+			<table class="items">
+				<thead>
+					<tr>
+						<th>Подразделение</th>
+						<th>Наименование</th>
+						<th>Должность для печати</th>
+						<th>Должность для печати (и.о.)</th>
+						<th>Сотрудники</th>
+					</tr>
+				</thead>
+				<tbody>
+					@using (var db = new DevinContext())
+					{
+						var _officials = from o in db.Officials
+										 from r in db.Relation_Officials_Employees.LeftJoin(x => x.OfficialId == o.Id).DefaultIfEmpty(null)
+										 from e in db.Employees.LeftJoin(x => x.Id == r.EmployeeId).DefaultIfEmpty(null)
+										 orderby o.Division, o.Id
+										 select new
+										 {
+											 Official = o,
+											 Employee = e,
+										 };
+
+						var officials = _officials
+							.GroupBy(x => x.Official)
+							.Select(x => new
+							{
+								Official = x.Key,
+								Employees = x
+									.Select(y => y.Employee)
+									.ToList(),
+							})
+							.ToList();
+
+						foreach (var o in officials)
+						{
+							<tr>
+								<td><a href="~/officials/details/@o.Official.Id" class="view__link">@o.Official.Name</a></td>
+								<td><a href="~/officials/details/@o.Official.Id" class="view__link">@o.Official.Division</a></td>
+								<td><a href="~/officials/details/@o.Official.Id" class="view__link">@o.Official.Title</a></td>
+								<td><a href="~/officials/details/@o.Official.Id" class="view__link">@o.Official.ReplaceTitle</a></td>
+								<td>
+									@foreach (var e in o.Employees.Where(x => x != null))
+									{
+										if (e.OnWork)
+										{
+											<div>@e.Surname @e.Initials</div>
+										}
+										else
+										{
+											<div class="inactive">@e.Surname @e.Initials</div>
+										}
+									}
+									<a href="~/officials/employees/@o.Official.Id">изменить</a>
+								</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>

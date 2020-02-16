@@ -1,0 +1,153 @@
+﻿@model int
+<link rel="stylesheet" href="~/Content/css/core.css" />
+
+@using (var db = new DevinContext())
+{
+	var official = db.Officials
+		.Where(x => x.Id == Model)
+		.FirstOrDefault();
+
+	var employees = db.Employees
+		.OrderBy(x => x.Division)
+		.ThenBy(x => x.Surname)
+		.ToList();
+
+	var related = db.Relation_Officials_Employees
+		.Where(x => x.OfficialId == Model)
+		.OrderByDescending(x => x.Weight)
+		.ToList();
+
+	<div class="cart_visible">
+		<div class="cart__header">
+			<div>Список сотрудников, связанных с должностным лицом</div>
+		</div>
+		<div class="cart__body">
+			<table id="form" class="cart__table">
+				<tr>
+					<td>Должностное лицо</td>
+					<td>@official.Name</td>
+				</tr>
+				<tr>
+					<td>Подразделение</td>
+					<td>@official.Division</td>
+				</tr>
+			</table>
+		</div>
+		<div>
+			<table id="employees">
+				<thead>
+					<tr>
+						<th>Сотрудник</th>
+						<th>Коэф. сортировки</th>
+						<th>Действия</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var r in related)
+					{
+						<tr>
+							<td>
+								<select class="cart__field">
+									<option value="0">? не выбран</option>
+									@foreach (var e in employees)
+									{
+										if (e.Id == r.EmployeeId)
+										{
+											<option selected value="@e.Id">@e.Division @e.Surname @e.Initials</option>
+										}
+										else
+										{
+											<option value="@e.Id">@e.Division @e.Surname @e.Initials</option>
+										}
+									}
+								</select>
+							</td>
+							<td>
+								<input class="cart__field" type="number" value="@r.Weight" />
+							</td>
+							<td>
+								<button class="cart__button" onclick="updateRelation(@r.Id, this)">Сохранить</button>
+								<button class="cart__button" onclick="removeRelation(@r.Id)">Удалить</button>
+							</td>
+						</tr>
+					}
+				</tbody>
+				<tfoot>
+					<tr>
+						<td>
+							<select class="cart__field">
+								<option value="">? не выбран</option>
+								@foreach (var e in employees)
+								{
+									if (related.Count(x => x.EmployeeId == e.Id) == 0)
+									{
+										<option value="@e.Id">@e.Division @e.Surname @e.Initials</option>
+									}
+								}
+							</select>
+						</td>
+						<td>
+							<input class="cart__field" type="number" placeholder="Коэф. сортировки" />
+						</td>
+						<td>
+							<button class="cart__button" onclick="createRelation(this)">Добавить</button>
+						</td>
+					</tr>
+				</tfoot>
+			</table>
+		</div>
+		<div class="cart__menu">
+			<button class="cart__button" onclick="back()">Закрыть</button>
+		</div>
+	</div>
+}
+
+<script>
+	function createRelation(button) {
+		let container = button.parentNode.parentNode
+		let select = container.querySelector('select')
+		let input = container.querySelector('input')
+		let body = new FormData()
+		body.append('EmployeeId', select.value)
+		body.append('Weight', input.value)
+
+		fetch('@Url.Action("CreateRelation", "Officials")/' + @Model, { method: 'POST', body: body })
+			.then(res => res.json())
+			.then(json => {
+				if (json.Error) alert(json.Error)
+				if (json.Done) location.reload()
+			})
+			.catch(() => alert('Ошибка JS'))
+	}
+
+	function updateRelation(id, button) {
+		let container = button.parentNode.parentNode
+		let select = container.querySelector('select')
+		let input = container.querySelector('input')
+		let body = new FormData()
+		body.append('EmployeeId', select.value)
+		body.append('Weight', input.value)
+
+		fetch('@Url.Action("UpdateRelation", "Officials")/' + id, { method: 'POST', body: body })
+			.then(res => res.json())
+			.then(json => {
+				if (json.Error) alert(json.Error)
+				if (json.Done) location.reload()
+			})
+			.catch(() => alert('Ошибка JS'))
+	}
+
+	function removeRelation(id) {
+		fetch('@Url.Action("RemoveRelation", "Officials")/' + id, { method: 'POST' })
+			.then(res => res.json())
+			.then(json => {
+				if (json.Error) alert(json.Error)
+				if (json.Done) location.reload()
+			})
+			.catch(() => alert('Ошибка JS'))
+	}
+
+	function back() {
+		location = '@Url.Action("", "Officials")'
+	}
+</script>

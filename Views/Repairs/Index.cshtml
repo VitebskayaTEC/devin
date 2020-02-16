@@ -18,32 +18,7 @@
         <div>Выбрано элементов: <b></b></div>
         <div>
             <div id="move_select">
-                <select id="moveKey" class="cart__field cart__field_autoWidth">
-                    <option value="0">Не распределенные</option>
-                    @using (var db = new DevinContext())
-                    {
-                        var writeoffs = db.Writeoffs
-                            .OrderByDescending(x => x.Date)
-                            .Select(x => new { x.Id, x.Name })
-                            .ToList();
-
-                        foreach (var item in writeoffs)
-                        {
-                            <option value="@item.Id">[списание] @item.Name</option>
-                        }
-
-                        var folders = db.Folders
-                            .Where(x => x.Type == "repair")
-                            .OrderBy(x => x.Name)
-                            .Select(x => new { x.Id, x.Name })
-                            .ToList();
-
-                        foreach (var item in folders)
-                        {
-                            <option value="@item.Id">[папка] @item.Name</option>
-                        }
-                    }
-                </select>
+                @Html.Partial("MoveOptions", "Repairs")
             </div>
             <a onclick="Repairs.move()">Переместить</a>
         </div>
@@ -64,7 +39,8 @@
     <ul class="context-menu" id="writeoff">
         <li onclick="Writeoffs.cart()">Открыть карточку</li>
         <li onclick="Writeoffs.export()">Печать</li>
-        <li onclick="Folders.beforeMove()">Переместить</li>
+        <li onclick="Folders.beforeMove()">Переместить в</li>
+        <li onclick="Writeoffs.marks()">Отметить как</li>
         <li onclick="Repairs.off()">Отметить все ремонты как списаные</li>
         <li onclick="Repairs.on()">Отметить все ремонты как активные</li>
         <li onclick="Repairs.clear()">Отменить все ремонты</li>
@@ -73,10 +49,17 @@
 
     <ul class="context-menu" id="group">
         <li onclick="Folders.update()">Переименовать</li>
-        <li onclick="Folders.beforeMove()">Переместить</li>
+        <li onclick="Folders.beforeMove()">Переместить в</li>
         <li onclick="Folders.createInner()">Создать вложенную группу</li>
         <li onclick="Folders.clear()">Очистить</li>
         <li onclick="Folders.del()">Удалить</li>
+    </ul>
+
+    <ul class="context-menu" id="marks">
+        <li onclick="Writeoffs.mark(null)">По умолчанию</li>
+        <li onclick="Writeoffs.mark('gray')">Серый</li>
+        <li onclick="Writeoffs.mark('green')">Зеленый</li>
+        <li onclick="Writeoffs.mark('red')">Красный</li>
     </ul>
 
     <ul class="context-menu" id="modal">

@@ -27,38 +27,41 @@
 
 <div>
     @if (!string.IsNullOrEmpty(inventory))
-    {
-        using (var db = new DevinContext())
-        {
-            var query = from d in db.Devices
-                        from o in db.Objects1C.Where(x => x.Inventory == d.Inventory).DefaultIfEmpty()
-                        from p in db.WorkPlaces.Where(x => x.Id == d.PlaceId).DefaultIfEmpty()
-                        where d.Inventory == inventory && !d.IsDeleted && !d.IsOff
-                        orderby d.Inventory, o.Description
-                        select new Device
-                        {
-                            Id = d.Id,
-                            Inventory = d.Inventory,
-                            Description = d.Description,
-                            SerialNumber = d.SerialNumber,
-                            PublicName = d.PublicName,
-                            DateInstall = d.DateInstall,
-                            Mol = o.Mol == null ? d.Mol : o.Mol,
-                            Place = new WorkPlace
-                            {
-                                Id = p.Id,
-                                Location = p.Location
-                            }
-                        };
+	{
+		using (var db = new DevinContext())
+		{
+			var query = from d in db.Devices
+						from o in db.Objects1C.Where(x => x.Inventory == d.Inventory).DefaultIfEmpty()
+						from p in db.WorkPlaces.Where(x => x.Id == d.PlaceId).DefaultIfEmpty()
+						where d.Inventory == inventory && !d.IsDeleted && !d.IsOff
+						orderby d.Inventory, o.Description
+						select new Device
+						{
+							Id = d.Id,
+							Inventory = d.Inventory,
+							Description = d.Description,
+							SerialNumber = d.SerialNumber,
+							PublicName = d.PublicName,
+							DateInstall = d.DateInstall,
+							Object1C = new Object1C
+							{
+								Mol = o.Mol
+							},
+							Place = new WorkPlace
+							{
+								Id = p.Id,
+								Location = p.Location
+							}
+						};
 
-            var devices = query.ToList();
+			var devices = query.ToList();
 
 
-            var csv = new StringBuilder();
-            csv.AppendLine("Инв. номер;Наименование;Заводской номер;Состав;М.О.Л.;Дата ввода в экспл.;Рабочее место");
+			var csv = new StringBuilder();
+			csv.AppendLine("Инв. номер;Наименование;Заводской номер;Состав;М.О.Л.;Дата ввода в экспл.;Рабочее место");
 
-            if (devices.Count() > 0)
-            {
+			if (devices.Count() > 0)
+			{
                 <div>
                     <a class="cart__button" href="~/files/inventory/@(inventory).csv">Сохранить в файл .CSV</a>
                 </div>
@@ -86,12 +89,12 @@
                                 <td><a href="@link" class="view__link">@(device.Description1C ?? device.Description)</a></td>
                                 <td><a href="@link" class="view__link">@(device.SerialNumber ?? "")</a></td>
                                 <td><a href="@link" class="view__link">@device.PublicName</a></td>
-                                <td><a href="@link" class="view__link">@device.Mol</a></td>
+                                <td><a href="@link" class="view__link">@device.Object1C.Mol</a></td>
                                 <td><a href="@link" class="view__link">@device.DateInstall.ToString("dd.MM.yyyy")</a></td>
                                 <td><a href="@link" class="view__link">@(device.Place?.Location ?? "Рабочее место не задано")</a></td>
                             </tr>
 
-                            csv.AppendLine($"{device.Inventory};{(device.Description1C ?? device.Description ?? "").Trim()};{(device.SerialNumber ?? "")};{device.PublicName ?? ""};{device.Mol ?? ""};{device.DateInstall.ToString("dd.MM.yyyy")};{(device.Place?.Location ?? "Рабочее место не задано")}");
+                            csv.AppendLine($"{device.Inventory};{(device.Description1C ?? device.Description ?? "").Trim()};{(device.SerialNumber ?? "")};{device.PublicName ?? ""};{device.Object1C.Mol ?? ""};{device.DateInstall.ToString("dd.MM.yyyy")};{(device.Place?.Location ?? "Рабочее место не задано")}");
                         }
                     </tbody>
                 </table>

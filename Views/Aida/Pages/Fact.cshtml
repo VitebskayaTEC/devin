@@ -1,0 +1,130 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutNext.cshtml";
+    ViewBag.NoSearch = true;
+
+    var personal = new Dictionary<string, string>();
+
+    using (var db = new SiteContext())
+    {
+        personal = db.Users
+            .ToDictionary(x => x.UName.ToLower(), x => x.DisplayName);
+    }
+}
+
+@using (var db = new DevinContext())
+{
+    var ids = db.Report
+        .GroupBy(x => x.RHost)
+        .Select(g => g.Select(x => x.ID).Max())
+        .ToList();
+
+    var reports = db.Report
+        .Where(x => ids.Contains(x.ID))
+        .OrderBy(x => x.ID)
+        .ToList();
+
+    var items = db.Item
+        .Where(x => ids.Contains(x.ReportID) && x.IPage == "Суммарная информация")
+        .OrderBy(x => x.ReportID)
+        .ThenBy(x => x.IDevice)
+        .ThenBy(x => x.IGroup)
+        .ThenBy(x => x.IField)
+        .ToList();
+
+    string v = "";
+
+    <div class="view">
+        <table class="view_table" style="font-size: .9em;" id="fact">
+            <thead>
+                <tr>
+                    <th width="100px" onclick="sort(this)" class="sort-down">Имя</th>
+                    <th width="120px" onclick="sort(this)">Пользователь</th>
+                    <th width="160px" onclick="sort(this, 'sort')">CPU</th>
+                    <th width="160px" onclick="sort(this, 'sort')">RAM</th>
+                    <th width="160px" onclick="sort(this, 'sort')">Тип диска</th>
+                    <th width="50px" onclick="sort(this, 'number')">Счёт</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var id in ids)
+            {
+                var report = reports.FirstOrDefault(x => x.ID == id);
+                var item = items
+                    .Where(x => x.ReportID == id)
+                    .Select(x => new { x.IField, x.IValue })
+                    .GroupBy(x => x.IField)
+                    .Select(g => new
+                    {
+                        g.Key,
+                        Value = string.Join("|", g.Select(x => x.IValue).ToArray())
+                    })
+                    .ToDictionary(x => x.Key, x => x.Value);
+
+                // процессоры
+
+                string processor = item.TryGetValue("Тип ЦП", out v) ? v : "";
+
+                int core = 1;
+                if (processor.Contains("Dual")) { core = 2; }
+                else if (processor.Contains("Quad")) { core = 4; }
+                else if (processor.Contains("Hexa")) { core = 4; }
+
+                v = processor.Substring(processor.IndexOf(',') + 1).Trim();
+                v = v.Substring(0, v.IndexOf(' '));
+                int frequency = int.TryParse(v, out int i) ? i : 0;
+
+                // память
+
+                var motherboard = item.TryGetValue("Системная плата", out v) ? v : "";
+                var ram = item.TryGetValue("Системная память", out v) ? v : "";
+
+                int ramType = 4;
+                if (motherboard.Contains("DDR2") || ram.Contains("DDR2")) { ramType = 2; }
+                else if (motherboard.Contains("DDR3") || ram.Contains("DDR3")) { ramType = 3; }
+                else if (motherboard.Contains("DDR5") || ram.Contains("DDR5")) { ramType = 5; }
+
+                decimal ramValue = decimal.TryParse(ram.Substring(0, ram.IndexOf(' ')), out decimal d) ? d : 0;
+
+                // диск
+
+                var disks = (item.TryGetValue("Дисковый накопитель", out v) ? v : "").Split('|');
+                string hdd = disks.FirstOrDefault(x => x.Contains("SSD")) ?? disks.FirstOrDefault(x => !x.Contains("USB")) ?? disks[0];
+
+                string hddType = hdd.Contains("SSD") ? "SSD" : "HDD";
+
+                string hddValue = hdd;
+                if (hddValue.Contains('(')) { hddValue = hddValue.Substring(hddValue.IndexOf('(') + 1).Replace(")", ""); }
+                if (hddValue.Contains(',')) { hddValue = hddValue.Substring(0, hddValue.IndexOf(',')); }
+
+                decimal capacity = 1;
+                if (hddValue.ToLower().Contains("гб")) { capacity = 1024; }
+                else if (hddValue.ToLower().Contains("тб")) { capacity = 1024 * 1014; }
+
+                capacity = capacity * (int.TryParse(hddValue.Contains(' ') ? hddValue.Substring(0, hddValue.IndexOf(' ')) : hddValue, out i) ? i : 0);
+
+                if (!report.RHost.Contains("BOOK") && !hdd.Contains("VMware") && !(item.TryGetValue("Операционная система", out v) ? v : "").Contains("Server"))
+                {
+                    <tr>
+                        <td title="@report.RDateTime.ToString("d MMMM yyyy HH:mm")">@report.RHost</td>
+                        <td title="@(personal.TryGetValue(report.RUser.ToLower(), out v) ? v : "")">@report.RUser.ToLower()</td>
+                        <td title="@processor" sort="@(core * frequency)">
+                            <pre>@core x @frequency МГц</pre>
+                        </td>
+                        <td title="@motherboard" sort="@(ramType * ramValue)">
+                            <pre>DDR@(ramType) | @Math.Ceiling(ramValue / 1024) Гб</pre>
+                        </td>
+                        <td title="@hdd" sort="@((hddType == "SSD" ? 5 : 1) * capacity)">
+                            <pre>@hddType | @(capacity == 0 ? "0" : hddValue)</pre>
+                        </td>
+                        <td></td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+@section js {
+    <script src="~/Content/js/fact.js?@(new Random().Next())"></script>    
+}

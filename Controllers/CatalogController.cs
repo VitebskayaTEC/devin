@@ -72,6 +72,7 @@ namespace Devin.Controllers
                         .Set(x => x.Name, cartridge.Name)
                         .Set(x => x.Type, cartridge.Type)
                         .Set(x => x.Cost, cartridge.Cost)
+                        .Set(x => x.Color, cartridge.Color)
                         .Set(x => x.Description, cartridge.Description)
                         .Update();
                         
