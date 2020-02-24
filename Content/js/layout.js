@@ -1,4 +1,4 @@
-﻿// Контекстные меню
+// Контекстные меню
 
 let menuTimeout, menuId;
 
@@ -158,94 +158,107 @@ document.addEventListener('click', function (e) {
     NAV.toHash({ card: parentEl.getAttribute('card') })
 })
 
+document.addEventListener('click', function (e) {
+    let el = e.target
+    let parentEl = el.closest('[sort]')
+    if (!parentEl) return
+    if (!parentEl.hasAttribute('sort')) return
+    NAV.toHash({ sort: parentEl.getAttribute('sort') })
+})
+
 var NAV = {
 
-    card: null,
-    search: null,
-    view: null,
+    card: '',
+    search: '',
+    sort: '',
 
     toHash(data) {
 
         let hash = ''
-        let data2 = extend({ card: NAV.card, search: NAV.search, view: NAV.view }, data, true)
+        let data2 = extend({ card: NAV.card, search: NAV.search, sort: NAV.sort }, data, true)
 
-        if (data2.card && data2.card != '') hash += '/card:' + data2.card//encodeURIComponent(NAV.card)
-        if (data2.search && data2.search != '') hash += '/search:' + data2.search//encodeURIComponent(NAV.search)
-        if (data2.view && data2.view != '') hash += '/view:' + data2.view//encodeURIComponent(NAV.view)
+        if (data2.card && data2.card != '') hash += '/card:' + data2.card
+        if (data2.search && data2.search != '') hash += '/search:' + data2.search
+        if (data2.sort && data2.sort != '') hash += '/sort:' + data2.sort
 
         document.location.hash = hash == '' ? '/' : hash
     },
 
+    /**
+     * 
+     * @param {string} hash
+     */
     fromHash(hash) {
-        
-        let _nav = { card: '', search: '', view: '' }
+
+        let body = document.getElementById('body')
+        if (!body) return
+
+        let obj = { card: '', search: '', sort: '' }
+
         hash.split('/')
             .filter(x => x != '' && x.indexOf(':') > -1)
-            .forEach(x => {
-                let parts = x.split(':')
-                _nav[parts[0]] = decodeURIComponent(parts[1]) 
-            })
+            .map(x => x.split(':'))
+            .forEach(x => obj[x[0]] = decodeURIComponent(x[1]))
 
         // карточка
-        if (NAV.card != _nav.card) {
-            NAV.card = _nav.card
+        if (obj.card != NAV.card) {
+
+            NAV.card = obj.card
 
             let el = document.getElementById('card')
-            if (!el) return
-            if (NAV.card == '') {
-                el.classList.add('hide')
+            if (el) {
+
+                if (obj.card) {
+                    el.classList.remove('hide')
+
+                    let tokens = obj.card.split('|')
+                    get('/home/card', { type: tokens[0], id: Number(tokens[1]) })
+                        .then(html => {
+                            el.innerHTML = html
+                            let tab = (tokens.length > 2 ? el.querySelector('[tab="' + tokens[2] + '"]') : null)
+                                || el.querySelector('[tab].active')
+                                || el.querySelector('[tab]')
+                            if (tab) tab.click()
+                        })
+                        .then(resume)
+                }
+                else {
+                    el.classList.add('hide')
+                    resume()
+                }
             }
-            else {
-                el.classList.remove('hide')
-                el.innerHTML = 'Загрузка...'
-
-                let tokens = NAV.card.split('|')
-                get('/home/card', { type: tokens[0], id: Number(tokens[1]) })
-                    .then(html => {
-                        el.innerHTML = html
-                        let tab = (tokens.length > 2 ? el.querySelector('[tab="' + tokens[2] + '"]') : null)
-                            || el.querySelector('[tab].active')
-                            || el.querySelector('[tab]')
-                        if (tab) tab.click()
-                    })
-            }
         }
 
-        // поиск
-        if (NAV.search != _nav.search) {
-            
-            let tokens = _nav.search.split('|')
+        if (obj.search == NAV.search && obj.sort == NAV.sort) return
 
-            let el = document.getElementById('search')
-            if (!el) return
-            if (el.value != tokens[0]) el.value = tokens[0]
+        if (obj.search != NAV.search) NAV.search = obj.search
+        if (obj.sort != NAV.sort) NAV.sort = obj.sort
 
-            NAV.search = _nav.search
+        let query = '', type = '', sort = '', direction = ''
 
-            el = document.getElementById('body')
-            if (!el) return
-            
-            get('/' + pageName + '/load', { query: tokens[0], type: (tokens.length > 1 ? tokens[1] : null) })
-                .then(html => el.innerHTML = html)
-                .then(resume)
-        }
+        let searches = NAV.search.split('|')
+        let sortables = NAV.sort.split('|')
 
-        // отображение
-        if (NAV.view != _nav.view) {
-            NAV.view = _nav.view
-        }
+        query = searches[0]
+        type = (searches.length > 1 ? searches[1] : null)
+        sort = sortables[0]
+        direction = (sortables.length > 1 ? sortables[1] : null)
 
-        resume()
+        let el = document.getElementById('search')
+        if (el) if (el.value != query) el.value = query
+
+        get('/' + pageName + '/load', { query, type, sort, direction })
+            .then(html => body.innerHTML = html)
+            .then(resume)
     }
 }
 
-let hash = '/'
+if (location.hash.replace(/#|#\//, '') == '') location.hash = '/'
+let hash = ''
+
 setInterval(function () {
     let h = location.hash.replace(/#|#\//, '')
-    if (h == '') location.hash = '#/'
-    else if (h != hash) {
-        console.log('hash', hash)
-        console.log('h', h)
+    if (h != hash) {
         hash = h
         NAV.fromHash(h)
     }
@@ -283,7 +296,6 @@ document.addEventListener('click', function (e) {
     tab.classList.add('active')
 
     if (tab.hasAttribute('view')) {
-        tab.innerHTML = 'Загрузка...'
         get(tab.getAttribute('view')).then(html => tab.innerHTML = html)
     }
 })

@@ -1,8 +1,58 @@
-﻿@model List<Report>
+﻿@model List<Devin.Models.Views.Aida>
+
+@{ 
+    string sort = ViewBag.Sort;
+    string direction = ViewBag.Direction;
+}
+
+<div class="header">
+    <table>
+        <tr title="Нажмите для сортировки">
+            <th width="30px" sort="score|@(sort == "score" && direction == "up" ? "down" : "up")" class="@(sort != "score" ? "" : direction == "up" ? "sort-up" : "sort-down")">#</th>
+            <th width="140px" sort="default|@(sort == "default" && direction == "up" ? "down" : "up")" class="@(sort != "default" ? "" : direction == "up" ? "sort-up" : "sort-down")">Имя</th>
+            <th width="100px" sort="cpu|@(sort == "cpu" && direction == "up" ? "down" : "up")" class="@(sort != "cpu" ? "" : direction == "up" ? "sort-up" : "sort-down")">CPU</th>
+            <th width="100px" sort="ram|@(sort == "ram" && direction == "up" ? "down" : "up")" class="@(sort != "ram" ? "" : direction == "up" ? "sort-up" : "sort-down")">RAM</th>
+            <th width="100px" sort="disk|@(sort == "disk" && direction == "up" ? "down" : "up")" class="@(sort != "disk" ? "" : direction == "up" ? "sort-up" : "sort-down")">Тип диска</th>
+            <th width="100px" sort="display|@(sort == "display" && direction == "up" ? "down" : "up")" class="@(sort != "display" ? "" : direction == "up" ? "sort-up" : "sort-down")">Мониторы</th>
+            <th width="220px" sort="user|@(sort == "user" && direction == "up" ? "down" : "up")" class="@(sort != "user" ? "" : direction == "up" ? "sort-up" : "sort-down")">Пользователь</th>
+            <th width="120px" sort="os|@(sort == "os" && direction == "up" ? "down" : "up")" class="@(sort != "os" ? "" : direction == "up" ? "sort-up" : "sort-down")">ОС</th>
+        </tr>
+    </table>
+</div>
 
 <div class="view">
-    @foreach (var report in Model)
+    @foreach (var aida in Model)
     {
-        @Html.Partial("ViewPartials/Report", report)
+        <table class="entry">
+            <tr card="aida|@aida.Id">
+                <td width="30px">
+                    <i class="ic-computer handle"></i>
+                </td>
+                <th width="140px" title="@aida.LastReport.ToString("d MMMM yyyy HH:mm")">@aida.Name</th>
+                <td width="100px" title="@aida.Cpu">
+                    <span style="text-shadow: rgb(@(aida.CpuScore < 200 ? "255," + (55 + aida.CpuScore) : (455 - aida.CpuScore) + ",200"), 0) 0 2px 10px;">
+                        @aida.CpuCore x @aida.CpuFrequency МГц
+                    </span>
+                </td>
+                <td width="100px" title="@aida.Motherboard">
+                    <span style="text-shadow: rgb(@(aida.RamScore < 200 ? "255," + (55 + aida.RamScore) : (455 - aida.RamScore) + ",200"), 0) 0 2px 10px;">
+                        @Math.Ceiling(aida.RamValue / 1024) Гб DDR@(aida.RamType)
+                    </span>
+                </td>
+                <td width="100px" title="@aida.Disk">
+                    <span style="text-shadow: rgb(@(aida.DiskScore < 200 ? "255," + (55 + aida.DiskScore) : (455 - aida.DiskScore) + ",200"), 0) 0 2px 10px;">
+                        @(aida.DiskCapacity == 0 ? "0" : aida.DiskValue) @aida.DiskType
+                    </span>
+                </td>
+                <td width="100px">
+                    @for (int i = 0; i < aida.DisplaysCaptions.Count; i++)
+                    {
+                        <span title="@aida.DisplaysCaptions[i]">@(aida.DisplaysSize[i] == 0 ? "??" : (aida.DisplaysSize[i] + "\""))</span>
+                    }
+                </td>
+                <td width="220px" title="@aida.User">@aida.UserName</td>
+                <td width="120px">@aida.OS</td>
+            </tr>
+        </table>
     }
 </div>

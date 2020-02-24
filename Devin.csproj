@@ -144,6 +144,7 @@
     <Compile Include="Models\Request.cs" />
     <Compile Include="Models\Site\Constant.cs" />
     <Compile Include="Models\Site\User.cs" />
+    <Compile Include="Models\Views\Aida.cs" />
     <Compile Include="Models\_Database.cs" />
     <Compile Include="Models\Computer.cs" />
     <Compile Include="Models\Device.cs" />
@@ -176,7 +177,6 @@
     <Content Include="Content\img\linedpaper.png" />
     <Content Include="Content\img\p6.png" />
     <Content Include="Content\js\actions.js" />
-    <Content Include="Content\js\fact.js" />
     <Content Include="Content\js\table.js" />
     <Content Include="Content\css\core.css" />
     <Content Include="Content\img\background.png" />
@@ -301,7 +301,6 @@
     <Content Include="Views\Aida\SearchPartials\Apps.cshtml" />
     <Content Include="Views\Aida\SearchPartials\Summary.cshtml" />
     <Content Include="Views\Aida\SearchPartials\Fulltext.cshtml" />
-    <Content Include="Views\Aida\Pages\Fact.cshtml" />
     <Content Include="Views\Devices\CardPartials\Users.cshtml" />
   </ItemGroup>
   <PropertyGroup>

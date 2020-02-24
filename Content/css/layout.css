@@ -35,6 +35,8 @@ body.dark {
 
 /*#endregion */
 
+
+
 /*#region Nav */
 
 .nav {
@@ -115,14 +117,55 @@ body.dark {
 
 /*#endregion */
 
+
+
+/*#region View sortable header */
+
+.header {
+	position: absolute;
+	top: 60px;
+	left: 20px;
+	height: 30px;
+}
+
+.header table {
+	background: #f9f9f9;
+	border-radius: 1px;
+	cursor: default;
+	table-layout: fixed;
+	height: 100%;
+	margin: 0 5px;
+}
+
+.header th {
+	font-size: 13px;
+	font-weight: 400;
+	text-align: left;
+	padding: 6px;
+}
+
+.header th:hover {
+	color: #fd9900;
+}
+
+	.dark .header table {
+		background: #222;
+	}
+
+		.dark .header th:hover {
+			color: #fd9900;
+		}
+
+/*#endregion */
+
+
+
 /*#region View elements */
 
 .view {
 	position: absolute;
-	top: 50px;
+	top: 94px;
 	left: 20px;
-	right: 760px;
-	min-width: 700px;
 }
 
 	.view.max {
@@ -190,7 +233,6 @@ body.dark {
 	.folder.open > .folder_body > .folder,
 	.folder.open > .folder_body > .entry {
 		display: block;
-		/* box-shadow: 0 1px 5px 0 #fd9900; */
 	}
 
 
@@ -198,11 +240,11 @@ body.dark {
 	background: #fff;
 	border: 1px solid #ddd;
 	border-radius: 10px;
-	margin: 10px 5px;
+	margin: 8px 5px;
 	cursor: default;
 	box-shadow: 0 0 3px 0 #ccc;
-	/* width: 100%; */
-	font-size: 14px;
+	font-size: 13px;
+	table-layout: fixed;
 }
 
 	.entry:hover {
@@ -210,21 +252,22 @@ body.dark {
 	}
 
 	.entry th {
-		display: inline-flex;
 		font-size: 16px;
 		font-weight: 500;
 		margin: 0 4px;
+		padding: 6px;
 		text-decoration: none;
 		color: #000;
+		text-align: left;
+		vertical-align: middle;
+	}
+
+	.entry td {
+		padding: 6px;
 	}
 
 	.entry > .led {
 		margin: 0 4px;
-	}
-
-	.entry > * {
-		display: table-cell;
-		text-align: left;
 	}
 
 .led {
@@ -258,6 +301,7 @@ body.dark {
 [card].active,
 [card].active > * {
 	color: #fd9900;
+	font-weight: 700;
 }
 
 /* dark */
@@ -321,6 +365,8 @@ body.dark {
 }
 
 /*#endregion */
+
+
 
 /*#region View tables */
 
@@ -394,6 +440,8 @@ body.dark {
 	}
 
 /*#endregion */
+
+
 
 /*#region Card */
 
@@ -549,6 +597,8 @@ body.dark {
 
 /*#endregion */
 
+
+
 /*#region Card elements */
 
 .card_table {
@@ -575,6 +625,8 @@ body.dark {
 	}
 
 /*#endregion */
+
+
 
 /*#region Additional elements */
 
@@ -659,6 +711,8 @@ body.dark {
 }
 
 /*#endregion */
+
+
 
 /*#region Icons */
 
@@ -753,7 +807,7 @@ body.dark {
 }
 
 .ic-computer {
-	background-position: -48px -48px !important
+	background-position: -48px -48px !important;
 }
 
 .ic-content-copy {
