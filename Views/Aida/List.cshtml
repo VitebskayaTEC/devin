@@ -14,7 +14,8 @@
             <th width="100px" sort="ram|@(sort == "ram" && direction == "up" ? "down" : "up")" class="@(sort != "ram" ? "" : direction == "up" ? "sort-up" : "sort-down")">RAM</th>
             <th width="100px" sort="disk|@(sort == "disk" && direction == "up" ? "down" : "up")" class="@(sort != "disk" ? "" : direction == "up" ? "sort-up" : "sort-down")">Тип диска</th>
             <th width="100px" sort="display|@(sort == "display" && direction == "up" ? "down" : "up")" class="@(sort != "display" ? "" : direction == "up" ? "sort-up" : "sort-down")">Мониторы</th>
-            <th width="220px" sort="user|@(sort == "user" && direction == "up" ? "down" : "up")" class="@(sort != "user" ? "" : direction == "up" ? "sort-up" : "sort-down")">Пользователь</th>
+            <th width="100px" sort="user|@(sort == "user" && direction == "up" ? "down" : "up")" class="@(sort != "user" ? "" : direction == "up" ? "sort-up" : "sort-down")">Пользователь</th>
+            <th width="220px" sort="ad|@(sort == "ad" && direction == "up" ? "down" : "up")" class="@(sort != "ad" ? "" : direction == "up" ? "sort-up" : "sort-down")">Active Directory</th>
             <th width="120px" sort="os|@(sort == "os" && direction == "up" ? "down" : "up")" class="@(sort != "os" ? "" : direction == "up" ? "sort-up" : "sort-down")">ОС</th>
         </tr>
     </table>
@@ -50,7 +51,8 @@
                         <span title="@aida.DisplaysCaptions[i]">@(aida.DisplaysSize[i] == 0 ? "??" : (aida.DisplaysSize[i] + "\""))</span>
                     }
                 </td>
-                <td width="220px" title="@aida.User">@aida.UserName</td>
+                <td width="100px">@aida.User</td>
+                <td width="220px">@aida.UserName</td>
                 <td width="120px">@aida.OS</td>
             </tr>
         </table>

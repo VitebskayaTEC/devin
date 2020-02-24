@@ -109,6 +109,7 @@ namespace Devin.Controllers
                         ReportID = g.Key,
                         IValue = g
                             .Select(x => x.IValue)
+                            .Distinct()
                             .ToArray()
                     })
                     .ToList();
@@ -293,7 +294,8 @@ namespace Devin.Controllers
                         case "ram": model = model.OrderBy(x => x.RamScore).ToList(); break;
                         case "disk": model = model.OrderBy(x => x.DiskScore).ToList(); break;
                         case "display": model = model.OrderBy(x => x.DisplayScore).ToList(); break;
-                        case "user": model = model.OrderBy(x => x.UserName).ToList(); break;
+                        case "ad": model = model.OrderBy(x => x.UserName).ToList(); break;
+                        case "user": model = model.OrderBy(x => x.User).ToList(); break;
                         case "os": model = model.OrderBy(x => x.OSScore).ToList(); break;
                         default: model = model.OrderBy(x => x.Name).ToList(); break;
                     }
@@ -307,7 +309,8 @@ namespace Devin.Controllers
                         case "ram": model = model.OrderByDescending(x => x.RamScore).ToList(); break;
                         case "disk": model = model.OrderByDescending(x => x.DiskScore).ToList(); break;
                         case "display": model = model.OrderByDescending(x => x.DisplayScore).ToList(); break;
-                        case "user": model = model.OrderByDescending(x => x.UserName).ToList(); break;
+                        case "ad": model = model.OrderByDescending(x => x.UserName).ToList(); break;
+                        case "user": model = model.OrderByDescending(x => x.User).ToList(); break;
                         case "os": model = model.OrderByDescending(x => x.OSScore).ToList(); break;
                         default: model = model.OrderByDescending(x => x.Name).ToList(); break;
                     }
