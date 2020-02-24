@@ -266,6 +266,13 @@ body.dark {
 		padding: 6px;
 	}
 
+	.entry td span {
+		display: block;
+		padding: 4px 2px;
+		text-align: center;
+		font-weight: bold;
+	}
+
 	.entry > .led {
 		margin: 0 4px;
 	}
