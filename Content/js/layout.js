@@ -168,9 +168,9 @@ document.addEventListener('click', function (e) {
 
 var NAV = {
 
-    card: '',
-    search: '',
-    sort: '',
+    card: null,
+    search: null,
+    sort: null,
 
     toHash(data) {
 
