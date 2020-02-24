@@ -399,7 +399,7 @@ namespace Devin.Controllers
 
                         var reports = from r in db.Report
                                       from i in db.Item.LeftJoin(x => x.ReportID == r.ID).DefaultIfEmpty(new Item { IValue = "" })
-                                      where ids.Contains(r.ID) && i.IField == "Версия ОС" && r.RHost.Contains(query)
+                                      where ids.Contains(r.ID) && i.IField == "Операционная система" && i.IPage == "Отчёт" && r.RHost.Contains(query)
                                       orderby r.RHost
                                       select new Report
                                       {
