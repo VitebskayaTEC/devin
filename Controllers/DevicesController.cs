@@ -708,19 +708,6 @@ namespace Devin.Controllers
                     .Set(x => x.Users, string.Join(";", users.ToArray()))
                     .Update();
 
-                using (var site = new SiteContext())
-                {
-                    var v = site.Constants.Where(x => x.Keyword == "UsersWithPrinters").Select(x => x.Value).FirstOrDefault();
-                    var all = (v ?? "").Split(';').ToList();
-
-                    if (!all.Contains(user)) all.Add(user);
-
-                    site.Constants
-                        .Where(x => x.Keyword == "UsersWithPrinters")
-                        .Set(x => x.Value, string.Join(";", all.ToArray()))
-                        .Update();
-                }
-
                 db.Log(User, "devices", Id, "Пользователь \"" + user + "\" привязан к принтеру [device" + Id + "]");
 
                 return Json(new { Good = "Пользователь привязан к принтеру" });
@@ -746,19 +733,6 @@ namespace Devin.Controllers
                     .Where(x => x.Id == Id)
                     .Set(x => x.Users, string.Join(";", users.ToArray()))
                     .Update();
-
-                using (var site = new SiteContext())
-                {
-                    var v = site.Constants.Where(x => x.Keyword == "UsersWithPrinters").Select(x => x.Value).FirstOrDefault();
-                    var all = (v ?? "").Split(';').ToList();
-
-                    if (all.Contains(user)) all.Remove(user);
-
-                    site.Constants
-                        .Where(x => x.Keyword == "UsersWithPrinters")
-                        .Set(x => x.Value, string.Join(";", all.ToArray()))
-                        .Update();
-                }
 
                 db.Log(User, "devices", Id, "Пользователь \"" + user + "\" отвязан от принтера [device" + Id + "]");
 

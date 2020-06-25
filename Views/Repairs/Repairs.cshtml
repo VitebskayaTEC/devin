@@ -7,6 +7,7 @@
             <tr>
                 <td width="20px"><input type="checkbox" class="selecter-all" /></td>
                 <th data-type="string">объект ремонта</th>
+                <th data-type="string" width="90px">инв.</th>
                 <th data-type="string" width="460px">деталь</th>
                 <th data-type="number" width="50px">кол-во</th>
                 <th data-type="number" width="70px">стоимость</th>
@@ -25,6 +26,9 @@
                     <td><input type="checkbox" class="selecter" /></td>
                     <td>
                         <a class="view__link" href="@href"><b>@(repair.Device?.Name)</b> @(repair.Device?.PublicName)</a>
+                    </td>
+                    <td>
+                        <a class="view__link" href="@href">@repair.Storage.Inventory</a>
                     </td>
                     <td>
                         <a class="view__link" href="@href"><div class="led @repair.Storage.Led()"></div> @repair.Storage.Name</a>
