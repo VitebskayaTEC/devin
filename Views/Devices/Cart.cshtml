@@ -87,7 +87,7 @@
                             <option value="0">отдельно</option>
                             @{
                                 var folders = db.Folders
-                                    .Where(x => x.Type =="device")
+                                    .Where(x => x.Type == "device")
                                     .Select(x => new { x.Id, x.Name })
                                     .OrderBy(x => x.Name)
                                     .ToList();
@@ -152,7 +152,7 @@
                                         if (mol == device.Mol)
                                         {
                                             <option value="@mol" selected>@mol</option>
-                                }
+                                        }
                                         else
                                         {
                                             <option value="@mol">@mol</option>
@@ -179,8 +179,8 @@
                                 foreach (var place in places)
                                 {
                                     <option value="@place.Id" @(place.Id == device.PlaceId ? "selected" : "")>@place.Location</option>
-                                    }
                                 }
+                            }
                         </select>
                     </td>
                 </tr>
@@ -201,10 +201,28 @@
                 </tr>
 
                 <tr>
-                    <td>Дата установки</td>
+                    <td>Дата принятия к учёту</td>
                     <td>
-                        <input class="cart__field" name="@nameof(device.DateInstall)" style="width: 100px" value="@device.DateInstall.ToString("dd.MM.yyyy")" />
-                        @((DateTime.Now - device.DateInstall).TotalHours.ToString("0")) часов
+                        @{
+                            if (device.Object1C != null)
+                            {
+                                if (device.Object1C.Date.HasValue)
+                                {
+                                    <input class="cart__field" disabled name="@nameof(device.DateInstall)" style="width: 100px" value="@device.Object1C.Date.Value.ToString("dd.MM.yyyy")" />
+                                    <span>@((DateTime.Now - device.Object1C.Date.Value).TotalHours.ToString("0")) часов</span>
+                                }
+                                else
+                                {
+                                    <input class="cart__field" name="@nameof(device.DateInstall)" style="width: 100px" value="@device.DateInstall.ToString("dd.MM.yyyy")" />
+                                    <span>@((DateTime.Now - device.DateInstall).TotalHours.ToString("0")) часов</span>
+                                }
+                            }
+                            else
+                            {
+                                <input class="cart__field" name="@nameof(device.DateInstall)" style="width: 100px" value="@device.DateInstall.ToString("dd.MM.yyyy")" />
+                                <span>@((DateTime.Now - device.DateInstall).TotalHours.ToString("0")) часов</span>
+                            }
+                        }
                     </td>
                 </tr>
 
@@ -221,34 +239,34 @@
                             }
                             else
                             {
-                                <a><b>@repairsDates.Max().ToString("dd.MM.yyyy")</b></a>
+                                <a>@repairsDates.Max().ToString("dd.MM.yyyy")</a>
                             }
                         }
                     </td>
                 </tr>
 
                 @if (device.Type == "CMP")
-				{
-					var _os = from i in db.Item
-							  from r in db.Report.InnerJoin(x => x.ID == i.ReportID)
-							  where r.RHost == device.Name
-								 && i.IPage == "Операционная система"
-								 && new[] { "Название ОС", "Ключ продукта" }.Contains(i.IField)
-							  select new
-							  {
-								  Field = i.IField,
-								  Value = i.IValue,
-							  };
+                {
+                    var _os = from i in db.Item
+                              from r in db.Report.InnerJoin(x => x.ID == i.ReportID)
+                              where r.RHost == device.Name
+                                 && i.IPage == "Операционная система"
+                                 && new[] { "Название ОС", "Ключ продукта" }.Contains(i.IField)
+                              select new
+                              {
+                                  Field = i.IField,
+                                  Value = i.IValue,
+                              };
 
-					var os = _os.ToList();
+                    var os = _os.ToList();
 
                     <tr>
-						<td>Операционная система</td>
-						<td>
-							@(os.FirstOrDefault(x => x.Field == "Название ОС")?.Value ?? "")
-							<br />
-							<i>@(os.FirstOrDefault(x => x.Field == "Ключ продукта")?.Value ?? "")</i>
-						</td>
+                        <td>Операционная система</td>
+                        <td>
+                            @(os.FirstOrDefault(x => x.Field == "Название ОС")?.Value ?? "")
+                            <br />
+                            <i>@(os.FirstOrDefault(x => x.Field == "Ключ продукта")?.Value ?? "")</i>
+                        </td>
                     </tr>
                 }
 
