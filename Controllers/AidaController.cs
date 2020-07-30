@@ -150,7 +150,7 @@ namespace Devin.Controllers
                     aida.CpuCore = processor.Contains("Quad") || processor.Contains("Hexa") ? 4
                         : processor.Contains("Dual") ? 2 : 1;
                     processor = processor.Substring(processor.IndexOf(',') + 1).Trim();
-                    processor = processor.Substring(0, processor.IndexOf(' '));
+                    if (processor.Contains(' ')) { processor = processor.Substring(0, processor.IndexOf(' ')); }
                     aida.CpuFrequency = int.TryParse(processor, out int i) ? i : 0;
 
                     // память
@@ -165,11 +165,12 @@ namespace Devin.Controllers
                     else if (motherboard.Contains("DDR") || ram.Contains("DDR")) { aida.RamType = 1; }
                     else { aida.RamType = 4; }
 
-                    aida.RamValue = decimal.TryParse(ram.Substring(0, ram.IndexOf(' ')), out decimal d) ? d : 0;
+                    if (ram.Contains(' ')) { ram = ram.Substring(0, ram.IndexOf(' ')); }
+                    aida.RamValue = decimal.TryParse(ram, out decimal d) ? d : 0;
 
                     // диск
 
-                    string hdd = disks.FirstOrDefault(x => x.ReportID == report.ID)?.IValue;
+                    string hdd = disks.FirstOrDefault(x => x.ReportID == report.ID)?.IValue ?? "";
 
                     aida.Disk = hdd;
                     aida.DiskType = hdd.Contains("SSD") ? "SSD" : "HDD";
