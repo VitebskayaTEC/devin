@@ -133,12 +133,13 @@ namespace Devin.Controllers
                     if (os.Contains("WinXP")) { aida.OS = "Windows XP"; aida.OSScore = 2; }
                     else if (os.Contains("6.1.7600")) { aida.OS = "Windows 7"; aida.OSScore = 7; }
                     else if (os.Contains("Win7")) { aida.OS = "Windows 7"; aida.OSScore = 7; }
-                    else if (os.Contains("14393")) { aida.OS = "Windows 10 1607"; aida.OSScore = 1607; }
-                    else if (os.Contains("16299")) { aida.OS = "Windows 10 1709"; aida.OSScore = 1709; }
-                    else if (os.Contains("17134")) { aida.OS = "Windows 10 1803"; aida.OSScore = 1803; }
-                    else if (os.Contains("17763")) { aida.OS = "Windows 10 1809"; aida.OSScore = 1809; }
-                    else if (os.Contains("18362")) { aida.OS = "Windows 10 1903"; aida.OSScore = 1903; }
-                    else if (os.Contains("18363")) { aida.OS = "Windows 10 1909"; aida.OSScore = 1909; }
+                    else if (os.Contains("14393")) { aida.OS = "Windows 10 1607"; aida.OSScore = 11607; }
+                    else if (os.Contains("16299")) { aida.OS = "Windows 10 1709"; aida.OSScore = 11709; }
+                    else if (os.Contains("17134")) { aida.OS = "Windows 10 1803"; aida.OSScore = 11803; }
+                    else if (os.Contains("17763")) { aida.OS = "Windows 10 1809"; aida.OSScore = 11809; }
+                    else if (os.Contains("18362")) { aida.OS = "Windows 10 1903"; aida.OSScore = 11903; }
+                    else if (os.Contains("18363")) { aida.OS = "Windows 10 1909"; aida.OSScore = 11909; }
+                    else if (os.Contains("19041")) { aida.OS = "Windows 10 2004"; aida.OSScore = 12004; }
                     else if (os.Contains("Win2003")) { aida.OS = "Windows Server 2003"; aida.OSScore = 2003; }
                     else if (os.Contains("Win2012")) { aida.OS = "Windows Server 2012"; aida.OSScore = 2012; }
                     else { aida.OS = os; aida.OSScore = 1; }
