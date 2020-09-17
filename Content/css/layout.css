@@ -460,7 +460,7 @@ body.dark {
 	max-height: 90%;
 	background: #f9f9f9;
 	box-shadow: 0 0 4px 0px #ddd;
-	border: 1px solid #ddd;
+	border: 1px solid #aaa;
 	border-radius: 5px;
 	z-index: 2;
 }
@@ -469,7 +469,7 @@ body.dark {
 	display: table;
 	width: 100%;
 	background: #fff;
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid #ccc;
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
 }
@@ -501,7 +501,7 @@ body.dark {
 .card_buttons {
 	width: 100%;
 	background: #fff;
-	border-top: 1px solid #eee;
+	border-top: 1px solid #ccc;
 	border-bottom-left-radius: 5px;
 	border-bottom-right-radius: 5px;
 	text-align: right;
@@ -531,14 +531,14 @@ body.dark {
 	width: 100%;
 	border-collapse: collapse;
 	background: #f1f1f1;
-	border-bottom: 1px solid #ddd;
+	border-bottom: 1px solid #ccc;
 }
 
 	.tabs-panel > div {
 		display: table-cell;
 		padding: 4px;
-		border-left: 1px solid #ddd;
-		border-right: 1px solid #ddd;
+		/* border-left: 1px solid #ddd; */
+		border-right: 1px solid #aaa;
 		text-align: center;
 	}
 
@@ -710,11 +710,11 @@ body.dark {
 		}
 
 .sort-up:after {
-	content: "↑"
+	content: "â†‘"
 }
 
 .sort-down:after {
-	content: "↓"
+	content: "â†“"
 }
 
 /*#endregion */

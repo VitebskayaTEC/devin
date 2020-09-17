@@ -232,11 +232,11 @@ namespace Devin.Controllers
                         if (isLeft)
                         {
                             sheet.GetRow(rowCount * 3 - 3).GetCell(0).SetCellValue("№");
-                            sheet.GetRow(rowCount * 3 - 2).GetCell(0).SetCellValue("Тип:");
+                            sheet.GetRow(rowCount * 3 - 2).GetCell(0).SetCellValue("Имя:");
                             sheet.GetRow(rowCount * 3 - 1).GetCell(0).SetCellValue("Приход:");
 
                             sheet.GetRow(rowCount * 3 - 3).GetCell(1).SetCellValue(storages[i].Inventory);
-                            sheet.GetRow(rowCount * 3 - 2).GetCell(1).SetCellValue(storages[i].Type);
+                            sheet.GetRow(rowCount * 3 - 2).GetCell(1).SetCellValue(storages[i].Name);
                             sheet.GetRow(rowCount * 3 - 1).GetCell(1).SetCellValue(storages[i].Date.ToString("dd.MM.yyyy"));
 
                             isLeft = false;
@@ -244,11 +244,11 @@ namespace Devin.Controllers
                         else
                         {
                             sheet.GetRow(rowCount * 3 - 3).GetCell(2).SetCellValue("№");
-                            sheet.GetRow(rowCount * 3 - 2).GetCell(2).SetCellValue("Тип:");
+                            sheet.GetRow(rowCount * 3 - 2).GetCell(2).SetCellValue("Имя:");
                             sheet.GetRow(rowCount * 3 - 1).GetCell(2).SetCellValue("Приход:");
 
                             sheet.GetRow(rowCount * 3 - 3).GetCell(3).SetCellValue(storages[i].Inventory);
-                            sheet.GetRow(rowCount * 3 - 2).GetCell(3).SetCellValue(storages[i].Type);
+                            sheet.GetRow(rowCount * 3 - 2).GetCell(3).SetCellValue(storages[i].Name);
                             sheet.GetRow(rowCount * 3 - 1).GetCell(3).SetCellValue(storages[i].Date.ToString("dd.MM.yyyy"));
 
                             rowCount = rowCount + 1;
