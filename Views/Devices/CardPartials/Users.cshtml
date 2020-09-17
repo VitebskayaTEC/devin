@@ -21,7 +21,7 @@
                 .OrderBy(x => x.UName)
                 .ToList();
 
-            var picked = (device.Users ?? "").Split(';');
+            var picked = (device.Users ?? "").Split(new [] { ";" }, StringSplitOptions.RemoveEmptyEntries);
 
             <tbody>
                 @foreach (var user in users)
