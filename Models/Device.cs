@@ -1,6 +1,7 @@
 ﻿using LinqToDB.Mapping;
 using System;
 using System.Collections.Generic;
+using System.Web.Mvc;
 
 namespace Devin.Models
 {
@@ -25,7 +26,7 @@ namespace Devin.Models
         [Column]
         public int ComputerId { get; set; }
 
-        [Column]
+        [Column, AllowHtml]
         public string Description { get; set; }
 
         [Column]
