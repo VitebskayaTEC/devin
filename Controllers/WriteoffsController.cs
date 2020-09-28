@@ -487,9 +487,9 @@ namespace Devin.Controllers
 					var now = DateTime.Now;
                     sheet.GetRow(26).GetCell(16).SetCellValue("\"" + now.Day + "\" " + months2[now.Month - 1] + " " + now.ToString("yyyy г."));
                     sheet.GetRow(27).GetCell(16).SetCellValue(now.ToString("dd.MM.yyyy г."));
-                    sheet.GetRow(28).GetCell(16).SetCellValue(months[now.Month - 1] + months2[now.Month - 1] + " " + now.ToString(" yyyy г."));
+                    sheet.GetRow(28).GetCell(16).SetCellValue(months[now.Month - 1] + " " + now.ToString(" yyyy г."));
                     sheet.GetRow(27).GetCell(39).SetCellValue(now.ToString("yyyy г."));
-					sheet.GetRow(27).GetCell(48).SetCellValue("\"" + now.Day + "\" " + now.ToString("yyyy г."));
+					sheet.GetRow(27).GetCell(48).SetCellValue("\"" + now.Day + "\" " + months2[now.Month - 1] + now.ToString("yyyy г."));
 
 					// номера актов
 					string number = now.Month + "/" + now.Day + "-" + Id;
@@ -572,24 +572,24 @@ namespace Devin.Controllers
 						sheet.GetRow(29).GetCell(16).SetCellValue(valueText + device.Description);
 
 						// мол
-						string surname = device.Mol.Substring(0, device.Mol.IndexOf(' ')).ToLower();
+						//string surname = device.Mol.Substring(0, device.Mol.IndexOf(' ')).ToLower();
 
-						var mol = db.Employees
-							.Where(x => x.Surname.ToLower() == surname)
-							.FirstOrDefault() ?? new Employee { Id = 0, Surname = "", Initials = "", Division = "" };
+						//var mol = db.Employees
+						//	.Where(x => x.Surname.ToLower() == surname)
+						//	.FirstOrDefault() ?? new Employee { Id = 0, Surname = "", Initials = "", Division = "" };
 
-						var _official = from o in db.Officials
-										from r in db.Relation_Officials_Employees.InnerJoin(x => x.OfficialId == o.Id)
-										where r.EmployeeId == mol.Id
-										orderby r.Weight descending
-										select o.Title;
+						//var _official = from o in db.Officials
+						//				from r in db.Relation_Officials_Employees.InnerJoin(x => x.OfficialId == o.Id)
+						//				where r.EmployeeId == mol.Id
+						//				orderby r.Weight descending
+						//				select o.Title;
 
-						var official = _official.FirstOrDefault() ?? "";
+						//var official = _official.FirstOrDefault() ?? "";
 
-						sheet.GetRow(52).GetCell(16).SetCellValue(official);
-						sheet.GetRow(50).GetCell(27).SetCellValue(mol.Surname + " " + mol.Initials);
-						sheet.GetRow(52).GetCell(27).SetCellValue(mol.Initials + " " + mol.Surname);
-						sheet.GetRow(52).GetCell(39).SetCellValue(mol.Division);
+						//sheet.GetRow(52).GetCell(16).SetCellValue(official);
+						//sheet.GetRow(50).GetCell(27).SetCellValue(mol.Surname + " " + mol.Initials);
+						//sheet.GetRow(52).GetCell(27).SetCellValue(mol.Initials + " " + mol.Surname);
+						//sheet.GetRow(52).GetCell(39).SetCellValue(mol.Division);
 					}
 
 					// кол-во плат и вес из карточки
