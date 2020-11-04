@@ -148,7 +148,7 @@ namespace Devin.Controllers
 
                     string processor = processors.FirstOrDefault(x => x.ReportID == report.ID)?.IValue ?? "";
                     aida.Cpu = processor;
-                    aida.CpuCore = processor.Contains("Quad") || processor.Contains("Hexa") ? 4
+                    aida.CpuCore = processor.Contains("Octa") ? 8 : processor.Contains("Quad") || processor.Contains("Hexa") ? 4
                         : processor.Contains("Dual") ? 2 : 1;
                     processor = processor.Substring(processor.IndexOf(',') + 1).Trim();
                     if (processor.Contains(' ')) { processor = processor.Substring(0, processor.IndexOf(' ')); }

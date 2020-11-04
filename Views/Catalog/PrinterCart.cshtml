@@ -59,7 +59,7 @@
                 foreach (var cartridge in compared)
                 {
                     <tr>
-                        <td><a class="cart__link" href="~/catalog/##cart@(cartridge.Id)">@cartridge.Name</a></td>
+                        <td><a class="cart__link" href="##cart@(cartridge.Id)">@cartridge.Name</a></td>
                         <td width="30px">
                             <button class="cart__button" onclick="Catalog.remove({ CartridgeId: @cartridge.Id, PrinterId: @printer.Id  })">
                                 <div class="icon ic-clear"></div>

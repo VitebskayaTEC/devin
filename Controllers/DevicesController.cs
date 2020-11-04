@@ -16,7 +16,7 @@ namespace Devin.Controllers
     {
         public ActionResult Index() => View();
 
-        public ActionResult Load(string Item, string Search)
+        public ActionResult Load(string Item, string Search, string Sort)
         {
             if ((Item ?? "").Contains("device"))
             {
@@ -27,7 +27,7 @@ namespace Devin.Controllers
             }
             else
             {
-                var model = new DevicesViewModel(Search);
+                var model = new DevicesViewModel(Search, Sort);
 
                 if ((Item ?? "").Contains("folder"))
                 {
@@ -49,6 +49,8 @@ namespace Devin.Controllers
         public ActionResult Cart(int Id) => View(model: Id);
 
         public ActionResult History() => View();
+
+        public ActionResult Logs() => View();
 
         public ActionResult Files(string Id) => View(model: Id);
 
@@ -181,6 +183,7 @@ namespace Devin.Controllers
                         .Set(x => x.PlaceId, device.PlaceId)
                         .Set(x => x.PrinterId, device.PrinterId)
                         .Set(x => x.IsOff, device.IsOff)
+                        .Set(x => x.DateLastChange, DateTime.Now)
                         .Update();
 
                     db.Log(User, "devices", device.Id, "Позиция изменена. Изменения: " + changes.ToLog());
@@ -206,6 +209,7 @@ namespace Devin.Controllers
                 }
                 
                 device.Name += " (копия)";
+                device.DateLastChange = DateTime.Now;
 
                 int newId = db.InsertWithInt32Identity(device);
                 db.Log(User, "devices", newId, "Позиция скопирована из [device" + Id + "]");
@@ -245,7 +249,8 @@ namespace Devin.Controllers
                     PlaceId = 0,
                     PrinterId = 0,
                     IsDeleted = false,
-                    IsOff = false
+                    IsOff = false,
+                    DateLastChange = DateTime.Now,
                 });
 
                 db.Log(User, "devices", id, "Создано новое устройство");
@@ -292,6 +297,7 @@ namespace Devin.Controllers
                                 .Where(x => x.Id == id)
                                 .Set(x => x.ComputerId, ComputerId)
                                 .Set(x => x.FolderId, FolderId)
+                                .Set(x => x.DateLastChange, DateTime.Now)
                                 .Update();
                             db.Log(User, "devices", id, message);
                         }
@@ -313,6 +319,7 @@ namespace Devin.Controllers
                 db.Devices
                     .Where(x => x.Id == Id)
                     .Set(x => x.FolderId, FolderId)
+                    .Set(x => x.DateLastChange, DateTime.Now)
                     .Update();
                 db.Log(User, "devices", Id, "Компьютер успешно перемещен " + oldText + newText);
 

@@ -120,7 +120,7 @@
                 {
                     <tr>
                         <td>
-                            <a class="cart__link" href="~/catalog/##prn@(printer.Id)">@printer.Name</a>
+                            <a class="cart__link" href="##prn@(printer.Id)">@printer.Name</a>
                         </td>
                         <td width="30px">
                             <button class="cart__button" onclick="Catalog.remove({ CartridgeId: @cartridge.Id, PrinterId: @printer.Id  })">
