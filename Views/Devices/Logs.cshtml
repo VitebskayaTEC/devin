@@ -1,0 +1,48 @@
+﻿@using (var db = new DevinContext())
+{
+	var model = db.Activity
+		.Where(x => x.Source == "devices")
+		.OrderByDescending(x => x.Date)
+		.Take(5000)
+		.Select(x => new
+		{
+			x.Date,
+			x.Id,
+			x.Text,
+			x.Username,
+		})
+		.ToList();
+
+    <div class="cart__header">
+        <div>История изменений</div>
+        <div class="cart__closeButton" title="Закрыть" onclick="Cart.close()">
+            <i class="icon ic-clear icon_white icon_no-hover"></i>
+        </div>
+    </div>
+
+	<div class="cart__body">
+		<div class="cartHistory">
+			<table class="cartHistory__table">
+				<thead>
+					<tr>
+						<th width="140px">Дата события</th>
+						<th>Объект</th>
+						<th>Сообщение</th>
+						<th>Пользователь</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var log in model)
+					{
+						<tr>
+							<td style="text-align: center;">@log.Date.ToString("dd.MM.yyyy HH:mm:ss")</td>
+							<td><a href="##device@(log.Id)">@log.Id</a></td>
+							<td>@log.Text</td>
+							<td>@log.Username</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+}

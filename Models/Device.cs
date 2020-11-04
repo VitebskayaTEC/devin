@@ -91,6 +91,9 @@ namespace Devin.Models
         [Column]
         public string Users { get; set; } = "";
 
+        [Column]
+        public DateTime? DateLastChange { get; set; }
+
 
         public Printer Printer { get; set; }
 

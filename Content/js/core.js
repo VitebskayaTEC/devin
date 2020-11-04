@@ -159,7 +159,8 @@ function _menu(obj, name) {
 }
 
 function restore() {
-    fetch(host + pageName + '/load?search=' + search)
+    let sort = document.getElementById('sort-direction') ? ('&sort=' + document.getElementById('sort-direction').value) : ''
+    fetch(host + pageName + '/load?search=' + search + sort)
         .then(res => res.text())
         .then(text => {
             document.getElementById('view').innerHTML = text;
@@ -671,6 +672,18 @@ var Devices = {
                 }
             });
     },
+
+    logs() {
+        fetch(host + 'devices/logs', { method: 'POST' })
+            .then(res => res.text())
+            .then(text => {
+                Cart.close()
+                let cart = document.getElementById('cart');
+                cart.innerHTML = text;
+                cart.classList.add('cart_visible');
+                document.querySelectorAll('#view .selected').forEach(el => el.classList.remove('selected'));
+			})
+	},
 };
 
 var Storages = {

@@ -13,8 +13,12 @@ namespace Devin.ViewModels
 
         public List<Device> Devices { get; set; } = new List<Device>();
 
-        public DevicesViewModel(string Search = "")
+        public string Sort { get; set; }
+
+        public DevicesViewModel(string Search = "", string sort = "letter")
         {
+            Sort = sort;
+
             using (var db = new DevinContext())
             {
                 if (!string.IsNullOrEmpty(Search))
@@ -32,7 +36,6 @@ namespace Devin.ViewModels
                                     || d.PassportNumber.Contains(Search)
                                     || d.Location.Contains(Search)
 								)
-                                orderby d.Name, d.Type
                                 select new Device
 								{
                                     Id = d.Id,
@@ -47,7 +50,10 @@ namespace Devin.ViewModels
                                     FolderId = f.Id
                                 };
 
-                    Devices = query.ToList();
+                    Devices = query
+                        .OrderBy(x => x.Name)
+                        .ThenBy(x => x.Type)
+                        .ToList();
                 }
                 else
                 {
@@ -67,7 +73,8 @@ namespace Devin.ViewModels
                                            Mol = d.Mol,
                                            Location = p.Location,
                                            IsOff = d.IsOff,
-                                           FolderId = f.Id
+                                           FolderId = f.Id,
+                                           DateLastChange = d.DateLastChange,
 									   };
 
                     var foldersQuery = from f in db.Folders
@@ -101,7 +108,8 @@ namespace Devin.ViewModels
                                 Mol = d.Mol,
                                 Location = d.Location,
                                 IsOff = d.IsOff,
-                                FolderId = d.FolderId
+                                FolderId = d.FolderId,
+                                DateLastChange = d.DateLastChange,
                             });
                         }
                         else
@@ -169,6 +177,51 @@ namespace Devin.ViewModels
                         {
                             Folders.Add(Folder.Build(folder, _folders));
                         }
+                    }
+
+                    switch (sort)
+                    {
+                        case "letter":
+                            Devices = Devices
+                                .OrderBy(x => x.Name)
+                                .ThenBy(x => x.Type)
+                                .ToList();
+
+                            Computers = Computers
+                                .OrderBy(x => x.Name)
+                                .ThenBy(x => x.Type)
+                                .ToList();
+                            break;
+
+                        case "change":
+                            Devices = Devices
+                                .OrderByDescending(x => x.DateLastChange)
+                                .ToList();
+
+                            Computers = Computers
+                                .OrderByDescending(x => x.DateLastChange)
+                                .ToList();
+                            break;
+
+                        case "inventory":
+                            Devices = Devices
+                                .OrderBy(x => x.Inventory)
+                                .ToList();
+
+                            Computers = Computers
+                                .OrderBy(x => x.Inventory)
+                                .ToList();
+                            break;
+
+                        case "mol":
+                            Devices = Devices
+                                .OrderBy(x => x.Mol)
+                                .ToList();
+
+                            Computers = Computers
+                                .OrderBy(x => x.Mol)
+                                .ToList();
+                            break;
                     }
                 }
             }

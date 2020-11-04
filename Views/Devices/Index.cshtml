@@ -49,20 +49,22 @@
         <div><a onclick="removeAllSelection()">Сбросить выбор</a></div>
     </div>
 
-    <div class="context-menu" id="main">
-        <div onclick="Devices.Cart.create()">Создать карточку устройства</div>
-        <div onclick="Folders.create()">Создать группу</div>
-        <hr />
-        <a href="~/storages/analyze">Анализ расхода картриджей</a>
-        <hr />
-        <a href="~/devices/table">Табличный просмотр Devin</a>
-        <a href="~/devices/table1C">Просмотр данных 1С</a>
-        <a href="~/devices/compare1C">Сверка с 1С</a>
-        <hr />
-        <a href="~/devices/workplaces">Справочник рабочих мест</a>
-        <hr />
-        <a href="~/devices/inventory">Список наименований по инв. номеру</a>
-    </div>
+	<div class="context-menu" id="main">
+		<div onclick="Devices.Cart.create()">Создать карточку устройства</div>
+		<div onclick="Folders.create()">Создать группу</div>
+		<hr />
+		<a href="~/storages/analyze">Анализ расхода картриджей</a>
+		<hr />
+		<a href="~/devices/table">Табличный просмотр Devin</a>
+		<a href="~/devices/table1C">Просмотр данных 1С</a>
+		<a href="~/devices/compare1C">Сверка с 1С</a>
+		<hr />
+		<div onclick="Devices.logs()">Список изменений</div>
+		<hr />
+		<a href="~/devices/workplaces">Справочник рабочих мест</a>
+		<hr />
+		<a href="~/devices/inventory">Список наименований по инв. номеру</a>
+	</div>
 
     <ul class="context-menu" id="computer">
         <li onclick="Devices.computerOpen()">Открыть карточку</li>
@@ -88,4 +90,5 @@
 }
 
 <script>let search = '@Request.QueryString.Get("search")';</script>
+
 @Html.Action("Load", new { Search = Request.QueryString.Get("search") })

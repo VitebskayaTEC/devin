@@ -1,5 +1,15 @@
 ﻿@model DevicesViewModel
 
+<div>
+	Сортировка:
+	<select id="sort-direction" onchange="restore()">
+		<option value="letter" @(Model.Sort == "letter" ? "selected" : "")>по алфавиту</option>
+		<option value="change" @(Model.Sort == "change" ? "selected" : "")>по изменениям</option>
+		<option value="inventory" @(Model.Sort == "inventory" ? "selected" : "")>по инвентарному номеру</option>
+		<option value="mol" @(Model.Sort == "mol" ? "selected" : "")>по м.о.л</option>
+	</select>
+</div>
+
 @foreach (var computer in Model.Computers)
 {
     @Html.Partial("Computer", computer)
