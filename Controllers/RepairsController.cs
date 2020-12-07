@@ -579,9 +579,10 @@ namespace Devin.Controllers
             {
                 int writeoffId = 0;
 
+                // Настройка, группирующая ремонты в автоматически создаваемое списание
                 if (!string.IsNullOrEmpty(Writeoff))
                 {
-                    writeoffId = db.Insert(new Writeoff
+                    writeoffId = db.InsertWithInt32Identity(new Writeoff
                     {
                         Name = Writeoff,
                         Type = "mat",
