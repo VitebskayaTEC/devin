@@ -51,6 +51,9 @@ namespace Devin.Controllers
                    .Select(g => g.Select(x => x.ID).Max())
                    .ToList();
 
+                var descriptions = db.AidaDescriptions
+                    .ToDictionary(x => x.Name, x => x.Description);
+
                 var reports = db.Report
                     .Where(x => ids.Contains(x.ID))
                     .OrderBy(x => x.ID)
@@ -122,8 +125,9 @@ namespace Devin.Controllers
                     {
                         Id = report.ID,
                         Name = report.RHost,
+                        Description = descriptions.TryGetValue(report.RHost, out string v) ? v : "",
                         User = report.RUser.ToLower(),
-                        UserName = personal.TryGetValue(report.RUser.ToLower(), out string v) ? v : "",
+                        UserName = personal.TryGetValue(report.RUser.ToLower(), out v) ? v : "",
                         LastReport = report.RDateTime,
                     };
 
@@ -168,6 +172,7 @@ namespace Devin.Controllers
                     else { aida.RamType = 4; }
 
                     if (ram.Contains(' ')) { ram = ram.Substring(0, ram.IndexOf(' ')); }
+                    aida.Motherboard = motherboard;
                     aida.RamValue = decimal.TryParse(ram, out decimal d) ? d : 0;
 
                     // диск
@@ -445,6 +450,31 @@ namespace Devin.Controllers
 
 
         // actions
+
+        public JsonResult Description(string name, string description)
+		{
+            using (var db = new DevinContext())
+			{
+                var desc = db.AidaDescriptions.FirstOrDefault(x => x.Name == name);
+                if (desc == null)
+				{
+                    db.Insert(new AidaDescription
+                    {
+                        Name = name,
+                        Description = description,
+                    });
+				}
+                else
+				{
+                    db.AidaDescriptions
+                        .Where(x => x.Name == name)
+                        .Set(x => x.Description, description)
+                        .Update();
+				}
+			}
+
+            return Json(new { Done = "Описание сохранено" });
+		}
 
         public JsonResult Move(string[] items, string destination)
         {

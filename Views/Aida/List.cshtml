@@ -29,17 +29,17 @@
 				<td width="30px">
 					<i class="ic-computer handle"></i>
 				</td>
-				<th width="140px" title="@aida.LastReport.ToString("d MMMM yyyy HH:mm")">@aida.Name</th>
+				<th width="140px" title="Дата отчёта: @aida.LastReport.ToString("d MMMM yyyy HH:mm")">@aida.Name</th>
 				<td width="100px">@aida.User</td>
 				<td width="220px">@aida.UserName</td>
 
-				<td width="100px" title="@aida.Cpu" style="color: rgb( @(aida.CpuScore < 200 ? "255," + (55 + aida.CpuScore) : (455 - aida.CpuScore) + ",200"), 0);">
+				<td width="100px" title="Процессор: @aida.Cpu" style="color: rgb( @(aida.CpuScore < 200 ? "255," + (55 + aida.CpuScore) : (455 - aida.CpuScore) + ",200"), 0);">
 					@aida.CpuCore x @aida.CpuFrequency МГц
 				</td>
-				<td width="100px" title="@aida.Motherboard" style="color: rgb( @(aida.RamScore < 200 ? "255," + (55 + aida.RamScore) : (455 - aida.RamScore) + ",200"), 0);">
+				<td width="100px" title="Материнская плата: @aida.Motherboard" style="color: rgb( @(aida.RamScore < 200 ? "255," + (55 + aida.RamScore) : (455 - aida.RamScore) + ",200"), 0);">
 					@Math.Ceiling(aida.RamValue / 1024) Гб DDR@(aida.RamType)
 				</td>
-				<td width="100px" title="@aida.Disk" style="color: rgb( @(aida.DiskScore < 200 ? "255," + (55 + aida.DiskScore) : (455 - aida.DiskScore) + ",200"), 0);">
+				<td width="100px" title="Жесткий диск: @aida.Disk" style="color: rgb( @(aida.DiskScore < 200 ? "255," + (55 + aida.DiskScore) : (455 - aida.DiskScore) + ",200"), 0);">
 					@(aida.DiskCapacity == 0 ? "0" : aida.DiskValue) @aida.DiskType
 				</td>
 				<td width="120px" style="color: rgb( @(aida.DisplayScore < 200 ? "255," + (55 + aida.DisplayScore) : (455 - aida.DisplayScore) + ",200"), 0);">
@@ -50,6 +50,18 @@
 				</td>
 				<td width="120px" style="color: rgb(@(aida.OSScore < 200 ? "255," + (55 + aida.OSScore) : (455 - aida.OSScore) + ",200"), 0);">
 					@aida.OS
+				</td>
+			</tr>
+			<tr>
+				<td colspan="9" class="aida__description" ondblclick="aida.description(this, '@aida.Name')" title="Для изменения описания сделайте двойной клик по нему">
+					@if (string.IsNullOrEmpty(aida.Description))
+					{
+						<i>добавить описание...</i>
+					}
+					else
+					{
+						@aida.Description
+					}
 				</td>
 			</tr>
         </table>

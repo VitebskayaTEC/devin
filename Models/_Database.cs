@@ -51,6 +51,9 @@ namespace Devin.Models
         public ITable<Elm> Elm
             => GetTable<Elm>();
 
+        public ITable<AidaDescription> AidaDescriptions
+            => GetTable<AidaDescription>();
+
         public ITable<Report> Report 
             => GetTable<Report>();
 

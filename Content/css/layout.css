@@ -710,11 +710,11 @@ body.dark {
 		}
 
 .sort-up:after {
-	content: "â†‘"
+	content: " ▲"
 }
 
 .sort-down:after {
-	content: "â†“"
+	content: " ▼"
 }
 
 /*#endregion */
@@ -974,3 +974,32 @@ body.dark {
 }
 
 /*#endregion */
+
+
+.aida__description {
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+	color: #ccc;
+}
+
+	.aida__description textarea {
+		display: block;
+		width: 99%;
+		background: #333;
+		color: #fff;
+		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		border: 1px solid #444;
+	}
+
+	.aida__description button {
+		margin-top: 4px;
+		background: #444;
+		color: #fff;
+		font-size: 12px;
+		padding: 3px 5px;
+		border: 1px solid #555;
+	}
+
+	.aida__description i {
+		color: #666;
+	}
