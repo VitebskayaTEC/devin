@@ -130,19 +130,20 @@ namespace Devin.Controllers
                     // операционная система
 
                     string os = systems.FirstOrDefault(x => x.ReportID == report.ID)?.IValue ?? "";
-                    if (os.Contains("WinXP")) { aida.OS = "Windows XP"; aida.OSScore = 2; }
-                    else if (os.Contains("6.1.7600")) { aida.OS = "Windows 7"; aida.OSScore = 7; }
-                    else if (os.Contains("Win7")) { aida.OS = "Windows 7"; aida.OSScore = 7; }
-                    else if (os.Contains("14393")) { aida.OS = "Windows 10 1607"; aida.OSScore = 11607; }
-                    else if (os.Contains("16299")) { aida.OS = "Windows 10 1709"; aida.OSScore = 11709; }
-                    else if (os.Contains("17134")) { aida.OS = "Windows 10 1803"; aida.OSScore = 11803; }
-                    else if (os.Contains("17763")) { aida.OS = "Windows 10 1809"; aida.OSScore = 11809; }
-                    else if (os.Contains("18362")) { aida.OS = "Windows 10 1903"; aida.OSScore = 11903; }
-                    else if (os.Contains("18363")) { aida.OS = "Windows 10 1909"; aida.OSScore = 11909; }
-                    else if (os.Contains("19041")) { aida.OS = "Windows 10 2004"; aida.OSScore = 12004; }
-                    else if (os.Contains("Win2003")) { aida.OS = "Windows Server 2003"; aida.OSScore = 2003; }
-                    else if (os.Contains("Win2012")) { aida.OS = "Windows Server 2012"; aida.OSScore = 2012; }
-                    else { aida.OS = os; aida.OSScore = 1; }
+                    if (os.Contains("WinXP")) { aida.OS = "Windows XP"; aida.OSScore = 100; }
+                    else if (os.Contains("6.1.7600")) { aida.OS = "Windows 7"; aida.OSScore = 200; }
+                    else if (os.Contains("Win7")) { aida.OS = "Windows 7"; aida.OSScore = 200; }
+                    else if (os.Contains("14393")) { aida.OS = "Windows 10 1607"; aida.OSScore = 300; }
+                    else if (os.Contains("16299")) { aida.OS = "Windows 10 1709"; aida.OSScore = 400; }
+                    else if (os.Contains("17134")) { aida.OS = "Windows 10 1803"; aida.OSScore = 500; }
+                    else if (os.Contains("17763")) { aida.OS = "Windows 10 1809"; aida.OSScore = 600; }
+                    else if (os.Contains("18362")) { aida.OS = "Windows 10 1903"; aida.OSScore = 700; }
+                    else if (os.Contains("18363")) { aida.OS = "Windows 10 1909"; aida.OSScore = 800; }
+                    else if (os.Contains("19041")) { aida.OS = "Windows 10 2004"; aida.OSScore = 900; }
+                    else if (os.Contains("19042")) { aida.OS = "Windows 10 20H2"; aida.OSScore = 1000; }
+                    else if (os.Contains("Win2003")) { aida.OS = "Windows Server 2003"; aida.OSScore = 101; }
+                    else if (os.Contains("Win2012")) { aida.OS = "Windows Server 2012"; aida.OSScore = 201; }
+                    else { aida.OS = os; aida.OSScore = 100; }
 
                     // процессор
 
@@ -188,7 +189,7 @@ namespace Devin.Controllers
 
                     // мониторы
 
-                    aida.DisplayScore = 0;
+                    aida.DisplayScore = 19;
                     foreach (var monitor in monitors.FirstOrDefault(x => x.ReportID == report.ID)?.IValue ?? new string[0])
                     {
                         string monitor_type = "";
@@ -210,18 +211,18 @@ namespace Devin.Controllers
                             {
                                 if (decimal.TryParse(monitor_type.Substring(0, monitor_type.IndexOf('"')).Replace('.', ','), out d))
                                 {
-                                    if (d < 35)
+                                    if (d <= 27)
                                     {
                                         if (d > aida.DisplayScore)
                                         {
                                             aida.DisplayScore = d;
                                         }
                                     }
-                                    else
-                                    {
-                                        d = 0;
-                                    }
                                 }
+                                else
+								{
+                                    d = 0;
+								}
                             }
                         }
 
@@ -231,9 +232,9 @@ namespace Devin.Controllers
 
                     // счёт
 
-                    aida.CpuScore = aida.CpuCore * aida.CpuFrequency;
-                    aida.RamScore = aida.RamType * aida.RamValue;
-                    aida.DiskScore = (aida.DiskType == "SSD" ? 5 : 1) * aida.DiskCapacity;
+                    aida.CpuScore = (aida.CpuCore / 2) * aida.CpuFrequency;
+                    aida.RamScore = (10 * aida.RamType) * (aida.RamValue / 2);
+                    aida.DiskScore = (aida.DiskType == "SSD" ? 10000 : 1) + (aida.DiskCapacity / 100);
 
                     // добавление в список
 
@@ -279,6 +280,12 @@ namespace Devin.Controllers
 
                     score = (aida.DiskScore - diskMin) / (diskMax - diskMin);
                     aida.DiskScore = Math.Round(score * 400);
+
+                    score = (aida.OSScore - osMin) / (osMax - osMin);
+                    aida.OSScore = Math.Round(score * 400);
+
+                    score = (aida.DisplayScore - displayMin) / (displayMax - displayMin);
+                    aida.DisplayScore = Math.Round(score * 400);
 
                     // общий счёт
 

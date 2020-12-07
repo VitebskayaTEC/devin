@@ -7,17 +7,17 @@
 
 <div class="header">
     <table>
-        <tr title="Нажмите для сортировки">
-            <th width="30px" sort="score|@(sort == "score" && direction == "up" ? "down" : "up")" class="@(sort != "score" ? "" : direction == "up" ? "sort-up" : "sort-down")">#</th>
-            <th width="140px" sort="default|@(sort == "default" && direction == "up" ? "down" : "up")" class="@(sort != "default" ? "" : direction == "up" ? "sort-up" : "sort-down")">Имя</th>
-            <th width="100px" sort="cpu|@(sort == "cpu" && direction == "up" ? "down" : "up")" class="@(sort != "cpu" ? "" : direction == "up" ? "sort-up" : "sort-down")">CPU</th>
-            <th width="100px" sort="ram|@(sort == "ram" && direction == "up" ? "down" : "up")" class="@(sort != "ram" ? "" : direction == "up" ? "sort-up" : "sort-down")">RAM</th>
-            <th width="100px" sort="disk|@(sort == "disk" && direction == "up" ? "down" : "up")" class="@(sort != "disk" ? "" : direction == "up" ? "sort-up" : "sort-down")">Тип диска</th>
-            <th width="120px" sort="display|@(sort == "display" && direction == "up" ? "down" : "up")" class="@(sort != "display" ? "" : direction == "up" ? "sort-up" : "sort-down")">Мониторы</th>
-            <th width="100px" sort="user|@(sort == "user" && direction == "up" ? "down" : "up")" class="@(sort != "user" ? "" : direction == "up" ? "sort-up" : "sort-down")">Пользователь</th>
-            <th width="220px" sort="ad|@(sort == "ad" && direction == "up" ? "down" : "up")" class="@(sort != "ad" ? "" : direction == "up" ? "sort-up" : "sort-down")">Active Directory</th>
-            <th width="120px" sort="os|@(sort == "os" && direction == "up" ? "down" : "up")" class="@(sort != "os" ? "" : direction == "up" ? "sort-up" : "sort-down")">ОС</th>
-        </tr>
+		<tr title="Нажмите для сортировки">
+			<th width="30px" sort="score|@(sort == "score" && direction == "up" ? "down" : "up")" class="@(sort != "score" ? "" : direction == "up" ? "sort-up" : "sort-down")">#</th>
+			<th width="140px" sort="default|@(sort == "default" && direction == "up" ? "down" : "up")" class="@(sort != "default" ? "" : direction == "up" ? "sort-up" : "sort-down")">Имя</th>
+			<th width="100px" sort="user|@(sort == "user" && direction == "up" ? "down" : "up")" class="@(sort != "user" ? "" : direction == "up" ? "sort-up" : "sort-down")">Пользователь</th>
+			<th width="220px" sort="ad|@(sort == "ad" && direction == "up" ? "down" : "up")" class="@(sort != "ad" ? "" : direction == "up" ? "sort-up" : "sort-down")">Active Directory</th>
+			<th width="100px" sort="cpu|@(sort == "cpu" && direction == "up" ? "down" : "up")" class="@(sort != "cpu" ? "" : direction == "up" ? "sort-up" : "sort-down")">CPU</th>
+			<th width="100px" sort="ram|@(sort == "ram" && direction == "up" ? "down" : "up")" class="@(sort != "ram" ? "" : direction == "up" ? "sort-up" : "sort-down")">RAM</th>
+			<th width="100px" sort="disk|@(sort == "disk" && direction == "up" ? "down" : "up")" class="@(sort != "disk" ? "" : direction == "up" ? "sort-up" : "sort-down")">Тип диска</th>
+			<th width="120px" sort="display|@(sort == "display" && direction == "up" ? "down" : "up")" class="@(sort != "display" ? "" : direction == "up" ? "sort-up" : "sort-down")">Мониторы</th>
+			<th width="120px" sort="os|@(sort == "os" && direction == "up" ? "down" : "up")" class="@(sort != "os" ? "" : direction == "up" ? "sort-up" : "sort-down")">ОС</th>
+		</tr>
     </table>
 </div>
 
@@ -25,36 +25,33 @@
     @foreach (var aida in Model)
     {
         <table class="entry">
-            <tr card="aida|@aida.Id">
-                <td width="30px">
-                    <i class="ic-computer handle"></i>
-                </td>
-                <th width="140px" title="@aida.LastReport.ToString("d MMMM yyyy HH:mm")">@aida.Name</th>
-                <td width="100px" title="@aida.Cpu">
-                    <span style="background: rgb(@(aida.CpuScore < 200 ? "255," + (55 + aida.CpuScore) : (455 - aida.CpuScore) + ",200"), 0); color: #000;">
-                        @aida.CpuCore x @aida.CpuFrequency МГц
-                    </span>
-                </td>
-                <td width="100px" title="@aida.Motherboard">
-                    <span style="background: rgb(@(aida.RamScore < 200 ? "255," + (55 + aida.RamScore) : (455 - aida.RamScore) + ",200"), 0); color: #000;">
-                        @Math.Ceiling(aida.RamValue / 1024) Гб DDR@(aida.RamType)
-                    </span>
-                </td>
-                <td width="100px" title="@aida.Disk">
-                    <span style="background: rgb(@(aida.DiskScore < 200 ? "255," + (55 + aida.DiskScore) : (455 - aida.DiskScore) + ",200"), 0); color: #000;">
-                        @(aida.DiskCapacity == 0 ? "0" : aida.DiskValue) @aida.DiskType
-                    </span>
-                </td>
-                <td width="120px">
-                    @for (int i = 0; i < aida.DisplaysCaptions.Count; i++)
-                    {
-                        <i title="@aida.DisplaysCaptions[i]">@(aida.DisplaysSize[i] == 0 ? "??" : (aida.DisplaysSize[i] + "\""))</i>
-                    }
-                </td>
-                <td width="100px">@aida.User</td>
-                <td width="220px">@aida.UserName</td>
-                <td width="120px">@aida.OS</td>
-            </tr>
+			<tr card="aida|@aida.Id">
+				<td width="30px">
+					<i class="ic-computer handle"></i>
+				</td>
+				<th width="140px" title="@aida.LastReport.ToString("d MMMM yyyy HH:mm")">@aida.Name</th>
+				<td width="100px">@aida.User</td>
+				<td width="220px">@aida.UserName</td>
+
+				<td width="100px" title="@aida.Cpu" style="color: rgb( @(aida.CpuScore < 200 ? "255," + (55 + aida.CpuScore) : (455 - aida.CpuScore) + ",200"), 0);">
+					@aida.CpuCore x @aida.CpuFrequency МГц
+				</td>
+				<td width="100px" title="@aida.Motherboard" style="color: rgb( @(aida.RamScore < 200 ? "255," + (55 + aida.RamScore) : (455 - aida.RamScore) + ",200"), 0);">
+					@Math.Ceiling(aida.RamValue / 1024) Гб DDR@(aida.RamType)
+				</td>
+				<td width="100px" title="@aida.Disk" style="color: rgb( @(aida.DiskScore < 200 ? "255," + (55 + aida.DiskScore) : (455 - aida.DiskScore) + ",200"), 0);">
+					@(aida.DiskCapacity == 0 ? "0" : aida.DiskValue) @aida.DiskType
+				</td>
+				<td width="120px" style="color: rgb( @(aida.DisplayScore < 200 ? "255," + (55 + aida.DisplayScore) : (455 - aida.DisplayScore) + ",200"), 0);">
+					@for (int i = 0; i < aida.DisplaysCaptions.Count; i++)
+					{
+						<i title="@aida.DisplaysCaptions[i]">@(aida.DisplaysSize[i] == 0 ? "??" : (aida.DisplaysSize[i] + "\""))</i>
+					}
+				</td>
+				<td width="120px" style="color: rgb(@(aida.OSScore < 200 ? "255," + (55 + aida.OSScore) : (455 - aida.OSScore) + ",200"), 0);">
+					@aida.OS
+				</td>
+			</tr>
         </table>
     }
 </div>
