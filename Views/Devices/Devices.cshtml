@@ -4,14 +4,15 @@
 {
     <table class="items">
         <thead>
-            <tr>
-                <td width="20px"><input type="checkbox" class="selecter-all" /></td>
-                <th width="20px" data-type="type"></th>
-                <th width="120px" data-type="number">инв. номер</th>
-                <th width="120px" data-type="string">название</th>
-                <th width="200px" data-type="string">МОЛ</th>
-                <th data-type="string">описание</th>
-            </tr>
+			<tr>
+				<td width="20px"><input type="checkbox" class="selecter-all" /></td>
+				<th width="20px" data-type="type"></th>
+				<th width="120px" data-type="number">инв. номер</th>
+				<th width="120px" data-type="string">название</th>
+				<th width="200px" data-type="string">МОЛ</th>
+				<th width="120px" data-type="string">прин. на учёт</th>
+				<th data-type="string">описание</th>
+			</tr>
         </thead>
         <tbody>
             @foreach (var device in Model)
@@ -25,6 +26,7 @@
                     <td><a class="view__link" href="@href">@device.Inventory</a></td>
                     <td><a class="view__link" href="@href">@device.Name</a></td>
                     <td><a class="view__link" href="@href">@device.Mol</a></td>
+                    <td><a class="view__link" href="@href">@device.DateInstall.ToString("d MMMM yyyy")</a></td>
                     <td><a class="view__link" href="@href">@device.PublicName</a></td>
                 </tr>
             }

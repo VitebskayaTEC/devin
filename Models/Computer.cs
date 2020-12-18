@@ -21,6 +21,7 @@ namespace Devin.Models
 								   Name = d.Name,
 								   IsOff = d.IsOff,
 								   PublicName = d.PublicName,
+								   DateInstall = d.DateInstall,
 								   Mol = d.Mol,
 							   };
 

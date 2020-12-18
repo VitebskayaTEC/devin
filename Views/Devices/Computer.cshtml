@@ -8,17 +8,18 @@
 
 <div class="unit computer @open" data-id="@id">
     <table class="caption">
-        <tr>
-            <th width="30px">
-                <div class="icon ic-computer" menu="computer" onmousedown="_menu(this)"></div>
-            </th>
-            <td width="200px"><b>@Model.Name</b></td>
-            <td width="40px"><div class="led @(Model.IsOff ? "off" : "on")"></div></td>
-            <td width="60px">@Model.Inventory</td>
-            <td width="200px">@Model.Mol</td>
-            <td width="140px">@Model.Location</td>
-            <td>@Model.PublicName</td>
-        </tr>
+		<tr>
+			<th width="30px">
+				<div class="icon ic-computer" menu="computer" onmousedown="_menu(this)"></div>
+			</th>
+			<td width="200px"><b>@Model.Name</b></td>
+			<td width="40px"><div class="led @(Model.IsOff ? "off" : "on")"></div></td>
+			<td width="60px">@Model.Inventory</td>
+			<td width="200px">@Model.Mol</td>
+			<td width="140px">@Model.Location</td>
+			<td width="120px">@Model.DateInstall.ToString("d MMMM yyyy")</td>
+			<td>@Model.PublicName</td>
+		</tr>
     </table>
     <div class="itemsBlock @(open == "open" ? "itemsBlock_expanded" : "")">
         @if (open == "open")

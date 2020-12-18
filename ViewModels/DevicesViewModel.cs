@@ -74,6 +74,7 @@ namespace Devin.ViewModels
                                            Location = p.Location,
                                            IsOff = d.IsOff,
                                            FolderId = f.Id,
+                                           DateInstall = d.DateInstall,
                                            DateLastChange = d.DateLastChange,
 									   };
 
@@ -109,6 +110,7 @@ namespace Devin.ViewModels
                                 Location = d.Location,
                                 IsOff = d.IsOff,
                                 FolderId = d.FolderId,
+                                DateInstall = d.DateInstall,
                                 DateLastChange = d.DateLastChange,
                             });
                         }
