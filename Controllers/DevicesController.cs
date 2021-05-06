@@ -794,7 +794,7 @@ namespace Devin.Controllers
                     var sheet = book.GetSheetAt(2);
 
                     sheet.GetRow(26).GetCell(16).SetCellValue(dateMark + "-" + mark.Number);
-                    sheet.GetRow(27).GetCell(16).SetCellValue("\"" + today.ToString("dd") + "\" " + months[today.Month] + " " + today.ToString("yyyy") + " г.");
+                    sheet.GetRow(27).GetCell(16).SetCellValue("\"" + today.ToString("dd") + "\" " + months[today.Month - 1] + " " + today.ToString("yyyy") + " г.");
                     sheet.GetRow(28).GetCell(39).SetCellValue(today.ToString("yyyy") + " г.");
 
                     sheet.GetRow(30).GetCell(16).SetCellValue(_1c.Description);
@@ -872,7 +872,7 @@ namespace Devin.Controllers
                     var sheet = book.GetSheetAt(3);
 
                     sheet.GetRow(26).GetCell(16).SetCellValue(dateMark + "-" + mark.Number);
-                    sheet.GetRow(27).GetCell(16).SetCellValue("\"" + today.ToString("dd") + "\" " + months[today.Month] + " " + today.ToString("yyyy") + " г.");
+                    sheet.GetRow(27).GetCell(16).SetCellValue("\"" + today.ToString("dd") + "\" " + months[today.Month - 1] + " " + today.ToString("yyyy") + " г.");
                     sheet.GetRow(28).GetCell(16).SetCellValue(today.ToString("dd.MM.yyyy") + " г.");
                     sheet.GetRow(28).GetCell(39).SetCellValue(today.ToString("yyyy") + " г.");
 
