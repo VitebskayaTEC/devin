@@ -479,22 +479,23 @@ namespace Devin.Controllers
 
 						sheet.GetRow(10).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Золото")?.Cost ?? 0F);
 						sheet.GetRow(11).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Серебро")?.Cost ?? 0F);
-						sheet.GetRow(12).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F);
-						sheet.GetRow(13).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Платина")?.Cost ?? 0F);
+						sheet.GetRow(12).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Платина")?.Cost ?? 0F);
+						//sheet.GetRow(13).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "МПГ")?.Cost ?? 0F);
+						sheet.GetRow(14).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F);
 					}
 
 					// даты
 					var now = DateTime.Now;
-                    sheet.GetRow(26).GetCell(16).SetCellValue("\"" + now.Day + "\" " + months2[now.Month - 1] + " " + now.ToString("yyyy г."));
-                    sheet.GetRow(27).GetCell(16).SetCellValue(now.ToString("dd.MM.yyyy г."));
-                    sheet.GetRow(28).GetCell(16).SetCellValue(months[now.Month - 1] + " " + now.ToString(" yyyy г."));
-                    sheet.GetRow(27).GetCell(39).SetCellValue(now.ToString("yyyy г."));
-					sheet.GetRow(27).GetCell(48).SetCellValue("\"" + now.Day + "\" " + months2[now.Month - 1] + now.ToString("yyyy г."));
+                    sheet.GetRow(27).GetCell(16).SetCellValue("\"" + now.Day + "\" " + months2[now.Month - 1] + " " + now.ToString("yyyy г."));
+                    sheet.GetRow(28).GetCell(16).SetCellValue(now.ToString("dd.MM.yyyy г."));
+                    sheet.GetRow(29).GetCell(16).SetCellValue(months[now.Month - 1] + " " + now.ToString(" yyyy г."));
+                    sheet.GetRow(28).GetCell(39).SetCellValue(now.ToString("yyyy г."));
+					sheet.GetRow(28).GetCell(48).SetCellValue("\"" + now.Day + "\" " + months2[now.Month - 1] + " " + now.ToString("yyyy г."));
 
 					// номера актов
 					string number = now.Month + "/" + now.Day + "-" + Id;
-					sheet.GetRow(25).GetCell(16).SetCellValue(number + "/2");
-					sheet.GetRow(32).GetCell(48).SetCellValue(number + "/1");
+					sheet.GetRow(26).GetCell(16).SetCellValue(number + "/2");
+					sheet.GetRow(33).GetCell(48).SetCellValue(number + "/1");
 
 					// информация о ремонтах (исп. деталях)
 					var _repairs = from r in db.Repairs
@@ -516,7 +517,7 @@ namespace Devin.Controllers
 						return Json(new { Error = "В списании нет ремонтов" });
 					}
 
-					int i = 122;
+					int i = 123;
 					foreach (var r in repairs)
 					{
 						sheet.GetRow(i).GetCell(25).SetCellValue(r.Number);
@@ -546,21 +547,22 @@ namespace Devin.Controllers
 									  o.Silver,
 									  o.Platinum,
 									  o.Mpg,
+									  o.Palladium,
 								  };
 
 					var device = _device.FirstOrDefault();
 
 					if (device != null)
 					{
-						//return Json(new { Error = "По 1С не найдено основное средство, на которое оформляется списание" });
+						sheet.GetRow(32).GetCell(16).SetCellValue(device.Inventory);
+						sheet.GetRow(33).GetCell(16).SetCellValue(device.SerialNumber);
+						sheet.GetRow(34).GetCell(16).SetCellValue(device.SerialNumber);
 
-						sheet.GetRow(31).GetCell(16).SetCellValue(device.Inventory);
-						sheet.GetRow(32).GetCell(16).SetCellValue(device.SerialNumber);
-						sheet.GetRow(32).GetCell(16).SetCellValue(device.SerialNumber);
-						sheet.GetRow(63).GetCell(59).SetCellValue(device.Gold);
-						sheet.GetRow(64).GetCell(59).SetCellValue(device.Silver);
-						sheet.GetRow(65).GetCell(59).SetCellValue(device.Platinum);
-						sheet.GetRow(66).GetCell(59).SetCellValue(device.Mpg);
+						sheet.GetRow(64).GetCell(59).SetCellValue(device.Gold);
+						sheet.GetRow(65).GetCell(59).SetCellValue(device.Silver);
+						sheet.GetRow(66).GetCell(59).SetCellValue(device.Platinum);
+						sheet.GetRow(67).GetCell(59).SetCellValue(device.Mpg);
+						sheet.GetRow(68).GetCell(59).SetCellValue(device.Palladium);
 
 						string valueText = "";
 						switch (device.Inventory)
@@ -569,32 +571,12 @@ namespace Devin.Controllers
 							case "075750": valueText = "Оборудование корпоративной сети: "; break;
 							case "075155": valueText = "Оборудование АСКУЭ ММПГ: "; break;
 						}
-						sheet.GetRow(29).GetCell(16).SetCellValue(valueText + device.Description);
-
-						// мол
-						//string surname = device.Mol.Substring(0, device.Mol.IndexOf(' ')).ToLower();
-
-						//var mol = db.Employees
-						//	.Where(x => x.Surname.ToLower() == surname)
-						//	.FirstOrDefault() ?? new Employee { Id = 0, Surname = "", Initials = "", Division = "" };
-
-						//var _official = from o in db.Officials
-						//				from r in db.Relation_Officials_Employees.InnerJoin(x => x.OfficialId == o.Id)
-						//				where r.EmployeeId == mol.Id
-						//				orderby r.Weight descending
-						//				select o.Title;
-
-						//var official = _official.FirstOrDefault() ?? "";
-
-						//sheet.GetRow(52).GetCell(16).SetCellValue(official);
-						//sheet.GetRow(50).GetCell(27).SetCellValue(mol.Surname + " " + mol.Initials);
-						//sheet.GetRow(52).GetCell(27).SetCellValue(mol.Initials + " " + mol.Surname);
-						//sheet.GetRow(52).GetCell(39).SetCellValue(mol.Division);
+						sheet.GetRow(30).GetCell(16).SetCellValue(valueText + device.Description);
 					}
 
 					// кол-во плат и вес из карточки
-					sheet.GetRow(33).GetCell(16).SetCellValue(writeoff.BoardsCount ?? 0);
-					sheet.GetRow(34).GetCell(16).SetCellValue(writeoff.BoardsWeight ?? 0F);
+					sheet.GetRow(34).GetCell(16).SetCellValue(writeoff.BoardsCount ?? 0);
+					sheet.GetRow(35).GetCell(16).SetCellValue(writeoff.BoardsWeight ?? 0F);
 
 					// статья расходов
                     switch (writeoff.CostArticle)
@@ -632,187 +614,6 @@ namespace Devin.Controllers
 						_sheet.GetRow(i).Height = -1;
 						i++;
 					}
-
-					// заполняем комиссии
-					//_sheet = book.GetSheet("Дефектный акт mat");
-
-					//_sheet.GetRow(7).GetCell(60).SetCellValue(officials["Директор"].Title);
-					//_sheet.GetRow(10).GetCell(77).SetCellValue(officials["Директор"].Initials + " " + officials["Директор"].Surname);
-
-					//_sheet.GetRow(21).GetCell(22).SetCellValue(officials["Главный инженер"].Title);
-					//_sheet.GetRow(21).GetCell(68).SetCellValue(officials["Главный инженер"].Surname + " " + officials["Главный инженер"].Initials);
-					//_sheet.GetRow(58).GetCell(69).SetCellValue(officials["Главный инженер"].Initials + " " + officials["Главный инженер"].Surname);
-
-					//_sheet.GetRow(24).GetCell(22).SetCellValue(officials["Начальник ПТО"].Title);
-					//_sheet.GetRow(24).GetCell(68).SetCellValue(officials["Начальник ПТО"].Surname + " " + officials["Начальник ПТО"].Initials);
-					//_sheet.GetRow(61).GetCell(69).SetCellValue(officials["Начальник ПТО"].Initials + " " + officials["Начальник ПТО"].Surname);
-
-					//_sheet.GetRow(29).GetCell(22).SetCellValue(officials["Начальник уАСУТП"].Title);
-					//_sheet.GetRow(29).GetCell(68).SetCellValue(officials["Начальник уАСУТП"].Surname + " " + officials["Начальник уАСУТП"].Initials);
-					//_sheet.GetRow(66).GetCell(69).SetCellValue(officials["Начальник уАСУТП"].Initials + " " + officials["Начальник уАСУТП"].Surname);
-
-					//_sheet.GetRow(31).GetCell(22).SetCellValue(officials["Инженер уАСУТП"].Title);
-					//_sheet.GetRow(31).GetCell(68).SetCellValue(officials["Инженер уАСУТП"].Surname + " " + officials["Инженер уАСУТП"].Initials);
-					//_sheet.GetRow(68).GetCell(69).SetCellValue(officials["Инженер уАСУТП"].Initials + " " + officials["Инженер уАСУТП"].Surname);
-
-
-					//_sheet = book.GetSheet("Дефектный акт mat-org");
-
-					//_sheet.GetRow(7).GetCell(60).SetCellValue(officials["Директор"].Title);
-					//_sheet.GetRow(10).GetCell(77).SetCellValue(officials["Директор"].Initials + " " + officials["Директор"].Surname);
-
-					//_sheet.GetRow(22).GetCell(22).SetCellValue(officials["Заместитель директора"].Title);
-					//_sheet.GetRow(22).GetCell(68).SetCellValue(officials["Заместитель директора"].Surname + " " + officials["Заместитель директора"].Initials);
-					//_sheet.GetRow(69).GetCell(69).SetCellValue(officials["Заместитель директора"].Initials + " " + officials["Заместитель директора"].Surname);
-
-					//_sheet.GetRow(25).GetCell(22).SetCellValue(officials["Начальник уАСУТП"].Title);
-					//_sheet.GetRow(25).GetCell(68).SetCellValue(officials["Начальник уАСУТП"].Surname + " " + officials["Начальник уАСУТП"].Initials);
-					//_sheet.GetRow(72).GetCell(69).SetCellValue(officials["Начальник уАСУТП"].Initials + " " + officials["Начальник уАСУТП"].Surname);
-					//_sheet.GetRow(81).GetCell(70).SetCellValue(officials["Начальник уАСУТП"].Initials + " " + officials["Начальник уАСУТП"].Surname);
-
-					//_sheet.GetRow(28).GetCell(22).SetCellValue(officials["Начальник ЦТАИ"].Title);
-					//_sheet.GetRow(28).GetCell(68).SetCellValue(officials["Начальник ЦТАИ"].Surname + " " + officials["Начальник ЦТАИ"].Initials);
-					//_sheet.GetRow(74).GetCell(69).SetCellValue(officials["Начальник ЦТАИ"].Initials + " " + officials["Начальник ЦТАИ"].Surname);
-
-					//_sheet.GetRow(32).GetCell(22).SetCellValue(officials["Инженер уАСУТП"].Title);
-					//_sheet.GetRow(32).GetCell(68).SetCellValue(officials["Инженер уАСУТП"].Surname + " " + officials["Инженер уАСУТП"].Initials);
-					//_sheet.GetRow(78).GetCell(69).SetCellValue(officials["Инженер уАСУТП"].Initials + " " + officials["Инженер уАСУТП"].Surname);
-
-
-					//_sheet = book.GetSheet("Акт демонтажа и изъятия");
-
-					//_sheet.GetRow(6).GetCell(24).SetCellValue(officials["Директор"].Title);
-					//_sheet.GetRow(8).GetCell(31).SetCellValue(officials["Директор"].Initials + " " + officials["Директор"].Surname);
-
-					//_sheet.GetRow(21).GetCell(12).SetCellValue(officials["Заместитель директора"].Title);
-					//_sheet.GetRow(21).GetCell(32).SetCellValue(officials["Заместитель директора"].Surname + " " + officials["Заместитель директора"].Initials);
-					//_sheet.GetRow(62).GetCell(32).SetCellValue(officials["Заместитель директора"].Initials + " " + officials["Заместитель директора"].Surname);
-
-					//_sheet.GetRow(23).GetCell(12).SetCellValue(officials["Начальник ЦТАИ"].Title);
-					//_sheet.GetRow(23).GetCell(32).SetCellValue(officials["Начальник ЦТАИ"].Surname + " " + officials["Начальник ЦТАИ"].Initials);
-					//_sheet.GetRow(64).GetCell(32).SetCellValue(officials["Начальник ЦТАИ"].Initials + " " + officials["Начальник ЦТАИ"].Surname);
-
-					//_sheet.GetRow(25).GetCell(12).SetCellValue(officials["Начальник ОМТС"].Title);
-					//_sheet.GetRow(25).GetCell(32).SetCellValue(officials["Начальник ОМТС"].Surname + " " + officials["Начальник ОМТС"].Initials);
-					//_sheet.GetRow(66).GetCell(32).SetCellValue(officials["Начальник ОМТС"].Initials + " " + officials["Начальник ОМТС"].Surname);
-					//_sheet.GetRow(81).GetCell(31).SetCellValue(officials["Начальник ОМТС"].Initials + " " + officials["Начальник ОМТС"].Surname);
-
-					//_sheet.GetRow(27).GetCell(12).SetCellValue(officials["Бухгалтер по материалам"].Title);
-					//_sheet.GetRow(27).GetCell(32).SetCellValue(officials["Бухгалтер по материалам"].Surname + " " + officials["Бухгалтер по материалам"].Initials);
-					//_sheet.GetRow(68).GetCell(32).SetCellValue(officials["Бухгалтер по материалам"].Initials + " " + officials["Бухгалтер по материалам"].Surname);
-					//_sheet.GetRow(83).GetCell(32).SetCellValue(officials["Бухгалтер по материалам"].Initials + " " + officials["Бухгалтер по материалам"].Surname);
-
-					//_sheet.GetRow(29).GetCell(12).SetCellValue(officials["Бухгалтер по основным средствам"].Title);
-					//_sheet.GetRow(29).GetCell(32).SetCellValue(officials["Бухгалтер по основным средствам"].Surname + " " + officials["Бухгалтер по основным средствам"].Initials);
-					//_sheet.GetRow(70).GetCell(32).SetCellValue(officials["Бухгалтер по основным средствам"].Initials + " " + officials["Бухгалтер по основным средствам"].Surname);
-					//_sheet.GetRow(77).GetCell(32).SetCellValue(officials["Бухгалтер по основным средствам"].Initials + " " + officials["Бухгалтер по основным средствам"].Surname);
-
-					//_sheet.GetRow(31).GetCell(12).SetCellValue(officials["Начальник уАСУТП"].Title);
-					//_sheet.GetRow(31).GetCell(32).SetCellValue(officials["Начальник уАСУТП"].Surname + " " + officials["Начальник уАСУТП"].Initials);
-					//_sheet.GetRow(72).GetCell(32).SetCellValue(officials["Начальник уАСУТП"].Initials + " " + officials["Начальник уАСУТП"].Surname);
-					//_sheet.GetRow(86).GetCell(32).SetCellValue(officials["Начальник уАСУТП"].Initials + " " + officials["Начальник уАСУТП"].Surname);
-
-
-					//_sheet = book.GetSheet("Акт на списание материалов");
-
-					//_sheet.GetRow(6).GetCell(24).SetCellValue(officials["Директор"].Title);
-					//_sheet.GetRow(8).GetCell(31).SetCellValue(officials["Директор"].Initials + " " + officials["Директор"].Surname);
-
-					//_sheet.GetRow(146).GetCell(14).SetCellValue(officials["Главный инженер"].Title);
-					//_sheet.GetRow(146).GetCell(33).SetCellValue(officials["Главный инженер"].Initials + " " + officials["Главный инженер"].Surname);
-
-					//_sheet.GetRow(148).GetCell(14).SetCellValue(officials["Начальник ПТО"].Title);
-					//_sheet.GetRow(148).GetCell(33).SetCellValue(officials["Начальник ПТО"].Initials + " " + officials["Начальник ПТО"].Surname);
-
-					//_sheet.GetRow(150).GetCell(14).SetCellValue(officials["Начальник ЦТАИ"].Title);
-					//_sheet.GetRow(150).GetCell(33).SetCellValue(officials["Начальник ЦТАИ"].Initials + " " + officials["Начальник ЦТАИ"].Surname);
-
-					//_sheet.GetRow(152).GetCell(14).SetCellValue(officials["Начальник уАСУТП"].Title);
-					//_sheet.GetRow(156).GetCell(14).SetCellValue(officials["Начальник уАСУТП"].Title);
-					//_sheet.GetRow(160).GetCell(14).SetCellValue(officials["Начальник уАСУТП"].Title);
-					//_sheet.GetRow(152).GetCell(33).SetCellValue(officials["Начальник уАСУТП"].Initials + " " + officials["Начальник уАСУТП"].Surname);
-					//_sheet.GetRow(156).GetCell(33).SetCellValue(officials["Начальник уАСУТП"].Initials + " " + officials["Начальник уАСУТП"].Surname);
-					//_sheet.GetRow(160).GetCell(33).SetCellValue(officials["Начальник уАСУТП"].Initials + " " + officials["Начальник уАСУТП"].Surname);
-
-					//_sheet.GetRow(154).GetCell(14).SetCellValue(officials["Бухгалтер по материалам"].Title);
-					//_sheet.GetRow(154).GetCell(33).SetCellValue(officials["Бухгалтер по материалам"].Initials + " " + officials["Бухгалтер по материалам"].Surname);
-
-
-					//_sheet = book.GetSheet("Смета");
-
-					//_sheet.GetRow(2).GetCell(28).SetCellValue(officials["Главный инженер"].Title);
-					//_sheet.GetRow(4).GetCell(36).SetCellValue(officials["Главный инженер"].Initials + " " + officials["Главный инженер"].Surname);
-
-					//_sheet.GetRow(75).GetCell(5).SetCellValue(officials["Начальник уАСУТП"].Title);
-					//_sheet.GetRow(75).GetCell(35).SetCellValue(officials["Начальник уАСУТП"].Initials + " " + officials["Начальник уАСУТП"].Surname);
-
-					//_sheet.GetRow(77).GetCell(5).SetCellValue(officials["Начальник ПЭО"].Title);
-					//_sheet.GetRow(77).GetCell(35).SetCellValue(officials["Начальник ПЭО"].Initials + " " + officials["Начальник ПЭО"].Surname);
-
-					//_sheet.GetRow(79).GetCell(5).SetCellValue(officials["Начальник ПТО"].Title);
-					//_sheet.GetRow(79).GetCell(35).SetCellValue(officials["Начальник ПТО"].Initials + " " + officials["Начальник ПТО"].Surname);
-
-					//_sheet.GetRow(81).GetCell(5).SetCellValue(officials["Разбирающий уАСУТП"].Title);
-					//_sheet.GetRow(81).GetCell(35).SetCellValue(officials["Разбирающий уАСУТП"].Initials + " " + officials["Разбирающий уАСУТП"].Surname);
-
-
-					//_sheet = book.GetSheet("Ведомость потребности и мат.");
-
-					//_sheet.GetRow(66).GetCell(12).SetCellValue(officials["Начальник уАСУТП"].Title);
-					//_sheet.GetRow(75).GetCell(31).SetCellValue(officials["Начальник уАСУТП"].Title);
-					//_sheet.GetRow(66).GetCell(50).SetCellValue(officials["Начальник уАСУТП"].Initials + " " + officials["Начальник уАСУТП"].Surname);
-					//_sheet.GetRow(75).GetCell(50).SetCellValue(officials["Начальник уАСУТП"].Initials + " " + officials["Начальник уАСУТП"].Surname);
-
-					//_sheet.GetRow(71).GetCell(31).SetCellValue(officials["Начальник ПТО"].Title);
-					//_sheet.GetRow(71).GetCell(50).SetCellValue(officials["Начальник ПТО"].Initials + " " + officials["Начальник ПТО"].Surname);
-
-					//_sheet.GetRow(73).GetCell(31).SetCellValue(officials["Экономист ПЭО"].Title);
-					//_sheet.GetRow(73).GetCell(50).SetCellValue(officials["Экономист ПЭО"].Initials + " " + officials["Экономист ПЭО"].Surname);
-
-
-					//_sheet = book.GetSheet("Приходный ордер лома");
-
-					//_sheet.GetRow(16).GetCell(9).SetCellValue(officials["Начальник ОМТС"].Title);
-					//_sheet.GetRow(41).GetCell(9).SetCellValue(officials["Начальник ОМТС"].Title);
-					//_sheet.GetRow(17).GetCell(9).SetCellValue(officials["Начальник ОМТС"].Initials + " " + officials["Начальник ОМТС"].Surname);
-					//_sheet.GetRow(41).GetCell(29).SetCellValue(officials["Начальник ОМТС"].Initials + " " + officials["Начальник ОМТС"].Surname);
-
-					//_sheet.GetRow(44).GetCell(9).SetCellValue(officials["Начальник уАСУТП"].Title);
-					//_sheet.GetRow(44).GetCell(29).SetCellValue(officials["Начальник уАСУТП"].Initials + " " + officials["Начальник уАСУТП"].Surname);
-
-					//_sheet.GetRow(50).GetCell(9).SetCellValue(officials["Бухгалтер по материалам"].Title);
-					//_sheet.GetRow(50).GetCell(29).SetCellValue(officials["Бухгалтер по материалам"].Initials + " " + officials["Бухгалтер по материалам"].Surname);
-
-
-					//_sheet = book.GetSheet("Акт комиссионого определения");
-
-					//_sheet.GetRow(6).GetCell(24).SetCellValue(officials["Директор"].Title);
-					//_sheet.GetRow(8).GetCell(31).SetCellValue(officials["Директор"].Initials + " " + officials["Директор"].Surname);
-
-					//_sheet.GetRow(17).GetCell(12).SetCellValue(officials["Заместитель директора"].Title);
-					//_sheet.GetRow(50).GetCell(2).SetCellValue(officials["Заместитель директора"].Title);
-					//_sheet.GetRow(17).GetCell(32).SetCellValue(officials["Заместитель директора"].Surname + " " + officials["Заместитель директора"].Initials);
-					//_sheet.GetRow(50).GetCell(31).SetCellValue(officials["Заместитель директора"].Initials + " " + officials["Заместитель директора"].Surname);
-
-					//_sheet.GetRow(19).GetCell(12).SetCellValue(officials["Начальник ЦТАИ"].Title);
-					//_sheet.GetRow(53).GetCell(2).SetCellValue(officials["Начальник ЦТАИ"].Title);
-					//_sheet.GetRow(19).GetCell(32).SetCellValue(officials["Начальник ЦТАИ"].Surname + " " + officials["Начальник ЦТАИ"].Initials);
-					//_sheet.GetRow(53).GetCell(31).SetCellValue(officials["Начальник ЦТАИ"].Initials + " " + officials["Начальник ЦТАИ"].Surname);
-
-					//_sheet.GetRow(21).GetCell(12).SetCellValue(officials["Бухгалтер по материалам"].Title);
-					//_sheet.GetRow(56).GetCell(2).SetCellValue(officials["Бухгалтер по материалам"].Title);
-					//_sheet.GetRow(21).GetCell(32).SetCellValue(officials["Бухгалтер по материалам"].Surname + " " + officials["Бухгалтер по материалам"].Initials);
-					//_sheet.GetRow(56).GetCell(31).SetCellValue(officials["Бухгалтер по материалам"].Initials + " " + officials["Бухгалтер по материалам"].Surname);
-
-					//_sheet.GetRow(23).GetCell(12).SetCellValue(officials["Бухгалтер по основным средствам"].Title);
-					//_sheet.GetRow(58).GetCell(2).SetCellValue(officials["Бухгалтер по основным средствам"].Title);
-					//_sheet.GetRow(23).GetCell(32).SetCellValue(officials["Бухгалтер по основным средствам"].Surname + " " + officials["Бухгалтер по основным средствам"].Initials);
-					//_sheet.GetRow(58).GetCell(31).SetCellValue(officials["Бухгалтер по основным средствам"].Initials + " " + officials["Бухгалтер по основным средствам"].Surname);
-
-					//_sheet.GetRow(25).GetCell(12).SetCellValue(officials["Начальник уАСУТП"].Title);
-					//_sheet.GetRow(60).GetCell(2).SetCellValue(officials["Начальник уАСУТП"].Title);
-					//_sheet.GetRow(31).GetCell(32).SetCellValue(officials["Начальник уАСУТП"].Surname + " " + officials["Начальник уАСУТП"].Initials);
-					//_sheet.GetRow(60).GetCell(31).SetCellValue(officials["Начальник уАСУТП"].Initials + " " + officials["Начальник уАСУТП"].Surname);
 
 					// сохранение
 					output = writeoff.Name.Replace("\"", "") + " " + DateTime.Now.ToLongDateString() + ".xlsx";
