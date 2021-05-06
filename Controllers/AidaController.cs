@@ -181,13 +181,22 @@ namespace Devin.Controllers
 
                     aida.Disk = hdd;
                     aida.DiskType = hdd.Contains("SSD") ? "SSD" : "HDD";
-                    
-                    if (hdd.Contains('(')) { hdd = hdd.Substring(hdd.IndexOf('(') + 1).Replace(")", ""); }
-                    if (hdd.Contains(',')) { hdd = hdd.Substring(0, hdd.IndexOf(',')); }
+
+                    if (hdd.Contains('('))
+                    {
+                        hdd = hdd.Substring(hdd.IndexOf('(') + 1).Replace(")", "");
+                        if (hdd.Contains(',')) { hdd = hdd.Substring(0, hdd.IndexOf(',')); }
+                    }
+                    else
+                    {
+                        hdd = hdd.Substring(hdd.LastIndexOf(' ') + 1);
+                        hdd = hdd.Replace("GB", " ГБ");
+                    }
 
                     aida.DiskValue = hdd;
-                    if (hdd.ToLower().Contains("гб")) { aida.DiskCapacity  = 1024; }
-                    else if (hdd.ToLower().Contains("тб")) { aida.DiskCapacity = 1024 * 1014; }
+                    
+                    if (hdd.ToLower().Contains("гб") || hdd.ToLower().Contains("gb")) { aida.DiskCapacity  = 1024; }
+                    else if (hdd.ToLower().Contains("тб") || hdd.ToLower().Contains("tb")) { aida.DiskCapacity = 1024 * 1014; }
                     else { aida.DiskCapacity = 1; }
 
                     aida.DiskCapacity *= (int.TryParse(hdd.Contains(' ') ? hdd.Substring(0, hdd.IndexOf(' ')) : hdd, out i) ? i : 0);
