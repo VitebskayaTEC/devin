@@ -785,10 +785,10 @@ namespace Devin.Controllers
 
 
                     // Заполнение отчёта
-                    XSSFWorkbook book;
-                    using (var fs = new FileStream(Server.MapPath(Url.Action("templates", "content") + "\\def.xlsx"), FileMode.Open, FileAccess.Read))
+                    HSSFWorkbook book;
+                    using (var fs = new FileStream(Server.MapPath(Url.Action("templates", "content") + "\\def.xls"), FileMode.Open, FileAccess.Read))
                     {
-                        book = new XSSFWorkbook(fs);
+                        book = new HSSFWorkbook(fs);
                     }
 
                     var sheet = book.GetSheetAt(2);
@@ -806,7 +806,9 @@ namespace Devin.Controllers
 
 
                     // Сохранение отчета
-                    using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content") + "\\def.xlsx"), FileMode.OpenOrCreate, FileAccess.Write))
+                    sheet.ForceFormulaRecalculation = true;
+                    HSSFFormulaEvaluator.EvaluateAllFormulaCells(book);
+                    using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content") + "\\def.xls"), FileMode.OpenOrCreate, FileAccess.Write))
                     {
                         book.Write(fs);
                     }
@@ -814,7 +816,7 @@ namespace Devin.Controllers
                     return Json(new
                     {
                         Good = "Дефектный акт создан",
-                        Link = Url.Action("excels", "content") + "/def.xlsx",
+                        Link = Url.Action("excels", "content") + "/def.xls",
                         Name = "Дефектный акт " + dateMark + "-" + mark.Number,
                     });
                 }
@@ -861,10 +863,10 @@ namespace Devin.Controllers
 
 
                     // Заполнение отчёта
-                    XSSFWorkbook book;
-                    using (var fs = new FileStream(Server.MapPath(Url.Action("templates", "content") + "\\os.xlsx"), FileMode.Open, FileAccess.Read))
+                    HSSFWorkbook book;
+                    using (var fs = new FileStream(Server.MapPath(Url.Action("templates", "content") + "\\os.xls"), FileMode.Open, FileAccess.Read))
                     {
-                        book = new XSSFWorkbook(fs);
+                        book = new HSSFWorkbook(fs);
                     }
 
                     var sheet = book.GetSheetAt(3);
@@ -912,7 +914,9 @@ namespace Devin.Controllers
 
 
                     // Сохранение отчета
-                    using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content") + "\\os.xlsx"), FileMode.OpenOrCreate, FileAccess.Write))
+                    sheet.ForceFormulaRecalculation = true;
+                    HSSFFormulaEvaluator.EvaluateAllFormulaCells(book);
+                    using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content") + "\\os.xls"), FileMode.OpenOrCreate, FileAccess.Write))
                     {
                         book.Write(fs);
                     }
@@ -920,7 +924,7 @@ namespace Devin.Controllers
                     return Json(new
                     { 
                         Good = "Акты на списание ОС созданы",
-                        Link = Url.Action("excels", "content") + "/os.xlsx",
+                        Link = Url.Action("excels", "content") + "/os.xls",
                         Name = "Акты на списание ОС " + dateMark + "-" + mark.Number,
                     });
                 }

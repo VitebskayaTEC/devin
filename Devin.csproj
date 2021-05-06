@@ -212,18 +212,12 @@
     <Content Include="Content\templates\expl-1.xls">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\templates\mat.xlsx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Content\templates\defect.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\templates\def.xlsx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\templates\os.xlsx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Content\templates\def.xls" />
+    <Content Include="Content\templates\mat.xls" />
+    <Content Include="Content\templates\os.xls" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

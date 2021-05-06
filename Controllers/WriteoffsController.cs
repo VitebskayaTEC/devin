@@ -456,11 +456,11 @@ namespace Devin.Controllers
                 /* Ремонт основного средства */
                 if (writeoff.Type == "mat")
                 {
-					template = Server.MapPath(Url.Action("templates", "content")) + "\\mat.xlsx";
+					template = Server.MapPath(Url.Action("templates", "content")) + "\\mat.xls";
 
 					using (var fs = new FileStream(template, FileMode.Open, FileAccess.Read))
 					{
-						book = new XSSFWorkbook(fs);
+						book = new HSSFWorkbook(fs);
 					}
 
 					// переходим на лист "Сводная таблица"
@@ -602,7 +602,7 @@ namespace Devin.Controllers
 
 					// заставляем сделать пересчёт всех формул и ссылок, чтобы акты взяли новые данные из сводной таблицы 
 					sheet.ForceFormulaRecalculation = true;
-					//XSSFFormulaEvaluator.EvaluateAllFormulaCells(book);
+					HSSFFormulaEvaluator.EvaluateAllFormulaCells(book);
 
 					// размер строк
 					var _sheet = book.GetSheet("Ведомость потребности и мат.");
@@ -630,7 +630,7 @@ namespace Devin.Controllers
 					}
 
 					// сохранение
-					output = writeoff.Name.Replace("\"", "") + " " + DateTime.Now.ToLongDateString() + ".xlsx";
+					output = writeoff.Name.Replace("\"", "") + " " + DateTime.Now.ToLongDateString() + ".xls";
 					using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content")) + "\\" + output, FileMode.OpenOrCreate, FileAccess.Write))
 					{
 						book.Write(fs);
