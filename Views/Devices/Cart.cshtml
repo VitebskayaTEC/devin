@@ -299,12 +299,16 @@
                     </td>
                 </tr>
             </table>
-            <div class="cart__menu">
-                <button class="cart__button" onclick="Devices.Cart.update('@device.Id')">Сохранить</button>
-                <button class="cart__button" onclick="Repairs.Device.create()">Ремонт</button>
-                <button class="cart__button" onclick="Devices.Cart.del()">Удалить</button>
-                <button class="cart__button" onclick="Devices.Cart.copy()">Копир.</button>
-            </div>
+			<div class="cart__menu">
+				<button class="cart__button" onclick="Devices.Cart.update('@device.Id')">Сохранить</button>
+				<button class="cart__button" onclick="Devices.Cart.del()">Удалить</button>
+				<button class="cart__button" onclick="Devices.Cart.copy()">Копир.</button>
+				&emsp;
+				<button class="cart__button" onclick="Repairs.Device.create()">Ремонт</button>
+				&emsp;
+				<button class="cart__button" onclick="Devices.printDefect('@device.Id')">Дефектный акт</button>
+                <button class="cart__button" onclick="Devices.printOs('@device.Id')">Списание ОС</button>
+			</div>
         </div>
         <div class="tabsContainer__item" data-tab="1c">
             @if (device.Object1C == null)
@@ -385,10 +389,10 @@
                     <button class="cart__button" onclick="Devices.Cart.selectAddon('@Url.Action("devices", "aida", new { reportId })')">Оборудование</button><br />
                 }
 
-                @if ("CMP DIS PRN".Contains(device.Type ?? "NOT"))
+                @*@if ("CMP DIS PRN".Contains(device.Type ?? "NOT"))
                 {
                     <button class="cart__button" onclick="Devices.Cart.selectAddon('@Url.Action("DefectAct", "Devices", new { Id = device.Id })')">Дефектный акт</button><br />
-                }
+                }*@
             </div>
             <div class="addons__body hide"></div>
         </div>

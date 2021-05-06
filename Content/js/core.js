@@ -683,7 +683,41 @@ var Devices = {
                 cart.classList.add('cart_visible');
                 document.querySelectorAll('#view .selected').forEach(el => el.classList.remove('selected'));
 			})
-	},
+    },
+
+    printDefect(deviceId) {
+        fetch(host + 'devices/printDefect/' + deviceId, { method: 'POST' })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Error) message(json.Error, 'error')
+                if (json.Warning) message(json.Error, 'warning')
+                if (json.Good) {
+                    message(json.Good, 'good')
+                    let a = document.createElement('a')
+                    document.body.appendChild(a)
+                    a.download = json.Name.replace('/', '_')
+                    a.href = json.Link
+                    a.click()
+                }
+			})
+    },
+
+    printOs(deviceId) {
+        fetch(host + 'devices/printOs/' + deviceId, { method: 'POST' })
+            .then(res => res.json())
+            .then(json => {
+                if (json.Error) message(json.Error, 'error')
+                if (json.Warning) message(json.Error, 'warning')
+                if (json.Good) {
+                    message(json.Good, 'good')
+                    let a = document.createElement('a')
+                    document.body.appendChild(a)
+                    a.download = json.Name.replace('/', '_')
+                    a.href = json.Link
+                    a.click()
+                }
+            })
+	}
 };
 
 var Storages = {
@@ -1141,6 +1175,7 @@ var Writeoffs = {
                     let a = document.createElement('a');
                     document.body.appendChild(a);
                     a.href = json.Link;
+                    a.download = json.Name
                     a.click();
                 }
             })

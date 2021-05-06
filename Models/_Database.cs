@@ -90,7 +90,10 @@ namespace Devin.Models
         public ITable<Writeoff> Writeoffs 
             => GetTable<Writeoff>();
 
-		public ITable<Software> Software
+        public ITable<WriteoffMark> WriteoffsMarks
+            => GetTable<WriteoffMark>();
+
+        public ITable<Software> Software
 			=> GetTable<Software>();
 
 		public ITable<Employee> Employees

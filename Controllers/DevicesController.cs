@@ -3,6 +3,7 @@ using Devin.ViewModels;
 using LinqToDB;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -745,6 +746,189 @@ namespace Devin.Controllers
 
                 return Json(new { Good = "Пользователь отвязан от принтера" });
             }
+        }
+
+
+        public JsonResult PrintDefect(int Id)
+		{
+            try
+            {
+                using (var db = new DevinContext())
+                {
+                    // Получение данных из базы
+                    var today = DateTime.Today;
+                    string[] months = { "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря" };
+                    var dateMark = today.ToString("MM") + "/" + today.ToString("dd");
+                    var mark = db.WriteoffsMarks.FirstOrDefault(x => x.DateMark == dateMark);
+                    if (mark == null)
+                    {
+                        mark = new WriteoffMark { DateMark = dateMark, Number = 1 };
+                        db.Insert(mark);
+                    }
+                    else
+                    {
+                        mark.Number++;
+                        db.WriteoffsMarks
+                            .Where(x => x.DateMark == dateMark)
+                            .Set(x => x.Number, mark.Number)
+                            .Update();
+                    }
+
+                    var device = db.Devices.FirstOrDefault(x => x.Id == Id);
+                    if (device == null) return Json(new { Warning = "" });
+
+                    var _1c = db.Objects1C.FirstOrDefault(x => x.Inventory == device.Inventory);
+                    if (_1c == null) return Json(new { Warning = "" });
+
+                    var mol = _1c.Mol.Split(' ');
+                    mol[0] = mol[0].Substring(0, 1).ToUpper() + mol[0].Substring(1).ToLower();
+
+
+                    // Заполнение отчёта
+                    XSSFWorkbook book;
+                    using (var fs = new FileStream(Server.MapPath(Url.Action("templates", "content") + "\\def.xlsx"), FileMode.Open, FileAccess.Read))
+                    {
+                        book = new XSSFWorkbook(fs);
+                    }
+
+                    var sheet = book.GetSheetAt(2);
+
+                    sheet.GetRow(26).GetCell(16).SetCellValue(dateMark + "-" + mark.Number);
+                    sheet.GetRow(27).GetCell(16).SetCellValue("\"" + today.ToString("dd") + "\" " + months[today.Month] + " " + today.ToString("yyyy") + " г.");
+                    sheet.GetRow(28).GetCell(39).SetCellValue(today.ToString("yyyy") + " г.");
+
+                    sheet.GetRow(30).GetCell(16).SetCellValue(_1c.Description);
+                    sheet.GetRow(32).GetCell(16).SetCellValue(_1c.Inventory);
+                    sheet.GetRow(33).GetCell(16).SetCellValue(device.SerialNumber);
+
+                    sheet.GetRow(51).GetCell(27).SetCellValue(mol[0] + " " + mol[1]);
+                    sheet.GetRow(53).GetCell(27).SetCellValue(mol[1] + " " + mol[0]);
+
+
+                    // Сохранение отчета
+                    using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content") + "\\def.xlsx"), FileMode.OpenOrCreate, FileAccess.Write))
+                    {
+                        book.Write(fs);
+                    }
+
+                    return Json(new
+                    {
+                        Good = "Дефектный акт создан",
+                        Link = Url.Action("excels", "content") + "/def.xlsx",
+                        Name = "Дефектный акт " + dateMark + "-" + mark.Number,
+                    });
+                }
+            }
+            catch (Exception e)
+            {
+                return Json(new { Error = e.Message });
+            }
+        }
+
+        public JsonResult PrintOS(int Id)
+        {
+            try
+            {
+                using (var db = new DevinContext())
+                {
+                    // Получение данных из базы
+                    var today = DateTime.Today;
+                    string[] months = { "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря" };
+                    var dateMark = today.ToString("MM") + "/" + today.ToString("dd");
+                    var mark = db.WriteoffsMarks.FirstOrDefault(x => x.DateMark == dateMark);
+                    if (mark == null)
+                    {
+                        mark = new WriteoffMark { DateMark = dateMark, Number = 1 };
+                        db.Insert(mark);
+                    }
+                    else
+                    {
+                        mark.Number++;
+                        db.WriteoffsMarks
+                            .Where(x => x.DateMark == dateMark)
+                            .Set(x => x.Number, mark.Number)
+                            .Update();
+                    }
+
+                    var device = db.Devices.FirstOrDefault(x => x.Id == Id);
+                    if (device == null) return Json(new { Warning = "" });
+
+                    var _1c = db.Objects1C.FirstOrDefault(x => x.Inventory == device.Inventory);
+                    if (_1c == null) return Json(new { Warning = "" });
+
+                    var mol = _1c.Mol.Split(' ');
+                    mol[0] = mol[0].Substring(0, 1).ToUpper() + mol[0].Substring(1).ToLower();
+
+
+                    // Заполнение отчёта
+                    XSSFWorkbook book;
+                    using (var fs = new FileStream(Server.MapPath(Url.Action("templates", "content") + "\\os.xlsx"), FileMode.Open, FileAccess.Read))
+                    {
+                        book = new XSSFWorkbook(fs);
+                    }
+
+                    var sheet = book.GetSheetAt(3);
+
+                    sheet.GetRow(26).GetCell(16).SetCellValue(dateMark + "-" + mark.Number);
+                    sheet.GetRow(27).GetCell(16).SetCellValue("\"" + today.ToString("dd") + "\" " + months[today.Month] + " " + today.ToString("yyyy") + " г.");
+                    sheet.GetRow(28).GetCell(16).SetCellValue(today.ToString("dd.MM.yyyy") + " г.");
+                    sheet.GetRow(28).GetCell(39).SetCellValue(today.ToString("yyyy") + " г.");
+
+                    sheet.GetRow(30).GetCell(16).SetCellValue(_1c.Description);
+                    sheet.GetRow(32).GetCell(16).SetCellValue(_1c.Inventory);
+                    sheet.GetRow(33).GetCell(16).SetCellValue(device.SerialNumber);
+
+                    sheet.GetRow(51).GetCell(27).SetCellValue(mol[0] + " " + mol[1]);
+
+                    sheet.GetRow(64).GetCell(59).SetCellValue(_1c.Gold);
+                    sheet.GetRow(65).GetCell(59).SetCellValue(_1c.Silver);
+                    sheet.GetRow(66).GetCell(59).SetCellValue(_1c.Platinum);
+                    sheet.GetRow(67).GetCell(59).SetCellValue(_1c.Mpg);
+                    sheet.GetRow(68).GetCell(59).SetCellValue(_1c.Palladium);
+
+
+                    // стоимость драгметаллов из 1С
+                    using (var site = new SiteContext())
+                    {
+                        var metals = site.MetalsCosts
+                            .ToList()
+                            .GroupBy(x => x.Name)
+                            .Select(g => new
+                            {
+                                Name = g.Key.Trim(),
+                                Cost = g
+                                    .OrderByDescending(x => x.Date)
+                                    .Select(x => x.Cost / 100 * (100 - x.Discount))
+                                    .First()
+                            })
+                            .ToList();
+
+                        sheet.GetRow(10).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Золото")?.Cost ?? 0F);
+                        sheet.GetRow(11).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Серебро")?.Cost ?? 0F);
+                        sheet.GetRow(12).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Платина")?.Cost ?? 0F);
+                        sheet.GetRow(13).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F); // МПГ
+                        sheet.GetRow(14).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F);
+                    }
+
+
+                    // Сохранение отчета
+                    using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content") + "\\os.xlsx"), FileMode.OpenOrCreate, FileAccess.Write))
+                    {
+                        book.Write(fs);
+                    }
+
+                    return Json(new
+                    { 
+                        Good = "Акты на списание ОС созданы",
+                        Link = Url.Action("excels", "content") + "/os.xlsx",
+                        Name = "Акты на списание ОС " + dateMark + "-" + mark.Number,
+                    });
+                }
+            }
+            catch (Exception e)
+			{
+                return Json(new { Error = e.Message });
+			}
         }
     }
 }

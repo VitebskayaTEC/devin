@@ -47,6 +47,9 @@ namespace Devin.Models
         [Column]
         public string Mark { get; set; }
 
+        [Column]
+        public string DateMark { get; set; }
+
         public string DefaultData { get; set; }
 
         [Column]

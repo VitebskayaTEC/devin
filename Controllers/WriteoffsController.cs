@@ -203,10 +203,13 @@ namespace Devin.Controllers
                 ISheet sheet;
 
                 int step = 0;
+				string name = writeoff.Type + " " + DateTime.Today.ToString("MMMM yyyy г");
 
-                /* Эксплуатационные расходы */
-                if (writeoff.Type == "expl")
-                {
+				/* Эксплуатационные расходы */
+				if (writeoff.Type == "expl")
+				{
+					name = "Эксплуатационные расходы " + DateTime.Today.ToString("MMMM yyyy г");
+
 					if (!System.IO.File.Exists(template))
 					{
 						return Json(new { Error = "Файла шаблона не существует либо путь к нему неправильно прописан в исходниках<br />Путь: " + template });
@@ -362,6 +365,8 @@ namespace Devin.Controllers
                 /* Эксплуатационные расходы (прочие) */
                 if (writeoff.Type == "expl-1")
 				{
+					name = "Эксплуатационные расходы " + DateTime.Today.ToString("MMMM yyyy г");
+
 					using (var fs = new FileStream(template, FileMode.Open, FileAccess.Read))
 					{
 						book = new HSSFWorkbook(fs);
@@ -480,7 +485,7 @@ namespace Devin.Controllers
 						sheet.GetRow(10).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Золото")?.Cost ?? 0F);
 						sheet.GetRow(11).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Серебро")?.Cost ?? 0F);
 						sheet.GetRow(12).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Платина")?.Cost ?? 0F);
-						//sheet.GetRow(13).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "МПГ")?.Cost ?? 0F);
+						sheet.GetRow(13).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F); // МПГ
 						sheet.GetRow(14).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F);
 					}
 
@@ -488,7 +493,7 @@ namespace Devin.Controllers
 					var now = DateTime.Now;
                     sheet.GetRow(27).GetCell(16).SetCellValue("\"" + now.Day + "\" " + months2[now.Month - 1] + " " + now.ToString("yyyy г."));
                     sheet.GetRow(28).GetCell(16).SetCellValue(now.ToString("dd.MM.yyyy г."));
-                    sheet.GetRow(29).GetCell(16).SetCellValue(months[now.Month - 1] + " " + now.ToString(" yyyy г."));
+                    sheet.GetRow(29).GetCell(16).SetCellValue(months[now.Month - 1] + " " + now.ToString("yyyy г."));
                     sheet.GetRow(28).GetCell(39).SetCellValue(now.ToString("yyyy г."));
 					sheet.GetRow(28).GetCell(48).SetCellValue("\"" + now.Day + "\" " + months2[now.Month - 1] + " " + now.ToString("yyyy г."));
 
@@ -548,9 +553,12 @@ namespace Devin.Controllers
 									  o.Platinum,
 									  o.Mpg,
 									  o.Palladium,
+									  Name = "Ремонт " + d.Name + " (" + d.Inventory + ") " + DateTime.Today.ToString("MMMM yyyy г"),
 								  };
 
 					var device = _device.FirstOrDefault();
+
+					name = device.Name;
 
 					if (device != null)
 					{
@@ -585,6 +593,12 @@ namespace Devin.Controllers
                         case 2: book.GetSheetAt(2).GetRow(14).GetCell(2).SetCellValue("Орг. техника"); break;
                         case 1: book.GetSheetAt(2).GetRow(14).GetCell(2).SetCellValue("Эксплуатационные расходы"); break;
                     }
+
+					var mol = device.Mol.Split(' ');
+					mol[0] = mol[0].Substring(0, 1).ToUpper() + mol[0].Substring(1).ToLower();
+
+					sheet.GetRow(51).GetCell(27).SetCellValue(mol[0] + " " + mol[1]);
+					sheet.GetRow(53).GetCell(27).SetCellValue(mol[1] + " " + mol[0]);
 
 					// заставляем сделать пересчёт всех формул и ссылок, чтобы акты взяли новые данные из сводной таблицы 
 					sheet.ForceFormulaRecalculation = true;
@@ -624,7 +638,12 @@ namespace Devin.Controllers
 				}
 
 
-                return Json(new { Good = "Файл Excel списания успешно создан", Link = Url.Action("excels", "content") + "/" + output });
+                return Json(new
+				{
+					Good = "Файл Excel списания успешно создан",
+					Link = Url.Action("excels", "content") + "/" + output,
+					Name = name,
+				});
             }
         }
 
