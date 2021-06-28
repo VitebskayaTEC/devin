@@ -1,0 +1,27 @@
+﻿@model List<Storage>
+
+@{
+    ViewBag.Title = "DEVIN | 1С | Приход Устинкова";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<form id="form">
+    <input name="File" type="file" />
+    <input type="submit" />
+</form>
+
+<div id="table"></div>
+
+<script>
+    document.getElementById('form').addEventListener('submit', function (e) {
+        e.preventDefault()
+
+        var body = new FormData(document.getElementById('form'))
+
+        fetch('@Url.Action("storageResult", "objects1C")', { method: 'POST', body })
+            .then(res => res.text())
+            .then(text => {
+                document.getElementById('table').innerHTML = text
+			})
+	})
+</script>

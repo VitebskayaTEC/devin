@@ -1,0 +1,55 @@
+﻿@model List<Object1C>
+
+@using (var db = new DevinContext())
+{
+	var storages = db.Storages
+		.Where(x => !x.IsDeleted)
+		.Where(x => Model.Select(y => y.Inventory).Contains(x.Inventory))
+		.ToList();
+
+
+	var devices = db.Devices
+		.Where(x => !x.IsDeleted)
+		.Where(x => Model.Select(y => y.Inventory).Contains(x.Inventory))
+		.ToList();
+
+    <div class="unit unit-nohover">
+        <table class="caption">
+            <tr>
+                <td><b>АСУ ПТ</b></td>
+            </tr>
+        </table>
+        <table class="items">
+            <thead>
+                <tr>
+                    <th width="100px">Инв. №</th>
+                    <th>Наименование</th>
+                    <th width="90px">Дата прихода</th>
+                    <th width="100px">Счет учета</th>
+                    <th>М.О.Л.</th>
+                    <th>Место</th>
+                    <th>Устройства</th>
+                    <th>Склад</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var obj in Model)
+                {
+                    var device = devices.FirstOrDefault(x => x.Inventory == obj.Inventory);
+                    var storage = storages.FirstOrDefault(x => x.Inventory == obj.Inventory);
+
+                    <tr data-inventory="@obj.Inventory">
+                        <td>@obj.Inventory</td>
+                        <td>@obj.Description</td>
+                        <td>@(obj.Date?.ToString("dd.MM.yyyy") ?? "дата неизвестна")</td>
+                        <td>@(obj.Account ?? "счёт учёта неизвестен")</td>
+                        <td>@(obj.Mol ?? "МОЛ неизвестен")</td>
+                        <td>@(obj.Location ?? "расположение неизвестно")</td>
+                        <td>@(device == null ? "нет" : device.Inventory)</td>
+						<td>@(storage == null ? "нет" : storage.Inventory)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

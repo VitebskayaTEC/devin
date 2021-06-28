@@ -1,7 +1,12 @@
 ﻿using Devin.Models;
 using Devin.ViewModels;
 using LinqToDB;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Web.Mvc;
 
@@ -101,6 +106,44 @@ namespace Devin.Controllers
         public ActionResult Import() => View();
 
         public ActionResult Asutp() => View();
+
+        public ActionResult Storage() => View();
+
+        public ActionResult StorageResult()
+		{
+            var file = Request.Files[0];
+            var book = new XSSFWorkbook(file.InputStream);
+            var sheet = book.GetSheetAt(0);
+
+            var objects = new List<Object1C>();
+
+            for (int i = 0; i <= sheet.LastRowNum; i++)
+            {
+                var row = sheet.GetRow(i);
+                if (row != null) //null is when the row only contains empty cells 
+                {
+                    try
+                    {
+                        objects.Add(new Object1C
+                        {
+                            Inventory = row.GetCell(1).StringCellValue,
+                            Description = row.GetCell(2).StringCellValue,
+                            Account = row.GetCell(9).StringCellValue,
+                            BalanceCost = (float)row.GetCell(11).NumericCellValue,
+                            Location = row.GetCell(12).StringCellValue,
+                            Rest = (int)row.GetCell(13).NumericCellValue,
+                            RestCost = (float)row.GetCell(14).NumericCellValue,
+                        });
+                    }
+                    catch (Exception e)
+					{
+                        Debug.WriteLine(e.Message);
+					}
+                }
+            }
+
+            return View(objects);
+		}
 
 
         public JsonResult CreateDevice(string Id)

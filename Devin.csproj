@@ -310,6 +310,8 @@
     <Content Include="Views\Aida\SearchPartials\Fulltext.cshtml" />
     <Content Include="Views\Devices\CardPartials\Users.cshtml" />
     <Content Include="Views\Devices\Logs.cshtml" />
+    <Content Include="Views\Objects1C\Storage.cshtml" />
+    <Content Include="Views\Objects1C\StorageResult.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
