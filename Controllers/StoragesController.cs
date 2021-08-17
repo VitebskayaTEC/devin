@@ -215,7 +215,7 @@ namespace Devin.Controllers
                 if (storages.Select(x => x.Nstorage).Sum() == 0) return Json(new { Warning = "На складе нет выбранных позиций" });
 
                 HSSFWorkbook book;
-                using (var fs = new FileStream(Server.MapPath("../content/templates/") + "labels.xls", FileMode.Open, FileAccess.Read))
+                using (var fs = new FileStream(Server.MapPath(Url.Action("templates", "content") + "\\storage\\labels.xls"), FileMode.Open, FileAccess.Read))
                 {
                     book = new HSSFWorkbook(fs);
                 }
@@ -251,13 +251,13 @@ namespace Devin.Controllers
                             sheet.GetRow(rowCount * 3 - 2).GetCell(3).SetCellValue(storages[i].Name);
                             sheet.GetRow(rowCount * 3 - 1).GetCell(3).SetCellValue(storages[i].Date.ToString("dd.MM.yyyy"));
 
-                            rowCount = rowCount + 1;
+                            rowCount++;
                             isLeft = true;
                         }
                     }
                 }
 
-                using (var fs = new FileStream(Server.MapPath("../content/excels/") + "Бирки.xls", FileMode.OpenOrCreate, FileAccess.Write))
+                using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content") + "\\Бирки.xls"), FileMode.OpenOrCreate, FileAccess.Write))
                 {
                     book.Write(fs);
                 }
@@ -322,7 +322,7 @@ namespace Devin.Controllers
 
             // Открытие шаблона
             HSSFWorkbook book;
-            using (var fs = new FileStream(Server.MapPath("../content/templates/") + "analyze.xls", FileMode.Open, FileAccess.Read))
+            using (var fs = new FileStream(Server.MapPath("../content/templates/") + "storage\\analyze.xls", FileMode.Open, FileAccess.Read))
             {
                 book = new HSSFWorkbook(fs);
             }

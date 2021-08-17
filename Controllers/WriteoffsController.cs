@@ -1,8 +1,6 @@
 ﻿using Devin.Models;
 using LinqToDB;
-using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
-using NPOI.SS.Util;
 using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
@@ -12,7 +10,7 @@ using System.Web.Mvc;
 
 namespace Devin.Controllers
 {
-    public class WriteoffsController : Controller
+	public class WriteoffsController : Controller
     {
         public ActionResult Cart(int Id) => View(model: Id);
 
@@ -196,271 +194,18 @@ namespace Devin.Controllers
 
                 var writeoff = query.FirstOrDefault();
 
-				string template = Server.MapPath(Url.Action("templates", "content")) + "\\" + writeoff.Type + ".xls";
-                string output = writeoff.Name + " " + DateTime.Now.ToLongDateString() + ".xls";
 
-                IWorkbook book;
-                ISheet sheet;
-
-                int step = 0;
-				string name = writeoff.Type + " " + DateTime.Today.ToString("MMMM yyyy г");
-
-				/* Эксплуатационные расходы */
-				if (writeoff.Type == "expl")
-				{
-					name = "Эксплуатационные расходы " + DateTime.Today.ToString("MMMM yyyy г");
-
-					if (!System.IO.File.Exists(template))
-					{
-						return Json(new { Error = "Файла шаблона не существует либо путь к нему неправильно прописан в исходниках<br />Путь: " + template });
-					}
-
-					using (var fs = new FileStream(template, FileMode.Open, FileAccess.Read))
-					{
-						book = new HSSFWorkbook(fs);
-					}
-
-                    sheet = book.GetSheetAt(0);
-                    sheet.GetRow(13).GetCell(0).SetCellValue(sheet.GetRow(13).GetCell(0).StringCellValue.Replace("@data", months[writeoff.Date.Month - 1] + " " + writeoff.Date.Year + " г."));
-
-                    try
-                    {
-                        var _query = from r in db.Repairs
-                                     from d in db.Devices.Where(x => x.Id == r.DeviceId).DefaultIfEmpty()
-                                     from s in db.Storages.Where(x => x.Id == r.StorageId).DefaultIfEmpty()
-                                     where r.WriteoffId == Id
-                                     orderby s.Inventory, d.Inventory, r.Date
-                                     select new
-                                     {
-                                         r.Id,
-                                         r.Number,
-                                         Device = new Device
-                                         {
-                                             Id = d.Id,
-                                             Inventory = d.Inventory
-                                         },
-                                         StorageId = s.Id,
-                                         StorageInventory = s.Inventory,
-                                         StorageName = s.Name,
-                                         StorageCost = s.Cost,
-                                         StorageAccount = s.Account
-                                     };
-
-                        var groups = _query
-                            .ToList()
-                            .GroupBy(x => new
-                            {
-                                x.StorageId,
-                                x.StorageInventory,
-                                x.StorageName,
-                                x.StorageCost,
-                                x.StorageAccount
-                            })
-                            .Select(x => new
-                            {
-                                Storage = new
-                                {
-                                    Id = x.Key.StorageId,
-                                    Inventory = x.Key.StorageInventory,
-                                    Name = x.Key.StorageName,
-                                    Cost = x.Key.StorageCost,
-                                    Account = x.Key.StorageAccount,
-                                },
-                                Repairs = x.Select(y => new
-                                {
-                                    y.Id,
-                                    y.Number,
-                                    y.Device,
-                                })
-                            })
-                            .ToList();
-
-						float sum = 0;
-						foreach (var g in groups)
-                        {
-                            int initialStep = step;
-
-                            foreach (var r in g.Repairs)
-                            {
-                                if (r.Device.Inventory.Contains("***") || r.Device.Inventory.Contains("xxx"))
-                                {
-                                    r.Device.Inventory = "Эксплуатационные нужды";
-                                }
-                                else
-                                {
-                                    r.Device.Inventory = "Установлен в: инв. № " + r.Device.Inventory;
-                                }
-
-                                IRow row = sheet.CopyRow(20, 21 + step);
-                                row.GetCell(0).SetCellValue(step + 1);
-                                row.GetCell(1).SetCellValue(g.Storage.Inventory);
-                                row.GetCell(2).SetCellValue(g.Storage.Name + "; счет " + g.Storage.Account);
-                                row.GetCell(3).SetCellValue("шт.");
-                                row.GetCell(4).SetCellValue(r.Number);
-                                row.GetCell(5).SetCellValue(g.Storage.Cost.ToString("0.00").Replace('.', ','));
-                                row.GetCell(6).SetCellValue((g.Storage.Cost * r.Number).ToString("0.00").Replace('.', ','));
-                                row.GetCell(7).SetCellValue(r.Device.Inventory);
-                                row.Height = -1;
-
-                                step++;
-                                sum += g.Storage.Cost * r.Number;
-                            }
-
-                            sheet.AddMergedRegion(new CellRangeAddress(21 + initialStep, 21 + step - 1, 1, 1));
-                            sheet.AddMergedRegion(new CellRangeAddress(21 + initialStep, 21 + step - 1, 2, 2));
-                            sheet.AddMergedRegion(new CellRangeAddress(21 + initialStep, 21 + step - 1, 3, 3));
-                        }
-
-						sheet.GetRow(21 + step).GetCell(6).SetCellValue(sum);
-
-						HSSFFormulaEvaluator.EvaluateAllFormulaCells(book);
-					}
-                    catch (Exception)
-                    {
-                        return Json(new { Error = "Хуйня с запросом" });
-                    }
-
-					output = output.Replace("\"", "");
-					using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content")) + "\\" + output, FileMode.OpenOrCreate, FileAccess.Write))
-					{
-						book.Write(fs);
-					}
-
-					//foreach (Repair r in repairs)
-					//{
-					//    if (r.Device.Inventory.Contains("***") || r.Device.Inventory.Contains("xxx"))
-					//    {
-					//        r.Device.Inventory = "Эксплуатационные нужды";
-					//    }
-					//    else
-					//    {
-					//        r.Device.Inventory = "Установлен в: инв. № " + r.Device.Inventory;
-					//    }
-
-					//    IRow row = sheet.CopyRow(20, 21 + step);
-					//    row.GetCell(0).SetCellValue(step + 1);
-					//    row.GetCell(1).SetCellValue(r.Storage.Inventory);
-					//    row.GetCell(2).SetCellValue(r.Storage.Name + "; счет " + r.Storage.Account);
-					//    row.GetCell(3).SetCellValue("шт.");
-					//    row.GetCell(4).SetCellValue(r.Number);
-					//    row.GetCell(5).SetCellValue(r.Storage.Cost.ToString("0.00").Replace('.', ','));
-					//    row.GetCell(6).SetCellValue((r.Storage.Cost * r.Number).ToString("0.00").Replace('.', ','));
-					//    row.GetCell(7).SetCellValue(r.Device.Inventory);
-					//    row.Height = -1;
-
-					//    step++;
-					//    sum += r.Storage.Cost * r.Number;
-					//}
-
-					sheet.GetRow(20).ZeroHeight = true;
-
-                    
-
-                    sheet.GetRow(40 + step).GetCell(0).SetCellValue("Акт составлен " + writeoff.Date.ToString("d MMMM yyyy"));
-                    sheet.GetRow(42 + step).GetCell(3).SetCellValue(officials["Начальник уАСУТП"].Title);
-                    sheet.GetRow(42 + step).GetCell(6).SetCellValue(officials["Начальник уАСУТП"].Initials + " " + officials["Начальник уАСУТП"].Surname);
-                }
-
-
-                /* Эксплуатационные расходы (прочие) */
-                if (writeoff.Type == "expl-1")
-				{
-					name = "Эксплуатационные расходы " + DateTime.Today.ToString("MMMM yyyy г");
-
-					using (var fs = new FileStream(template, FileMode.Open, FileAccess.Read))
-					{
-						book = new HSSFWorkbook(fs);
-					}
-
-                    sheet = book.GetSheetAt(0);
-					sheet.GetRow(13).GetCell(0).SetCellValue(sheet.GetRow(13).GetCell(0).StringCellValue.Replace("@data", months[writeoff.Date.Month - 1] + " " + writeoff.Date.Year + " г."));
-
-					try
-                    {
-                        var repairsQuery = from r in db.Repairs
-                                           from d in db.Devices.Where(x => x.Id == r.DeviceId).DefaultIfEmpty()
-                                           from s in db.Storages.Where(x => x.Id == r.StorageId).DefaultIfEmpty()
-                                           where r.WriteoffId == Id
-                                           select new Repair
-                                           {
-                                               Id = r.Id,
-                                               Number = r.Number,
-                                               Device = new Device
-                                               {
-                                                   Id = d.Id,
-                                                   Inventory = d.Inventory
-                                               },
-                                               Storage = new Storage
-                                               {
-                                                   Id = s.Id,
-                                                   Inventory = s.Inventory,
-                                                   Name = s.Name,
-                                                   Cost = s.Cost,
-                                                   Account = s.Account
-                                               }
-                                           };
-
-                        var repairs = repairsQuery.ToList();
-                    
-						float sum = 0;
-						foreach (Repair r in repairs)
-						{
-							string s = "";
-							if (r.Device.Inventory.Contains("***") || r.Device.Inventory.Contains("xxx"))
-							{
-								s = "Эксплуатационные нужды";
-							}
-							else
-							{
-								s = "Установлен в: инв. № " + r.Device.Inventory;
-							}
-
-							IRow row = sheet.CopyRow(20, 21 + step);
-							row.GetCell(0).SetCellValue(step + 1);
-							row.GetCell(1).SetCellValue(r.Storage.Inventory);
-							row.GetCell(2).SetCellValue(r.Storage.Name + "; счет " + r.Storage.Account);
-							row.GetCell(3).SetCellValue("шт.");
-							row.GetCell(4).SetCellValue(r.Number);
-							row.GetCell(5).SetCellValue(r.Storage.Cost.ToString("0.00").Replace('.', ','));
-							row.GetCell(6).SetCellValue((r.Storage.Cost * r.Number).ToString("0.00").Replace('.', ','));
-							row.GetCell(7).SetCellValue(s);
-							row.Height = -1;
-
-							step++;
-							sum += r.Storage.Cost * r.Number;
-						}
-
-						sheet.GetRow(20).ZeroHeight = true;
-
-						sheet.GetRow(21 + step).GetCell(6).SetCellValue(sum);
-
-						sheet.GetRow(44 + step).GetCell(0).SetCellValue("Акт составлен " + writeoff.Date.ToString("d MMMM yyyy"));
-                        sheet.GetRow(42 + step).GetCell(3).SetCellValue(officials["Начальник уАСУТП"].Title);
-                        sheet.GetRow(42 + step).GetCell(6).SetCellValue(officials["Начальник уАСУТП"].Initials + " " + officials["Начальник уАСУТП"].Surname);
-
-                        HSSFFormulaEvaluator.EvaluateAllFormulaCells(book);
-					}
-					catch (Exception)
-					{
-						return Json(new { Error = "Хуйня с запросом" });
-					}
-
-					output = output.Replace("\"", "");
-					using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content")) + "\\" + output, FileMode.OpenOrCreate, FileAccess.Write))
-					{
-						book.Write(fs);
-					}
-				}
-
+				string output = writeoff.Name + " " + DateTime.Now.ToLongDateString();
 
                 /* Ремонт основного средства */
                 if (writeoff.Type == "mat")
                 {
-					template = Server.MapPath(Url.Action("templates", "content")) + "\\mat.xls";
+					IWorkbook book;
+					ISheet sheet;
 
-					using (var fs = new FileStream(template, FileMode.Open, FileAccess.Read))
+					using (var fs = new FileStream(Server.MapPath(Url.Action("templates", "content") + "\\writeoff\\mat.xlsx"), FileMode.Open, FileAccess.Read))
 					{
-						book = new HSSFWorkbook(fs);
+						book = new XSSFWorkbook(fs);
 					}
 
 					// переходим на лист "Сводная таблица"
@@ -482,25 +227,23 @@ namespace Devin.Controllers
 							})
 							.ToList();
 
-						sheet.GetRow(10).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Золото")?.Cost ?? 0F);
-						sheet.GetRow(11).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Серебро")?.Cost ?? 0F);
-						sheet.GetRow(12).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Платина")?.Cost ?? 0F);
-						sheet.GetRow(13).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F); // МПГ
-						sheet.GetRow(14).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F);
+						sheet.GetRow(6).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Золото")?.Cost ?? 0F);
+						sheet.GetRow(7).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Серебро")?.Cost ?? 0F);
+						sheet.GetRow(8).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Платина")?.Cost ?? 0F);
+						sheet.GetRow(9).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F); // МПГ
+						sheet.GetRow(10).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F);
 					}
 
 					// даты
 					var now = DateTime.Now;
-                    sheet.GetRow(27).GetCell(16).SetCellValue("\"" + now.Day + "\" " + months2[now.Month - 1] + " " + now.ToString("yyyy г."));
-                    sheet.GetRow(28).GetCell(16).SetCellValue(now.ToString("dd.MM.yyyy г."));
-                    sheet.GetRow(29).GetCell(16).SetCellValue(months[now.Month - 1] + " " + now.ToString("yyyy г."));
-                    sheet.GetRow(28).GetCell(39).SetCellValue(now.ToString("yyyy г."));
-					sheet.GetRow(28).GetCell(48).SetCellValue("\"" + now.Day + "\" " + months2[now.Month - 1] + " " + now.ToString("yyyy г."));
+					sheet.GetRow(2).GetCell(2).SetCellValue(now.ToString("yyyy г."));
+					sheet.GetRow(8).GetCell(2).SetCellValue("\"" + now.Day + "\" " + months2[now.Month - 1] + " " + now.ToString("yyyy г."));
+                    sheet.GetRow(9).GetCell(2).SetCellValue(now.ToString("dd.MM.yyyy г."));
+                    sheet.GetRow(10).GetCell(2).SetCellValue(months[now.Month - 1] + " " + now.ToString("yyyy г."));
 
 					// номера актов
 					string number = now.Month + "/" + now.Day + "-" + Id;
-					sheet.GetRow(26).GetCell(16).SetCellValue(number + "/2");
-					sheet.GetRow(33).GetCell(48).SetCellValue(number + "/1");
+					sheet.GetRow(7).GetCell(2).SetCellValue(number);
 
 					// информация о ремонтах (исп. деталях)
 					var _repairs = from r in db.Repairs
@@ -522,15 +265,15 @@ namespace Devin.Controllers
 						return Json(new { Error = "В списании нет ремонтов" });
 					}
 
-					int i = 123;
+					int i = 22;
 					foreach (var r in repairs)
 					{
-						sheet.GetRow(i).GetCell(25).SetCellValue(r.Number);
-						sheet.GetRow(i).GetCell(28).SetCellValue("шт");
-						sheet.GetRow(i).GetCell(32).SetCellValue(r.Name);
-						sheet.GetRow(i).GetCell(51).SetCellValue("текущий ремонт");
-						sheet.GetRow(i).GetCell(57).SetCellValue(r.Cost);
-						sheet.GetRow(i).GetCell(63).SetCellValue(r.Inventory);
+						sheet.GetRow(i).GetCell(3).SetCellValue(r.Number);
+						sheet.GetRow(i).GetCell(4).SetCellValue("шт");
+						sheet.GetRow(i).GetCell(7).SetCellValue(r.Name);
+						//sheet.GetRow(i).GetCell(8).SetCellValue("текущий ремонт");
+						sheet.GetRow(i).GetCell(9).SetCellValue(r.Cost);
+						sheet.GetRow(i).GetCell(10).SetCellValue(r.Inventory);
 						i++;
 					}
 
@@ -558,91 +301,65 @@ namespace Devin.Controllers
 
 					var device = _device.FirstOrDefault();
 
-					name = device.Name;
-
 					if (device != null)
 					{
-						sheet.GetRow(32).GetCell(16).SetCellValue(device.Inventory);
-						sheet.GetRow(33).GetCell(16).SetCellValue(device.SerialNumber);
-						sheet.GetRow(34).GetCell(16).SetCellValue(device.SerialNumber);
+						sheet.GetRow(12).GetCell(2).SetCellValue(device.Inventory);
+						sheet.GetRow(13).GetCell(2).SetCellValue(device.SerialNumber);
+						sheet.GetRow(14).GetCell(2).SetCellValue(device.SerialNumber);
 
-						sheet.GetRow(64).GetCell(59).SetCellValue(device.Gold);
-						sheet.GetRow(65).GetCell(59).SetCellValue(device.Silver);
-						sheet.GetRow(66).GetCell(59).SetCellValue(device.Platinum);
-						sheet.GetRow(67).GetCell(59).SetCellValue(device.Mpg);
-						sheet.GetRow(68).GetCell(59).SetCellValue(device.Palladium);
-
-						string valueText = "";
-						switch (device.Inventory)
-						{
-							case "075755": valueText = "Оборудование ПТК АСУ: "; break;
-							case "075750": valueText = "Оборудование корпоративной сети: "; break;
-							case "075155": valueText = "Оборудование АСКУЭ ММПГ: "; break;
-						}
-						sheet.GetRow(30).GetCell(16).SetCellValue(valueText + device.Description);
+						sheet.GetRow(6).GetCell(8).SetCellValue(device.Gold);
+						sheet.GetRow(7).GetCell(8).SetCellValue(device.Silver);
+						sheet.GetRow(8).GetCell(8).SetCellValue(device.Platinum);
+						sheet.GetRow(9).GetCell(8).SetCellValue(device.Mpg);
+						sheet.GetRow(10).GetCell(8).SetCellValue(device.Palladium);
 					}
 
 					// кол-во плат и вес из карточки
-					sheet.GetRow(34).GetCell(16).SetCellValue(writeoff.BoardsCount ?? 0);
-					sheet.GetRow(35).GetCell(16).SetCellValue(writeoff.BoardsWeight ?? 0F);
-
-					// статья расходов
-                    switch (writeoff.CostArticle)
-                    {
-                        case 3: book.GetSheetAt(2).GetRow(14).GetCell(2).SetCellValue("ПТК АСУ"); break;
-                        case 2: book.GetSheetAt(2).GetRow(14).GetCell(2).SetCellValue("Орг. техника"); break;
-                        case 1: book.GetSheetAt(2).GetRow(14).GetCell(2).SetCellValue("Эксплуатационные расходы"); break;
-                    }
-
-					var mol = device.Mol.Split(' ');
-					mol[0] = mol[0].Substring(0, 1).ToUpper() + mol[0].Substring(1).ToLower();
-
-					sheet.GetRow(51).GetCell(27).SetCellValue(mol[0] + " " + mol[1]);
-					sheet.GetRow(53).GetCell(27).SetCellValue(mol[1] + " " + mol[0]);
+					sheet.GetRow(6).GetCell(4).SetCellValue(writeoff.BoardsCount ?? 0);
+					sheet.GetRow(10).GetCell(4).SetCellValue(writeoff.BoardsWeight ?? 0F);
 
 					// заставляем сделать пересчёт всех формул и ссылок, чтобы акты взяли новые данные из сводной таблицы 
 					sheet.ForceFormulaRecalculation = true;
-					HSSFFormulaEvaluator.EvaluateAllFormulaCells(book);
+					//XSSFFormulaEvaluator.EvaluateAllFormulaCells(book);
 
 					// размер строк
-					var _sheet = book.GetSheet("Ведомость потребности и мат.");
-					i = 15;
-					foreach (var r in repairs)
-					{
-						_sheet.GetRow(i).Height = -1;
-						i++;
-					}
+					//var _sheet = book.GetSheet("Ведомость потребности и мат.");
+					//i = 15;
+					//foreach (var r in repairs)
+					//{
+					//	_sheet.GetRow(i).Height = -1;
+					//	i++;
+					//}
 
-					_sheet = book.GetSheet("Акт на списание материалов");
-					i = 79;
-					foreach (var r in repairs)
-					{
-						_sheet.GetRow(i).Height = -1;
-						i++;
-					}
+					//_sheet = book.GetSheet("Акт на списание материалов");
+					//i = 79;
+					//foreach (var r in repairs)
+					//{
+					//	_sheet.GetRow(i).Height = -1;
+					//	i++;
+					//}
 
-					_sheet = book.GetSheet("Смета");
-					i = 22;
-					foreach (var r in repairs)
-					{
-						_sheet.GetRow(i).Height = -1;
-						i++;
-					}
+					//_sheet = book.GetSheet("Смета");
+					//i = 22;
+					//foreach (var r in repairs)
+					//{
+					//	_sheet.GetRow(i).Height = -1;
+					//	i++;
+					//}
 
 					// сохранение
-					output = writeoff.Name.Replace("\"", "") + " " + DateTime.Now.ToLongDateString() + ".xls";
+					output = writeoff.Name.Replace("\"", "") + " " + DateTime.Now.ToLongDateString() + ".xlsx";
 					using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content")) + "\\" + output, FileMode.OpenOrCreate, FileAccess.Write))
 					{
 						book.Write(fs);
 					}
 				}
 
-
                 return Json(new
 				{
 					Good = "Файл Excel списания успешно создан",
 					Link = Url.Action("excels", "content") + "/" + output,
-					Name = name,
+					Name = output,
 				});
             }
         }

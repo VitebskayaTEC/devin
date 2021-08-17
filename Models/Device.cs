@@ -94,6 +94,12 @@ namespace Devin.Models
         [Column]
         public DateTime? DateLastChange { get; set; }
 
+        [Column]
+        public int? DetailsCount { get; set; }
+
+        [Column]
+        public float? DetailsWeight { get; set; }
+
 
         public Printer Printer { get; set; }
 

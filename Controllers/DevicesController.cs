@@ -1,19 +1,16 @@
 ﻿using Devin.Models;
 using Devin.ViewModels;
 using LinqToDB;
-using NPOI.HSSF.UserModel;
-using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Web.Mvc;
 
 namespace Devin.Controllers
 {
-    public class DevicesController : Controller
+	public class DevicesController : Controller
     {
         public ActionResult Index() => View();
 
@@ -79,7 +76,7 @@ namespace Devin.Controllers
 
 
         public JsonResult Update(
-            [Bind(Include = "Id,Name,Inventory,Type,Description,PublicName,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,IsOff")] Device device,
+            [Bind(Include = "Id,Name,Inventory,Type,Description,PublicName,Location,PlaceId,Mol,SerialNumber,PassportNumber,ServiceTag,OS,OSKey,PrinterId,IsOff,DetailsCount,DetailsWeight")] Device device,
             string DateInstall
         )
         {
@@ -122,6 +119,8 @@ namespace Devin.Controllers
                 if (device.DateInstall != old.DateInstall) changes.Add($"дата установки [{old.DateInstall} => {device.DateInstall}]");
                 if (device.DateLastRepair != old.DateLastRepair) changes.Add($"дата последнего ремонта [{old.DateLastRepair} => {device.DateLastRepair}]");
                 if (device.PublicName != old.PublicName) changes.Add($"имя для печати [{old.PublicName} => {device.PublicName}]");
+                if (device.DetailsCount != old.DetailsCount) changes.Add($"кол-во деталей [{old.DetailsCount} => {device.DetailsCount}]");
+                if (device.DetailsWeight != old.DetailsWeight) changes.Add($"вес деталей в лигатуре [{old.DetailsWeight} => {device.DetailsWeight}]");
 
                 string destination = Request.Form.Get("Destination");
                 device.ComputerId = old.ComputerId;
@@ -184,6 +183,8 @@ namespace Devin.Controllers
                         .Set(x => x.PlaceId, device.PlaceId)
                         .Set(x => x.PrinterId, device.PrinterId)
                         .Set(x => x.IsOff, device.IsOff)
+                        .Set(x => x.DetailsCount, device.DetailsCount)
+                        .Set(x => x.DetailsWeight, device.DetailsWeight)
                         .Set(x => x.DateLastChange, DateTime.Now)
                         .Update();
 
@@ -249,6 +250,8 @@ namespace Devin.Controllers
                     FolderId = 0,
                     PlaceId = 0,
                     PrinterId = 0,
+                    DetailsCount = 0,
+                    DetailsWeight = 0,
                     IsDeleted = false,
                     IsOff = false,
                     DateLastChange = DateTime.Now,
@@ -326,253 +329,6 @@ namespace Devin.Controllers
 
                 return Json(new { Good = "Компьютер успешно перемещен" });
             }
-        }
-
-        public JsonResult PrintDefectAct(string Description, string Inventory, string Name, string Position, string Mol, string Time)
-        {
-            var keys = new Dictionary<string, string>
-            {
-                { "motherboard", "материнская плата (вздутие конденсаторов, отказ контроллеров)" },
-                { "power", "блок питания (перегрев входных цепец)" },
-                { "cpu", "процессор (повреждение внутренних цепей контроллера)" },
-                { "hdd", "жесткий диск (разрушение поверхности пластин вследствие большого износа накопителя)" },
-                { "ram", "ОЗУ (перегрев)" },
-                { "videocard", "видеокарта (перегрев, ошибки контроллера, артефакты)" },
-            };
-
-            var works = new Dictionary<string, string>
-            {
-                { "motherboard", "Ремонт материнской платы" },
-                {"power", "Ремонт блока питания" },
-                { "cpu", "Ремонт процессора" },
-                { "hdd", "Ремонт жесткого диска" },
-                { "ram", "Ремонт ОЗУ" },
-                { "videocard", "Ремонт видеокарты" },
-            };
-
-            var months = new [] { "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря" };
-
-
-            DateTime Date = DateTime.TryParse(Request.Form.Get("DateInstall"), out DateTime d) ? d : DateTime.Now;
-            var Positions = Request.Form.Get("positions").Split(new [] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
-
-            if (!System.IO.File.Exists(Server.MapPath("../content/templates/defect.xls"))) return Json(new { Error = "Файла шаблона не существует либо путь к нему неправильно прописан в исходниках" });
-
-            HSSFWorkbook book;
-            using (var fs = new FileStream(Server.MapPath("../content/templates/defect.xls"), FileMode.Open, FileAccess.Read))
-            {
-                book = new HSSFWorkbook(fs);
-            }
-
-            var sheet = book.GetSheetAt(0);
-
-            sheet.GetRow(27).GetCell(22).SetCellValue(Position);
-            sheet.GetRow(27).GetCell(68).SetCellValue(Mol);
-            sheet.GetRow(33).GetCell(0).SetCellValue(Description + " (" + Name + ") инв. № " + Inventory + " Cрок работы: " + Time + " часов");
-            sheet.GetRow(35).GetCell(16).SetCellValue("произошел выход из строя следующих комплектующих:");
-
-            sheet.GetRow(87).GetCell(2).SetCellValue(Date.Day);
-            sheet.GetRow(87).GetCell(8).SetCellValue(months[Date.Month - 1]);
-            sheet.GetRow(87).GetCell(32).SetCellValue(Date.Year);
-
-            string defects = "";
-            int i = 0;
-
-            foreach (string position in Positions)
-            {
-                if (position != "")
-                {
-                    var param = position.Split(new [] { "::" }, StringSplitOptions.RemoveEmptyEntries);
-
-                    if (defects != "") defects += ", ";
-                    defects += keys.ContainsKey(param[0]) ? keys[param[0]] : param[0];
-
-                    sheet.GetRow(73 + i).GetCell(5).SetCellValue(works.ContainsKey(param[0]) ? works[param[0]] : "Ремонт (" + param[0] + ")");
-                    sheet.GetRow(73 + i).GetCell(70).SetCellValue(param[1]);
-                    i++;
-                }
-            }
-
-            sheet.GetRow(38).GetCell(0).SetCellValue(defects);
-
-            using (var fs = new FileStream(Server.MapPath("../content/excels/defect.xls"), FileMode.OpenOrCreate, FileAccess.Write))
-            {
-                book.Write(fs);
-            }
-
-            return Json(new { Good = "Дефектный акт создан", Link = Url.Action("excels", "content") + "/defect.xls" });
-        }
-
-        public JsonResult PrintRecordCartByIp(string Ip)
-        {
-            var addr = IPAddress.Parse(Ip);
-            var entry = Dns.GetHostEntry(addr);
-            string name = entry.HostName.Substring(0, entry.HostName.IndexOf('.'));
-
-            using (var db = new DevinContext())
-            {
-                int id = db.Devices.Where(x => x.Type == "CMP" && x.Name == name).Select(x => x.Id).FirstOrDefault();
-                if (id == 0) return Json(new { Error = "Компьютер с именем \"" + name + "\" не найден в базе." });
-
-                return PrintRecordCart(id.ToString());
-            }
-        }
-
-        public JsonResult PrintRecordCart(string Id)
-        {
-            int id = int.TryParse(Id.Replace("device", ""), out int i) ? i : 0;
-            if (id == 0) return Json(new { Error = "Компьютер с идентификатором \"" + Id + "\" не найден в базе." });
-
-            string template = Server.MapPath(Url.Action("templates", "content") + "/ReportCart.xls");
-
-            HSSFWorkbook book;
-            using (var fs = new FileStream(template, FileMode.Open, FileAccess.Read))
-            {
-                book = new HSSFWorkbook(fs);
-            }
-
-            var sheet = book.GetSheetAt(0);
-
-            using (var db = new DevinContext())
-            {
-				var _cabinet = from d in db.Devices
-							   from w in db.WorkPlaces.Where(x => x.Id == d.PlaceId).DefaultIfEmpty()
-							   where d.Id == id
-							   select w.Location;
-
-                var cabinet = _cabinet.FirstOrDefault();
-
-				var _devices = from d in db.Devices
-							   from o in db.Objects1C.Where(x => x.Inventory == d.Inventory)
-							   where (d.Id == id || d.ComputerId == id) && !d.IsDeleted
-							   orderby d.Inventory, o.Description
-							   select new
-							   {
-								   d.Inventory,
-								   d.Description,
-								   d.PublicName,
-								   Description1C = o.Description ?? d.Description,
-								   SerialNumber = d.SerialNumber ?? "",
-								   d.DateInstall,
-								   Mol = o.Mol ?? "",
-							   };
-
-                var devices = _devices.ToList();
-
-                var name = db.Devices.Where(x => x.Id == id).Select(x => x.Name).FirstOrDefault();
-
-                string now = DateTime.Now.ToString("dd.MM.yyyy");
-
-				// Место расположения (хранения)
-                sheet.GetRow(10).GetCell(7).SetCellValue(cabinet);
-
-				// Дата составления
-                sheet.GetRow(27).GetCell(0).SetCellValue("Дата составления: " + now);
-
-                int step = 0;
-                foreach (var device in devices)
-                {
-                    sheet.CopyRow(8, 9 + step);
-                    IRow row = sheet.GetRow(9 + step);
-                    row.GetCell(0).SetCellValue(device.Inventory);
-                    row.GetCell(1).SetCellValue(device.Description1C);
-                    row.GetCell(2).SetCellValue(device.SerialNumber);
-                    row.GetCell(3).SetCellValue(device.PublicName);
-                    row.GetCell(4).SetCellValue(device.DateInstall.ToString("dd.MM.yyyy"));
-                    row.GetCell(5).SetCellValue(device.Mol);
-                    row.GetCell(6).SetCellValue(now);
-                    step++;
-                }
-
-                sheet.GetRow(8).Height = 0;
-                string output = @"\\backup\pub\web\devin\Карточка_учета_оргтехники_" + name.Replace("/", "-").Replace(".", "") + ".xls";
-
-                using (var fs = new FileStream(output, FileMode.OpenOrCreate, FileAccess.Write))
-                {
-                    book.Write(fs);
-                }
-
-                return Json(new
-                {
-                    Good = "Карточка учета вычислительной техники на рабочем месте \"" + name + "\" создана",
-                    Link = "http://www.vst.vitebsk.energo.net/files/devin/Карточка_учета_оргтехники_" + name.Replace("/", "-").Replace(".", "") + ".xls?r=" + (new Random()).Next()
-                }, JsonRequestBehavior.AllowGet);
-            }
-        }
-
-        public JsonResult PrintRecordCartByFolder(int Id)
-        {
-            string template = Server.MapPath(Url.Action("templates", "content") + "/ReportCart.xls");
-
-            HSSFWorkbook book;
-            using (var fs = new FileStream(template, FileMode.Open, FileAccess.Read))
-            {
-                book = new HSSFWorkbook(fs);
-            }
-
-            var sheet = book.GetSheetAt(0);
-
-            using (var db = new DevinContext())
-            {
-                var cabinet = db.Folders.Where(x => x.Id == Id).FirstOrDefault();
-
-                var devicesQuery = from d in db.Devices
-                                   from c in db.Devices.Where(x => x.Type == "CMP" && x.Id == d.ComputerId).DefaultIfEmpty()
-                                   from o in db.Objects1C.Where(x => x.Inventory == d.Inventory).DefaultIfEmpty()
-                                   where (d.FolderId == Id || c.FolderId == Id) && !d.IsDeleted
-                                   orderby d.Inventory, o.Description
-                                   select new
-                                   {
-                                       Inventory = d.Inventory ?? "",
-                                       Name = d.Name ?? "",
-                                       Description = d.Description ?? "",
-                                       PublicName = d.PublicName ?? "",
-                                       SerialNumber = d.SerialNumber ?? "",
-                                       d.DateInstall,
-                                       Mol = o.Mol ?? "",
-                                       Description1C = o.Description ?? d.Description ?? ""
-                                   };
-
-                var devices = devicesQuery.ToList().GroupBy(x => x).Select(x => x.Key).ToList();
-
-                string now = DateTime.Now.ToString("dd.MM.yyyy");
-                sheet.GetRow(4).GetCell(9).SetCellValue(cabinet.Name);
-                sheet.GetRow(12).GetCell(0).SetCellValue(now);
-
-                int step = 0;
-                foreach (var device in devices)
-                {
-                    sheet.CopyRow(8, 9 + step);
-
-                    var row = sheet.GetRow(9 + step);
-                    row.GetCell(0).SetCellValue(device.Inventory);
-                    row.GetCell(1).SetCellValue(device.Description1C ?? device.Description);
-                    row.GetCell(2).SetCellValue(device.SerialNumber ?? "");
-                    row.GetCell(3).SetCellValue(device.PublicName);
-                    row.GetCell(4).SetCellValue(device.DateInstall.ToString("dd.MM.yyyy"));
-                    row.GetCell(5).SetCellValue(device.Mol ?? "");
-                    row.GetCell(6).SetCellValue(now);
-
-                    step++;
-                }
-
-                sheet.GetRow(8).Height = 0;
-
-                string output = @"\\backup\pub\web\devin\Карточка_учета_оргтехники_" + cabinet.Name.Replace("/", "-").Replace(".", "") + ".xls";
-
-                using (var fs = new FileStream(output, FileMode.OpenOrCreate, FileAccess.Write))
-                {
-                    book.Write(fs);
-                }
-
-                return Json(new
-                {
-                    Good = "Карточка учета вычислительной техники на рабочем месте \"" + cabinet.Name + "\" создана",
-                    Link = "http://www.vst.vitebsk.energo.net/files/devin/Карточка_учета_оргтехники_" + cabinet.Name.Replace("/", "-").Replace(".", "") + ".xls?r=" + (new Random()).Next()
-                }, JsonRequestBehavior.AllowGet);
-            }
-
-            
         }
 
         public JsonResult CreateWorkPlace()
@@ -785,30 +541,26 @@ namespace Devin.Controllers
 
 
                     // Заполнение отчёта
-                    HSSFWorkbook book;
-                    using (var fs = new FileStream(Server.MapPath(Url.Action("templates", "content") + "\\def.xls"), FileMode.Open, FileAccess.Read))
+                    XSSFWorkbook book;
+                    using (var fs = new FileStream(Server.MapPath(Url.Action("templates", "content") + "\\devin\\def.xlsx"), FileMode.Open, FileAccess.Read))
                     {
-                        book = new HSSFWorkbook(fs);
+                        book = new XSSFWorkbook(fs);
                     }
 
                     var sheet = book.GetSheetAt(2);
 
-                    sheet.GetRow(26).GetCell(16).SetCellValue(dateMark + "-" + mark.Number);
-                    sheet.GetRow(27).GetCell(16).SetCellValue("\"" + today.ToString("dd") + "\" " + months[today.Month - 1] + " " + today.ToString("yyyy") + " г.");
-                    sheet.GetRow(28).GetCell(39).SetCellValue(today.ToString("yyyy") + " г.");
+                    sheet.GetRow(2).GetCell(2).SetCellValue(today.ToString("yyyy") + " г.");
+                    sheet.GetRow(4).GetCell(2).SetCellValue(dateMark + "-" + mark.Number);
+                    sheet.GetRow(5).GetCell(2).SetCellValue("\"" + today.ToString("dd") + "\" " + months[today.Month - 1] + " " + today.ToString("yyyy") + " г.");
 
-                    sheet.GetRow(30).GetCell(16).SetCellValue(_1c.Description);
-                    sheet.GetRow(32).GetCell(16).SetCellValue(_1c.Inventory);
-                    sheet.GetRow(33).GetCell(16).SetCellValue(device.SerialNumber);
-
-                    sheet.GetRow(51).GetCell(27).SetCellValue(mol[0] + " " + mol[1]);
-                    sheet.GetRow(53).GetCell(27).SetCellValue(mol[1] + " " + mol[0]);
-
+                    sheet.GetRow(12).GetCell(2).SetCellValue(_1c.Description);
+                    sheet.GetRow(13).GetCell(2).SetCellValue(_1c.Inventory);
+                    sheet.GetRow(14).GetCell(2).SetCellValue(device.SerialNumber);
 
                     // Сохранение отчета
                     sheet.ForceFormulaRecalculation = true;
-                    HSSFFormulaEvaluator.EvaluateAllFormulaCells(book);
-                    using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content") + "\\def.xls"), FileMode.OpenOrCreate, FileAccess.Write))
+                    //XSSFFormulaEvaluator.EvaluateAllFormulaCells(book);
+                    using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content") + "\\def.xlsx"), FileMode.OpenOrCreate, FileAccess.Write))
                     {
                         book.Write(fs);
                     }
@@ -816,7 +568,7 @@ namespace Devin.Controllers
                     return Json(new
                     {
                         Good = "Дефектный акт создан",
-                        Link = Url.Action("excels", "content") + "/def.xls",
+                        Link = Url.Action("excels", "content") + "/def.xlsx",
                         Name = "Дефектный акт " + dateMark + "-" + mark.Number,
                     });
                 }
@@ -829,14 +581,15 @@ namespace Devin.Controllers
 
         public JsonResult PrintOS(int Id)
         {
-            try
-            {
+            //try
+            //{
                 using (var db = new DevinContext())
                 {
                     // Получение данных из базы
                     var today = DateTime.Today;
                     string[] months = { "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря" };
-                    var dateMark = today.ToString("MM") + "/" + today.ToString("dd");
+                    string[] months2 = { "январе", "феврале", "марте", "апреле", "мае", "июне", "июле", "августе", "сентябре", "октябре", "ноябре", "декабре" };
+                var dateMark = today.ToString("MM") + "/" + today.ToString("dd");
                     var mark = db.WriteoffsMarks.FirstOrDefault(x => x.DateMark == dateMark);
                     if (mark == null)
                     {
@@ -863,30 +616,33 @@ namespace Devin.Controllers
 
 
                     // Заполнение отчёта
-                    HSSFWorkbook book;
-                    using (var fs = new FileStream(Server.MapPath(Url.Action("templates", "content") + "\\os.xls"), FileMode.Open, FileAccess.Read))
+                    XSSFWorkbook book;
+                    using (var fs = new FileStream(Server.MapPath(Url.Action("templates", "content") + "\\devin\\oc.xlsx"), FileMode.Open, FileAccess.Read))
                     {
-                        book = new HSSFWorkbook(fs);
+                        book = new XSSFWorkbook(fs);
                     }
 
                     var sheet = book.GetSheetAt(3);
 
-                    sheet.GetRow(26).GetCell(16).SetCellValue(dateMark + "-" + mark.Number);
-                    sheet.GetRow(27).GetCell(16).SetCellValue("\"" + today.ToString("dd") + "\" " + months[today.Month - 1] + " " + today.ToString("yyyy") + " г.");
-                    sheet.GetRow(28).GetCell(16).SetCellValue(today.ToString("dd.MM.yyyy") + " г.");
-                    sheet.GetRow(28).GetCell(39).SetCellValue(today.ToString("yyyy") + " г.");
+                sheet.GetRow(2).GetCell(2).SetCellValue(today.ToString("yyyy") + " г.");
 
-                    sheet.GetRow(30).GetCell(16).SetCellValue(_1c.Description);
-                    sheet.GetRow(32).GetCell(16).SetCellValue(_1c.Inventory);
-                    sheet.GetRow(33).GetCell(16).SetCellValue(device.SerialNumber);
+                sheet.GetRow(7).GetCell(2).SetCellValue(dateMark + "-" + mark.Number);
+                sheet.GetRow(8).GetCell(2).SetCellValue("\"" + today.ToString("dd") + "\" " + months[today.Month - 1] + " " + today.ToString("yyyy") + " г.");
+                sheet.GetRow(9).GetCell(2).SetCellValue(today.ToString("dd.MM.yyyy") + " г.");
+                sheet.GetRow(10).GetCell(2).SetCellValue(months2[today.Month - 1] + " " + today.ToString("yyyy") + " г.");
 
-                    sheet.GetRow(51).GetCell(27).SetCellValue(mol[0] + " " + mol[1]);
+                sheet.GetRow(12).GetCell(2).SetCellValue(_1c.Description);
+                sheet.GetRow(13).GetCell(2).SetCellValue(_1c.Inventory);
+                sheet.GetRow(14).GetCell(2).SetCellValue(device.SerialNumber);
 
-                    sheet.GetRow(64).GetCell(59).SetCellValue(_1c.Gold);
-                    sheet.GetRow(65).GetCell(59).SetCellValue(_1c.Silver);
-                    sheet.GetRow(66).GetCell(59).SetCellValue(_1c.Platinum);
-                    sheet.GetRow(67).GetCell(59).SetCellValue(_1c.Mpg);
-                    sheet.GetRow(68).GetCell(59).SetCellValue(_1c.Palladium);
+                sheet.GetRow(6).GetCell(4).SetCellValue(device.DetailsCount ?? 0);
+                sheet.GetRow(10).GetCell(4).SetCellValue(device.DetailsWeight ?? 0);
+
+                sheet.GetRow(6).GetCell(8).SetCellValue(_1c.Gold);
+                    sheet.GetRow(7).GetCell(8).SetCellValue(_1c.Silver);
+                    sheet.GetRow(8).GetCell(8).SetCellValue(_1c.Platinum);
+                    sheet.GetRow(9).GetCell(8).SetCellValue(_1c.Mpg);
+                    sheet.GetRow(10).GetCell(8).SetCellValue(_1c.Palladium);
 
 
                     // стоимость драгметаллов из 1С
@@ -905,18 +661,18 @@ namespace Devin.Controllers
                             })
                             .ToList();
 
-                        sheet.GetRow(10).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Золото")?.Cost ?? 0F);
-                        sheet.GetRow(11).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Серебро")?.Cost ?? 0F);
-                        sheet.GetRow(12).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Платина")?.Cost ?? 0F);
-                        sheet.GetRow(13).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F); // МПГ
-                        sheet.GetRow(14).GetCell(16).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F);
+                        sheet.GetRow(6).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Золото")?.Cost ?? 0F);
+                        sheet.GetRow(7).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Серебро")?.Cost ?? 0F);
+                        sheet.GetRow(8).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Платина")?.Cost ?? 0F);
+                        sheet.GetRow(9).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F); // МПГ
+                        sheet.GetRow(0).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F);
                     }
 
 
                     // Сохранение отчета
                     sheet.ForceFormulaRecalculation = true;
-                    HSSFFormulaEvaluator.EvaluateAllFormulaCells(book);
-                    using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content") + "\\os.xls"), FileMode.OpenOrCreate, FileAccess.Write))
+                    //XSSFFormulaEvaluator.EvaluateAllFormulaCells(book);
+                    using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content") + "\\oc.xlsx"), FileMode.OpenOrCreate, FileAccess.Write))
                     {
                         book.Write(fs);
                     }
@@ -924,15 +680,15 @@ namespace Devin.Controllers
                     return Json(new
                     { 
                         Good = "Акты на списание ОС созданы",
-                        Link = Url.Action("excels", "content") + "/os.xls",
+                        Link = Url.Action("excels", "content") + "/oc.xlsx",
                         Name = "Акты на списание ОС " + dateMark + "-" + mark.Number,
                     });
                 }
-            }
-            catch (Exception e)
-			{
-                return Json(new { Error = e.Message });
-			}
+            //}
+            //catch (Exception e)
+			//{
+                //return Json(new { Error = e.Message });
+			//}
         }
     }
 }

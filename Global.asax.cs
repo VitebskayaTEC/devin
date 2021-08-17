@@ -14,7 +14,7 @@ namespace Devin
 
             #if DEBUG
             DataConnection.TurnTraceSwitchOn();
-            DataConnection.WriteTraceLine = (s, s1) => Debug.WriteLine(s);
+            DataConnection.WriteTraceLine = (s, s1, tl) => Debug.WriteLine(s + " | " + tl);
             #endif
         }
     }

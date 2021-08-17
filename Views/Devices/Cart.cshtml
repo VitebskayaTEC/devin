@@ -51,254 +51,268 @@
 
     <div class="tabsContainer">
         <div class="tabsContainer__item tabsContainer__item_selected" data-tab="info">
-            <table class="cart__table" id="form">
+			<table class="cart__table" id="form">
 
-                <tr>
-                    <td width="200px">Наименование</td>
-                    <td><input class="cart__field" name="@nameof(device.Name)" value="@device.Name" /></td>
-                </tr>
+				<tr>
+					<td width="200px">Наименование</td>
+					<td><input class="cart__field" name="@nameof(device.Name)" value="@device.Name" /></td>
+				</tr>
 
-                <tr>
-                    <td>Инвентарный номер</td>
-                    <td><input class="cart__field" name="@nameof(device.Inventory)" value="@device.Inventory" /></td>
-                </tr>
+				<tr>
+					<td>Инвентарный номер</td>
+					<td><input class="cart__field" name="@nameof(device.Inventory)" value="@device.Inventory" /></td>
+				</tr>
 
-                <tr>
-                    <td>Тип устройства</td>
-                    <td>
-                        <select class="cart__field" name="@nameof(device.Type)">
-                            <option value="0">? не определен</option>
-                            @{
-                                var classes = db._DeviceTypes.Select(x => new { x.Id, x.DeviceText }).OrderBy(x => x.DeviceText).ToList();
+				<tr>
+					<td>Тип устройства</td>
+					<td>
+						<select class="cart__field" name="@nameof(device.Type)">
+							<option value="0">? не определен</option>
+							@{
+								var classes = db._DeviceTypes.Select(x => new { x.Id, x.DeviceText }).OrderBy(x => x.DeviceText).ToList();
 
-                                foreach (var cls in classes)
-                                {
-                                    <option value="@cls.Id" @(cls.Id == device.Type ? "selected" : "")>@cls.DeviceText</option>
-                                }
-                            }
-                        </select>
-                    </td>
-                </tr>
+								foreach (var cls in classes)
+								{
+									<option value="@cls.Id" @(cls.Id == device.Type ? "selected" : "")>@cls.DeviceText</option>
+								}
+							}
+						</select>
+					</td>
+				</tr>
 
-                <tr>
-                    <td>За чем закреплено</td>
-                    <td>
-                        <select class="cart__field" name="Destination">
-                            <option value="0">отдельно</option>
-                            @{
-                                var folders = db.Folders
-                                    .Where(x => x.Type == "device")
-                                    .Select(x => new { x.Id, x.Name })
-                                    .OrderBy(x => x.Name)
-                                    .ToList();
+				<tr>
+					<td>За чем закреплено</td>
+					<td>
+						<select class="cart__field" name="Destination">
+							<option value="0">отдельно</option>
+							@{
+								var folders = db.Folders
+									.Where(x => x.Type == "device")
+									.Select(x => new { x.Id, x.Name })
+									.OrderBy(x => x.Name)
+									.ToList();
 
-                                foreach (var folder in folders)
-                                {
-                                    <option value="folder@(folder.Id)" @(folder.Id == device.FolderId ? "selected" : "")>[папка] @folder.Name</option>
-                                }
+								foreach (var folder in folders)
+								{
+									<option value="folder@(folder.Id)" @(folder.Id == device.FolderId ? "selected" : "")>[папка] @folder.Name</option>
+								}
 
-                                if (device.Type != "CMP")
-                                {
-                                    var computers = db.Devices
-                                        .Where(x => x.Type == "CMP" && !x.IsOff && !x.IsDeleted)
-                                        .Select(x => new { x.Id, x.Name })
-                                        .OrderBy(x => x.Name)
-                                        .ToList();
+								if (device.Type != "CMP")
+								{
+									var computers = db.Devices
+										.Where(x => x.Type == "CMP" && !x.IsOff && !x.IsDeleted)
+										.Select(x => new { x.Id, x.Name })
+										.OrderBy(x => x.Name)
+										.ToList();
 
-                                    foreach (var computer in computers)
-                                    {
-                                        <option value="computer@(computer.Id)" @(computer.Id == device.ComputerId ? "selected" : "")>[компьютер] @computer.Name</option>
-                                    }
-                                }
-                            }
-                        </select>
-                    </td>
-                </tr>
+									foreach (var computer in computers)
+									{
+										<option value="computer@(computer.Id)" @(computer.Id == device.ComputerId ? "selected" : "")>[компьютер] @computer.Name</option>
+									}
+								}
+							}
+						</select>
+					</td>
+				</tr>
 
-                <tr>
-                    <td>Имя для печати</td>
-                    <td><input class="cart__field" name="@nameof(device.PublicName)" value="@(device.PublicName ?? device.Object1C?.Description ?? "")" /></td>
-                </tr>
+				<tr>
+					<td>Имя для печати</td>
+					<td><input class="cart__field" name="@nameof(device.PublicName)" value="@(device.PublicName ?? device.Object1C?.Description ?? "")" /></td>
+				</tr>
 
-                <tr>
-                    <td>Описание</td>
-                    <td><textarea class="cart__field" name="@nameof(device.Description)">@device.Description</textarea></td>
-                </tr>
+				<tr>
+					<td>Описание</td>
+					<td><textarea class="cart__field" name="@nameof(device.Description)">@device.Description</textarea></td>
+				</tr>
 
-                <tr>
-                    <td>М.О.Л.</td>
-                    <td>
-                        @{
-                            var mols = db.Objects1C
-                                .Where(x => x.Inventory == device.Inventory)
-                                .OrderBy(x => x.Mol)
-                                .Select(x => x.Mol.Trim())
-                                .ToList();
+				<tr>
+					<td>М.О.Л.</td>
+					<td>
+						@{
+							var mols = db.Objects1C
+								.Where(x => x.Inventory == device.Inventory)
+								.OrderBy(x => x.Mol)
+								.Select(x => x.Mol.Trim())
+								.ToList();
 
-                            if (mols.Count == 0)
-                            {
-                                @: устройство не найдено в 1С
-                            }
-                            else if (mols.Count == 1)
-                            {
-                                <input class="cart__field" name="@nameof(device.Mol)" disabled value="@mols[0]" />
-                            }
-                            else
-                            {
-                                <select class="cart__field" name="@nameof(device.Mol)">
-                                    <option value="">?</option>
-                                    @foreach (var mol in mols)
-                                    {
-                                        if (mol == device.Mol)
-                                        {
-                                            <option value="@mol" selected>@mol</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@mol">@mol</option>
-                                        }
-                                    }
-                                </select>
-                            }
-                        }
-                    </td>
-                </tr>
+							if (mols.Count == 0)
+							{
+								@: устройство не найдено в 1С
+							}
+							else if (mols.Count == 1)
+							{
+								<input class="cart__field" name="@nameof(device.Mol)" disabled value="@mols[0]" />
+							}
+							else
+							{
+								<select class="cart__field" name="@nameof(device.Mol)">
+									<option value="">?</option>
+									@foreach (var mol in mols)
+									{
+										if (mol == device.Mol)
+										{
+											<option value="@mol" selected>@mol</option>
+										}
+										else
+										{
+											<option value="@mol">@mol</option>
+										}
+									}
+								</select>
+							}
+						}
+					</td>
+				</tr>
 
-                <tr>
-                    <td>Расположение</td>
-                    <td><input class="cart__field" name="@nameof(device.Location)" value="@device.Location" /></td>
-                </tr>
+				<tr>
+					<td>Расположение</td>
+					<td><input class="cart__field" name="@nameof(device.Location)" value="@device.Location" /></td>
+				</tr>
 
-                <tr>
-                    <td>Помещение</td>
-                    <td>
-                        <select class="cart__field" name="@nameof(device.PlaceId)">
-                            <option value="0">? не определен</option>
-                            @{
-                                var places = db.WorkPlaces.OrderBy(x => x.Location).ToList();
-                                foreach (var place in places)
-                                {
-                                    <option value="@place.Id" @(place.Id == device.PlaceId ? "selected" : "")>@place.Location</option>
-                                }
-                            }
-                        </select>
-                    </td>
-                </tr>
+				<tr>
+					<td>Помещение</td>
+					<td>
+						<select class="cart__field" name="@nameof(device.PlaceId)">
+							<option value="0">? не определен</option>
+							@{
+								var places = db.WorkPlaces.OrderBy(x => x.Location).ToList();
+								foreach (var place in places)
+								{
+									<option value="@place.Id" @(place.Id == device.PlaceId ? "selected" : "")>@place.Location</option>
+								}
+							}
+						</select>
+					</td>
+				</tr>
 
-                <tr>
-                    <td>Серийный номер</td>
-                    <td><input class="cart__field" name="@nameof(device.SerialNumber)" value="@device.SerialNumber" /></td>
-                </tr>
+				<tr>
+					<td>Серийный номер</td>
+					<td><input class="cart__field" name="@nameof(device.SerialNumber)" value="@device.SerialNumber" /></td>
+				</tr>
 
-                <tr>
-                    <td>Паспортный номер</td>
-                    <td><input class="cart__field" name="@nameof(device.PassportNumber)" value="@device.PassportNumber" /></td>
-                </tr>
+				<tr>
+					<td>Паспортный номер</td>
+					<td><input class="cart__field" name="@nameof(device.PassportNumber)" value="@device.PassportNumber" /></td>
+				</tr>
 
-                <tr>
-                    <td>Сервис-тег</td>
-                    <td><input class="cart__field" name="@nameof(device.ServiceTag)" value="@device.ServiceTag" /></td>
-                </tr>
+				<tr>
+					<td>Сервис-тег</td>
+					<td><input class="cart__field" name="@nameof(device.ServiceTag)" value="@device.ServiceTag" /></td>
+				</tr>
 
-                <tr>
-                    <td>Дата принятия к учёту</td>
-                    <td>
-                        @{
-                            if (device.Object1C != null)
-                            {
-                                if (device.Object1C.Date.HasValue)
-                                {
-                                    <input class="cart__field" disabled name="@nameof(device.DateInstall)" style="width: 100px" value="@device.Object1C.Date.Value.ToString("dd.MM.yyyy")" />
-                                    <span>@((DateTime.Now - device.Object1C.Date.Value).TotalHours.ToString("0")) часов</span>
-                                }
-                                else
-                                {
-                                    <input class="cart__field" name="@nameof(device.DateInstall)" style="width: 100px" value="@device.DateInstall.ToString("dd.MM.yyyy")" />
-                                    <span>@((DateTime.Now - device.DateInstall).TotalHours.ToString("0")) часов</span>
-                                }
-                            }
-                            else
-                            {
-                                <input class="cart__field" name="@nameof(device.DateInstall)" style="width: 100px" value="@device.DateInstall.ToString("dd.MM.yyyy")" />
-                                <span>@((DateTime.Now - device.DateInstall).TotalHours.ToString("0")) часов</span>
-                            }
-                        }
-                    </td>
-                </tr>
+				<tr>
+					<td>Дата принятия к учёту</td>
+					<td>
+						@{
+							if (device.Object1C != null)
+							{
+								if (device.Object1C.Date.HasValue)
+								{
+									<input class="cart__field" disabled name="@nameof(device.DateInstall)" style="width: 100px" value="@device.Object1C.Date.Value.ToString("dd.MM.yyyy")" />
+									<span>@((DateTime.Now - device.Object1C.Date.Value).TotalHours.ToString("0")) часов</span>
+								}
+								else
+								{
+									<input class="cart__field" name="@nameof(device.DateInstall)" style="width: 100px" value="@device.DateInstall.ToString("dd.MM.yyyy")" />
+									<span>@((DateTime.Now - device.DateInstall).TotalHours.ToString("0")) часов</span>
+								}
+							}
+							else
+							{
+								<input class="cart__field" name="@nameof(device.DateInstall)" style="width: 100px" value="@device.DateInstall.ToString("dd.MM.yyyy")" />
+								<span>@((DateTime.Now - device.DateInstall).TotalHours.ToString("0")) часов</span>
+							}
+						}
+					</td>
+				</tr>
 
-                <tr>
-                    <td>Последний ремонт</td>
-                    <td>
-                        <input class="cart__field" name="@nameof(device.DateLastRepair)" style="width: 100px;" value="@(device.DateLastRepair?.ToString("dd.MM.yyyy"))" />
-                        @{
-                            var repairsDates = db.Repairs.Where(x => x.DeviceId == Model).Select(x => x.Date).ToList();
+				<tr>
+					<td>Последний ремонт</td>
+					<td>
+						<input class="cart__field" name="@nameof(device.DateLastRepair)" style="width: 100px;" value="@(device.DateLastRepair?.ToString("dd.MM.yyyy"))" />
+						@{
+							var repairsDates = db.Repairs.Where(x => x.DeviceId == Model).Select(x => x.Date).ToList();
 
-                            if (repairsDates.Count == 0)
-                            {
-                                @: Ремонты не проводились
-                            }
-                            else
-                            {
-                                <a>@repairsDates.Max().ToString("dd.MM.yyyy")</a>
-                            }
-                        }
-                    </td>
-                </tr>
+							if (repairsDates.Count == 0)
+							{
+								@: Ремонты не проводились
+							}
+							else
+							{
+								<a>@repairsDates.Max().ToString("dd.MM.yyyy")</a>
+							}
+						}
+					</td>
+				</tr>
 
-                @if (device.Type == "CMP")
-                {
-                    var _os = from i in db.Item
-                              from r in db.Report.InnerJoin(x => x.ID == i.ReportID)
-                              where r.RHost == device.Name
-                                 && i.IPage == "Операционная система"
-                                 && new[] { "Название ОС", "Ключ продукта" }.Contains(i.IField)
-                              select new
-                              {
-                                  Field = i.IField,
-                                  Value = i.IValue,
-                              };
+				@if (device.Type == "CMP")
+				{
+					var _os = from i in db.Item
+							  from r in db.Report.InnerJoin(x => x.ID == i.ReportID)
+							  where r.RHost == device.Name
+								 && i.IPage == "Операционная система"
+								 && new[] { "Название ОС", "Ключ продукта" }.Contains(i.IField)
+							  select new
+							  {
+								  Field = i.IField,
+								  Value = i.IValue,
+							  };
 
-                    var os = _os.ToList();
+					var os = _os.ToList();
 
-                    <tr>
-                        <td>Операционная система</td>
-                        <td>
-                            @(os.FirstOrDefault(x => x.Field == "Название ОС")?.Value ?? "")
-                            <br />
-                            <i>@(os.FirstOrDefault(x => x.Field == "Ключ продукта")?.Value ?? "")</i>
-                        </td>
-                    </tr>
-                }
+					<tr>
+						<td>Операционная система</td>
+						<td>
+							@(os.FirstOrDefault(x => x.Field == "Название ОС")?.Value ?? "")
+							<br />
+							<i>@(os.FirstOrDefault(x => x.Field == "Ключ продукта")?.Value ?? "")</i>
+						</td>
+					</tr>
 
-                @if (device.Type == "PRN")
-                {
-                    <tr>
-                        <td>Типовой принтер</td>
-                        <td>
-                            <select class="cart__field" name="@nameof(device.PrinterId)">
-                                <option value="0">? не определен</option>
-                                @{
-                                    var printers = db.Printers.Select(x => new { x.Id, x.Name }).OrderBy(x => x.Name).ToList();
-                                    foreach (var printer in printers)
-                                    {
-                                        <option value="@printer.Id" @(printer.Id == device.PrinterId ? "selected" : "")>@printer.Name</option>
-                                    }
-                                }
-                            </select>
-                        </td>
-                    </tr>
-                }
+					<tr>
+						<td>Кол-во деталей, шт.</td>
+						<td>
+							<input name="@nameof(device.DetailsCount)" class="cart__field" style="width: 100px;" type="number" value="@device.DetailsCount" />
+						</td>
+					</tr>
 
-                <tr>
-                    <td>Списано</td>
-                    <td>
-                        <select class="cart__field" name="@nameof(device.IsOff)">
-                            <option value="false">Нет</option>
-                            <option value="true" @(device.IsOff ? "selected" : "")>Да</option>
-                        </select>
-                    </td>
-                </tr>
-            </table>
+					<tr>
+						<td>Вес деталей в лигатуре, г.</td>
+						<td>
+							<input name="@nameof(device.DetailsWeight)" class="cart__field" style="width: 100px;" type="number" value="@device.DetailsWeight" />
+						</td>
+					</tr>
+				}
+
+				@if (device.Type == "PRN")
+				{
+					<tr>
+						<td>Типовой принтер</td>
+						<td>
+							<select class="cart__field" name="@nameof(device.PrinterId)">
+								<option value="0">? не определен</option>
+								@{
+									var printers = db.Printers.Select(x => new { x.Id, x.Name }).OrderBy(x => x.Name).ToList();
+									foreach (var printer in printers)
+									{
+										<option value="@printer.Id" @(printer.Id == device.PrinterId ? "selected" : "")>@printer.Name</option>
+									}
+								}
+							</select>
+						</td>
+					</tr>
+				}
+
+				<tr>
+					<td>Списано</td>
+					<td>
+						<select class="cart__field" name="@nameof(device.IsOff)">
+							<option value="false">Нет</option>
+							<option value="true" @(device.IsOff ? "selected" : "")>Да</option>
+						</select>
+					</td>
+				</tr>
+			</table>
 			<div class="cart__menu">
 				<button class="cart__button" onclick="Devices.Cart.update('@device.Id')">Сохранить</button>
 				<button class="cart__button" onclick="Devices.Cart.del()">Удалить</button>
@@ -389,10 +403,6 @@
                     <button class="cart__button" onclick="Devices.Cart.selectAddon('@Url.Action("devices", "aida", new { reportId })')">Оборудование</button><br />
                 }
 
-                @*@if ("CMP DIS PRN".Contains(device.Type ?? "NOT"))
-                {
-                    <button class="cart__button" onclick="Devices.Cart.selectAddon('@Url.Action("DefectAct", "Devices", new { Id = device.Id })')">Дефектный акт</button><br />
-                }*@
             </div>
             <div class="addons__body hide"></div>
         </div>
