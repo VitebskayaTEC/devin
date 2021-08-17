@@ -1,9 +1,11 @@
 ﻿using Devin.Models;
 using LinqToDB;
+using Newtonsoft.Json;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Web.Mvc;
@@ -272,8 +274,9 @@ namespace Devin.Controllers
 						sheet.GetRow(i).GetCell(4).SetCellValue("шт");
 						sheet.GetRow(i).GetCell(7).SetCellValue(r.Name);
 						//sheet.GetRow(i).GetCell(8).SetCellValue("текущий ремонт");
-						sheet.GetRow(i).GetCell(9).SetCellValue(r.Cost);
-						sheet.GetRow(i).GetCell(10).SetCellValue(r.Inventory);
+						sheet.GetRow(i).GetCell(12).SetCellValue(r.Cost);
+						sheet.GetRow(i).GetCell(13).SetCellValue(r.Inventory);
+						Debug.WriteLine(JsonConvert.SerializeObject(r));
 						i++;
 					}
 
