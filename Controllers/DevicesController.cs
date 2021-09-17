@@ -559,7 +559,6 @@ namespace Devin.Controllers
 
                     // Сохранение отчета
                     sheet.ForceFormulaRecalculation = true;
-                    //XSSFFormulaEvaluator.EvaluateAllFormulaCells(book);
                     using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content") + "\\def.xlsx"), FileMode.OpenOrCreate, FileAccess.Write))
                     {
                         book.Write(fs);
@@ -581,15 +580,15 @@ namespace Devin.Controllers
 
         public JsonResult PrintOS(int Id)
         {
-            //try
-            //{
+            try
+            {
                 using (var db = new DevinContext())
                 {
                     // Получение данных из базы
                     var today = DateTime.Today;
                     string[] months = { "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря" };
                     string[] months2 = { "январе", "феврале", "марте", "апреле", "мае", "июне", "июле", "августе", "сентябре", "октябре", "ноябре", "декабре" };
-                var dateMark = today.ToString("MM") + "/" + today.ToString("dd");
+                    var dateMark = today.ToString("MM") + "/" + today.ToString("dd");
                     var mark = db.WriteoffsMarks.FirstOrDefault(x => x.DateMark == dateMark);
                     if (mark == null)
                     {
@@ -624,26 +623,25 @@ namespace Devin.Controllers
 
                     var sheet = book.GetSheetAt(3);
 
-                sheet.GetRow(2).GetCell(2).SetCellValue(today.ToString("yyyy") + " г.");
+                    sheet.GetRow(2).GetCell(2).SetCellValue(today.ToString("yyyy") + " г.");
 
-                sheet.GetRow(7).GetCell(2).SetCellValue(dateMark + "-" + mark.Number);
-                sheet.GetRow(8).GetCell(2).SetCellValue("\"" + today.ToString("dd") + "\" " + months[today.Month - 1] + " " + today.ToString("yyyy") + " г.");
-                sheet.GetRow(9).GetCell(2).SetCellValue(today.ToString("dd.MM.yyyy") + " г.");
-                sheet.GetRow(10).GetCell(2).SetCellValue(months2[today.Month - 1] + " " + today.ToString("yyyy") + " г.");
+                    sheet.GetRow(7).GetCell(2).SetCellValue(dateMark + "-" + mark.Number);
+                    sheet.GetRow(8).GetCell(2).SetCellValue("\"" + today.ToString("dd") + "\" " + months[today.Month - 1] + " " + today.ToString("yyyy") + " г.");
+                    sheet.GetRow(9).GetCell(2).SetCellValue(today.ToString("dd.MM.yyyy") + " г.");
+                    sheet.GetRow(10).GetCell(2).SetCellValue(months2[today.Month - 1] + " " + today.ToString("yyyy") + " г.");
 
-                sheet.GetRow(12).GetCell(2).SetCellValue(_1c.Description);
-                sheet.GetRow(13).GetCell(2).SetCellValue(_1c.Inventory);
-                sheet.GetRow(14).GetCell(2).SetCellValue(device.SerialNumber);
+                    sheet.GetRow(12).GetCell(2).SetCellValue(_1c.Description);
+                    sheet.GetRow(13).GetCell(2).SetCellValue(_1c.Inventory);
+                    sheet.GetRow(14).GetCell(2).SetCellValue(device.SerialNumber);
 
-                sheet.GetRow(6).GetCell(4).SetCellValue(device.DetailsCount ?? 0);
-                sheet.GetRow(10).GetCell(4).SetCellValue(device.DetailsWeight ?? 0);
+                    sheet.GetRow(6).GetCell(4).SetCellValue(device.DetailsCount ?? 0);
+                    sheet.GetRow(10).GetCell(4).SetCellValue(device.DetailsWeight ?? 0);
 
-                sheet.GetRow(6).GetCell(8).SetCellValue(_1c.Gold);
+                    sheet.GetRow(6).GetCell(8).SetCellValue(_1c.Gold);
                     sheet.GetRow(7).GetCell(8).SetCellValue(_1c.Silver);
                     sheet.GetRow(8).GetCell(8).SetCellValue(_1c.Platinum);
                     sheet.GetRow(9).GetCell(8).SetCellValue(_1c.Mpg);
                     sheet.GetRow(10).GetCell(8).SetCellValue(_1c.Palladium);
-
 
                     // стоимость драгметаллов из 1С
                     using (var site = new SiteContext())
@@ -666,29 +664,35 @@ namespace Devin.Controllers
                         sheet.GetRow(8).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Платина")?.Cost ?? 0F);
                         sheet.GetRow(9).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F); // МПГ
                         sheet.GetRow(0).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F);
-                    }
 
+                        var metals_date = site.MetalsCosts
+                            .OrderByDescending(x => x.Date)
+                            .Select(x => x.Date)
+                            .DefaultIfEmpty(DateTime.MinValue)
+                            .FirstOrDefault();
+
+                        sheet.GetRow(5).GetCell(6).SetCellValue(metals_date.ToString("dd.MM.yyyy"));
+                    }
 
                     // Сохранение отчета
                     sheet.ForceFormulaRecalculation = true;
-                    //XSSFFormulaEvaluator.EvaluateAllFormulaCells(book);
                     using (var fs = new FileStream(Server.MapPath(Url.Action("excels", "content") + "\\oc.xlsx"), FileMode.OpenOrCreate, FileAccess.Write))
                     {
                         book.Write(fs);
                     }
 
                     return Json(new
-                    { 
+                    {
                         Good = "Акты на списание ОС созданы",
                         Link = Url.Action("excels", "content") + "/oc.xlsx",
                         Name = "Акты на списание ОС " + dateMark + "-" + mark.Number,
                     });
                 }
-            //}
-            //catch (Exception e)
-			//{
-                //return Json(new { Error = e.Message });
-			//}
+            }
+            catch (Exception e)
+            {
+                return Json(new { Error = e.Message });
+            }
         }
     }
 }

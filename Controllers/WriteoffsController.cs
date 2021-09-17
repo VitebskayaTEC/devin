@@ -234,6 +234,14 @@ namespace Devin.Controllers
 						sheet.GetRow(8).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Платина")?.Cost ?? 0F);
 						sheet.GetRow(9).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F); // МПГ
 						sheet.GetRow(10).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F);
+
+						var metals_date = site.MetalsCosts
+							.OrderByDescending(x => x.Date)
+							.Select(x => x.Date)
+							.DefaultIfEmpty(DateTime.MinValue)
+							.FirstOrDefault();
+
+						sheet.GetRow(5).GetCell(6).SetCellValue(metals_date.ToString("dd.MM.yyyy"));
 					}
 
 					// даты
@@ -306,8 +314,8 @@ namespace Devin.Controllers
 
 					if (device != null)
 					{
-						sheet.GetRow(12).GetCell(2).SetCellValue(device.Inventory);
-						sheet.GetRow(13).GetCell(2).SetCellValue(device.SerialNumber);
+						sheet.GetRow(12).GetCell(2).SetCellValue(device.Description);
+						sheet.GetRow(13).GetCell(2).SetCellValue(device.Inventory);
 						sheet.GetRow(14).GetCell(2).SetCellValue(device.SerialNumber);
 
 						sheet.GetRow(6).GetCell(8).SetCellValue(device.Gold);
@@ -323,32 +331,6 @@ namespace Devin.Controllers
 
 					// заставляем сделать пересчёт всех формул и ссылок, чтобы акты взяли новые данные из сводной таблицы 
 					sheet.ForceFormulaRecalculation = true;
-					//XSSFFormulaEvaluator.EvaluateAllFormulaCells(book);
-
-					// размер строк
-					//var _sheet = book.GetSheet("Ведомость потребности и мат.");
-					//i = 15;
-					//foreach (var r in repairs)
-					//{
-					//	_sheet.GetRow(i).Height = -1;
-					//	i++;
-					//}
-
-					//_sheet = book.GetSheet("Акт на списание материалов");
-					//i = 79;
-					//foreach (var r in repairs)
-					//{
-					//	_sheet.GetRow(i).Height = -1;
-					//	i++;
-					//}
-
-					//_sheet = book.GetSheet("Смета");
-					//i = 22;
-					//foreach (var r in repairs)
-					//{
-					//	_sheet.GetRow(i).Height = -1;
-					//	i++;
-					//}
 
 					// сохранение
 					output = writeoff.Name.Replace("\"", "") + " " + DateTime.Now.ToLongDateString() + ".xlsx";
