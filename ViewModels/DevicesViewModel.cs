@@ -45,6 +45,7 @@ namespace Devin.ViewModels
                                     ComputerId = d.ComputerId,
                                     PublicName = d.PublicName,
                                     Mol = d.Mol,
+                                    DateInstall = d.DateInstall,
                                     Location = p.Location,
                                     IsOff = d.IsOff,
                                     FolderId = f.Id
