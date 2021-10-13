@@ -270,13 +270,13 @@ namespace Devin.Controllers
         {
             // Получение исходных данных
             float cost = 0;
-            int count = 0;
             var types = new List<List<Cartridge>>();
             var lastType = new List<Cartridge>();
             string lastName = "";
 
             var DataSplit = (Data ?? "").Split(new [] { "----" }, StringSplitOptions.RemoveEmptyEntries);
             if (DataSplit.Length < 1) return Json(new { Error = "Не переданы данные" });
+            var list = new List<Cartridge>();
 
             foreach (var data in DataSplit)
             {
@@ -307,16 +307,8 @@ namespace Devin.Controllers
                     case "5color": cartridge.Color = "многоцветный"; break;
                 }
 
-                if (lastName != cartridge.Type)
-                {
-                    types.Add(lastType = new List<Cartridge>());
-                    lastName = cartridge.Type;
-                }
-
-                lastType.Add(cartridge);
-
+                list.Add(cartridge);
                 cost += cartridge.Cost;
-                count++;
             }
 
 
@@ -348,24 +340,34 @@ namespace Devin.Controllers
             int startRegion = 17;
             int endRegion = 17;
 
-            for (int i = 0; i < count - 1; i++) sheet.CopyRow(17, 18 + i);
+            for (int i = 0; i < list.Count - 1; i++) sheet.CopyRow(17, 18 + i);
 
-            foreach (var type in types)
+            var groups = list
+                .GroupBy(x => x.Type)
+                .Select(g => new
+                {
+                    g.Key,
+                    Cartridges = g.ToList(),
+                })
+                .ToList();
+
+
+            foreach (var group in groups)
             {
-                foreach (var cartridge in type)
+                foreach (var cartridge in group.Cartridges)
                 {
                     IRow row = sheet.GetRow(endRegion);
                     endRegion++;
 
-                    row.GetCell(3).SetCellValue("шт.");
-                    row.GetCell(4).SetCellValue(cartridge.Count);
-                    row.GetCell(5).SetCellValue(cartridge.Name + ", " + cartridge.Color);
-                    row.GetCell(7).SetCellValue(cartridge.Cost + " BYN за 1 шт.");
+                    row.GetCell(2).SetCellValue("шт.");
+                    row.GetCell(3).SetCellValue(cartridge.Count);
+                    row.GetCell(4).SetCellValue(cartridge.Name + ", " + cartridge.Color);
+                    row.GetCell(6).SetCellValue(cartridge.Cost + " BYN за 1 шт.");
                     row.Height = -1;
                 }
 
-                sheet.GetRow(startRegion).GetCell(1).SetCellValue(type[0].Type);
-                sheet.AddMergedRegion(new CellRangeAddress(startRegion, endRegion - 1, 1, 2));
+                sheet.GetRow(startRegion).GetCell(1).SetCellValue(group.Key);
+                sheet.AddMergedRegion(new CellRangeAddress(startRegion, endRegion - 1, 1, 1));
 
                 startRegion = endRegion;
             }

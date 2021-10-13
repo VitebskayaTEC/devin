@@ -405,7 +405,14 @@ var Devices = {
 
         update(Id) {
             let form = new FormData();
-            document.getElementById('form').querySelectorAll('input,select,textarea').forEach(el => form.append(el.name, el.value));
+            document.getElementById('form').querySelectorAll('input,select,textarea').forEach(el => {
+                if (el.type == 'number') {
+                    form.append(el.name, String(el.value).replace('.', ','))
+                }
+                else {
+                    form.append(el.name, el.value)
+				}
+            });
 
             fetch(host + 'devices/update/' + Id, { method: 'POST', body: form })
                 .then(res => res.json())

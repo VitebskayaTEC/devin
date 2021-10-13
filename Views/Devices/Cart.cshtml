@@ -279,7 +279,7 @@
 					<tr>
 						<td>Вес деталей в лигатуре, г.</td>
 						<td>
-							<input name="@nameof(device.DetailsWeight)" class="cart__field" style="width: 100px;" type="number" value="@device.DetailsWeight" />
+							<input name="@nameof(device.DetailsWeight)" class="cart__field" style="width: 100px;" type="number" value="@device.DetailsWeight.ToString().Replace(",", ".")" />
 						</td>
 					</tr>
 				}

@@ -663,7 +663,7 @@ namespace Devin.Controllers
                         sheet.GetRow(7).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Серебро")?.Cost ?? 0F);
                         sheet.GetRow(8).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Платина")?.Cost ?? 0F);
                         sheet.GetRow(9).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F); // МПГ
-                        sheet.GetRow(0).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F);
+                        sheet.GetRow(10).GetCell(6).SetCellValue(metals.FirstOrDefault(x => x.Name == "Палладий")?.Cost ?? 0F);
 
                         var metals_date = site.MetalsCosts
                             .OrderByDescending(x => x.Date)
