@@ -48,17 +48,21 @@
 		<div class="unit">
 			<table class="caption">
 				<tr>
-					<th width="30px">
-						<i class="icon ic-get-app" onmousedown="printReportMol('@mol.Mol')"></i>
-					</th>
-					<td width="300px"><b>@mol.Mol</b></td>
 					@if (devices.Count > 0)
 					{
+						<th width="30px">
+							<i class="icon ic-get-app" onmousedown="printReportMol('@mol.Mol')"></i>
+						</th>
+						<td width="300px"><b>@mol.Mol</b></td>
 						<td width="150px">Позиций: @devices.Count</td>
 						<td>@guild</td>
 					}
 					else
 					{
+						<th width="30px">
+							<i class="icon ic-clear"></i>
+						</th>
+						<td width="300px"><b>@mol.Mol</b></td>
 						<td></td>
 					}
 				</tr>

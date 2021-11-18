@@ -830,13 +830,14 @@ namespace Devin.Controllers
 
                 sheet.GetRow(4).GetCell(1).SetCellValue(Mol);
                 sheet.GetRow(4).GetCell(6).SetCellValue(guild);
-                sheet.GetRow(46).GetCell(0).SetCellValue(DateTime.Today.ToString("dd.MM.yyyy"));
-                sheet.GetRow(46).GetCell(6).SetCellValue(Mol);
+                sheet.GetRow(10).GetCell(0).SetCellValue(DateTime.Today.ToString("dd.MM.yyyy"));
+                sheet.GetRow(10).GetCell(6).SetCellValue(Mol);
 
                 int step = 0;
                 foreach (var device in devices)
                 {
-                    var row = sheet.GetRow(8 + step);
+                    sheet.CopyRow(8, 9 + step);
+                    var row = sheet.GetRow(9 + step);
                     row.GetCell(0).SetCellValue(device.Inventory);
                     row.GetCell(1).SetCellValue(device.Description);
                     row.GetCell(2).SetCellValue(device.SerialNumber);
