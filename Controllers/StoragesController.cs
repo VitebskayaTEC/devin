@@ -272,7 +272,6 @@ namespace Devin.Controllers
             float cost = 0;
             var types = new List<List<Cartridge>>();
             var lastType = new List<Cartridge>();
-            string lastName = "";
 
             var DataSplit = (Data ?? "").Split(new [] { "----" }, StringSplitOptions.RemoveEmptyEntries);
             if (DataSplit.Length < 1) return Json(new { Error = "Не переданы данные" });
