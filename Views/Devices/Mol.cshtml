@@ -1,0 +1,116 @@
+﻿@{
+    ViewBag.Title = "DEVIN | Устройства | Списки М.О.Л.";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using (var db = new DevinContext())
+{
+	var mols = db.Objects1C
+		.ToList()
+		.GroupBy(x => x.Mol)
+		.Select(g => new
+		{
+			Mol = g.Key
+		})
+		.Where(x => !x.Mol.Contains("("))
+		.OrderBy(x => x.Mol)
+		.ToList();
+
+	foreach (var mol in mols)
+	{
+		var query = from d in db.Devices
+					from c in db.Objects1C.LeftJoin(x => x.Inventory == d.Inventory)
+					from p in db.WorkPlaces.LeftJoin(x => x.Id == d.PlaceId)
+					where d.Mol == mol.Mol && !d.IsOff
+					select new
+					{
+						Id = d.Id,
+						Inventory = d.Inventory,
+						Name = d.Name,
+						Description = d.PublicName ?? c.Description,
+						DateInstall = d.DateInstall,
+						Location = p.Location ?? "не определено",
+						Guild = c.Guild,
+						Mol = c.Mol,
+					};
+
+		var devices = query
+			.ToList()
+			.GroupBy(x => x.Id)
+			.Select(g => g.FirstOrDefault())
+			.OrderBy(x => x.Location)
+			.ToList();
+
+		var guild = devices
+			.Select(x => x.Guild)
+			.FirstOrDefault();
+
+		<div class="unit">
+			<table class="caption">
+				<tr>
+					<th width="30px">
+						<i class="icon ic-get-app" onmousedown="printReportMol('@mol.Mol')"></i>
+					</th>
+					<td width="300px"><b>@mol.Mol</b></td>
+					@if (devices.Count > 0)
+					{
+						<td width="150px">Позиций: @devices.Count</td>
+						<td>@guild</td>
+					}
+					else
+					{
+						<td></td>
+					}
+				</tr>
+			</table>
+			<div class="itemsBlock">
+				@if (devices.Count > 0)
+				{
+					<table class="items">
+						<thead>
+							<tr>
+								<th width="100px">инв. №</th>
+								<th width="140px">наименование</th>
+								<th>описание</th>
+								<th width="100px">дата прихода</th>
+								<th width="300px">расположение</th>
+							</tr>
+						</thead>
+						@foreach (var device in devices)
+						{
+							string link = "##device" + device.Id;
+							<tr>
+								<td><a class="view__link" href="@link">@device.Inventory</a></td>
+								<td><a class="view__link" href="@link">@device.Name</a></td>
+								<td><a class="view__link" href="@link">@device.Description</a></td>
+								<td><a class="view__link" href="@link">@device.DateInstall.ToString("dd.MM.yyyy")</a></td>
+								<td><a class="view__link" href="@link">@device.Location</a></td>
+							</tr>
+						}
+					</table>
+				}
+				else
+				{
+					<i>позиции не найдены</i>
+				}
+			</div>
+		</div>
+	}
+}
+
+<script>
+	function printReportMol(mol) {
+		var body = new FormData()
+		body.append('Mol', mol)
+		fetch('@Url.Action("printReportMol", "devices")', { method: 'POST', body: body })
+			.then(res => res.json())
+			.then(json => {
+				if (json.Error) alert(json.Error)
+				if (json.Link) {
+					let a = document.createElement('a')
+					a.href = json.Link
+					a.click()
+				}
+			})
+	}
+</script>

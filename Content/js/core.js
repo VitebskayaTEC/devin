@@ -8,36 +8,47 @@ else if (document.location.pathname.includes('aida')) pageName = 'aida';
 
 document.addEventListener('click', e => {
     let unit = e.target.closest('.caption');
-    if (unit && (e.target.tagName !== 'TD' || e.target.tagName !== 'B') && unit.parentNode.id !== 'solo') toggle(unit);
+    if (unit && (e.target.tagName != 'TH' && e.target.tagName != 'I') && unit.parentNode.id !== 'solo') toggle(unit);
     if (e.target.tagName === 'TH' && e.target.parentNode.parentNode.parentNode.classList.contains('items')) sortTable(e.target);
 });
 
 function toggle(node) {
     let unit = node.closest('.unit');
-    let name = unit.id || unit.getAttribute('data-id');
-    if (!name) return;
     let block = unit.querySelector('.itemsBlock');
 
-    if (unit.classList.contains('open')) {
-        unit.classList.remove('open');
-        block.classList.remove('itemsBlock_expanded');
-        setCookie(name, '', { expires: 9999999999 });
-    }
-    else {
-        if (!block.querySelector('table')) {
-            fetch(host + pageName + '/load?Item=' + name + '&r=' + Math.random())
-                .then(res => res.text())
-                .then(text => {
-                    block.innerHTML = text;
-                    unit.classList.add('open');
-                    block.classList.add('itemsBlock_expanded');
-                    setCookie(name, 'open', { expires: 9999999999 });
-                })
+    let name = unit.id || unit.getAttribute('data-id');
+    if (!name) {
+        if (unit.classList.contains('open')) {
+            unit.classList.remove('open');
+            block.classList.remove('itemsBlock_expanded');
         }
         else {
             unit.classList.add('open');
             block.classList.add('itemsBlock_expanded');
-            setCookie(name, 'open', { expires: 9999999999 });
+        }
+    }
+    else {
+        if (unit.classList.contains('open')) {
+            unit.classList.remove('open');
+            block.classList.remove('itemsBlock_expanded');
+            setCookie(name, '', { expires: 9999999999 });
+        }
+        else {
+            if (!block.querySelector('table')) {
+                fetch(host + pageName + '/load?Item=' + name + '&r=' + Math.random())
+                    .then(res => res.text())
+                    .then(text => {
+                        block.innerHTML = text;
+                        unit.classList.add('open');
+                        block.classList.add('itemsBlock_expanded');
+                        setCookie(name, 'open', { expires: 9999999999 });
+                    })
+            }
+            else {
+                unit.classList.add('open');
+                block.classList.add('itemsBlock_expanded');
+                setCookie(name, 'open', { expires: 9999999999 });
+            }
         }
     }
 }
