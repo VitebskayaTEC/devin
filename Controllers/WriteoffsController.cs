@@ -13,14 +13,14 @@ using System.Web.Mvc;
 namespace Devin.Controllers
 {
 	public class WriteoffsController : Controller
-    {
-        public ActionResult Cart(int Id) => View(model: Id);
+	{
+		public ActionResult Cart(int Id) => View(model: Id);
 
-        public ActionResult History(string Id) => View(model: Id);
+		public ActionResult History(string Id) => View(model: Id);
 
 		[HttpPost]
 		public ActionResult Create()
-        {
+		{
 			try
 			{
 				using (var db = new DevinContext())
@@ -54,15 +54,15 @@ namespace Devin.Controllers
 			{
 				return Json(new { Error = e.Message });
 			}
-        }
+		}
 
 		[HttpPost]
 		public JsonResult Update(
-            [Bind(Include = "Id,Name,Type,Description,CostArticle,FolderId")] Writeoff writeoff,
-            string Date,
+			[Bind(Include = "Id,Name,Type,Description,CostArticle,FolderId")] Writeoff writeoff,
+			string Date,
 			string boardsWeight, string boardsCount
-        )
-        {
+		)
+		{
 			try
 			{
 				writeoff.Date = DateTime.Parse(Date);
@@ -72,17 +72,17 @@ namespace Devin.Controllers
 				return Json(new { Error = "Дата введена в неверном формате. Ожидается формат \"дд.ММ.гггг чч:мм\"" });
 			}
 
-            using (var db = new DevinContext())
-            {
-                var old = db.Writeoffs.Where(x => x.Id == writeoff.Id).FirstOrDefault();
+			using (var db = new DevinContext())
+			{
+				var old = db.Writeoffs.Where(x => x.Id == writeoff.Id).FirstOrDefault();
 
-                var changes = new List<string>();
-                if (writeoff.Name != old.Name) changes.Add("наименование [\"" + old.Name + "\" => \"" + writeoff.Name + "\"]");
-                if (writeoff.Type != old.Type) changes.Add("тип [\"" + old.Type + "\" => \"" + writeoff.Type + "\"]");
-                if ((writeoff.Description ?? "") != (old.Description ?? "")) changes.Add("описание [\"" + old.Description + "\" => \"" + writeoff.Description + "\"]");
-                if (writeoff.CostArticle != old.CostArticle) changes.Add("статья расходов [\"" + old.CostArticle + "\" => \"" + writeoff.CostArticle + "\"]");
-                if (writeoff.FolderId != old.FolderId) changes.Add("папка [\"" + (old.FolderId == 0 ? "отдельно" : ("folder" + old.FolderId)) + "\" => \"" + (writeoff.FolderId == 0 ? "отдельно" : ("folder" + writeoff.FolderId)) + "\"]");
-                if (writeoff.Date != old.Date) changes.Add("дата создания [\"" + old.Date + "\" => \"" + writeoff.Date + "\"]");
+				var changes = new List<string>();
+				if (writeoff.Name != old.Name) changes.Add("наименование [\"" + old.Name + "\" => \"" + writeoff.Name + "\"]");
+				if (writeoff.Type != old.Type) changes.Add("тип [\"" + old.Type + "\" => \"" + writeoff.Type + "\"]");
+				if ((writeoff.Description ?? "") != (old.Description ?? "")) changes.Add("описание [\"" + old.Description + "\" => \"" + writeoff.Description + "\"]");
+				if (writeoff.CostArticle != old.CostArticle) changes.Add("статья расходов [\"" + old.CostArticle + "\" => \"" + writeoff.CostArticle + "\"]");
+				if (writeoff.FolderId != old.FolderId) changes.Add("папка [\"" + (old.FolderId == 0 ? "отдельно" : ("folder" + old.FolderId)) + "\" => \"" + (writeoff.FolderId == 0 ? "отдельно" : ("folder" + writeoff.FolderId)) + "\"]");
+				if (writeoff.Date != old.Date) changes.Add("дата создания [\"" + old.Date + "\" => \"" + writeoff.Date + "\"]");
 
 				if (old.Type == "mat")
 				{
@@ -108,17 +108,17 @@ namespace Devin.Controllers
 					if (writeoff.BoardsWeight != old.BoardsWeight) changes.Add("вес плат [\"" + old.BoardsWeight + "\" => \"" + writeoff.BoardsWeight + "\"]");
 				}
 
-                if (changes.Count > 0)
-                {
-                    db.Writeoffs
-                        .Where(x => x.Id == writeoff.Id)
-                        .Set(x => x.Name, writeoff.Name)
-                        .Set(x => x.Type, writeoff.Type)
-                        .Set(x => x.Description, writeoff.Description)
-                        .Set(x => x.CostArticle, writeoff.CostArticle)
-                        .Set(x => x.FolderId, writeoff.FolderId)
-                        .Set(x => x.Date, writeoff.Date)
-                        .Update();
+				if (changes.Count > 0)
+				{
+					db.Writeoffs
+						.Where(x => x.Id == writeoff.Id)
+						.Set(x => x.Name, writeoff.Name)
+						.Set(x => x.Type, writeoff.Type)
+						.Set(x => x.Description, writeoff.Description)
+						.Set(x => x.CostArticle, writeoff.CostArticle)
+						.Set(x => x.FolderId, writeoff.FolderId)
+						.Set(x => x.Date, writeoff.Date)
+						.Update();
 
 					if (old.Type == "mat")
 					{
@@ -129,79 +129,79 @@ namespace Devin.Controllers
 							.Update();
 					}
 
-                    db.Log(User, "writeoffs", writeoff.Id, "Списание обновлено. Изменения: " + changes.ToLog());
+					db.Log(User, "writeoffs", writeoff.Id, "Списание обновлено. Изменения: " + changes.ToLog());
 
-                    return Json(new { Good = "Списание обновлено. Изменения:<br />" + changes.ToHtml() });
-                }
-                else
-                {
-                    return Json(new { Warning = "Изменений не было" });
-                }
-            }
-        }
+					return Json(new { Good = "Списание обновлено. Изменения:<br />" + changes.ToHtml() });
+				}
+				else
+				{
+					return Json(new { Warning = "Изменений не было" });
+				}
+			}
+		}
 
-        public JsonResult Move(int Id, int FolderId)
-        {
-            using (var db = new DevinContext())
-            {
-                string folder = db.Folders.Where(x => x.Id == FolderId).Select(x => x.Name).FirstOrDefault() ?? "<не определено>";
+		public JsonResult Move(int Id, int FolderId)
+		{
+			using (var db = new DevinContext())
+			{
+				string folder = db.Folders.Where(x => x.Id == FolderId).Select(x => x.Name).FirstOrDefault() ?? "<не определено>";
 
-                db.Writeoffs
-                    .Where(x => x.Id == Id)
-                    .Set(x => x.FolderId, FolderId)
-                    .Update();
-                db.Log(User, "writeoffs", Id, "Списание перемещено в папку \"" + folder + "\" [folder" + FolderId + "]");
+				db.Writeoffs
+					.Where(x => x.Id == Id)
+					.Set(x => x.FolderId, FolderId)
+					.Update();
+				db.Log(User, "writeoffs", Id, "Списание перемещено в папку \"" + folder + "\" [folder" + FolderId + "]");
 
-                return Json(new { Good = "Списание перемещено" });
-            }
-        }
+				return Json(new { Good = "Списание перемещено" });
+			}
+		}
 
-        public JsonResult Delete(string Id)
-        {
-            int id = int.TryParse(Id.Replace("off", ""), out int i) ? i : 0;
+		public JsonResult Delete(string Id)
+		{
+			int id = int.TryParse(Id.Replace("off", ""), out int i) ? i : 0;
 
-            using (var db = new DevinContext())
-            {
-                db.Writeoffs.Delete(x => x.Id == id);
-                db.Log(User, "writeoffs", id, "Списание удалено без отмены вложенных ремонтов");
-            }
+			using (var db = new DevinContext())
+			{
+				db.Writeoffs.Delete(x => x.Id == id);
+				db.Log(User, "writeoffs", id, "Списание удалено без отмены вложенных ремонтов");
+			}
 
-            return Json(new { Good = "Списание удалено без отмены вложенных ремонтов" });
-        }
+			return Json(new { Good = "Списание удалено без отмены вложенных ремонтов" });
+		}
 
-        public JsonResult Print(int Id)
-        {
+		public JsonResult Print(int Id)
+		{
 			var officials = Official.Load();
 
 			string[] months = { "январе", "феврале", "марте", "апреле", "мае", "июне", "июле", "августе", "сентябре", "октябре", "ноябре", "декабре" };
 			string[] months2 = { "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря" };
 
 			using (var db = new DevinContext())
-            {
-                var query = from w in db.Writeoffs
-                            from t in db._WriteoffTypes.InnerJoin(x => x.Id == w.Type)
-                            where w.Id == Id
-                            select new
-                            {
-                                w.Name,
-                                w.Date,
-                                w.Params,
-                                w.Type,
-                                w.CostArticle,
+			{
+				var query = from w in db.Writeoffs
+							from t in db._WriteoffTypes.InnerJoin(x => x.Id == w.Type)
+							where w.Id == Id
+							select new
+							{
+								w.Name,
+								w.Date,
+								w.Params,
+								w.Type,
+								w.CostArticle,
 								w.BoardsCount,
 								w.BoardsWeight,
-                                t.Template,
-                                t.DefaultData
-                            };
+								t.Template,
+								t.DefaultData
+							};
 
-                var writeoff = query.FirstOrDefault();
+				var writeoff = query.FirstOrDefault();
 
 
 				string output = writeoff.Name + " " + DateTime.Now.ToLongDateString();
 
-                /* Ремонт основного средства */
-                if (writeoff.Type == "mat")
-                {
+				/* Ремонт основного средства */
+				if (writeoff.Type == "mat")
+				{
 					IWorkbook book;
 					ISheet sheet;
 
@@ -211,7 +211,7 @@ namespace Devin.Controllers
 					}
 
 					// переходим на лист "Сводная таблица"
-					sheet = book.GetSheet("Сводная таблица");
+					sheet = book.GetSheet("Сводная");
 
 					// стоимость драгметаллов из 1С
 					using (var site = new SiteContext())
@@ -248,8 +248,8 @@ namespace Devin.Controllers
 					var now = DateTime.Now;
 					sheet.GetRow(2).GetCell(2).SetCellValue(now.ToString("yyyy г."));
 					sheet.GetRow(8).GetCell(2).SetCellValue("\"" + now.Day + "\" " + months2[now.Month - 1] + " " + now.ToString("yyyy г."));
-                    sheet.GetRow(9).GetCell(2).SetCellValue(now.ToString("dd.MM.yyyy г."));
-                    sheet.GetRow(10).GetCell(2).SetCellValue(months[now.Month - 1] + " " + now.ToString("yyyy г."));
+					sheet.GetRow(9).GetCell(2).SetCellValue(now.ToString("dd.MM.yyyy г."));
+					sheet.GetRow(10).GetCell(2).SetCellValue(months[now.Month - 1] + " " + now.ToString("yyyy г."));
 
 					// номера актов
 					string number = now.Month + "/" + now.Day + "-" + Id;
@@ -340,14 +340,14 @@ namespace Devin.Controllers
 					}
 				}
 
-                return Json(new
+				return Json(new
 				{
 					Good = "Файл Excel списания успешно создан",
 					Link = Url.Action("excels", "content") + "/" + output,
 					Name = output,
 				});
-            }
-        }
+			}
+		}
 
 		public JsonResult Mark(string Id, string Mark)
 		{
@@ -367,5 +367,5 @@ namespace Devin.Controllers
 
 			return Json(new { Done = "Списание отмечено цветом \"" + Mark + "\"" });
 		}
-    }
+	}
 }

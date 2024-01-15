@@ -374,6 +374,71 @@ namespace Devin.Controllers
             return Json(new { Good = "Все ремонты из списания отменены" });
         }
 
+        public JsonResult DeleteSelected(string Repairs)
+        {
+            var repairs = Repairs.Split(new[] { ";;" }, StringSplitOptions.RemoveEmptyEntries);
+
+            using (var db = new DevinContext())
+            {
+                foreach (string r in repairs)
+                {
+                    int Id = int.TryParse(r.Replace("repair", ""), out int i) ? i : 0;
+
+                    if (Id != 0)
+                    {
+                        var repair = db.Repairs.Where(x => x.Id == Id).FirstOrDefault();
+
+                        if (repair != null)
+                        {
+
+                            if (repair.IsOff)
+                            {
+                                if (repair.IsVirtual)
+                                {
+                                    db.Storages
+                                        .Where(x => x.Id == repair.StorageId)
+                                        .Set(x => x.Noff, x => x.Noff - repair.Number)
+                                        .Update();
+                                }
+                                else
+                                {
+                                    db.Storages
+                                        .Where(x => x.Id == repair.StorageId)
+                                        .Set(x => x.Nstorage, x => x.Nstorage + repair.Number)
+                                        .Set(x => x.Noff, x => x.Noff - repair.Number)
+                                        .Update();
+                                }
+                            }
+                            else
+                            {
+                                if (repair.IsVirtual)
+                                {
+                                    db.Storages
+                                        .Where(x => x.Id == repair.StorageId)
+                                        .Set(x => x.Nrepairs, x => x.Nrepairs - repair.Number)
+                                        .Update();
+                                }
+                                else
+                                {
+                                    db.Storages
+                                        .Where(x => x.Id == repair.StorageId)
+                                        .Set(x => x.Nstorage, x => x.Nstorage + repair.Number)
+                                        .Set(x => x.Nrepairs, x => x.Nrepairs - repair.Number)
+                                        .Update();
+                                }
+                            }
+
+                            db.Repairs.Where(x => x.Id == repair.Id).Delete();
+                            db.Log(User, "storages", repair.StorageId, "Отменен ремонт [repair" + Id + "]. Исп. кол-во возвращено");
+                            db.Log(User, "repairs", Id, "Ремонт удален");
+                        }
+                    }
+                }
+
+                return Json(new { Good = "Ремонты удалены" });
+            }
+        }
+
         public JsonResult Move(string Repairs, string Key)
         {
             using (var db = new DevinContext())

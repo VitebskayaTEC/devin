@@ -145,6 +145,7 @@ namespace Devin.Controllers
                     else if (os.Contains("18363")) { aida.OS = "Windows 10 1909"; aida.OSScore = 800; }
                     else if (os.Contains("19041")) { aida.OS = "Windows 10 2004"; aida.OSScore = 900; }
                     else if (os.Contains("19042")) { aida.OS = "Windows 10 20H2"; aida.OSScore = 1000; }
+                    else if (os.Contains("19043")) { aida.OS = "Windows 10 21H1"; aida.OSScore = 1100; }
                     else if (os.Contains("Win2003")) { aida.OS = "Windows Server 2003"; aida.OSScore = 101; }
                     else if (os.Contains("Win2012")) { aida.OS = "Windows Server 2012"; aida.OSScore = 201; }
                     else { aida.OS = os; aida.OSScore = 100; }
