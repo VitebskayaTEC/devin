@@ -248,7 +248,8 @@ namespace Devin.Controllers
 					var now = DateTime.Now;
 					sheet.GetRow(2).GetCell(2).SetCellValue(now.ToString("yyyy г."));
 					sheet.GetRow(8).GetCell(2).SetCellValue("\"" + now.Day + "\" " + months2[now.Month - 1] + " " + now.ToString("yyyy г."));
-					sheet.GetRow(9).GetCell(2).SetCellValue(now.ToString("dd.MM.yyyy г."));
+					//sheet.GetRow(9).GetCell(2).SetCellValue(now.ToString("dd.MM.yyyy г."));
+                    sheet.GetRow(9).GetCell(2).SetCellValue(now.ToString("dd.MM.yyyy"));
 					sheet.GetRow(10).GetCell(2).SetCellValue(months[now.Month - 1] + " " + now.ToString("yyyy г."));
 
 					// номера актов

@@ -629,7 +629,8 @@ namespace Devin.Controllers
 
 					sheet.GetRow(7).GetCell(2).SetCellValue(dateMark + "-" + mark.Number);
 					sheet.GetRow(8).GetCell(2).SetCellValue("\"" + today.ToString("dd") + "\" " + months[today.Month - 1] + " " + today.ToString("yyyy") + " г.");
-					sheet.GetRow(9).GetCell(2).SetCellValue(today.ToString("dd.MM.yyyy") + " г.");
+					//sheet.GetRow(9).GetCell(2).SetCellValue(today.ToString("dd.MM.yyyy") + " г.");
+                    sheet.GetRow(9).GetCell(2).SetCellValue(today.ToString("dd.MM.yyyy"));
 					sheet.GetRow(10).GetCell(2).SetCellValue(months2[today.Month - 1] + " " + today.ToString("yyyy") + " г.");
 
 					sheet.GetRow(12).GetCell(2).SetCellValue(_1c.Description);
